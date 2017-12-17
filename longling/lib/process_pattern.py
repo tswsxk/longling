@@ -16,7 +16,7 @@ from __future__ import unicode_literals
 
 import re
 
-from source.base import *
+from longling.base import *
 
 
 class cond_filter():
