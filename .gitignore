@@ -5,3 +5,7 @@ data/*
 model/
 test.py
 **/temp
+build/*
+dist/*
+*.egg-info
+*.egg-info/*
