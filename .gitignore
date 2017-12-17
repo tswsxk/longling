@@ -1,0 +1,7 @@
+.idea/
+*.pyc
+temp/*
+data/*
+model/
+test.py
+**/temp
