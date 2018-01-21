@@ -1,5 +1,7 @@
 # coding:utf-8
 
+from __future__ import print_function
+
 from collections import defaultdict
 
 def caculate_AUC(gold_list, predict_probs_list, punish_func=lambda x: 1):
@@ -43,7 +45,7 @@ def accuracy(ps, ys):
 
 def _evaluate(gold_set, predict_set):
     if len(gold_set) == 0:
-        print 'gold set is empty'
+        print('gold set is empty')
         return 0, 1, 0
         # raise ValueError('gold set cannot be empty')
     if len(predict_set) == 0:
@@ -101,4 +103,4 @@ if __name__ == '__main__':
         0,
         1,
     ]
-    print caculate_AUC(b, a)
+    print(caculate_AUC(b, a))
