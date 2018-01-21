@@ -149,7 +149,7 @@ class numericalDNN(NN):
         super(numericalDNN, self).save_model(location)
 
 if __name__ == '__main__':
-    root = "../../../../../../"
+    root = "../../../../../../../"
     model_dir = root + "data/numerical_dnn/test/"
 
     nn = numericalDNN(
@@ -160,12 +160,12 @@ if __name__ == '__main__':
     )
     # nn.save_model(nn.model_dir + "model.class")
     # nn = NN.load_model(model_dir + "model.class")
-    # nn.network_plot(batch_size=128, show_tag=True)
+    # nn.network_plot(batch_size=128, dropout=0.5, inner_dropouts=0.0, show_tag=True)
     nn.process_fit(
         location_train=root + "data/image/one_dim/mnist_train",
         location_test=root + "data/image/one_dim/mnist_test",
         ctx=-1,
         epoch=20,
-        parameters={'batch_size': 128}
+        parameters={'batch_size': 128, 'inner_dropouts': 0.5}
     )
 
