@@ -8,37 +8,55 @@ import mxnet as mx
 from longling.framework.ML.mxnet.nn.shared.nn import get_model
 
 
-def get_numerical_dnn_symbol_without_loss(num_hiddens=[100], num_label=2, dropout=0.0):
+def get_numerical_dnn_symbol_without_loss(num_hiddens=[100], num_label=2, dropout=0.0, inner_dropouts=None):
     data = mx.sym.Variable('data')
 
     net = data
 
+    dropouts = []
+
+    if inner_dropouts is None:
+        dropouts = [0.0] * (len(num_hiddens) - 1) + [dropout]
+
+    else:
+        if isinstance(inner_dropouts, list):
+            if len(inner_dropouts) == len(num_hiddens):
+                dropouts = inner_dropouts
+            elif len(inner_dropouts) == len(num_hiddens) - 1:
+                dropouts = inner_dropouts + [dropout]
+        else:
+            dropouts = [inner_dropouts] * (len(num_hiddens) - 1) + [dropout]
+
+    assert len(dropouts) == len(num_hiddens)
+
     for i in xrange(len(num_hiddens)):
         net = mx.sym.FullyConnected(data=net, name='fc%s' % i, num_hidden=num_hiddens[i])
         # net = mx.sym.Activation(data=net, name='relu%s' % i, act_type="relu")
-    if dropout > 0.0:
-        net = mx.sym.Dropout(data=net, p=dropout)
+        if dropouts[i] > 0.0:
+            net = mx.sym.Dropout(data=net, p=dropouts[i])
     fc = mx.sym.FullyConnected(data=net, name='fc', num_hidden=num_label)
     return fc
 
 
-def get_numerical_dnn_symbol(num_hiddens=[100], num_label=2, dropout=0.0):
+def get_numerical_dnn_symbol(num_hiddens=[100], num_label=2, dropout=0.0, inner_dropouts=None):
     label = mx.sym.Variable('label')
     fc = get_numerical_dnn_symbol_without_loss(
         num_hiddens=num_hiddens,
         num_label=num_label,
         dropout=dropout,
+        inner_dropouts=inner_dropouts,
     )
     sm = mx.sym.SoftmaxOutput(data=fc, label=label, name='softmax')
     return sm
 
 
-def get_text_dnn_symbol(num_hiddens=[100], num_label=2, dropout=0.0):
+def get_text_dnn_symbol(num_hiddens=[100], num_label=2, dropout=0.0, inner_dropouts=None):
     label = mx.sym.Variable('label')
     fc = get_numerical_dnn_symbol_without_loss(
         num_hiddens=num_hiddens,
         num_label=num_label,
         dropout=dropout,
+        inner_dropouts=inner_dropouts,
     )
     sm = mx.sym.SoftmaxOutput(data=fc, label=label, name='softmax')
     return sm

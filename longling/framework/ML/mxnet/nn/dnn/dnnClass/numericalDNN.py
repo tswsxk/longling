@@ -31,28 +31,30 @@ class numericalDNN(NN):
         self.logger.info('num_label: %s' % num_label)
         self.logger.info('num_hiddens: %s' % self.num_hiddens)
 
-    def get_symbol_without_loss(self, batch_size, dropout):
+    def get_symbol_without_loss(self, batch_size, dropout, inner_dropouts=None):
         return numerical_dnn.get_numerical_dnn_symbol_without_loss(
             num_label=self.num_label,
             num_hiddens=self.num_hiddens,
             dropout=dropout,
+            inner_dropouts=inner_dropouts,
         )
 
-    def get_symbol(self, dropout):
+    def get_symbol(self, dropout, inner_dropouts=None):
         return numerical_dnn.get_numerical_dnn_symbol(
             num_label=self.num_label,
             num_hiddens=self.num_hiddens,
             dropout=dropout,
+            inner_dropouts=inner_dropouts,
         )
 
-    def get_model(self, batch_size, dropout, ctx=-1, checkpoint=None):
+    def get_model(self, batch_size, dropout, inner_dropouts, ctx=-1, checkpoint=None):
         ctx = self.form_ctx(ctx)
 
         checkpoint = self.form_checkpoint(self.model_dir, checkpoint)
 
         return numerical_dnn.get_numerical_dnn_model(
             ctx=ctx,
-            dnn_symbol=self.get_symbol(dropout=dropout),
+            dnn_symbol=self.get_symbol(dropout=dropout, inner_dropouts=inner_dropouts),
             feature_num=self.feature_num,
             batch_size=batch_size,
             checkpoint=checkpoint,
@@ -99,9 +101,9 @@ class numericalDNN(NN):
 
         self.logger.info("parameters information saved to %s" % location_parameters)
 
-    def network_plot(self, batch_size, node_attrs={}, dropout=0.0, show_tag=False):
+    def network_plot(self, batch_size, node_attrs={}, dropout=0.0, inner_dropouts=None, show_tag=False):
         numericalDNN.plot_network(
-            nn_symbol=self.get_symbol(dropout=dropout),
+            nn_symbol=self.get_symbol(dropout=dropout, inner_dropouts=inner_dropouts),
             save_path=os.path.join(self.model_dir, "plot/network"),
             shape={'data': (batch_size, self.feature_num)},
             node_attrs=node_attrs,
@@ -112,6 +114,7 @@ class numericalDNN(NN):
         logger = self.logger
         batch_size = parameters.get('batch_size', 128)
         dropout = parameters.get('dorpout', 0.5)
+        inner_dropouts = parameters.get('inner_dropouts', None)
         checkpoint = parameters.get('checkpoint', None)
         start_epoch = 0 if checkpoint is None else int(checkpoint)
 
@@ -122,8 +125,9 @@ class numericalDNN(NN):
         dnn_model = self.get_model(
             batch_size=batch_size,
             dropout=dropout,
+            inner_dropouts=inner_dropouts,
             ctx=ctx,
-            checkpoint=checkpoint
+            checkpoint=checkpoint,
         )
 
         self.record_parameters(batch_size=batch_size, dropout=dropout, epoch=epoch)
