@@ -6,6 +6,7 @@ import sys
 import codecs
 import os
 
+from longling.base import string_types
 
 def checkDir(path, mode=0o777):
     dirname = os.path.dirname(path)
@@ -34,7 +35,7 @@ def wf_open(stream_name='', mode="w", encoding="utf-8"):
             return sys.stderr
         else:
             return sys.stdout
-    elif isinstance(stream_name, (str, unicode, bytes)):
+    elif isinstance(stream_name, string_types):
         checkDir(stream_name)
         return codecs.open(stream_name, mode=mode, encoding=encoding)
     else:

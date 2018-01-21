@@ -29,7 +29,7 @@ def get_numerical_dnn_symbol_without_loss(num_hiddens=[100], num_label=2, dropou
 
     assert len(dropouts) == len(num_hiddens)
 
-    for i in xrange(len(num_hiddens)):
+    for i in range(len(num_hiddens)):
         net = mx.sym.FullyConnected(data=net, name='fc%s' % i, num_hidden=num_hiddens[i])
         # net = mx.sym.Activation(data=net, name='relu%s' % i, act_type="relu")
         if dropouts[i] > 0.0:

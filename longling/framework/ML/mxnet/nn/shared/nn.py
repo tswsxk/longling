@@ -1,6 +1,8 @@
 # coding: utf-8
 # create by tongshiwei on 2017/10/23
 
+from __future__ import division
+
 import json
 import logging
 import math
@@ -17,6 +19,7 @@ from tqdm import tqdm
 
 from longling.framework.ML.universe.metrics.model_eval import evaluate
 from longling.lib.stream import wf_open, wf_close
+from longling.base import *
 
 NNModel = namedtuple('Model', ['model_exec', 'symbol', 'data', 'label', 'param_blocks', 'args_grad'])
 
@@ -319,7 +322,7 @@ def fit(model, train_iter, test_iter, batch_size,
         tic = time.time()
         num_correct = 0
         num_total = 0
-        batch_num = (train_iter.cnt + batch_size - 1) / batch_size
+        batch_num = (train_iter.cnt + batch_size - 1) // batch_size
         time_for_data = 0
         real_train_time = 0.  # 包括取数据的时间， 但是不包括算accuracy的时间
 
@@ -406,7 +409,7 @@ def fit(model, train_iter, test_iter, batch_size,
         num_correct = 0
         num_total = 0
         ps = []
-        batch_num = (test_iter.cnt + batch_size - 1) / batch_size
+        batch_num = (test_iter.cnt + batch_size - 1) // batch_size
         y_dev_batch = []
         for _ in range(batch_num):
             try:
@@ -435,11 +438,11 @@ def fit(model, train_iter, test_iter, batch_size,
 
         line = 'Iter [%d] Train: Time: %.3fs, Training Accuracy: %.3f' % (iteration, train_time, train_acc)
 
-        f_log.write(line.encode('utf-8') + '\n')
+        f_log.write(tostr(line) + '\n')
         f_log.flush()
 
         line = '--- Dev Accuracy thus far: %.3f' % dev_acc
-        f_log.write(line.encode('utf-8') + '\n')
+        f_log.write(tostr(line) + '\n')
         f_log.flush()
 
         result = {
@@ -455,10 +458,10 @@ def fit(model, train_iter, test_iter, batch_size,
 
             line = '--- Dev Category %s P=%s,R=%s,F=%s' % (cat, res[0], res[1], res[2])
 
-            f_log.write(line.encode('utf-8') + '\n')
+            f_log.write(tostr(line) + '\n')
             f_log.flush()
 
-            result['prf'][cat] = [res[0], res[1], res[2]]
+            result['prf'][tostr(cat)] = [res[0], res[1], res[2]]
 
         r_log.write(json.dumps(result, ensure_ascii=False) + '\n')
         r_log.flush()
