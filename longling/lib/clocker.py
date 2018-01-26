@@ -21,9 +21,11 @@ class Clocker(object):
         self.wall_et = time.time()
         return self.process_et - self.process_st
 
+    @property
     def wall_time(self):
-        return self.wall_et -self.wall_st
+        return self.wall_et - self.wall_st
 
+    @property
     def process_time(self):
         return self.process_et - self.process_st
 

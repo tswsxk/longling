@@ -5,9 +5,14 @@ import json
 import logging
 import os
 
-import numpy as np
 
+import mxnet as mx
+import numpy as np
 from tqdm import tqdm
+
+from collections import OrderedDict, namedtuple
+
+Desc = namedtuple('Desc', ['shape', 'dtype'])
 
 
 class originIterator():
@@ -207,3 +212,147 @@ class TextIterator(originIterator):
 
     def next(self, batch_size):
         return self.next_batch(batch_size)
+
+
+def extract_list(lists):
+    return lists
+
+
+class MulIter(mx.io.DataIter):
+    def __init__(self, batch_size, iter_list):
+        super(MulIter, self).__init__(batch_size)
+        self.iters = iter_list
+
+    def next(self):
+        batches = [i.next() for i in self.iters]
+        return mx.io.DataBatch(data=[extract_list(*b.data) for b in batches],
+                               label=[extract_list(*b.label) for b in batches if b.label])
+
+    def reset(self):
+        for i in self.iters:
+            i.reset()
+
+    @property
+    def provide_data(self):
+        return [extract_list(*i.provide_data) for i in self.iters]
+
+    @property
+    def provide_label(self):
+        return [extract_list(*i.provide_label) for i in self.iters if i.provide_label]
+
+
+class DictJsonIter(mx.io.DataIter):
+    def __init__(self, batch_size, filename, data_key_dict={'data': 'x'}, label_key_dict={'label': 'z'},
+                 last_batch_handle='pad'):
+        super(DictJsonIter, self).__init__(batch_size)
+        self.f = open(filename)
+        self.data_key_dict = OrderedDict(data_key_dict)
+        self.label_key_dict = OrderedDict(label_key_dict)
+        self.data_desc = {}
+        self.label_desc = {}
+        self.data = [[] for _ in range(len(self.data_key_dict))]
+        self.label = [[] for _ in range(len(self.label_key_dict))]
+        self.cnt = 0
+        self.index = 0
+        self.batch_size = batch_size
+        self.last_batch_handle = last_batch_handle
+        self.end_tag = False
+        self.determine_data_shapes()
+        self.pad = 0
+
+    def determine_data_shapes(self):
+        line = self.f.readline()
+        datas = json.loads(line)
+        for i, name in enumerate(self.data_key_dict):
+            data = np.asarray(datas[self.data_key_dict[name]], dtype=np.float32)
+            self.data_desc[name] = Desc(data.shape, data.dtype)
+        for i, name in enumerate(self.label_key_dict):
+            data = np.asarray(datas[self.label_key_dict[name]], dtype=np.float32)
+            self.label_desc[name] = Desc(data.shape, data.dtype)
+        self.reset()
+
+    def iter_next(self):
+        try:
+            if self.end_tag:
+                raise StopIteration
+            self.data = [[] for _ in range(len(self.data_key_dict))]
+            self.label = [[] for _ in range(len(self.label_key_dict))]
+            for line in self.f:
+                if not line.strip():
+                    continue
+                datas = json.loads(line)
+                for i, name in enumerate(self.data_key_dict):
+                    self.data[i].append(np.asarray(datas[self.data_key_dict[name]], dtype=np.float32))
+                for i, name in enumerate(self.label_key_dict):
+                    self.label[i].append(np.asarray(datas[self.label_key_dict[name]], dtype=np.float32))
+                self.cnt += 1
+                if self.cnt >= self.batch_size:
+                    self.cnt = 0
+                    self.index += 1
+                    if self.index % 100 == 0:
+                        print(self.index)
+                    return True
+            raise StopIteration
+        except StopIteration:
+            if self.last_batch_handle == "discard":
+                self.data = [[] for _ in range(len(self.data_key_dict))]
+                self.label = [[] for _ in range(len(self.label_key_dict))]
+                return False
+            elif not self.end_tag and self.last_batch_handle in {"roll_over", "pad"}:
+                self.pad = self.batch_size - self.cnt
+                self.f.seek(0)
+                for i, line in enumerate(self.f):
+                    if i >= self.pad:
+                        break
+                    datas = json.loads(line)
+                    for i, name in enumerate(self.data_key_dict):
+                        self.data[i].append(np.asarray(datas[self.data_key_dict[name]], dtype=np.float32))
+                    for i, name in enumerate(self.label_key_dict):
+                        self.label[i].append(np.asarray(datas[self.label_key_dict[name]], dtype=np.float32))
+                self.index += 1
+                self.end_tag = True
+                return True
+            else:
+                self.data = [[] for _ in range(len(self.data_key_dict))]
+                self.label = [[] for _ in range(len(self.label_key_dict))]
+                return False
+
+    def getdata(self):
+        return [mx.nd.array(np.asarray(d)) for d in self.data]
+
+    def getlabel(self):
+        return [mx.nd.array(np.asarray(l)) for l in self.label]
+
+    def getindex(self):
+        return self.index
+
+    def reset(self):
+        self.index = 0
+        self.cnt = 0
+        if self.last_batch_handle == "roll_over" and self.end_tag:
+            pass
+        else:
+            self.f.seek(0)
+        self.end_tag = False
+        self.pad = 0
+        self.data = [[] for _ in range(len(self.data_key_dict))]
+        self.label = [[] for _ in range(len(self.label_key_dict))]
+
+    def getpad(self):
+        return self.pad
+
+    @property
+    def provide_data(self):
+        """The name and shape of data provided by this iterator."""
+        return [
+            mx.io.DataDesc(k, tuple([self.batch_size] + list(v.shape)), v.dtype)
+            for k, v in self.data_desc.items()
+        ]
+
+    @property
+    def provide_label(self):
+        """The name and shape of label provided by this iterator."""
+        return [
+            mx.io.DataDesc(k, tuple([self.batch_size] + list(v.shape)), v.dtype)
+            for k, v in self.label_desc.items()
+        ]

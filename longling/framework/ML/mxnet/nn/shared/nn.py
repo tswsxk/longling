@@ -71,6 +71,7 @@ class NN():
             max_grad_norm=max_grad_norm,
             learning_rate=learning_rate,
             lr_update_rate=lr_update_rate,
+            start_epoch=start_epoch,
             epoch=epoch,
             model_dir=model_dir,
             saved_epoch=saved_epoch,
@@ -156,7 +157,7 @@ def form_checkpoint(model_dir, checkpoint=None, logger=logging):
         except:
             logger.error('invalid checkpoint format!')
             raise Exception('invalid checkpoint format!')
-    checkpoint = os.path.join(model_dir, '%s-%04d.params' % ('cnn', checkpoint))
+    checkpoint = os.path.join(model_dir, '%s-%04d.params' % ('nn', checkpoint))
     if not os.path.exists(checkpoint):
         logger.error('checkpoint does not exist!')
         raise Exception('checkpoint does not exist!')
@@ -377,7 +378,7 @@ def fit(model, train_iter, test_iter, batch_size,
 
         # saving iteration checkpoint
         if (iteration + 1) % saved_epoch == 0:
-            prefix = model_dir + 'cnn'
+            prefix = model_dir + 'nn'
             model.symbol.save('%s-symbol.json' % prefix)
 
             save_dict = {'arg:%s' % k: v for k, v in model.model_exec.arg_dict.items() if k != 'embedding_weight'}
@@ -392,7 +393,7 @@ def fit(model, train_iter, test_iter, batch_size,
 
         # saving final checkpoint to cpu backup
         if (iteration + 1) == epoch:
-            prefix = model_dir + 'cnn'
+            prefix = model_dir + 'nn'
             model.symbol.save('%s-symbol.json' % prefix)
 
             save_dict = {'arg:%s' % k: v for k, v in model.model_exec.arg_dict.items() if k != 'embedding_weight'}

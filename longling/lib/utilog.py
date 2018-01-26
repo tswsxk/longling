@@ -52,7 +52,7 @@ def simple_stream_logger(logger_name, logger_level=logging.WARN, format='%(ascti
 
 # '%(asctime)s, %(levelname)s %(message)s'
 def config_logging(filename=None, format='%(name)s, %(levelname)s %(message)s', level=logging.INFO,
-                   logger=None, console_log_level=None, propagate=True, multi_process_logger_kwargs={},
+                   logger=None, console_log_level=None, propagate=True, mode='a',
                    file_format=None):
     if logger is None:
         logger = logging.getLogger()
@@ -67,9 +67,10 @@ def config_logging(filename=None, format='%(name)s, %(levelname)s %(message)s', 
     if not propagate:
         logger.propagate = False
     if filename:
-        if 'when' not in multi_process_logger_kwargs:
-            multi_process_logger_kwargs['when'] = 'midnight'
-        handler = MultiProcessRotatingFileHandler(filename=filename, **multi_process_logger_kwargs)
+        # if 'when' not in multi_process_logger_kwargs:
+        #     multi_process_logger_kwargs['when'] = 'midnight'
+        # handler = MultiProcessRotatingFileHandler(filename=filename, **multi_process_logger_kwargs)
+        handler = logging.FileHandler(filename, mode=mode)
         file_formatter = formatter
         if file_format:
             file_formatter = logging.Formatter(file_format)
