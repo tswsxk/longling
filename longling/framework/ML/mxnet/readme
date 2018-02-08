@@ -15,3 +15,15 @@ two kind:
 
 # EvalMetric
 ## for F1 metric, exist serious problem
+
+
+
+##################################################################
+notice that embedding layer changes in training without grad block
+
+
+
+###################################################################
+lr_sch = mx.lr_scheduler.FactorScheduler(step=25000, factor=0.999)
+    module.init_optimizer(
+optimizer='rmsprop', optimizer_params={'learning_rate': 0.0005, 'lr_scheduler': lr_sch})

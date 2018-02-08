@@ -1,0 +1,3 @@
+Any Iterator should inherit OriginIterator and implement the next method
+For BatchIterator, can inherit OriginIterator or OriginBatchIterator, and implement next and next_batch method
+

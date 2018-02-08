@@ -1,6 +1,7 @@
 # coding: utf-8
 
 # 此模块用以进行流处理
+from __future__ import print_function
 
 import sys
 import codecs
@@ -8,11 +9,22 @@ import os
 
 from longling.base import string_types
 
-def checkDir(path, mode=0o777):
+
+def flush_print(*values, sep="", end=""):
+    print('\r', *values, sep=sep, end=end, flush=True)
+
+
+def check_dir(path, mode=0o777):
     dirname = os.path.dirname(path)
     if not dirname or os.path.exists(dirname):
         return
     os.makedirs(dirname, mode)
+
+
+def check_file(path, size=None):
+    if os.path.exists(path):
+        return size == os.path.getsize(path) if size is not None else True
+    return False
 
 
 def rf_open(filename, encoding='utf-8', **kwargs):
@@ -36,7 +48,9 @@ def wf_open(stream_name='', mode="w", encoding="utf-8"):
         else:
             return sys.stdout
     elif isinstance(stream_name, string_types):
-        checkDir(stream_name)
+        check_dir(stream_name)
+        if mode == "wb":
+            return open(stream_name, mode=mode)
         return codecs.open(stream_name, mode=mode, encoding=encoding)
     else:
         raise TypeError("wf_open: %s" % stream_name)

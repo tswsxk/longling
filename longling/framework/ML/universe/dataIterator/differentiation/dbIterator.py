@@ -6,10 +6,10 @@
 '''
 
 from __future__ import absolute_import
-from longling.lib.dataIterator.dataIterator import originBatchIterator
+from longling.framework.ML.universe.dataIterator import OriginBatchIterator
 
 
-class dbBatchIterator(originBatchIterator):
+class DBBatchIterator(OriginBatchIterator):
     def __init__(self, db, sql, batch=100000):
         self.sql = sql
         self.db = db
@@ -33,9 +33,9 @@ class dbBatchIterator(originBatchIterator):
         return self.next_batch()
 
 
-class dbIterator(dbBatchIterator):
+class DBIterator(DBBatchIterator):
     def __init__(self, db, sql):
-        super(dbIterator).__init__(db, sql)
+        super(DBIterator).__init__(db, sql)
         self.index = 0
         self.batch_buff = []
 

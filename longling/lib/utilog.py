@@ -6,6 +6,9 @@ import os
 MIDNIGHT = 24 * 60 * 60  # 00:00:00
 SECONDS_PER_DAY = 60 * 60 * 24
 
+
+from longling.base import string_types
+from longling.lib.stream import check_dir
 '''
 日志设定文件
 '''
@@ -52,11 +55,11 @@ def simple_stream_logger(logger_name, logger_level=logging.WARN, format='%(ascti
 
 # '%(asctime)s, %(levelname)s %(message)s'
 def config_logging(filename=None, format='%(name)s, %(levelname)s %(message)s', level=logging.INFO,
-                   logger=None, console_log_level=None, propagate=True, mode='a',
+                   logger=None, console_log_level=None, propagate=False, mode='a',
                    file_format=None):
     if logger is None:
         logger = logging.getLogger()
-    elif isinstance(logger, str):
+    elif isinstance(logger, string_types):
         logger = logging.getLogger(logger)
     # need a clean state, for some module may have called logging functions already (i.e. logging.info)
     # in that case, a default handler would been appended, causing undesired output to stderr
@@ -66,10 +69,11 @@ def config_logging(filename=None, format='%(name)s, %(levelname)s %(message)s', 
     logger.setLevel(level)
     if not propagate:
         logger.propagate = False
-    if filename:
+    if filename and filename is not None:
         # if 'when' not in multi_process_logger_kwargs:
         #     multi_process_logger_kwargs['when'] = 'midnight'
         # handler = MultiProcessRotatingFileHandler(filename=filename, **multi_process_logger_kwargs)
+        check_dir(filename)
         handler = logging.FileHandler(filename, mode=mode)
         file_formatter = formatter
         if file_format:

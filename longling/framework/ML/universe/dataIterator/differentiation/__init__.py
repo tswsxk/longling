@@ -3,7 +3,7 @@
 
 from __future__ import absolute_import
 
-from .dbIterator import dbIterator, dbBatchIterator
+from .dbIterator import DBIterator, DBBatchIterator
 from .fileIterator import FileIterator, FileBatchIterator
 from .fileIterator import JsonxzIterator, JsonxzBatchIterator
 from .fileIterator import CSVIterator, CSVBatchIterator

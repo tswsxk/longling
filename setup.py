@@ -15,6 +15,7 @@ setup(
     description='handy wrapper for many libs',
     long_description=open('README.txt').read(),
     install_requires=[
+        "tqdm",
     ],
     classifiers=[
         "Programming Language :: Python",

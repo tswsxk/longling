@@ -6,13 +6,15 @@ from __future__ import unicode_literals
 
 import json
 
+from collections import OrderedDict
+
 from longling.base import *
 from longling.lib.stream import *
-from ..dataIterator import originIterator, originBatchIterator
-from ..adapter import single2batchAdapter
+from ..dataIterator import OriginIterator, OriginBatchIterator
+from ..adapter import Single2BatchAdapter
 
 
-class FileIterator(originIterator):
+class FileIterator(OriginIterator):
     def __init__(self, filename, encoding='utf-8', **kwargs):
         self.filename = filename
         self.encoding = encoding
@@ -23,13 +25,73 @@ class FileIterator(originIterator):
         self.filesource.seek(0)
 
     def next(self):
-       return self.filesource.readline()
+        return self.filesource.readline()
 
 
-class FileBatchIterator(single2batchAdapter, FileIterator):
+class FileBatchIterator(Single2BatchAdapter, FileIterator):
     def __init__(self, filename, encoding='utf-8', batch_size=100000, **kwargs):
         file_iterator = FileIterator(filename, encoding, **kwargs)
-        super(FileBatchIterator, self).__init__(file_iterator, batchSize=batch_size)
+        super(FileBatchIterator, self).__init__(file_iterator, batch_size=batch_size)
+
+
+class JsonDictIterator(FileIterator):
+    def __init__(self, filename, encoding='utf-8', key_dict=None, **kwargs):
+        super(JsonDictIterator, self).__init__(filename, encoding)
+        assert key_dict is not None
+        if isinstance(key_dict, dict):
+            self.key_dict = OrderedDict(zip(key_dict.values(), key_dict.keys()))
+        elif isinstance(key_dict, (list, tuple, set)):
+            self.key_dict = OrderedDict(zip(key_dict, key_dict))
+        elif key_dict == "*":
+            self.key_dict = "*"
+        else:
+            raise TypeError("key_dict must be dict, list, tuple, set or str'*' ")
+
+    def next(self):
+        line = unistr(self.filesource.readline())
+        data = json.loads(line, encoding='utf-8')
+        if self.key_dict == "*":
+            return data
+        return OrderedDict([(key_map, data[key]) for key, key_map in self.key_dict])
+
+
+class JsonDictBatchIterator(JsonDictIterator, OriginBatchIterator):
+    def __init__(self, filename, encoding='utf-8', batch_size=1000, key_dict=None, **kwargs):
+        super(JsonDictBatchIterator, self).__init__(filename, encoding, key_dict)
+        self.batch_size = batch_size
+        self.buffer = self.init_buffer()
+        self.batch_cnt = 0
+
+    def init_buffer(self):
+        return OrderedDict(zip(self.key_dict.values(), [[] for _ in range(len(self.key_dict.values()))])) \
+            if self.key_dict != "*" \
+            else OrderedDict()
+
+    def next_batch(self):
+        while True:
+            try:
+                data = self.next()
+                for key, value in data.items():
+                    if self.key_dict == "*" and key not in self.buffer:
+                        self.buffer[key] = []
+                    elif key not in self.buffer:
+                        continue
+                    self.buffer[key].append(value)
+                self.batch_cnt += 1
+                if self.batch_cnt == self.batch_size:
+                    return_data = self.buffer
+                    self.buffer = self.init_buffer()
+                    self.batch_cnt = 0
+                    return return_data
+                elif self.batch_cnt > self.batch_size:
+                    raise Exception("self.buff is too big")
+            except StopIteration:
+                if self.batch_cnt > 0:
+                    return_data = self.buffer
+                    self.buffer = self.init_buffer()
+                    self.batch_cnt = 0
+                    return return_data
+                raise StopIteration
 
 
 class JsonxzIterator(FileIterator):
@@ -39,7 +101,7 @@ class JsonxzIterator(FileIterator):
         return data['x'], data['z']
 
 
-class JsonxzBatchIterator(JsonxzIterator, originBatchIterator):
+class JsonxzBatchIterator(JsonxzIterator, OriginBatchIterator):
     def __init__(self, filename, encoding='utf-8', batch_size=1000, **kwargs):
         super(JsonxzBatchIterator, self).__init__(filename, encoding=encoding, **kwargs)
         self.batch_size = batch_size
@@ -128,9 +190,9 @@ class CSVIterator(FileIterator):
         return self.filter(unistr(self.filesource.readline()).strip().split(self.separator))
 
 
-class CSVBatchIterator(single2batchAdapter, CSVIterator):
+class CSVBatchIterator(Single2BatchAdapter, CSVIterator):
     def __init__(self, filename, encoding='utf-8',
                  reserved_fields_name=None, reserved_fields_index=None,
                  batch_size=100000, **kwargs):
         csv_iterator = CSVIterator(filename, encoding, reserved_fields_name, reserved_fields_index, **kwargs)
-        super(CSVBatchIterator, self).__init__(csv_iterator, batchSize=batch_size)
+        super(CSVBatchIterator, self).__init__(csv_iterator, batch_size=batch_size)

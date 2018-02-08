@@ -16,10 +16,13 @@ class Clocker(object):
         self.wall_st = time.time()
         return self.process_st
 
-    def end(self):
+    def end(self, wall=False):
         self.process_et = time.clock()
         self.wall_et = time.time()
-        return self.process_et - self.process_st
+        if wall:
+            return self.wall_time
+        else:
+            return self.process_time
 
     @property
     def wall_time(self):

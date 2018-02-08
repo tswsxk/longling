@@ -3,7 +3,8 @@
 
 from abc import ABCMeta, abstractmethod
 
-class originIterator():
+
+class OriginIterator(object):
     __metaclass__ = ABCMeta
 
     def tolist(self):
@@ -23,7 +24,7 @@ class originIterator():
         pass
 
 
-class originBatchIterator(originIterator):
+class OriginBatchIterator(OriginIterator):
     def tolist(self):
         listbuff = []
         for elems in self:
