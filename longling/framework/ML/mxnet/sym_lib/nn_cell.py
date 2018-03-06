@@ -48,7 +48,26 @@ def dnn_cell(in_sym, num_hiddens=[100], num_output=2, dropout=0.0, inner_dropout
     fc = mx.sym.FullyConnected(data=net, num_hidden=num_output)
     return fc
 
+def lenet_cell(in_sym, num_output=2):
+    net = in_sym
 
+    # first conv layer
+    conv1 = mx.sym.Convolution(data=net, kernel=(5, 5), num_filter=20)
+    tanh1 = mx.sym.Activation(data=conv1, act_type="tanh")
+    pool1 = mx.sym.Pooling(data=tanh1, pool_type="max", kernel=(2, 2), stride=(2, 2))
+    # second conv layer
+    conv2 = mx.sym.Convolution(data=pool1, kernel=(5, 5), num_filter=50)
+    tanh2 = mx.sym.Activation(data=conv2, act_type="tanh")
+    pool2 = mx.sym.Pooling(data=tanh2, pool_type="max", kernel=(2, 2), stride=(2, 2))
+    # first fullc layer
+    flatten = mx.sym.flatten(data=pool2)
+    fc1 = mx.symbol.FullyConnected(data=flatten, num_hidden=500)
+    tanh3 = mx.sym.Activation(data=fc1, act_type="tanh")
+
+    net = tanh3
+
+    fc = mx.sym.FullyConnected(data=net, num_hidden=num_output)
+    return fc
 # def rnn_cell():
 
 def text_cnn_cell(in_sym, sentence_size, vec_size, num_output=2, filter_list=[1, 2, 3, 4], num_filter=60, dropout=0.0,

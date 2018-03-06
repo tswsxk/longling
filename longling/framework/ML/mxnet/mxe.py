@@ -19,7 +19,7 @@ from longling.framework.ML.mxnet.metric import PRF, Accuracy, CrossEntropy
 from longling.framework.ML.mxnet.viz import plot_network, form_shape
 from longling.framework.ML.mxnet.io_lib import DictJsonIter, VecDict, SimpleBucketIter
 from longling.framework.ML.mxnet.monitor import TimeMonitor
-from longling.framework.ML.mxnet.sym_lib import dnn_cell, text_cnn_cell
+from longling.framework.ML.mxnet.sym_lib import dnn_cell, lenet_cell, text_cnn_cell
 from longling.framework.ML.mxnet.util import get_fine_tune_model, BasePredictor, RNNPredictor
 
 from longling.lib.utilog import config_logging
@@ -166,6 +166,141 @@ def dnn():
     tins.close()
     ############################################################################
 
+
+def cnn():
+    ############################################################################
+    # parameters config
+
+    # file path
+    root = "../../../../"
+    train_file = root + "data/image/jpg/mnist_train"
+    test_file = root + "data/image/jpg/mnist_test"
+
+    model_dir = root + "data/mxnet/dnn/"
+    model_name = "dnn"
+
+    # model args
+    batch_size = 128
+    last_batch_handle = 'pad'
+
+    num_label = 10
+
+    begin_epoch = 0
+    num_epoch = 10
+    ctx = mx.cpu()
+
+    # infoer
+    propagate = False
+    module_logger = {
+        "filename": None,
+        "logger": model_name,
+        "console_log_level": logging.INFO,
+        "propagate": False,
+    }
+    module_logger = config_logging(**module_logger)
+    train_logger = config_logging(logger="train", console_log_level=logging.INFO, propagate=propagate)
+    validation_logger = config_logging(
+        logger="validation",
+        filename=model_dir + "result.log",
+        mode="w",
+        console_log_level=logging.INFO,
+        format="%(message)s",
+        propagate=propagate,
+    )
+    validation_result_file = model_dir + "result"
+    ############################################################################
+
+    ############################################################################
+    # loading data
+    data_key_dict = {'data': 'x'}
+    label_key_dict = {'label': 'z'}
+
+    def get_iter(image_dir, image_label):
+        return DictJsonIter(
+            filename=filename,
+            batch_size=batch_size,
+            data_key_dict=data_key_dict,
+            label_key_dict=label_key_dict,
+            last_batch_handle=last_batch_handle,
+        )
+
+    train_data = get_iter(train_file)
+    test_data = get_iter(test_file)
+
+    ############################################################################
+
+    ############################################################################
+    # network building
+    def sym_gen(num_label):
+        data = mx.symbol.Variable('data')
+        label = mx.symbol.Variable('label')
+        data = lenet_cell(
+            in_sym=data,
+            num_output=num_label,
+        )
+        sym = mx.symbol.SoftmaxOutput(
+            data=data,
+            label=label,
+        )
+        return sym
+
+    sym = sym_gen(num_label)
+    mod = mx.mod.Module(
+        symbol=sym,
+        data_names=['data', ],
+        label_names=['label', ],
+        logger=module_logger,
+        context=ctx,
+    )
+
+    plot_network(
+        nn_symbol=sym,
+        save_path=model_dir + "plot/network",
+        shape=form_shape(train_data),
+        node_attrs={"fixedsize": "false"},
+        show_tag=True
+    )
+    ############################################################################
+
+    ############################################################################
+    # fitting
+    time_monitor = TimeMonitor()
+    tins = tqdm_speedometer()
+    cross_entropy = CrossEntropy()
+    speedometer = Speedometer(
+        batch_size=batch_size,
+        frequent=100,
+        metrics=cross_entropy,
+        logger=train_logger,
+    )
+
+    mod.fit(
+        train_data=train_data,
+        eval_data=test_data,
+        eval_metric=[PRF(), Accuracy(), cross_entropy],
+        eval_end_callback=ClassificationLogValidationMetricsCallback(
+            time_monitor,
+            logger=validation_logger,
+            logfile=validation_result_file,
+        ),
+        begin_epoch=begin_epoch,
+        num_epoch=num_epoch,
+        optimizer='rmsprop',
+        allow_missing=True,
+        optimizer_params={'learning_rate': 0.0005},
+        batch_end_callback=[speedometer, tins],
+        epoch_end_callback=[
+            mx.callback.do_checkpoint(model_dir + model_name),
+            TqdmEpochReset(tins, "training"),
+        ],
+        monitor=time_monitor,
+    )
+    ############################################################################
+
+    ############################################################################
+    # clean
+    tins.close()
+    ############################################################################
 
 def text_cnn():
     ############################################################################
@@ -714,7 +849,7 @@ def text_rnn():
 
 if __name__ == '__main__':
     # dnn()
-    text_cnn()
+    # text_cnn()
     # vgg16()
     # text_rnn()
 
