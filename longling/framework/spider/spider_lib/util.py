@@ -146,14 +146,17 @@ def pdf_check(filename, article):
 
 def qi_spider():
     article_dict = get_target_article()
-    skip_set = {2, 17}
-    start = 1
+    skip_set = {}
+    start = 2
+    end = 6
     article_id = 0
     min_cited = 0
     name_file = wf_open(os.path.join("/home/tongshiwei/PycharmProjects/longling/data/spider/", "name_exclude.txt"), "w")
     print("from,ref,from_users,ref_users,join", file=name_file)
     for article_t, infos in article_dict.items():
         article_id += 1
+        if article_id > end:
+            break
         if article_id in skip_set or article_id < start or infos['num'] < min_cited:
             print("skip %s %s" % (article_id, article_t))
             continue
@@ -165,15 +168,15 @@ def qi_spider():
         visit_num = 0
         page_num = (left_num + 9) // 10
         dirname = "/home/tongshiwei/PycharmProjects/longling/data/spider/" + article_t
-        # record_f = wf_open(os.path.join(dirname, article_t + ".csv"), "w")
-        # tag_name = [
-        #     "No", "article_title", "filename", "pdf_link", "authors",
-        #     "download_info", "ref", "page_num", "check_tag", "scholar_url", "chitag",
-        #     "useful",
-        # ]
-        # print(",".join(tag_name), file=record_f)
-        # not_access_f = wf_open(os.path.join(dirname, "n_acc.csv"), "w")
-        # print("title,link", file=not_access_f)
+        record_f = wf_open(os.path.join(dirname, article_t + ".csv"), "w")
+        tag_name = [
+            "No", "article_title", "filename", "pdf_link", "authors",
+            "download_info", "ref", "page_num", "check_tag", "scholar_url", "chitag",
+            "useful",
+        ]
+        print(",".join(tag_name), file=record_f)
+        not_access_f = wf_open(os.path.join(dirname, "n_acc.csv"), "w")
+        print("title,link", file=not_access_f)
         for page in range(page_num):
             url_tail = "&start=%d" % (page * 10) if page else ""
             durl = url + url_tail
@@ -206,74 +209,74 @@ def qi_spider():
                                               "|".join(authors & article_authors)), file=name_file)
                     continue
     wf_close(name_file)
-    # pdf_link = gs_r_gs_or_gs_scl.a['href']
-    # article_title = re.sub("[ \t\n\r)]+", " ", gs_r_gs_or_gs_scl.find("h3", class_="gs_rt").text)
-    # cite_articles[article_title] = {
-    #     "No": str(visit_num),
-    #     "article_title": article_title,
-    #     "scholar_url": durl,
-    #     'pdf_link': pdf_link,
-    #     'authors': ",".join(article_authors),
-    #     'download_info': "",
-    #     'filename': "",
-    #     'ref': "",
-    #     "res": "",
-    #     "page_num": "",
-    #     "check_tag": False,
-    #     "chitag": 'False',
-    #     "useful": 0,
-    # }
-    # if pdf_link:
-    #     try:
-    #         dres = url_download(pdf_link, filename=article_title + ".pdf", dirname=dirname, file_type="pdf", retry=5)
-    #         if dres['status_code'] >= 0:
-    #             cite_articles[article_title]['filename'] = dres['filename']
-    #     except TypeError as e:
-    #         cite_articles['download_info'] = e
-    #         print(pdf_link, e)
-    #         print("%s,%s" % (article_t, pdf_link), file=not_access_f)
-    #     except EOFError as e:
-    #         cite_articles['download_info'] = e
-    #         print("%s,%s" % (article_t, pdf_link), file=not_access_f)
-    #         print(pdf_link, e)
-    # save_filename = cite_articles[article_title].get('filename', '')
-    # if save_filename:
-    #     try:
-    #         chitag, ref, ref_res, page_num = pdf_check(save_filename, article_t)
-    #
-    #         if not chitag:
-    #             if ref and ref_res and page_num:
-    #                 cite_articles[article_title]['page_num'] = str(page_num)
-    #                 if page_num > 4:
-    #                     cite_articles[article_title]['ref'] = ref
-    #                     cite_articles[article_title]['ref_res'] = json.dumps(ref_res, ensure_ascii=False)
-    #
-    #                     wf = wf_open(save_filename + ".csv")
-    #                     print("page,content", file=wf)
-    #                     print("-1,%s" % ref, file=wf)
-    #                     rcnt = 0
-    #                     for page, page_res in ref_res.items():
-    #                         for r in page_res:
-    #                             rcnt += 1
-    #                             print("%s,%s" % (page, r), file=wf)
-    #                     wf_close(wf)
-    #                     if rcnt > 1:
-    #                         cite_articles[article_title]['useful'] = 1
-    #                     cite_articles[article_title]['check_tag'] = True
-    #             else:
-    #                 cite_articles[article_title]['check_tag'] = True
-    #         else:
-    #             cite_articles[article_title]['chitag'] = 'True'
-    #     except Exception:
-    #         pass
-    # cite_articles[article_title]['check_tag'] = str(cite_articles[article_title]['check_tag'])
-    # cite_articles[article_title]['useful'] = str(cite_articles[article_title]['useful'])
-    # res_record = []
-    # for key in tag_name:
-    #     res_record.append(cite_articles[article_title].get(key, ''))
-    # print(",".join(res_record), file=record_f)
+    pdf_link = gs_r_gs_or_gs_scl.a['href']
+    article_title = re.sub("[ \t\n\r)]+", " ", gs_r_gs_or_gs_scl.find("h3", class_="gs_rt").text)
+    cite_articles[article_title] = {
+        "No": str(visit_num),
+        "article_title": article_title,
+        "scholar_url": durl,
+        'pdf_link': pdf_link,
+        'authors': ",".join(article_authors),
+        'download_info': "",
+        'filename': "",
+        'ref': "",
+        "res": "",
+        "page_num": "",
+        "check_tag": False,
+        "chitag": 'False',
+        "useful": 0,
+    }
+    if pdf_link:
+        try:
+            dres = url_download(pdf_link, filename=article_title + ".pdf", dirname=dirname, file_type="pdf", retry=5)
+            if dres['status_code'] >= 0:
+                cite_articles[article_title]['filename'] = dres['filename']
+        except TypeError as e:
+            cite_articles['download_info'] = e
+            print(pdf_link, e)
+            print("%s,%s" % (article_t, pdf_link), file=not_access_f)
+        except EOFError as e:
+            cite_articles['download_info'] = e
+            print("%s,%s" % (article_t, pdf_link), file=not_access_f)
+            print(pdf_link, e)
+    save_filename = cite_articles[article_title].get('filename', '')
+    if save_filename:
+        try:
+            chitag, ref, ref_res, page_num = pdf_check(save_filename, article_t)
 
-    # wf_close(record_f)
+            if not chitag:
+                if ref and ref_res and page_num:
+                    cite_articles[article_title]['page_num'] = str(page_num)
+                    if page_num > 4:
+                        cite_articles[article_title]['ref'] = ref
+                        cite_articles[article_title]['ref_res'] = json.dumps(ref_res, ensure_ascii=False)
+
+                        wf = wf_open(save_filename + ".csv")
+                        print("page,content", file=wf)
+                        print("-1,%s" % ref, file=wf)
+                        rcnt = 0
+                        for page, page_res in ref_res.items():
+                            for r in page_res:
+                                rcnt += 1
+                                print("%s,%s" % (page, r), file=wf)
+                        wf_close(wf)
+                        if rcnt > 1:
+                            cite_articles[article_title]['useful'] = 1
+                        cite_articles[article_title]['check_tag'] = True
+                else:
+                    cite_articles[article_title]['check_tag'] = True
+            else:
+                cite_articles[article_title]['chitag'] = 'True'
+        except Exception:
+            pass
+    cite_articles[article_title]['check_tag'] = str(cite_articles[article_title]['check_tag'])
+    cite_articles[article_title]['useful'] = str(cite_articles[article_title]['useful'])
+    res_record = []
+    for key in tag_name:
+        res_record.append(cite_articles[article_title].get(key, ''))
+    print(",".join(res_record), file=record_f)
+
+    wf_close(record_f)
 
 
 if __name__ == '__main__':
