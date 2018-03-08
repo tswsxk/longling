@@ -28,16 +28,19 @@ def get_fine_tune_model(symbol, label, arg_params, num_classes, layer_name='flat
 
 class BasePredictor(object):
     def __init__(self, prefix, epoch=0, batch_size=128, load_optimizer_states=False, **kwargs):
+        self.data_shapes = kwargs["data_shapes"]
+        del kwargs["data_shapes"]
         self.data_names = kwargs.get("data_names", ["data", ])
         self.label_names = kwargs.get("label_names", [])
         kwargs.update({"data_names": self.data_names, "label_names": self.label_names})
         self.mod = mx.module.Module.load(prefix, epoch, load_optimizer_states, **kwargs)
+        self.mod.bind(data_shapes=[('data', (batch_size,) + self.data_shapes)], force_rebind=True)
         self.batch_size = batch_size
 
     def predict(self, datas, label_tag=False):
         batch_size = min(len(datas), self.batch_size)
         datas = mx.io.NDArrayIter(data=np.asarray(datas), batch_size=batch_size, data_name="data")
-        self.mod.bind(data_shapes=[('data', (batch_size, 784))], force_rebind=True)
+        self.mod.bind(data_shapes=[('data', (batch_size, ) + self.data_shapes)], force_rebind=True)
         preds = self.mod.predict(datas)
         if label_tag:
             return mx.ndarray.argmax(preds, axis=1)
@@ -59,7 +62,7 @@ class RNNPredictor(object):
             self.mod = mx.module.BucketingModule(
                 sym_gen=sym,
                 default_bucket_key=max(buckets),
-                **kwargs,
+                **kwargs
             )
             self.mod.bind(
                 data_shapes=[('data', (batch_size, max(buckets)))],

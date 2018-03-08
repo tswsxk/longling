@@ -10,7 +10,9 @@ import os
 from longling.base import string_types
 
 
-def flush_print(*values, sep="", end=""):
+def flush_print(*values, **kwargs):
+    sep = kwargs.get('sep', "")
+    end = kwargs.get('end', "")
     print('\r', *values, sep=sep, end=end, flush=True)
 
 

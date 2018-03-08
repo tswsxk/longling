@@ -12,7 +12,6 @@ from mxnet import nd, autograd, gluon
 
 from tqdm import tqdm
 
-
 from longling.lib.clocker import Clocker
 from longling.lib.utilog import config_logging
 
@@ -93,6 +92,7 @@ def dnn():
         node_attrs={"fixedsize": "false"},
         show_tag=False
     )
+
     ############################################################################
 
     ############################################################################
@@ -269,7 +269,8 @@ def cnn():
                         bp_loss = loss
                     loss_value = nd.mean(loss).asscalar()
                     moving_losses[name] = (loss_value if ((i == 0) and (epoch == 0))
-                       else (1 - smoothing_constant) * moving_losses[name] + smoothing_constant * loss_value)
+                                           else (1 - smoothing_constant) * moving_losses[
+                        name] + smoothing_constant * loss_value)
 
             assert bp_loss is not None
             bp_loss.backward()
@@ -298,6 +299,32 @@ def cnn():
     ############################################################################
 
 
+def cnn_use():
+    root = "../../../../"
+
+    model_dir = root + "data/gluon/cnn/"
+    model_name = "cnn"
+
+    epoch = 10
+
+    def transform(data, label):
+        return nd.transpose(data.astype(np.float32), (2, 0, 1)) / 255, label.astype(np.float32)
+
+    batch_size = 128
+
+    filename = model_dir + model_name + "-%04d.parmas" % epoch
+
+    model = nd.load(filename)
+    net = gluon.nn.HybridSequential()
+    with net.name_scope():
+        net.add(model)
+    test_data = mx.gluon.data.DataLoader(mx.gluon.data.vision.MNIST(train=False, transform=transform),
+                                         batch_size, shuffle=False)
+    for data, label in test_data:
+        output = net(data)
+        break
+
+    mx.gluon.model_zoo.vision.alexnet()
 def text_cnn():
     ############################################################################
     # parameters config
@@ -381,7 +408,7 @@ def text_cnn():
     ############################################################################
     # visulization
     # viz var
-    data_shape = (sentence_size, )
+    data_shape = (sentence_size,)
     viz_shape = {'data': (batch_size,) + data_shape}
 
     x = mx.sym.var("data")
@@ -449,10 +476,13 @@ def text_cnn():
     evaluater.log_f.close()
     ############################################################################
 
+
 if __name__ == '__main__':
     # dnn()
     # cnn()
-    text_cnn()
+    # text_cnn()
+
+    cnn_use()
 
     # from longling.framework.ML.mxnet.mx_gluon.nn_cell import TextCNN
     # net = TextCNN(100, 50, dropout=0.5, batch_norms=1, highway=True)
