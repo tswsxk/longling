@@ -5,7 +5,7 @@ from setuptools import find_packages
 
 setup(
     name='longling',
-    version='0.0.9',
+    version='0.0.10',
     author='Sherlock, Shiwei Tong',
     author_email='tongsw@mail.ustc.edu.cn',
     packages=find_packages(),
