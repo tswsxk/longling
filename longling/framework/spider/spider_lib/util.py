@@ -16,7 +16,7 @@ from tqdm import tqdm
 
 from longling.framework.spider.spider_lib import url_download
 
-from longling.lib.stream import check_dir, check_file, wf_open, wf_close
+from longling.lib.stream import build_dir, check_file, wf_open, wf_close
 
 from pdfminer.converter import PDFPageAggregator
 from pdfminer.pdfparser import PDFParser
@@ -181,7 +181,7 @@ def qi_spider():
             url_tail = "&start=%d" % (page * 10) if page else ""
             durl = url + url_tail
             filename = article_t + "%s.html" % ("_%s" % page if page else "")
-            check_dir(dirname)
+            build_dir(dirname)
             if not check_file(os.path.join(dirname, filename)):
                 try:
                     url_download(durl, filename=filename, dirname=dirname)

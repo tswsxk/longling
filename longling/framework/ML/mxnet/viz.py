@@ -3,7 +3,7 @@
 
 import mxnet as mx
 
-from longling.lib.stream import check_dir
+from longling.lib.stream import build_dir
 
 
 def form_shape(data_iter):
@@ -14,7 +14,7 @@ def plot_network(nn_symbol, save_path="plot/network", shape=None, node_attrs={},
     graph = mx.viz.plot_network(nn_symbol, shape=shape, node_attrs=node_attrs)
 
     assert save_path
-    check_dir(save_path)
+    build_dir(save_path)
     graph.render(save_path)
 
     if show_tag:

@@ -7,14 +7,14 @@ import os
 
 import fasttext
 
-from longling.lib.stream import check_dir
+from longling.lib.stream import build_dir
 
 from .conf import get_parameters, cast_file_format, LABEL_PREFIX
 
 
 def get_location_model(model_dir):
     location_model = os.path.join(model_dir, 'model')
-    check_dir(model_dir)
+    build_dir(model_dir)
     return location_model
 
 

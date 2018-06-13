@@ -8,7 +8,7 @@ SECONDS_PER_DAY = 60 * 60 * 24
 
 
 from longling.base import string_types
-from longling.lib.stream import check_dir
+from longling.lib.stream import build_dir
 '''
 日志设定文件
 '''
@@ -73,7 +73,7 @@ def config_logging(filename=None, format='%(name)s, %(levelname)s %(message)s', 
         # if 'when' not in multi_process_logger_kwargs:
         #     multi_process_logger_kwargs['when'] = 'midnight'
         # handler = MultiProcessRotatingFileHandler(filename=filename, **multi_process_logger_kwargs)
-        check_dir(filename)
+        build_dir(filename)
         handler = logging.FileHandler(filename, mode=mode)
         file_formatter = formatter
         if file_format:

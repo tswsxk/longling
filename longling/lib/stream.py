@@ -16,14 +16,26 @@ def flush_print(*values, **kwargs):
     print('\r', *values, sep=sep, end=end, flush=True)
 
 
-def check_dir(path, mode=0o777):
+def build_dir(path: string_types, mode: int = 0o775):
+    '''
+    创建目录，从path中解析出目录路径，如果目录不存在，创建目录
+    :param path:
+    :param mode:
+    :return:
+    '''
     dirname = os.path.dirname(path)
     if not dirname or os.path.exists(dirname):
         return
     os.makedirs(dirname, mode)
 
 
-def check_file(path, size=None):
+def check_file(path: string_types, size: int = None) -> bool:
+    '''
+    检查文件是否存在，size给定时，检查文件大小是否一致
+    :param path:
+    :param size:
+    :return:
+    '''
     if os.path.exists(path):
         return size == os.path.getsize(path) if size is not None else True
     return False
@@ -36,7 +48,7 @@ def rf_open(filename, encoding='utf-8', **kwargs):
         return open(filename, **kwargs)
 
 
-def wf_open(stream_name='', mode="w", encoding="utf-8"):
+def wf_open(stream_name: string_types = '', mode: string_types = "w", encoding: string_types = "utf-8"):
     '''
     打开一个codecs流
     :param stream_name: str，默认为空
@@ -50,7 +62,7 @@ def wf_open(stream_name='', mode="w", encoding="utf-8"):
         else:
             return sys.stdout
     elif isinstance(stream_name, string_types):
-        check_dir(stream_name)
+        build_dir(stream_name)
         if mode == "wb":
             return open(stream_name, mode=mode)
         return codecs.open(stream_name, mode=mode, encoding=encoding)

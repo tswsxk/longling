@@ -9,7 +9,7 @@ if sys.version_info[0] == 3:
 else:
     from urllib import urlretrieve
 
-from longling.lib.stream import check_dir, check_file
+from longling.lib.stream import build_dir, check_file
 
 import logging
 
@@ -18,7 +18,7 @@ def url_download(durl, filename=None, dirname="", reload=False):
     if filename is None or not filename:
         filename = durl.split("/")[-1]
     filename = dirname + filename
-    check_dir(filename)
+    build_dir(filename)
     if check_file(filename) and not reload:
         logging.debug("url_download-file exists")
         return 0

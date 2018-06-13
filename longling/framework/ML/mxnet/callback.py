@@ -13,7 +13,7 @@ import numpy as np
 
 from tqdm import tqdm
 
-from longling.lib.stream import check_dir
+from longling.lib.stream import build_dir
 
 
 def extract2tuple(*listobj):
@@ -57,7 +57,7 @@ def as_list(obj):
 #######################################################################################
 # Reconstruction
 def do_checkpoint(prefix, period=1):
-    check_dir(prefix)
+    build_dir(prefix)
     return mx.callback.do_checkpoint(prefix, period)
 
 
