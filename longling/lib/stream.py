@@ -10,6 +10,10 @@ import os
 from longling.base import string_types
 
 
+class StreamError(Exception):
+    pass
+
+
 def flush_print(*values, **kwargs):
     sep = kwargs.get('sep', "")
     end = kwargs.get('end', "")
@@ -67,7 +71,7 @@ def wf_open(stream_name: string_types = '', mode: string_types = "w", encoding: 
             return open(stream_name, mode=mode)
         return codecs.open(stream_name, mode=mode, encoding=encoding)
     else:
-        raise TypeError("wf_open: %s" % stream_name)
+        raise StreamError("wf_open: %s" % stream_name)
 
 
 def wf_close(stream):
@@ -76,5 +80,5 @@ def wf_close(stream):
     else:
         try:
             stream.close()
-        except:
-            raise Exception('wf_close: %s' % stream)
+        except Exception:
+            raise StreamError('wf_close: %s' % stream)

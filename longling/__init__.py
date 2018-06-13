@@ -3,7 +3,7 @@
 
 from __future__ import absolute_import
 
-from .lib import clocker
+from .lib import clock
 from .lib import process_pattern
 from .lib import stream
 from .lib import utilog

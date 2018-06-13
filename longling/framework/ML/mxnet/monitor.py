@@ -4,7 +4,7 @@
 from __future__ import print_function
 
 import logging
-from longling.lib.clocker import Clocker
+from longling.lib.clock import Clock
 
 
 # at the beginning of each batch, the tic method will be called
@@ -18,7 +18,7 @@ class BaseMonitor(object):
         raise NotImplementedError
 
 
-class TimeMonitor(Clocker, BaseMonitor):
+class TimeMonitor(Clock, BaseMonitor):
     def __init__(self, logger=logging, frequent=50, print_total=True):
         super(TimeMonitor, self).__init__()
         self.logger = logger

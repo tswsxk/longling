@@ -64,7 +64,7 @@ def dnn():
         filename=model_dir + "result.log",
         mode="w",
         console_log_level=logging.INFO,
-        format="%(message)s",
+        log_format="%(message)s",
         propagate=propagate,
     )
     validation_result_file = model_dir + "result"
@@ -204,7 +204,7 @@ def cnn():
         filename=model_dir + "result.log",
         mode="w",
         console_log_level=logging.INFO,
-        format="%(message)s",
+        log_format="%(message)s",
         propagate=propagate,
     )
     validation_result_file = model_dir + "result"
@@ -419,7 +419,7 @@ def text_cnn():
         filename=model_dir + "result.log",
         logger="validation",
         mode="w",
-        format="%(message)s",
+        log_format="%(message)s",
         propagate=propagate,
     )
     validation_result_file = model_dir + "result"
@@ -740,7 +740,7 @@ def text_rnn():
         filename=model_dir + "result.log",
         logger="validation",
         mode="w",
-        format="%(message)s",
+        log_format="%(message)s",
         propagate=propagate,
     )
     validation_result_file = model_dir + "result"

@@ -12,7 +12,7 @@ from mxnet import nd, autograd, gluon
 
 from tqdm import tqdm
 
-from longling.lib.clocker import Clocker
+from longling.lib.clock import Clock
 from longling.lib.utilog import config_logging
 
 from longling.framework.ML.mxnet.io_lib import VecDict
@@ -53,12 +53,12 @@ def dnn():
         filename=model_dir + "result.log",
         logger="validation",
         mode="w",
-        format="%(message)s",
+        log_format="%(message)s",
         propagate=propagate,
     )
     validation_result_file = model_dir + "result"
 
-    timer = Clocker()
+    timer = Clock()
     eval_metrics = [PRF(argmax=False), Accuracy(argmax=False)]
     batch_infoer = TrainBatchInfoer(loss_index=[name for name in loss_function], epoch_num=epoch_num - 1)
     evaluater = ClassEvaluater(
@@ -192,12 +192,12 @@ def cnn():
         filename=model_dir + "result.log",
         logger="validation",
         mode="w",
-        format="%(message)s",
+        log_format="%(message)s",
         propagate=propagate,
     )
     validation_result_file = model_dir + "result"
 
-    timer = Clocker()
+    timer = Clock()
     eval_metrics = [PRF(argmax=False), Accuracy(argmax=False)]
     batch_infoer = TrainBatchInfoer(loss_index=[name for name in loss_function], epoch_num=epoch_num - 1)
     evaluater = ClassEvaluater(
@@ -360,12 +360,12 @@ def text_cnn():
         filename=model_dir + "result.log",
         logger="validation",
         mode="w",
-        format="%(message)s",
+        log_format="%(message)s",
         propagate=propagate,
     )
     validation_result_file = model_dir + "result"
 
-    timer = Clocker()
+    timer = Clock()
     eval_metrics = [PRF(argmax=False), Accuracy(argmax=False)]
     batch_infoer = TrainBatchInfoer(loss_index=[name for name in loss_function], epoch_num=epoch_num - 1)
     evaluater = ClassEvaluater(
