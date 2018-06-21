@@ -8,6 +8,4 @@ lib module
 
 NOPY2LISTS:
     <the module listed here does not support py2>
-    lib
-        process_pattern
 

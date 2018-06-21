@@ -2,7 +2,7 @@
 import logging
 import sys
 
-from longling.base import string_types
+from longling.base import string_types, typeassert
 from longling.lib.stream import build_dir
 
 '''
@@ -10,10 +10,10 @@ from longling.lib.stream import build_dir
 '''
 
 
-def _config_logging(filename: string_types = None, log_format: string_types = '%(name)s, %(levelname)s %(message)s',
+def _config_logging(filename=None, log_format='%(name)s, %(levelname)s %(message)s',
                     level=logging.INFO,
-                    logger=None, console_log_level=None, propagate: bool = False, mode: string_types = 'a',
-                    file_format: string_types = None):
+                    logger=None, console_log_level=None, propagate=False, mode='a',
+                    file_format=None):
     '''
     主日志设定文件
     :param filename: 日志存储文件名，不为空时将创建文件存储日志
@@ -63,4 +63,8 @@ if sys.version_info[0] == 3:
                        file_format: string_types = None):
         return _config_logging(filename, log_format, level, logger, console_log_level, propagate, mode, file_format)
 else:
-    config_logging = _config_logging
+    config_logging = typeassert(filename=string_types,
+                                log_format=string_types,
+                                propagate=bool,
+                                mode=string_types,
+                                file_format=string_types)(_config_logging)

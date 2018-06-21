@@ -38,9 +38,9 @@ class PatternHitter(object):
     模式识别器
     '''
 
-    def __init__(self, location, mode: int = 0):
+    @typeassert(mode=int)
+    def __init__(self, location, mode=0):
         '''
-
         :param location:
         :param mode:
         '''

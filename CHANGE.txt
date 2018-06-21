@@ -7,9 +7,12 @@
 0.0.4:
     add infos for somg modeule, add framework module
 0.0.11:
-    Stop supporting py2 version in NOPY2LISTS
+    Stop supporting py2 version in NOPY2LISTS which is listed in README.txt
     Add function annotation to all module
     Consummate the documentation
     Upgrade:
         Function wf_open() in longling/lib/stream.py support with statement
         Class Clock()
+    Add:
+        type_check:
+            typeassert function for class function and py2, py3 support direct check in code writing

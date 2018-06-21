@@ -3,14 +3,15 @@ from __future__ import absolute_import
 import re
 import sys
 
+from longling.base import typeassert
+
 from .process_pattern_base import *
 
 mode_dict = {}
 
 
+@typeassert(number=int)
 def register(number):
-    assert type(number) is int
-
     def _register(func):
         if number in mode_dict:
             logger.warning("mode-%s %s existed, overriding by %s" % (number, mode_dict[number].__name__, func.__name__))
@@ -125,4 +126,4 @@ if sys.version_info[0] == 3:
     def line_init_patterns(line, mode: int, pps=None):
         return _line_init_patterns(line, mode, pps)
 else:
-    line_init_patterns = _line_init_patterns
+    line_init_patterns = typeassert(mode=int)(_line_init_patterns)
