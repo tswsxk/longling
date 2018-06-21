@@ -15,7 +15,8 @@ class Clock(object):
     单位：秒
     '''
 
-    def __init__(self, store_dict: dict = None):
+    def __init__(self, store_dict=None):
+        assert store_dict is None or type(store_dict) is dict
         self.process_st = 0
         self.process_et = 0
         self.wall_st = 0

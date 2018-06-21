@@ -7,7 +7,7 @@
 0.0.4:
     add infos for somg modeule, add framework module
 0.0.11:
-    Stop supporting py2 version
+    Stop supporting py2 version in NOPY2LISTS
     Add function annotation to all module
     Consummate the documentation
     Upgrade:

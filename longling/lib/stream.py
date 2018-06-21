@@ -20,7 +20,7 @@ def flush_print(*values, **kwargs):
     print('\r', *values, sep=sep, end=end, flush=True)
 
 
-def build_dir(path: string_types, mode: int = 0o775):
+def _build_dir(path, mode=0o775):
     '''
     创建目录，从path中解析出目录路径，如果目录不存在，创建目录
     :param path:
@@ -33,7 +33,7 @@ def build_dir(path: string_types, mode: int = 0o775):
     os.makedirs(dirname, mode)
 
 
-def check_file(path: string_types, size: int = None) -> bool:
+def _check_file(path, size=None):
     '''
     检查文件是否存在，size给定时，检查文件大小是否一致
     :param path:
@@ -52,7 +52,7 @@ def rf_open(filename, encoding='utf-8', **kwargs):
         return open(filename, **kwargs)
 
 
-def wf_open(stream_name: string_types = '', mode: string_types = "w", encoding: string_types = "utf-8"):
+def _wf_open(stream_name='', mode="w", encoding="utf-8"):
     '''
     打开一个codecs流
     :param stream_name: str，默认为空
@@ -82,3 +82,21 @@ def wf_close(stream):
             stream.close()
         except Exception:
             raise StreamError('wf_close: %s' % stream)
+
+
+# type checker
+if sys.version_info[0] == 3:
+    def wf_open(stream_name: string_types = '', mode: string_types = "w", encoding: string_types = "utf-8"):
+        return _wf_open(stream_name, mode, encoding)
+
+
+    def check_file(path: string_types, size: int = None) -> bool:
+        return _check_file(path, size)
+
+
+    def build_dir(path: string_types, mode: int = 0o775):
+        return _build_dir(path, mode)
+else:
+    wf_open = _wf_open
+    check_file = _check_file
+    build_dir = _build_dir

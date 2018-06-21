@@ -1,13 +1,16 @@
 from __future__ import absolute_import
 
 import re
+import sys
 
 from .process_pattern_base import *
 
 mode_dict = {}
 
 
-def register(number: int):
+def register(number):
+    assert type(number) is int
+
     def _register(func):
         if number in mode_dict:
             logger.warning("mode-%s %s existed, overriding by %s" % (number, mode_dict[number].__name__, func.__name__))
@@ -111,7 +114,15 @@ def init_patterns(location, mode):
     return _init_patterns(location, mode_dict[mode])
 
 
-def line_init_patterns(line, mode: int, pps=None):
+def _line_init_patterns(line, mode, pps=None):
     if mode not in mode_dict:
         raise ProcessPatternNotExistedPatternError("available mode is %s" % list(mode_dict.keys()))
     return mode_dict[mode](line, pps)
+
+
+# type checker
+if sys.version_info[0] == 3:
+    def line_init_patterns(line, mode: int, pps=None):
+        return _line_init_patterns(line, mode, pps)
+else:
+    line_init_patterns = _line_init_patterns

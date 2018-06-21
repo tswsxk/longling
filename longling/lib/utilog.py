@@ -1,5 +1,6 @@
 # coding: utf-8
 import logging
+import sys
 
 from longling.base import string_types
 from longling.lib.stream import build_dir
@@ -9,10 +10,10 @@ from longling.lib.stream import build_dir
 '''
 
 
-def config_logging(filename: string_types = None, log_format: string_types = '%(name)s, %(levelname)s %(message)s',
-                   level=logging.INFO,
-                   logger=None, console_log_level=None, propagate: bool = False, mode: string_types = 'a',
-                   file_format: string_types = None):
+def _config_logging(filename: string_types = None, log_format: string_types = '%(name)s, %(levelname)s %(message)s',
+                    level=logging.INFO,
+                    logger=None, console_log_level=None, propagate: bool = False, mode: string_types = 'a',
+                    file_format: string_types = None):
     '''
     主日志设定文件
     :param filename: 日志存储文件名，不为空时将创建文件存储日志
@@ -52,3 +53,14 @@ def config_logging(filename: string_types = None, log_format: string_types = '%(
         logger.addHandler(ch)
 
     return logger
+
+
+# type checker
+if sys.version_info[0] == 3:
+    def config_logging(filename: string_types = None, log_format: string_types = '%(name)s, %(levelname)s %(message)s',
+                       level=logging.INFO,
+                       logger=None, console_log_level=None, propagate: bool = False, mode: string_types = 'a',
+                       file_format: string_types = None):
+        return _config_logging(filename, log_format, level, logger, console_log_level, propagate, mode, file_format)
+else:
+    config_logging = _config_logging

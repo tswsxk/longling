@@ -4,3 +4,10 @@ coding
 
 lib module
     class Clocker() for evaluating time cost, for process and wall
+
+
+NOPY2LISTS:
+    <the module listed here does not support py2>
+    lib
+        process_pattern
+
