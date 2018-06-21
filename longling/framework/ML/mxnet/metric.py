@@ -11,6 +11,12 @@ from sklearn.metrics import log_loss
 
 
 class LabelBuffMetric(EvalMetric):
+    '''
+    带缓冲区的评测器
+    由于mxnet自带的评价器会对测试集分批次评估，然后使用update进行简单的加权求和，所以部分指标是不准确的
+    例如：precision，recall和f1
+    此抽象类定义了两个缓冲区来存储
+    '''
     def __init__(self, name, output_names=None, label_names=None, pred_buff=[], true_buff=[], argmax=True):
         self.y_pred = pred_buff
         self.y_true = true_buff

@@ -1,4 +1,15 @@
-0.0.1: testing
-0.0.2: testing
-0.0.3: formal release
-0.0.4: add infos for somg modeule, add framework module
+0.0.1:
+    testing
+0.0.2:
+    testing
+0.0.3:
+    formal release
+0.0.4:
+    add infos for somg modeule, add framework module
+0.0.11:
+    Stop supporting py2 version
+    Add function annotation to all module
+    Consummate the documentation
+    Upgrade:
+        Function wf_open() in longling/lib/stream.py support with statement
+        Class Clock()

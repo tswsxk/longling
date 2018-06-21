@@ -4,7 +4,22 @@ import re
 
 from .process_pattern_base import *
 
+mode_dict = {}
 
+
+def register(number: int):
+    def _register(func):
+        if number in mode_dict:
+            logger.warning("mode-%s %s existed, overriding by %s" % (number, mode_dict[number].__name__, func.__name__))
+        else:
+            logger.info("register mode-%s %s" % (number, func.__name__))
+        mode_dict[number] = func
+        return func
+
+    return _register
+
+
+@register(0)
 def _init_patterns0(line, pps=None):
     try:
         line = line.decode('utf-8').strip()
@@ -38,6 +53,7 @@ def _init_patterns0(line, pps=None):
     return line, (ps1, ps2)
 
 
+@register(1)
 def _init_patterns1(line, pps):
     try:
         line = line.decode('utf-8').strip()
@@ -73,12 +89,6 @@ def _init_patterns1(line, pps):
     return line, (ps1, ps2)
 
 
-mode_dict = {
-    0: _init_patterns0,
-    1: _init_patterns1,
-}
-
-
 def _init_patterns(location, patterns):
     '''
     创建一个模式字典
@@ -101,5 +111,7 @@ def init_patterns(location, mode):
     return _init_patterns(location, mode_dict[mode])
 
 
-def line_init_patterns(line, mode, pps=None):
+def line_init_patterns(line, mode: int, pps=None):
+    if mode not in mode_dict:
+        raise ProcessPatternNotExistedPatternError("available mode is %s" % list(mode_dict.keys()))
     return mode_dict[mode](line, pps)

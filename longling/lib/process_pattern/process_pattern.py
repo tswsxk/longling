@@ -101,6 +101,6 @@ class PatternHitter(object):
 
 if __name__ == '__main__':
     # p = PatternHiter("../../example/process_pattern_regex.exp")
-    p = PatternHitter(":世界 和平", 0)
+    p = PatternHitter(":世界 和平", 2)
     print(p.hit_num("世界 和平"))
     print(p.is_in(u"世界和平"))

@@ -10,15 +10,14 @@ from longling.base import *
 from longling.lib.utilog import config_logging
 from longling.lib.stream import *
 
-logger = logging.getLogger('dataBase')
-config_logging(logger=logger, level=logging.DEBUG, console_log_level=logging.DEBUG, propagate=False)
+logger = config_logging(logger='dataBase', level=logging.DEBUG, console_log_level=logging.DEBUG, propagate=False)
 
 
-class dataBase():
-    def __init__(self, dataBasePath, logLevel=logging.DEBUG):
-        self.db = sqlite3.connect(dataBasePath)
+class dataBase(object):
+    def __init__(self, database_path, log_level=logging.DEBUG):
+        self.db = sqlite3.connect(database_path)
         self.cursor = self.db.cursor()
-        logger.setLevel(logLevel)
+        logger.setLevel(log_level)
 
     def set_logger_level(self, level):
         logger.setLevel(level)
@@ -99,7 +98,6 @@ class dataBase():
 
         return sql
 
-
     def output_table_to_csv(self, tableName, csvPath, batchSize=10000):
         '''
         将数据库内的表导出为csv格式
@@ -145,7 +143,7 @@ class dataBase():
 
         with rf_open(csvPath) as f:
             keys = f.readline().strip().split(",")
-            df = dupColumnFilter(keys)
+            df = DupColumnFilter(keys)
             keys = df.get_keys()
             keys_desc = ",".join([key + ' text' for key in keys])
             sql = "create table %s (%s)" % (tableName, keys_desc)
@@ -162,7 +160,7 @@ class dataBase():
                 line = line.strip()
                 if line:
                     line = line.split(",")
-                    line = df.filtValues(line)
+                    line = df.filter_values(line)
                     if len(line) != len(keys):
                         logger.warning("Incorrect number of bindings supplied: %s" % line)
                         logger.warning(
@@ -190,19 +188,19 @@ class dataBase():
             return cnt
 
 
-class dupColumnFilter():
+class DupColumnFilter(object):
     def __init__(self, keys):
         self.dupColumnIndex = set()
         self.keys = []
-        columnNamesSet = set()
+        column_names_set = set()
         for i, key in enumerate(keys):
-            if key not in columnNamesSet:
-                columnNamesSet.add(key)
+            if key not in column_names_set:
+                column_names_set.add(key)
                 self.keys.append(key)
             else:
                 self.dupColumnIndex.add(i)
 
-    def filtValues(self, values):
+    def filter_values(self, values):
         if not self.dupColumnIndex:
             return values
         res = []
@@ -213,4 +211,3 @@ class dupColumnFilter():
 
     def get_keys(self):
         return self.keys
-
