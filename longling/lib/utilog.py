@@ -10,6 +10,14 @@ from longling.lib.stream import build_dir
 '''
 
 
+class LogLevel(object):
+    ERROR = logging.ERROR
+    WARN = logging.WARN
+    INFO = logging.INFO
+    DEBUG = logging.DEBUG
+    CRITICAL = logging.CRITICAL
+
+
 def _config_logging(filename=None, log_format='%(name)s, %(levelname)s %(message)s',
                     level=logging.INFO,
                     logger=None, console_log_level=None, propagate=False, mode='a',
