@@ -4,7 +4,7 @@ from __future__ import absolute_import
 
 import sys
 
-from longling.lib.candylib import type_assert as _typeassert
+from longling.lib.candylib import type_assert as _type_assert
 
 if sys.version_info[0] == 3:
     string_types = str,
@@ -40,7 +40,7 @@ def type_assert(*ty_args, **ty_kwargs):
     >>> spam(1, 2, 3)
     1 2 3
     '''
-    return _typeassert(LONGLING_TYPE_CHECK, *ty_args, **ty_kwargs)
+    return _type_assert(LONGLING_TYPE_CHECK, *ty_args, **ty_kwargs)
 
 
 if __name__ == '__main__':
