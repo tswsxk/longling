@@ -7,7 +7,7 @@ import sys
 import codecs
 import os
 
-from longling.base import string_types, typeassert
+from longling.base import string_types, type_assert
 
 
 class StreamError(Exception):
@@ -97,6 +97,6 @@ if sys.version_info[0] == 3:
     def build_dir(path: string_types, mode: int = 0o775):
         return _build_dir(path, mode)
 else:
-    wf_open = typeassert(stream_name=string_types, mode=string_types, encoding=string_types)(_wf_open)
-    check_file = typeassert(path=string_types, size=int)(_check_file)
-    build_dir = typeassert(path=string_types, mode=int)(_build_dir)
+    wf_open = type_assert(stream_name=string_types, mode=string_types, encoding=string_types)(_wf_open)
+    check_file = type_assert(path=string_types, size=int)(_check_file)
+    build_dir = type_assert(path=string_types, mode=int)(_build_dir)

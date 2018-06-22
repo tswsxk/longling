@@ -6,13 +6,13 @@ from __future__ import unicode_literals
 
 from tqdm import tqdm
 
-from longling.framework.db.sqlite import dataBase
+from longling.framework.db.sqlite import DataBase
 from longling.framework.ML.universe.dataIterator import DBIterator
 from longling.lib.stream import wf_open, wf_close
 
 
 def transform_db2csv(database_path, sql, target):
-    db = dataBase(database_path)
+    db = DataBase(database_path)
     datas = DBIterator(db, sql)
     fields_name = datas.get_field_name()
 

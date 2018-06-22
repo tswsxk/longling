@@ -3,14 +3,14 @@ from __future__ import absolute_import
 import re
 import sys
 
-from longling.base import typeassert
+from longling.base import type_assert
 
 from .process_pattern_base import *
 
 mode_dict = {}
 
 
-@typeassert(number=int)
+@type_assert(number=int)
 def register(number):
     def _register(func):
         if number in mode_dict:
@@ -126,4 +126,4 @@ if sys.version_info[0] == 3:
     def line_init_patterns(line, mode: int, pps=None):
         return _line_init_patterns(line, mode, pps)
 else:
-    line_init_patterns = typeassert(mode=int)(_line_init_patterns)
+    line_init_patterns = type_assert(mode=int)(_line_init_patterns)

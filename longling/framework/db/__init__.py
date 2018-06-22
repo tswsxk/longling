@@ -3,5 +3,5 @@
 
 from __future__ import absolute_import
 
-from .sqlite import dataBase as sqliteDataBase
+from .sqlite import DataBase as sqliteDataBase
 from .mysql import dataBase as mysqlDataBase

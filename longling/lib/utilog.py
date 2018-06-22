@@ -2,7 +2,7 @@
 import logging
 import sys
 
-from longling.base import string_types, typeassert
+from longling.base import string_types, type_assert
 from longling.lib.stream import build_dir
 
 '''
@@ -63,8 +63,8 @@ if sys.version_info[0] == 3:
                        file_format: string_types = None):
         return _config_logging(filename, log_format, level, logger, console_log_level, propagate, mode, file_format)
 else:
-    config_logging = typeassert(filename=string_types,
-                                log_format=string_types,
-                                propagate=bool,
-                                mode=string_types,
-                                file_format=string_types)(_config_logging)
+    config_logging = type_assert(filename=string_types,
+                                 log_format=string_types,
+                                 propagate=bool,
+                                 mode=string_types,
+                                 file_format=string_types)(_config_logging)

@@ -4,5 +4,6 @@
 try:
     import mxnet
     import numpy
+    import sklearn
 except Exception as e:
     raise e

@@ -36,9 +36,19 @@ def regex(ps, line):
 class PatternHitter(object):
     '''
     模式识别器
+    >>> p = PatternHitter(":世界 和平", 1)
+    >>> print(p.hit_num("世界 和平"))
+    1
+    >>> print(p.is_in(u"世界和平"))
+    True
+    >>> p = PatternHitter(":世界 和平", 0)
+    >>> print(p.hit_num("世界 和平"))
+    1
+    >>> print(p.is_in(u"世界和平"))
+    False
     '''
 
-    @typeassert(mode=int)
+    @type_assert(mode=int)
     def __init__(self, location, mode=0):
         '''
         :param location:
@@ -100,7 +110,6 @@ class PatternHitter(object):
 
 
 if __name__ == '__main__':
-    # p = PatternHiter("../../example/process_pattern_regex.exp")
-    p = PatternHitter(":世界 和平", 2)
-    print(p.hit_num("世界 和平"))
-    print(p.is_in(u"世界和平"))
+    import doctest
+
+    doctest.testmod()

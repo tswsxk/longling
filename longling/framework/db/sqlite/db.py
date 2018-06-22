@@ -13,7 +13,7 @@ from longling.lib.stream import *
 logger = config_logging(logger='dataBase', level=logging.DEBUG, console_log_level=logging.DEBUG, propagate=False)
 
 
-class dataBase(object):
+class DataBase(object):
     def __init__(self, database_path, log_level=logging.DEBUG):
         self.db = sqlite3.connect(database_path)
         self.cursor = self.db.cursor()
