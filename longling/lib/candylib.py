@@ -7,13 +7,13 @@ def type_assert(check_tag=True, *ty_args, **ty_kwargs):
     :param ty_args:
     :param ty_kwargs:
     :return:
-    >>> @type_assert(int, z=int)
+    >>> @type_assert(False, int, z=int)
     ... def spam(x, y, z=42):
     ...     print(x, y, z)
     ...
     >>> spam(1, 'hello', 3)
     1 hello 3
-    >>> @type_assert(z=int)
+    >>> @type_assert(True, z=int)
     ... def spam(x, y, z=42):
     ...     print(x, y, z)
     ...

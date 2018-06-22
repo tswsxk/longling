@@ -23,4 +23,27 @@ LONGLING_TYPE_CHECK = True
 
 
 def type_assert(*ty_args, **ty_kwargs):
+    '''
+    :param ty_args:
+    :param ty_kwargs:
+    :return:
+    >>> @type_assert(int, z=int)
+    ... def spam(x, y, z=42):
+    ...     print(x, y, z)
+    ...
+    >>> spam(1, 'hello', 3)
+    1 hello 3
+    >>> @type_assert(z=int)
+    ... def spam(x, y, z=42):
+    ...     print(x, y, z)
+    ...
+    >>> spam(1, 2, 3)
+    1 2 3
+    '''
     return _typeassert(LONGLING_TYPE_CHECK, *ty_args, **ty_kwargs)
+
+
+if __name__ == '__main__':
+    import doctest
+
+    doctest.testmod()
