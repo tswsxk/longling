@@ -2,8 +2,10 @@ import os
 
 import pip
 
-from longling.lib.utilog import config_logging, LogLevel
+
 from longling.base import string_types
+from longling.lib.stream import wf_open
+from longling.lib.utilog import config_logging, LogLevel
 
 logger = config_logging(logger="requires_install", console_log_level=LogLevel.INFO)
 
@@ -16,26 +18,41 @@ def __find_file(root, name):
         if name in files:
             full_path = os.path.join(relpath, name)
             files_path.add(os.path.normpath(os.path.abspath(full_path)))
+            logger.debug("found %s" % full_path)
     return files_path
 
 
 def __sperator_replace(input_str: string_types):
+    if not input_str:
+        return os.path.join(".", os.path.sep)
     if '.' in input_str:
         return input_str.replace(".", os.path.sep)
     return input_str
 
 
-def run(module_names=None, default_confirm=True, user_mode=True, source=None, dup_check=False):
+def run(module_names=None, default_confirm=True, user_mode=True, source=None, rfile_path="requires.txt"):
+    '''
+    依赖包检查安装
+    :param module_names: root module names, can be string or list, when not specified, that is None, use "longling"
+    :param default_confirm: tag to indicating whether or not to confirm every requires.txt installed
+    :param user_mode: whether to use "--user" parameter in pip cmd
+    :param source: can be http://pypi.mirrors.ustc.edu.cn/simple
+    :param rfile_path: when specified, output the result to the file. default "requires.txt"
+    :return:
+    '''
     assert module_names is None or type(module_names) is list or type(module_names) in string_types
+    if module_names is None:
+        module_names = "longling"
     if type(module_names) in string_types:
         module_names = [module_names]
+    logger.info("require file path is %s%s" % (
+        rfile_path, " all depending packages will be installed" if not rfile_path else ""))
     logger.info("Confirm Mode: %s\nthese module requires.txt will be check: %s" % (
         "all confirm without any more permission" if default_confirm
         else "each requires file will need confirmation before installed",
         module_names))
     logger.info("user mode: %s" % user_mode)
     logger.info("specify source: %s" % "Auto" if not source else source)
-    logger.info("dup check: %s" % dup_check)
     files_path = set()
     package_set = set()
     for module_name in module_names:
@@ -53,16 +70,11 @@ def run(module_names=None, default_confirm=True, user_mode=True, source=None, du
             with open(file_name) as re_file:
                 for line in re_file:
                     if line.strip():
-                        package_set.add(line.strip().replace("==", " "))
+                        package_set.add(line.strip())
         except Exception as e:
             logger.error(e)
-    installed_packages = set([m.key for m in pip.get_installed_distributions()])
-    installed_packages = package_set & installed_packages
-    logger.info("%s packages have been installed:\n\t%s" % (len(installed_packages), "\n\t".join(installed_packages)))
-    if dup_check:
-        package_set -= installed_packages
     logger.info("%s packages will be installed:\n\t%s" % (len(package_set), "\n\t".join(package_set)))
-    if len(package_set) > 0 and (default_confirm or input("installed? (Y/N)\n") in ('Y', 'y', '')):
+    if not rfile_path and (package_set and (default_confirm or input("installed? (Y/N)\n") in ('Y', 'y', ''))):
         logger.info("installing")
         install_command = "pip install -r {}"
         if user_mode:
@@ -70,9 +82,14 @@ def run(module_names=None, default_confirm=True, user_mode=True, source=None, du
         if source:
             install_command += " -i %s" % source
         for file_name in files_path:
-            # os.system(install_command.format(file_name))
-            print(install_command.format(file_name))
+            os.system(install_command.format(file_name))
+            # print(install_command.format(file_name))
 
+    if rfile_path and package_set:
+        logger.info("output required packages to %s" % rfile_path)
+        with wf_open(rfile_path) as wf:
+            for package in package_set:
+                print(package, file=wf)
 
 if __name__ == '__main__':
-    run(["longling.framework.ML"])
+    run()
