@@ -1,7 +1,6 @@
+from __future__ import print_function
+
 import os
-
-import pip
-
 
 from longling.base import string_types
 from longling.lib.stream import wf_open
