@@ -5,11 +5,6 @@ advice using set structure to record the neighbors, precursor or successor
 '''
 
 
-class GraphNodeGroup(list):
-    def add(self, new_node):
-        return self.append(new_node)
-
-
 class GraphNode(object):
     def __init__(self, value, *args, **kwargs):
         self.value = value
