@@ -122,7 +122,7 @@ def dnn():
         save_path=model_dir + "plot/network",
         shape=form_shape(train_data),
         node_attrs={"fixedsize": "false"},
-        show_tag=True
+        view=True
     )
     ############################################################################
 
@@ -258,7 +258,7 @@ def cnn():
         save_path=model_dir + "plot/network",
         shape=form_shape(train_data),
         node_attrs={"fixedsize": "false"},
-        show_tag=True
+        view=True
     )
     ############################################################################
 
@@ -502,7 +502,7 @@ def text_cnn():
         save_path=model_dir + "plot/network",
         shape=form_shape(train_data),
         node_attrs={"fixedsize": "false"},
-        show_tag=True
+        view=True
     )
     ############################################################################
 
@@ -872,7 +872,7 @@ def text_rnn():
         save_path=model_dir + "plot/network",
         shape={'data': (batch_size, viz_seq_len), 'label': (batch_size,)},
         node_attrs={"fixedsize": "false"},
-        show_tag=True,
+        view=True,
     )
     ############################################################################
 

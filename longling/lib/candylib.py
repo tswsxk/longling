@@ -44,6 +44,16 @@ def type_assert(check_tag=True, *ty_args, **ty_kwargs):
     return decorate
 
 
+def get_all_subclass(cls):
+    subclass = set()
+    def _get_all_subclass(cls, res_set):
+        res_set.add(cls)
+        for sub_cls in cls.__subclasses__():
+            _get_all_subclass(sub_cls, res_set)
+    _get_all_subclass(cls, res_set=subclass)
+    return subclass
+
+
 if __name__ == '__main__':
     import doctest
 

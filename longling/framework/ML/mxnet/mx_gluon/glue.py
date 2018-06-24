@@ -90,7 +90,7 @@ def dnn():
         save_path=model_dir + "plot/network",
         shape=viz_shape,
         node_attrs={"fixedsize": "false"},
-        show_tag=False
+        view=False
     )
 
     ############################################################################
@@ -235,7 +235,7 @@ def cnn():
         save_path=model_dir + "plot/network",
         shape=viz_shape,
         node_attrs={"fixedsize": "false"},
-        show_tag=False
+        view=False
     )
     ############################################################################
 
@@ -418,7 +418,7 @@ def text_cnn():
         save_path=model_dir + "plot/network",
         shape=viz_shape,
         node_attrs={"fixedsize": "false"},
-        show_tag=False
+        view=False
     )
     ############################################################################
 
