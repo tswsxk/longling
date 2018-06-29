@@ -55,7 +55,8 @@ class Graph(object):
         self.edge_class = edge_class
         self.logger = logger
         self.graph_relation_type = GraphRelationType.SingleRelation
-        self.logger.info(self.tips)
+        if self.tips:
+            self.logger.info(self.tips)
 
     @property
     def tips(self):
@@ -80,6 +81,7 @@ class Graph(object):
 
     def add_vertex(self, vertex):
         self.vertexes.add(vertex)
+        return vertex
 
     def add_edge(self, nodes, edge):
         if edge:
@@ -184,10 +186,10 @@ class Graph(object):
                 v2id[vertex] = idx
             vertexes.append(v2id[vertex])
         edges = {}
-        if graph.graph_relation_type is GraphRelationType.SingleRelation:
+        if self.graph_relation_type is GraphRelationType.SingleRelation:
             for nodes, edge in self.edges.items():
                 edges[(v2id[nodes[0]], v2id[nodes[1]])] = edge
-        elif graph.graph_relation_type is GraphRelationType.MultiRelation:
+        elif self.graph_relation_type is GraphRelationType.MultiRelation:
             for relation_type, nodes_edge in self.edges.items():
                 if relation_type not in edges:
                     edges[relation_type] = {}
@@ -250,7 +252,7 @@ def gen_viz_graph(graph, save_format='pdf', **kwargs):
         raise GraphPlotTypeError(
             "the graph type should be subclass of Graph or %s, now is %s" % ((tuple, list, dict), type(graph)))
 
-    gv_graph = graphviz.Digraph if graph_type is DirectedGraph else graphviz.Graph
+    gv_graph = graphviz.Digraph if isinstance(graph, DirectedGraph) else graphviz.Graph
     dot = gv_graph(kwargs.get('name', 'graph'), kwargs.get('comment', ''), format=save_format)
 
     for idx, vertex in enumerate(vertexes):
@@ -299,11 +301,11 @@ if __name__ == '__main__':
         (2, 4, 2, 'friend'),
     ]
 
-    graph = DirectedGraph(vertex_class=DirectedGraphNode, edge_class=int)
-    tv = {v: graph.new_vertex(None, id=v) for v in vs}
+    self = DirectedGraph(vertex_class=DirectedGraphNode, edge_class=int)
+    tv = {v: self.new_vertex(None, id=v) for v in vs}
     for e in es:
-        graph.link(tv[e[0]], tv[e[1]], e[2], e[3])
+        self.link(tv[e[0]], tv[e[1]], e[2], e[3])
 
-    print(graph.id_graph())
-    print(gen_viz_graph(graph.id_graph()).source)
+    print(self.id_graph())
+    print(gen_viz_graph(self.id_graph()).source)
     # plot_graph(graph.id_graph(), view=True)
