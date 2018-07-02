@@ -18,6 +18,10 @@ yum install postgresql10-server
 systemctl enable postgresql-10
 systemctl start postgresql-10
 ```
+开启5432端口
+```sh
+sudo firewall-cmd --zone=public --permanent --add-port=5432/tcp
+```
 安装结束后，以超级用户 postgre 登录
 ```sh
 sudo su - postgres
@@ -68,6 +72,24 @@ sudo yum install php php-common php-opcache php-mcrypt php-cli php-gd php-curl p
 ```sh
 sudo service httpd restart
 ```
+**如果是使用postgreSQL的话**
+还需要安装php的postgreSQL支持
+```sh
+sudo yum install php-pgsql
+```
+**其它可选优化安装选项**
+安装php-apcu缓存
+```sh
+sudo yum install php-apcu
+```
+安装php-intl支持
+```sh
+sudo yum install php-intl
+```
+**记得php更改后要重启Apache**
+```sh
+sudo service httpd restart
+```
 
 ## 通过php安装MediaWiki
 [下载](https://www.mediawiki.org/wiki/Manual:Installing_MediaWiki/zh) Mediawiki 并解压到 /var/www/html/w (可能需要管理员权限)
@@ -76,7 +98,34 @@ sudo service httpd restart
 ```vim
 172.16.46.213/w/index.php
 ```
-如果发现**Forbidden**无法访问 ，修改权限
+
+可能出现 *Forbidden* 错误
+
+### 连接数据库
+
+标识本wiki:
+
+数据库名称: wikidb
+
+MediaWiki的数据库模式: MediaWiki版本
+
+数据库用户名：postgres
+
+数据库密码：%postgres的用户密码%
+
+可能出现 *5432* 错误
+
+### 
+
+
+### 常见问题列表
+#### Forbidden
+Err:
+通过浏览器访问index.php, 发现**Forbidden**无法访问
+
+Sol:
+
+修改权限
 ```sh
 chown -R 755 /var/www/html/w/
 chmod 755 /var/www/html/w/mw-config
@@ -99,4 +148,13 @@ sudo chcon -Rv --type=httpd_t /var/www/html/w
 改完把SELinux恢复一下
 ```sh
 sudo setenforce 1
+```
+
+#### 5432
+Err:
+Cannot access the database: pg_connect(): Unable to connect to PostgreSQL server: could not connect to server: Permission denied Is the server running on host "localhost" (::1) and accepting TCP/IP connections on port 5432? could not connect to server: Permission denied Is the server running on host "localhost" (127.0.0.1) and accepting TCP/IP connections on port 5432?
+
+Sol:
+```sh
+sudo setsebool -P httpd_can_network_connect_db on
 ```
