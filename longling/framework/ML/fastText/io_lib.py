@@ -5,7 +5,7 @@ from __future__ import absolute_import
 
 import json
 
-import tqdm
+from tqdm import tqdm
 
 from .conf import LABEL_PREFIX, logger
 
@@ -36,7 +36,7 @@ def jsonxz2fast(source_jsonxz, target_fast=None, label_prefix=LABEL_PREFIX, data
     with open(source_jsonxz) as f:
         for line in tqdm(f):
             data = json.loads(line, encoding='utf8')
-            d = ' '.join(data[data_key].split())
+            d = ' '.join(data[data_key])
             label = label_prefix + tostr(data[label_key])
             line = '%s %s' % (label, d)
             print(line, file=wf)

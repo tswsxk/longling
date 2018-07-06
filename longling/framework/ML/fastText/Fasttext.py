@@ -24,10 +24,9 @@ class Fasttext(object):
         self.label_prefix = kwargs.get('label_prefix', LABEL_PREFIX)
         self.model = None
 
-    def fit(self, train_file, model_dir, epoch=50, cast_file=None):
-        location_fast = cast_file(train_file) if cast_file else train_file
+    def fit(self, train_file, model_dir, epoch=50, cast_file_func=None):
+        location_fast = cast_file_func(train_file) if cast_file_func else train_file
         location_model = get_location_model(model_dir)
-
         self.model = fasttext.supervised(
             location_fast,
             location_model,
@@ -59,7 +58,8 @@ class Fasttext(object):
         :return:
         '''
         assert self.model is not None
-        return self.model.predict_label(datas, kbest)
+        texts = [' '.join(data) for data in datas]
+        return self.model.predict(texts, kbest)
 
     def predict_probs(self, datas, label='1', kbest=1):
         assert self.model is not None

@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 
 import json
 
-import tqdm
+from tqdm import tqdm
 
 from ..dataIterator import CSVIterator
 from ..dataIterator import JsonxzIterator, JsonxzBatchIterator
