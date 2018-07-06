@@ -6,6 +6,8 @@ from __future__ import unicode_literals
 
 import json
 
+import tqdm
+
 from ..dataIterator import CSVIterator
 from ..dataIterator import JsonxzIterator, JsonxzBatchIterator
 
@@ -30,6 +32,9 @@ def transform_csv2jsonxz(source, target, label_index=None, label_name=None,
     if label_index is None:
         label_index = dict(datas.reserved_name_index_pairs)[label_name]
 
+    data_key = kwargs.get('data_key', 'x')
+    label_key = kwargs.get('lebel_key', 'z')
+
     wf = wf_open(target)
     for data in datas:
         x, z = [], None
@@ -38,6 +43,18 @@ def transform_csv2jsonxz(source, target, label_index=None, label_name=None,
                 z = d
             else:
                 x.append(d)
-        xz = {'x': x, 'z': z}
+        xz = {data_key: x, label_key: z}
         print(json.dumps(xz, ensure_ascii=False), file=wf)
     wf_close(wf)
+
+
+def load_jsonxz(source, data_key='x', label_key='z'):
+    datas = []
+    labels = []
+    with open(source) as f:
+        for line in tqdm(f):
+            data = json.loads(line)
+            x, z = data[data_key], data[label_key]
+            datas.append(x)
+            labels.append(z)
+    return datas, labels

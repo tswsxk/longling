@@ -183,7 +183,7 @@ def process_batch_score(location_dat, location_res, location_model):
                     texts = []
                     batch = []
             labels = classifier.predict_proba(texts, 1)
-            for j in xrange(len(batch)):
+            for j in range(len(batch)):
                 cat, prob = labels[j][0]
                 batch[j]['score'] = (prob if cat == cat1 else (1. - prob))
                 print >> fout, json.dumps(batch[j], ensure_ascii=False).encode('utf8')

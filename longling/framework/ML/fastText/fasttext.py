@@ -9,7 +9,7 @@ import fasttext
 
 from longling.lib.stream import build_dir
 
-from .conf import get_parameters, cast_file_format, LABEL_PREFIX
+from .conf import get_parameters, LABEL_PREFIX
 
 
 def get_location_model(model_dir):
@@ -24,12 +24,12 @@ class Fasttext(object):
         self.label_prefix = kwargs.get('label_prefix', LABEL_PREFIX)
         self.model = None
 
-    def fit(self, train_dataset, model_dir, cast_file_tag=True, epoch=50):
-        location_data = self.cast_file(train_dataset, cast_file_tag)
+    def fit(self, train_file, model_dir, epoch=50, cast_file=None):
+        location_fast = cast_file(train_file) if cast_file else train_file
         location_model = get_location_model(model_dir)
 
         self.model = fasttext.supervised(
-            location_data,
+            location_fast,
             location_model,
             label_prefix=LABEL_PREFIX,
             lr=self.parameters.get('lr', 0.1),
@@ -52,6 +52,12 @@ class Fasttext(object):
         return self.model, location_model
 
     def predict(self, datas, kbest=1):
+        '''
+        预测k个最可能的label
+        :param datas:
+        :param kbest:
+        :return:
+        '''
         assert self.model is not None
         return self.model.predict_label(datas, kbest)
 
@@ -64,19 +70,16 @@ class Fasttext(object):
             p = p if l == label else (1. - p)
             predict_probs.append(p)
 
-    def cast_file(self, filename, cast_file_tag, **kwargs):
-        if cast_file_tag:
-            return cast_file_format(filename, label_prefix=self.label_prefix, **kwargs)
-        else:
-            return filename
-
     @staticmethod
     def load_model(location_model, label_prefix=LABEL_PREFIX):
+        '''
+        装载已有的fasttext模型
+        :param location_model: 模型位置
+        :param label_prefix:
+        :return:
+        '''
         model = fasttext.load_model(location_model + '.bin', label_prefix=label_prefix)
         fasttext_model = Fasttext()
         fasttext_model.model = model
         return fasttext_model
 
-    @staticmethod
-    def cast_file_format(filename, casted_filaname=None, label_prefix=LABEL_PREFIX):
-        return cast_file_format(filename, casted_filaname, label_prefix)

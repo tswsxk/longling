@@ -1,4 +1,5 @@
 # coding:utf-8
+from __future__ import print_function
 import sys
 
 sys.path.insert(0, "/opt/tiger/text_lib/env/lib/python2.7/site-packages")

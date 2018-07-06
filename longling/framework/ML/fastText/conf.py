@@ -10,38 +10,11 @@ from tqdm import tqdm
 
 from longling.base import *
 from longling.lib.utilog import config_logging
-from longling.lib.stream import wf_open, wf_close, rf_open
+from longling.lib.stream import wf_open, wf_close
 
 LABEL_PREFIX = '__label__'
 
 logger = config_logging(logger='fasttext', console_log_level=logging.INFO, propagate=False)
-
-
-def cast_file_format(location_ins, location_fast=None, label_prefix=LABEL_PREFIX):
-    '''
-    将特征和标签修改为fasttext可用的格式
-    :param location_ins: 输入文件
-    :return: 修改格式后的文件
-    '''
-    if location_fast is None:
-        location_fast = location_ins + '.fast'
-
-    logger.info("location_fast %s", location_fast)
-    logger.info("location_instance %s", location_ins)
-
-    wf = wf_open(location_fast)
-    with rf_open(location_ins) as fin:
-        for line in tqdm(fin):
-            data = json.loads(line, encoding='utf8')
-            x = ' '.join(data['x'].split())
-            z = label_prefix + tostr(data['z'])
-            line = '%s %s' % (z, x)
-            print(line, file=wf)
-
-    wf_close(wf)
-
-    return location_fast
-
 
 def get_parameters(paras):
     '''
