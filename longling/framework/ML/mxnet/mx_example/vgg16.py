@@ -28,7 +28,7 @@ def vgg16():
     # logging.getLogger().setLevel(logging.INFO)
     propagate = False
 
-    root = "../../../../"
+    root = "../../../../../"
     train_file = root + "data/image/mnist_train"
     test_file = root + "data/image/mnist_test"
 

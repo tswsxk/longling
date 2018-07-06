@@ -25,7 +25,7 @@ def text_rnn():
     ############################################################################
     # parameters config
     # file path
-    root = "../../../../"
+    root = "../../../../../"
 
     dict_file = root + "data/word2vec/comment.vec.dat"
     train_file = root + "data/text/mini.instance.train"

@@ -26,7 +26,7 @@ def cnn():
     # parameters config
 
     # file path
-    root = "../../../../"
+    root = "../../../../../"
     train_file = root + "data/image/mnist_train"
     test_file = root + "data/image/mnist_test"
 

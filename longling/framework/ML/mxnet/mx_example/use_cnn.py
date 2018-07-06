@@ -11,7 +11,7 @@ import numpy as np
 
 
 def cnn_use():
-    root = "../../../../"
+    root = "../../../../../"
     model_dir = root + "data/mxnet/cnn/"
     model_name = "cnn"
 

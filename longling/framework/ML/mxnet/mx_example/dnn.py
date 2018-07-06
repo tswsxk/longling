@@ -25,7 +25,7 @@ def dnn():
     # parameters config
 
     # file path
-    root = "../../../../"
+    root = "../../../../../"
     train_file = root + "data/image/one_dim/mnist_train"
     test_file = root + "data/image/one_dim/mnist_test"
 

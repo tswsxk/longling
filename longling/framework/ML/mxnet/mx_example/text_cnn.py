@@ -30,7 +30,7 @@ def text_cnn():
     logging.getLogger().setLevel(logging.INFO)
     propagate = False
 
-    root = "../../../../"
+    root = "../../../../../"
 
     dict_file = root + "data/word2vec/comment.vec.dat"
     train_file = root + "data/text/mini.instance.train"
