@@ -301,11 +301,11 @@ if __name__ == '__main__':
         (2, 4, 2, 'friend'),
     ]
 
-    self = DirectedGraph(vertex_class=DirectedGraphNode, edge_class=int)
-    tv = {v: self.new_vertex(None, id=v) for v in vs}
+    graph = DirectedGraph(vertex_class=DirectedGraphNode, edge_class=None)
+    tv = {v: graph.new_vertex(None, id=v) for v in vs}
     for e in es:
-        self.link(tv[e[0]], tv[e[1]], e[2], e[3])
+        graph.link(tv[e[0]], tv[e[1]])
 
-    print(self.id_graph())
-    print(gen_viz_graph(self.id_graph()).source)
-    # plot_graph(graph.id_graph(), view=True)
+    # print(self.id_graph())
+    # print(gen_viz_graph(self.id_graph()).source)
+    plot_graph(graph, view=True)
