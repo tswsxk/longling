@@ -9,7 +9,7 @@ import fasttext
 
 from longling.lib.stream import build_dir
 
-from .conf import get_parameters, LABEL_PREFIX
+from longling.framework.ML.fastText.conf import get_parameters, LABEL_PREFIX
 
 
 def get_location_model(model_dir):

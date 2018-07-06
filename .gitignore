@@ -1,10 +1,12 @@
 .idea/
 *.pyc
-temp/*
-data/*
+temp/
+data/
 model/
-test.py
+**/data
+**/model
 **/temp
+test.py
 build/*
 dist/*
 *.egg-info
