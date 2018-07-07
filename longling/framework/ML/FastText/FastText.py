@@ -9,7 +9,7 @@ import fasttext
 
 from longling.lib.stream import build_dir
 
-from longling.framework.ML.fastText.conf import get_parameters, LABEL_PREFIX
+from longling.framework.ML.FastText.conf import get_parameters, LABEL_PREFIX
 
 
 def get_location_model(model_dir):
@@ -18,7 +18,7 @@ def get_location_model(model_dir):
     return location_model
 
 
-class Fasttext(object):
+class FastText(object):
     def __init__(self, **kwargs):
         self.parameters = get_parameters(kwargs)
         self.label_prefix = kwargs.get('label_prefix', LABEL_PREFIX)
@@ -79,7 +79,7 @@ class Fasttext(object):
         :return:
         '''
         model = fasttext.load_model(location_model + '.bin', label_prefix=label_prefix)
-        fasttext_model = Fasttext()
+        fasttext_model = FastText()
         fasttext_model.model = model
         return fasttext_model
 

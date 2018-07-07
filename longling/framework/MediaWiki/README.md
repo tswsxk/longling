@@ -4,7 +4,7 @@
 *MediaWiki版本:  1.31.0*
 ## 环境配置
 ### 数据库
-*以 [PostgreSQL](https://www.postgresql.org/download/) 为例*
+#### [PostgreSQL](https://www.postgresql.org/download/)
 使用下列命令来查看PostgreSQL是否安装
 ```sh
 psql
@@ -31,6 +31,20 @@ psql
 ```sql
 CREATE USER wikiuser WITH NOCREATEDB NOCREATEROLE NOSUPERUSER ENCRYPTED PASSWORD 'password';
 CREATE DATABASE wikidb WITH OWNER wikiuser;
+```
+#### MySQL
+进入mysql服务器
+```sh
+mysql -u root -h 172.16.46.203 -p
+```
+创建数据库
+```sql
+CREATE DATABASE wikidb;
+GRANT ALL PRIVILEGES ON wikidb.* TO 'wikiuser'@'172.16.46.213' IDENTIFIED BY 'lab502';
+```
+测试
+```sh
+mysql -u wikiuser -h 172.16.46.203 -plab502 -D wikidb
 ```
 ### Apache
 直接浏览器中访问 localhost，如果可以访问，证明已安装Apache
