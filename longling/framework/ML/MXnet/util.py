@@ -4,7 +4,7 @@
 import mxnet as mx
 import numpy as np
 
-from longling.framework.ML.mxnet.io_lib import SimpleBucketIter
+from longling.framework.ML.MXnet.io_lib import SimpleBucketIter
 
 
 def form_shape(data_iter):

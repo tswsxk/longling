@@ -9,14 +9,14 @@ import logging
 import mxnet as mx
 
 
-from longling.framework.ML.mxnet.callback import tqdm_speedometer, \
+from longling.framework.ML.MXnet.callback import tqdm_speedometer, \
     ClassificationLogValidationMetricsCallback, Speedometer, \
     TqdmEpochReset
-from longling.framework.ML.mxnet.metric import PRF, Accuracy, CrossEntropy
-from longling.framework.ML.mxnet.viz import plot_network, form_shape
-from longling.framework.ML.mxnet.io_lib import DictJsonIter
-from longling.framework.ML.mxnet.monitor import TimeMonitor
-from longling.framework.ML.mxnet.sym_lib import lenet_cell
+from longling.framework.ML.MXnet.metric import PRF, Accuracy, CrossEntropy
+from longling.framework.ML.MXnet.viz import plot_network, form_shape
+from longling.framework.ML.MXnet.io_lib import DictJsonIter
+from longling.framework.ML.MXnet.monitor import TimeMonitor
+from longling.framework.ML.MXnet.sym_lib import lenet_cell
 
 from longling.lib.utilog import config_logging
 

@@ -15,12 +15,12 @@ from tqdm import tqdm
 from longling.lib.clock import Clock
 from longling.lib.utilog import config_logging
 
-from longling.framework.ML.mxnet.io_lib import VecDict
-from longling.framework.ML.mxnet.metric import PRF, Accuracy
-from longling.framework.ML.mxnet.viz import plot_network
-from longling.framework.ML.mxnet.mx_gluon.gluon_evaluater import ClassEvaluater
-from longling.framework.ML.mxnet.mx_gluon.gluon_util import TrainBatchInfoer
-from longling.framework.ML.mxnet.mx_gluon.nn_cell import TextCNN
+from longling.framework.ML.MXnet.io_lib import VecDict
+from longling.framework.ML.MXnet.metric import PRF, Accuracy
+from longling.framework.ML.MXnet.viz import plot_network
+from longling.framework.ML.MXnet.mx_gluon.gluon_evaluater import ClassEvaluater
+from longling.framework.ML.MXnet.mx_gluon.gluon_util import TrainBatchInfoer
+from longling.framework.ML.MXnet.mx_gluon.nn_cell import TextCNN
 
 
 def dnn():
