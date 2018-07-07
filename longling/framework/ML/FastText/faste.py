@@ -5,8 +5,8 @@
 此文件用来展示fastText模块使用方法
 '''
 
-from longling.framework.ML.fastText.io_lib import jsonxz2fast
-from longling.framework.ML.fastText.Fasttext import Fasttext
+from longling.framework.ML.FastText.io_lib import jsonxz2fast
+from longling.framework.ML.FastText.FastText import FastText
 
 from longling.framework.ML.universe.fileio.jsonxz import load_jsonxz
 
@@ -18,7 +18,7 @@ if __name__ == '__main__':
     location_train = root + "train"
     location_test = root + "test"
 
-    model = Fasttext()
+    model = FastText()
     model.fit(location_train, root + "model/", cast_file_func=jsonxz2fast)
 
     datas, labels = load_jsonxz(location_test)

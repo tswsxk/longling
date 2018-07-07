@@ -2,4 +2,4 @@
 
 from __future__ import absolute_import
 
-from .Fasttext import Fasttext
+from .FastText import FastText
