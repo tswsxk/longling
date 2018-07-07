@@ -24,8 +24,8 @@ class FastText(object):
         self.label_prefix = kwargs.get('label_prefix', LABEL_PREFIX)
         self.model = None
 
-    def fit(self, train_file, model_dir, epoch=50, cast_file_func=None):
-        location_fast = cast_file_func(train_file) if cast_file_func else train_file
+    def fit(self, train_file, model_dir, epoch=50, cast_file_func=None, array_tag=True):
+        location_fast = cast_file_func(train_file, array_tag=array_tag) if cast_file_func else train_file
         location_model = get_location_model(model_dir)
         self.model = fasttext.supervised(
             location_fast,

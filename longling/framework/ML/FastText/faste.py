@@ -14,15 +14,15 @@ from sklearn.metrics import classification_report
 
 
 if __name__ == '__main__':
-    root = "../../../data/fasttext/"
+    root = "../../../../data/fasttext/TextSim/"
     location_train = root + "train"
     location_test = root + "test"
 
     model = FastText()
-    model.fit(location_train, root + "model/", cast_file_func=jsonxz2fast)
+    model.fit(location_train, root + "model/", cast_file_func=jsonxz2fast, array_tag=False)
 
     datas, labels = load_jsonxz(location_test)
-    preds = model.predict(datas)
+    preds = [data[0] for data in model.predict(datas)]
 
-    classification_report(labels, preds)
+    print(classification_report(labels, preds, digits=3))
 

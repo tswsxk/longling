@@ -13,7 +13,7 @@ from longling.base import tostr
 from longling.lib.stream import wf_open, wf_close
 
 
-def jsonxz2fast(source_jsonxz, target_fast=None, label_prefix=LABEL_PREFIX, data_key='x', label_key='z'):
+def jsonxz2fast(source_jsonxz, target_fast=None, label_prefix=LABEL_PREFIX, data_key='x', label_key='z', array_tag=True):
     '''
     将jsonxz文件转为fasttext可用于训练的fast文件
     jsonxz文件格式
@@ -24,6 +24,9 @@ def jsonxz2fast(source_jsonxz, target_fast=None, label_prefix=LABEL_PREFIX, data
     :param source_jsonxz: 输入文件
     :param target_fast:
     :param label_prefix
+    :param data_key
+    :param label_key
+    :param array_tag
     :return: 修改格式后的文件
     '''
     if target_fast is None:
@@ -36,7 +39,7 @@ def jsonxz2fast(source_jsonxz, target_fast=None, label_prefix=LABEL_PREFIX, data
     with open(source_jsonxz) as f:
         for line in tqdm(f):
             data = json.loads(line, encoding='utf8')
-            d = ' '.join(data[data_key])
+            d = ' '.join(data[data_key]) if array_tag else data[data_key]
             label = label_prefix + tostr(data[label_key])
             line = '%s %s' % (label, d)
             print(line, file=wf)
