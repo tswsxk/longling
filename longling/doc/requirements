@@ -4,3 +4,4 @@ scipy
 sklearn
 mxnet
 fasttext
+gensim

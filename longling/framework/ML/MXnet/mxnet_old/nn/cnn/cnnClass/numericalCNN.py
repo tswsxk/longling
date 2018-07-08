@@ -3,10 +3,10 @@
 import json
 import os
 
-from longling.framework.ML.mxnet_old.nn.shared.nn import NN, add_loss_layer
-from longling.framework.ML.mxnet_old.nn.shared.mxDataIterator import getNumIterator
-
 from longling.framework.ML.mxnet_old.nn.cnn import numerical_cnn
+from longling.framework.ML.mxnet_old.nn.shared.nn import NN, add_loss_layer
+
+from longling.framework.ML.MXnet.mxnet_old.nn.shared.mxDataIterator import getNumIterator
 
 
 class numericalCNN(NN):

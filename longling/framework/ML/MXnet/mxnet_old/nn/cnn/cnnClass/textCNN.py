@@ -5,12 +5,11 @@ import os
 
 import mxnet as mx
 import numpy as np
-
+from longling.framework.ML.mxnet_old.nn.cnn import text_cnn
 from longling.framework.ML.mxnet_old.nn.shared.nn import NN, add_loss_layer
-from longling.framework.ML.mxnet_old.nn.shared.mxDataIterator import TextIterator
 from longling.framework.ML.mxnet_old.nn.shared.text_lib import conv_w2id, conv_w2v
 
-from longling.framework.ML.mxnet_old.nn.cnn import text_cnn
+from longling.framework.ML.MXnet.mxnet_old.nn.shared.mxDataIterator import TextIterator
 
 
 class textCNN(NN):
@@ -229,7 +228,7 @@ class textKeywordCNN(textCNN):
 
 
 if __name__ == '__main__':
-    from longling.framework.ML.mxnet_old.nn.shared.text_lib import vecDict
+    from longling.framework.ML.MXnet.mxnet_old.nn.shared import vecDict
 
     root = "../../../../../../../"
     model_dir = root + "data/text_cnn/test/"

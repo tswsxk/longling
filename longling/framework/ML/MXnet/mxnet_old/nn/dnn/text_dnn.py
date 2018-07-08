@@ -3,7 +3,7 @@ import logging
 
 import mxnet as mx
 
-from longling.framework.ML.mxnet_old.nn.shared.nn import get_model, get_embeding_model
+from longling.framework.ML.MXnet.mxnet_old.nn.shared import get_model, get_embeding_model
 
 
 def get_text_dnn_symbol_without_loss(vocab_size, vec_size, num_hiddens=[100], num_label=2, dropout=0.0):

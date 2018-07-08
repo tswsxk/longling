@@ -19,27 +19,27 @@ from longling.framework.ML.MXnet.metric import PRF, Accuracy, CrossEntropy
 from longling.framework.ML.MXnet.viz import plot_network, form_shape
 from longling.framework.ML.MXnet.io_lib import DictJsonIter, VecDict, SimpleBucketIter
 from longling.framework.ML.MXnet.monitor import TimeMonitor
-from longling.framework.ML.MXnet.sym_lib import lenet_cell, text_cnn_cell
+from longling.framework.ML.MXnet.sym_lib import lenet_cell, text_cnn_cell, mx_constant
 from longling.framework.ML.MXnet.util import get_fine_tune_model
 
 from longling.lib.utilog import config_logging
+
 
 def text_cnn():
     vocab_size = 365000
     vec_size = 80
     sentence_size = 25
     root = "../../../../../"
-    model_dir = root + "data/mxnet/cnn/"
-    model_name = "cnn"
+    model_dir = root + "data/mxnet/text_cnn/"
+    model_name = "text_cnn"
 
 
     ############################################################################
     # network building
-    def sym_gen(filter_list, num_filter, vocab_size, vec_size, sentence_size, num_label, margin):
+    def sym_gen(filter_list, num_filter, vocab_size, vec_size, sentence_size, num_label):
         data1 = mx.symbol.Variable('data1')
         data2 = mx.symbol.Variable('data2')
         embed_weight = mx.symbol.Variable('word_embedding')
-        # margin = mx.sym.constant(margin)
 
         def sub_sym_gen(data):
             data = mx.symbol.expand_dims(data, axis=1)
@@ -56,19 +56,23 @@ def text_cnn():
                 dropout=0.5,
                 batch_norms=1,
                 highway=True,
-                name_prefix="text_cnn",
+                name_prefix=model_name,
             )
             data = mx.sym.softmax(data)
             return data
 
         data1 = sub_sym_gen(data1)
         data2 = sub_sym_gen(data2)
-        # pairloss = mx.sym.min(mx.ndarray.array([0]), (margin + data1 - data2))
-        # sym = mx.symbol.make_loss(pairloss)
-        sym = mx.sym.concat(data1, data2)
-        print(data2.list_arguments())
-        print(data1.list_arguments())
-        # print(sym.list_arguments())
+
+        def pairwise_loss(pos_sym, neg_sym, margin):
+            pos_sym = mx.sym.slice_axis(pos_sym, axis=1, begin=0, end=1)
+            neg_sym = mx.sym.slice_axis(neg_sym, axis=1, begin=0, end=1)
+            margin = mx_constant(margin)
+            loss = mx.sym.add_n(mx.sym.negative(pos_sym), neg_sym, margin)
+            sym = mx.sym.relu(loss)
+            return sym
+
+        sym = pairwise_loss(data1, data2, margin=0.2)
         return sym
 
     sym = sym_gen(
@@ -78,13 +82,16 @@ def text_cnn():
         vec_size=vec_size,
         sentence_size=sentence_size,
         num_label=2,
-        margin=0.2,
     )
 
     plot_network(
         nn_symbol=sym,
         save_path=model_dir + "plot/network",
         node_attrs={"fixedsize": "false"},
+        shape={
+            'data1': (10, 25),
+            'data2': (10, 25),
+        },
         view=True
     )
     ############################################################################

@@ -5,7 +5,7 @@ import logging
 
 import mxnet as mx
 
-from longling.framework.ML.mxnet_old.nn.shared.nn import get_model
+from longling.framework.ML.MXnet.mxnet_old.nn.shared import get_model
 
 
 def get_numerical_dnn_symbol_without_loss(num_hiddens=[100], num_label=2, dropout=0.0, inner_dropouts=None):
@@ -77,7 +77,7 @@ def get_numerical_dnn_model(ctx, dnn_symbol, feature_num, batch_size, vec_size=-
     )
 
 def grad_verify():
-    from longling.framework.ML.mxnet_old.nn.shared.nn import NN
+    from longling.framework.ML.MXnet.mxnet_old.nn.shared import NN
     symbol = get_numerical_dnn_symbol_without_loss(
         [],
     )

@@ -3,10 +3,10 @@
 
 import logging
 
-import numpy as np
 import mxnet as mx
+import numpy as np
 
-from longling.framework.ML.mxnet_old.nn.shared.nn import get_model, get_embeding_model
+from longling.framework.ML.MXnet.mxnet_old.nn.shared import get_model, get_embeding_model
 
 
 def get_text_cnn_symbol_without_loss(sentence_size, vec_size, batch_size, vocab_size=None,

@@ -3,7 +3,7 @@
 
 def textcnn_example():
     from cnnClass import numericalCNN
-    from longling.framework.ML.mxnet_old.nn.shared.text_lib import vecDict
+    from longling.framework.ML.MXnet.mxnet_old.nn.shared import vecDict
 
     root = "../../../../../../"
     model_dir = root + "data/text_cnn/test/"

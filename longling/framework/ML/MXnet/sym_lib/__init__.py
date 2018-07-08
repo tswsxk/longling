@@ -4,3 +4,4 @@
 from __future__ import absolute_import
 
 from .nn_cell import *
+from .nn_sym import *

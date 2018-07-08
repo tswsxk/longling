@@ -3,7 +3,7 @@ import logging
 
 import mxnet as mx
 
-from longling.framework.ML.mxnet_old.nn.shared.nn import get_model
+from longling.framework.ML.MXnet.mxnet_old.nn.shared import get_model
 
 
 def get_numerical_cnn_symbol_without_loss(batch_size, feature_num, vec_size, channel=1, num_label=2,

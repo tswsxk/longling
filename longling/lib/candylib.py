@@ -46,12 +46,30 @@ def type_assert(check_tag=True, *ty_args, **ty_kwargs):
 
 def get_all_subclass(cls):
     subclass = set()
+
     def _get_all_subclass(cls, res_set):
         res_set.add(cls)
         for sub_cls in cls.__subclasses__():
             _get_all_subclass(sub_cls, res_set)
     _get_all_subclass(cls, res_set=subclass)
     return subclass
+
+
+class RegisterNameExistedError(Exception):
+    pass
+
+
+class Register(object):
+    def __init__(self):
+        self.reg = set()
+
+    def register(self, name):
+        if name not in self.reg:
+            self.reg.add(name)
+            return True
+        else:
+            raise RegisterNameExistedError("name %s existed" % name)
+
 
 
 if __name__ == '__main__':
