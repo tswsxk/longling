@@ -8,7 +8,7 @@ import commands
 import os
 import re
 
-from longling.framework.keyScene.common import FFMPEG, FFMPEG33, FFMPEG_PGC, sufset, get_video_duration_fps, \
+from longling.framework.ML.CV.keyScene import FFMPEG, FFMPEG33, FFMPEG_PGC, sufset, get_video_duration_fps, \
     get_dir_pics_list, ff_get_first_pic, ff_get_last_pic
 
 VERSION = '2017-2-27'

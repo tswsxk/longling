@@ -1,4 +1,5 @@
 numpy
 mxnet
 sklearn
+scipy
 tqdm

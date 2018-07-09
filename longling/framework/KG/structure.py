@@ -58,4 +58,4 @@ if __name__ == '__main__':
 
     # print(graph.id_graph())
     # print(gen_viz_graph(graph.id_graph()).source)
-    plot_graph(graph, view=True)
+    # plot_graph(graph, view=True)

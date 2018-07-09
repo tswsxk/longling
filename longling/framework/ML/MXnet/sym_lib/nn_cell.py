@@ -77,8 +77,6 @@ def lenet_cell(in_sym, num_output=2):
     return fc
 
 
-# def rnn_cell():
-
 def text_cnn_cell(in_sym, sentence_size, vec_size, num_output=2, filter_list=[1, 2, 3, 4], num_filter=60, dropout=0.0,
                   batch_norms=0, highway=False, name_prefix=None):
     pooled_outputs = []
@@ -127,3 +125,4 @@ def highway_cell(data, num_hidden, name_prefix=None):
     high_trans_sigmoid = mx.sym.Activation(high_trans_fc, act_type='sigmoid')
 
     return high_relu * high_trans_sigmoid + _data * (1 - high_trans_sigmoid)
+
