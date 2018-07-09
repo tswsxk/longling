@@ -12,14 +12,23 @@ from sklearn.metrics import classification_report
 from sklearn.metrics import precision_recall_fscore_support
 
 def prf_score(y_true, y_pred, sample_weight=None):
-    '''
+    """
+
+    Parameters
+    ----------
+    y_true
+    y_pred
+    sample_weight
+
+    Returns
+    -------
 
     :param y_true:
     :param y_pred:
     :param sample_weight:
     :param accelerate: None or '', process, thread
     :return:
-    '''
+    """
     labels = set(y_true)
     prf = {label: [0] * 3 for label in labels}
 
