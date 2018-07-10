@@ -40,6 +40,7 @@ def text_sim_cnn():
     model_name = "text_cnn"
 
     sentence_embedding_size = 200
+
     ############################################################################
     # network building
 
@@ -104,6 +105,7 @@ def text_sim_cnn():
     )
     ############################################################################
 
+
 # todo
 # plot data on website
 # implement Jin experiment(r-cnn)
@@ -140,9 +142,8 @@ def transE_cell(sub, rel, obj,
                            name=rel_embed_name)
 
     distance = mx.sym.add_n(sub, rel, mx.sym.negative(obj))
-    sym = mx.sym.norm(distance)
+    sym = mx.sym.norm(distance, axis=1)
     return sym
-
 
 
 def transE():
@@ -164,7 +165,7 @@ def transE():
     last_batch_handle = 'pad'
 
     begin_epoch = 0
-    num_epoch = 20
+    num_epoch = 1
     ctx = mx.cpu()
 
     # infoer
@@ -186,6 +187,7 @@ def transE():
         propagate=propagate,
     )
     validation_result_file = model_dir + "result"
+
     ############################################################################
 
     ############################################################################
@@ -256,9 +258,9 @@ def transE():
                 data = json.loads(line)
                 sub, rel, obj = data['x']
                 label = data['z']
-                subs.append(sub)
-                rels.append(rel)
-                objs.append(obj)
+                subs.append(entities_map[sub])
+                rels.append(relations_map[rel])
+                objs.append(entities_map[obj])
                 labels.append(label)
 
         return NDArrayIter(
@@ -267,7 +269,8 @@ def transE():
                 'rel': np.asarray(rels),
                 'obj': np.asarray(objs),
             },
-            label={'label': labels},
+            # label={'label': np.array(labels)},
+            label=None,
             batch_size=batch_size, last_batch_handle=last_batch_handle,
         )
 
@@ -288,6 +291,7 @@ def transE():
             rel_embed=relation_embed, rel_embed_size=r_input_dim,
             output_dim=dim,
         )
+
     def pairwise_sym_gen(margin):
         pos_sub = mx.sym.Variable('pos_sub')
         pos_obj = mx.sym.Variable('pos_obj')
@@ -301,8 +305,8 @@ def transE():
         neg_sym = transE_body(neg_sub, neg_obj, neg_rel)
 
         def pairwise_loss(pos_sym, neg_sym, margin):
-            margin = mx_constant(margin)
-            loss = mx.sym.add_n(mx.sym.negative(neg_sym), pos_sym)
+            margin = mx_constant([margin])
+            loss = mx.sym.add_n(mx.sym.negative(neg_sym), pos_sym, margin)
             sym = mx.sym.relu(loss)
             loss = mx.sym.MakeLoss(sym)
             return loss
@@ -311,17 +315,18 @@ def transE():
 
     def sym_gen():
         return transE_body(
-            mx.sym.Variable('sub'),
-            mx.sym.Variable('obj'),
-            mx.sym.Variable('rel'),
-        )
-
-    sym = sym_gen()
+                mx.sym.Variable('sub'),
+                mx.sym.Variable('obj'),
+                mx.sym.Variable('rel'),
+            )
 
 
+    sym = pairwise_sym_gen(margin)
+
+    from longling.framework.ML.MXnet.mx_model import PairWiseModule
     mod = PairWiseModule(
         symbol=sym,
-        data_names=['sub', 'rel', 'obj'],
+        data_names=['pos_sub', 'pos_rel', 'pos_obj', 'neg_sub', 'neg_rel', 'neg_obj'],
         label_names=[],
         logger=module_logger,
         context=ctx,
@@ -348,7 +353,6 @@ def transE():
         logger=train_logger,
     )
 
-
     mod.fit(
         train_data=train_data,
         # eval_data=test_data,
@@ -364,18 +368,41 @@ def transE():
         allow_missing=True,
         optimizer_params={'learning_rate': 0.0005},
         # batch_end_callback=[speedometer],
-        # epoch_end_callback=[
-        #     mx.callback.do_checkpoint(model_dir + model_name),
-        #     TqdmEpochReset(tins, "training"),
-        # ],
+        epoch_end_callback=[
+            # mx.callback.do_checkpoint(model_dir + model_name),
+            #     TqdmEpochReset(tins, "training"),
+        ],
         monitor=time_monitor,
     )
     ############################################################################
+
+    arg_params, aux_params = mod.get_params()
 
     ############################################################################
     # clean
     # tins.close()
     ############################################################################
 
+    sym = sym_gen()
+    mod = mx.mod.Module(
+        symbol=sym,
+        data_names=['sub', 'rel', 'obj'],
+        label_names=[],
+        logger=module_logger,
+        context=ctx,
+    )
+
+    mod.bind(data_shapes=test_data.provide_data, for_training=False, force_rebind=True)
+    mod.init_params(arg_params=arg_params, aux_params=aux_params)
+
+
+    preds = mod.predict(test_data)
+
+    print(preds)
+
+
+
+
 if __name__ == '__main__':
-    transE()
+    # transE()
+

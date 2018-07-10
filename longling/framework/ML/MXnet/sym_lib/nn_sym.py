@@ -87,3 +87,11 @@ def mx_constant(value, name=None, attr=None, shape=None, dtype=None, init=MyCons
         stype=stype,
         **kwargs
     )
+
+
+def pairwise_loss(pos_sym, neg_sym, margin):
+    margin = mx_constant([margin])
+    loss = mx.sym.add_n(mx.sym.negative(neg_sym), pos_sym, margin)
+    sym = mx.sym.relu(loss)
+    loss = mx.sym.MakeLoss(sym)
+    return loss
