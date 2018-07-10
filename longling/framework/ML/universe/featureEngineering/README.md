@@ -7,3 +7,6 @@ https://github.com/WillKoehrsen/feature-selector/blob/master/feature_selector/fe
 ## feature construct
 https://mp.weixin.qq.com/s?__biz=MzA3MzI4MjgzMw==&mid=2650744044&idx=4&sn=098c8a6157cc814b4648449351e8e1cf&chksm=871ae092b06d6984f0f702c6d7857697f74717b1abd4e070859c3cf678c5e0996d75537f4e77&mpshare=1&scene=1&srcid=0621Gg6IwSWHzd1XdzlaTG5E&pass_ticket=k2xPEUKdPoigs428M2DOEBfREyoLVIxnT7agI9Jx33LvjVWxk38wrBeJqTWmC4TL#rd
 https://docs.featuretools.com/
+
+### Discover Feature Engineering, How to Engineer Features and How to Get Good at It
+https://machinelearningmastery.com/discover-feature-engineering-how-to-engineer-features-and-how-to-get-good-at-it/
