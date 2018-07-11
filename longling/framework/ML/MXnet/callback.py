@@ -67,6 +67,12 @@ class Speedometer(mx.callback.Speedometer):
         self.metrics = None if metrics is None else as_list(metrics)
         self.logger = logger
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+
     def __call__(self, param):
         """Callback to Show speed."""
         count = param.nbatch
@@ -98,6 +104,12 @@ class TqdmSpeedometer(tqdm):
     def __call__(self, param):
         self.update()
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
 
 def TqdmEpochReset(tqdm_ins, desc):
     def _callback(iter_no, sym, arg, aux):
@@ -127,7 +139,6 @@ class ClassificationLogValidationMetricsCallback(object):
         self.log_f = None
         if logfile is not None:
             self.log_f = codecs.open(logfile, "w", "utf-8")
-
 
         self.loss_metrics = as_list(loss_metrics) if loss_metrics is not None and loss_metrics else None
 

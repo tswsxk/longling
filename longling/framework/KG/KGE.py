@@ -4,7 +4,7 @@
 """
 测试文件
 """
-from longling.framework.KG.dataset.construction import sro_jsonxz, pair_jsonxz
+from longling.framework.KG.dataset.construction import sro_jsonxz, pair_jsonxz, full_jsonxz
 
 from multiprocessing import Pool
 
@@ -16,10 +16,11 @@ def FB15():
     valid_file = root + "freebase_mtr100_mte100-valid.txt"
     pool = Pool()
     pool.apply_async(pair_jsonxz, args=(train_file, root + "train.jsonxz",))
-    pool.apply_async(sro_jsonxz, args=(test_file, root + "test.jsonxz",))
+    pool.apply_async(full_jsonxz, args=(test_file, root + "test.jsonxz",))
     pool.apply_async(sro_jsonxz, args=(valid_file, root + "valid.jsonxz",))
     pool.close()
     pool.join()
+    # full_jsonxz(test_file, root + "test.jsonxz")
 
 
 if __name__ == '__main__':

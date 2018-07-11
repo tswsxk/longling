@@ -1,14 +1,18 @@
 # coding:utf-8
 # created by tongshiwei on 2018/7/9
 import logging
+import time
+
+from collections import OrderedDict
 
 import mxnet as mx
 from mxnet import context as ctx
-from mxnet.module.base_module import _check_input_names
 
-import time
+from longling.lib.candylib import as_list
 
-from longling.lib.candylib import _as_list
+_as_list = as_list
+
+from longling.framework.ML.MXnet.metric import PairwiseMetric
 
 
 class PairWiseModule(mx.mod.Module):
@@ -31,16 +35,20 @@ class PairWiseModule(mx.mod.Module):
             data_names=pair_data_names, label_names=[],
             logger=logger, work_load_list=work_load_list, fixed_param_names=fixed_param_names,
             state_names=state_names, group2ctxs=group2ctxs, compression_params=compression_params,
-        )
+        ) if pairwise_symbol is not None else None
+        self.pairwise_symbol = pairwise_symbol
 
-    def pairwise_fit(self, train_data, eval_data=None, eval_metric='acc',
+    def pairwise_fit(self, train_data, eval_data=None, eval_metric=PairwiseMetric(),
                      epoch_end_callback=None, batch_end_callback=None, kvstore='local',
                      optimizer='sgd', optimizer_params=(('learning_rate', 0.01),),
                      eval_end_callback=None,
                      eval_batch_end_callback=None, initializer=mx.init.Uniform(0.01),
                      arg_params=None, aux_params=None, allow_missing=False,
                      force_rebind=False, force_init=False, begin_epoch=0, num_epoch=None,
-                     validation_metric=None, monitor=None, sparse_row_id_fn=None):
+                     validation_metric=None, monitor=None, sparse_row_id_fn=None,
+                     *args, **kwargs):
+        assert self.pairwise_symbol is not None and self.pair_module is not None, \
+            'please specify pairwise symbol'
         assert num_epoch is not None, 'please specify number of epochs'
 
         self.pair_module.bind(data_shapes=train_data.provide_data, label_shapes=train_data.provide_label,
@@ -53,8 +61,8 @@ class PairWiseModule(mx.mod.Module):
         self.pair_module.init_optimizer(kvstore=kvstore, optimizer=optimizer,
                                         optimizer_params=optimizer_params)
 
-        if validation_metric is None:
-            validation_metric = eval_metric
+        if eval_data is not None and validation_metric is None:
+            raise AssertionError("when eval data is not None, validation_metric should not be None")
         if not isinstance(eval_metric, mx.metric.EvalMetric):
             eval_metric = mx.metric.create(eval_metric)
 
@@ -84,6 +92,10 @@ class PairWiseModule(mx.mod.Module):
                 if monitor is not None:
                     monitor.toc_print()
 
+                for texec, islice in zip(self.pair_module._exec_group.execs, self.pair_module._exec_group.slices):
+                    preds = OrderedDict(zip(self.output_names, texec.outputs))
+                    eval_metric.update_dict({None: []}, preds)
+
                 if end_of_batch:
                     eval_name_vals = eval_metric.get_name_value()
 
@@ -103,7 +115,7 @@ class PairWiseModule(mx.mod.Module):
 
             # sync aux params across devices
             arg_params, aux_params = self.pair_module.get_params()
-            self.set_params(arg_params, aux_params)
+            self.pair_module.set_params(arg_params, aux_params)
 
             if epoch_end_callback is not None:
                 for callback in _as_list(epoch_end_callback):
@@ -112,6 +124,11 @@ class PairWiseModule(mx.mod.Module):
             # ----------------------------------------
             # evaluation on validation set
             if eval_data:
+                self.bind(data_shapes=eval_data.provide_data, label_shapes=eval_data.provide_label,
+                          for_training=True, force_rebind=force_rebind)
+                arg_params, aux_params = self.pair_module.get_params()
+                self.set_params(arg_params, aux_params)
+
                 res = self.score(eval_data, validation_metric,
                                  score_end_callback=eval_end_callback,
                                  batch_end_callback=eval_batch_end_callback, epoch=epoch)

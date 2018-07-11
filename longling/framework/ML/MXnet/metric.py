@@ -9,6 +9,41 @@ from sklearn.metrics import precision_recall_fscore_support
 from sklearn.metrics import log_loss
 
 
+class NoLabelMetric(EvalMetric):
+    def __init__(self, name='NoLabelMetric', output_names=None,
+                 label_names=None, **kwargs):
+        super(NoLabelMetric, self).__init__(
+            name=name,
+            output_names=output_names,
+            label_names=label_names,
+            **kwargs
+        )
+
+    def feval(self, preds):
+        raise NotImplementedError()
+
+    def update(self, labels, preds):
+        for pred in preds:
+            pred = pred.asnumpy()
+            self.num_inst += len(pred)
+            self.sum_metric += float(self.feval(pred))
+
+
+
+class PairwiseMetric(NoLabelMetric):
+    def __init__(self, name='pairwise', output_names=None,
+                 label_names=None, **kwargs):
+        super(NoLabelMetric, self).__init__(
+            name=name,
+            output_names=output_names,
+            label_names=label_names,
+            **kwargs
+        )
+
+    def feval(self, preds):
+        return self.sum_metric + sum(preds)
+
+
 class LabelBuffMetric(EvalMetric):
     '''
     带缓冲区的评测器

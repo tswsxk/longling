@@ -11,6 +11,12 @@ from longling.lib.clock import Clock
 # at the end of each batch, the toc_print method will be called
 
 class BaseMonitor(object):
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+
     def tic(self):
         raise NotImplementedError
 

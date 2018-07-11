@@ -2,7 +2,7 @@ from inspect import signature
 from functools import wraps
 
 
-def _as_list(obj):
+def as_list(obj):
     """A utility function that converts the argument to a list if it is not already.
 
     Parameters

@@ -28,7 +28,7 @@ class Evaluater(object):
         raise NotImplementedError
 
     @staticmethod
-    def format_eval_res(eval_name_value, **kwargs):
+    def format_eval_res(eval_name_value, *args, **kwargs):
         assert isinstance(eval_name_value, dict), "input should be a dict"
         raise NotImplementedError
 

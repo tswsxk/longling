@@ -17,11 +17,11 @@ class TrainBatchInfoer(object):
 
         self.output = output
 
-        self.output_formatter = "{:>5}| {:>5}" + " " * 5 + "{:>10}" + " " * 2 + "{:>10}" + " " * 5 \
+        self.output_formatter = "{:>5}| {:>7}" + " " * 5 + "{:>10}" + " " * 2 + "{:>10}" + " " * 5 \
                                 + (" " * 2).join(["{:>%s}" % min(len(index), 15) for index in loss_index]) \
                                 + (" " * 2).join(["{:>%s}" % min(len(index), 15) for index in eval_index])
 
-        self.index_prefix = self.output_formatter.format("Epoch", "Total", "Batch", "Total",
+        self.index_prefix = self.output_formatter.format("Epoch", "Total-E", "Batch", "Total-B",
                                                          *self.loss_index, *self.eval_index)
 
         self.epoch = math.nan

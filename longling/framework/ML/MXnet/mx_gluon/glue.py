@@ -3,592 +3,168 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-import json
-import logging
+import numpy as np
 
 import mxnet as mx
-import numpy as np
 from mxnet import nd, autograd, gluon
-
-from tqdm import tqdm
 
 from longling.lib.clock import Clock
 from longling.lib.utilog import config_logging
 
-from longling.framework.ML.MXnet.io_lib import VecDict
 from longling.framework.ML.MXnet.metric import PRF, Accuracy
 from longling.framework.ML.MXnet.viz import plot_network
 from longling.framework.ML.MXnet.mx_gluon.gluon_evaluater import ClassEvaluater
 from longling.framework.ML.MXnet.mx_gluon.gluon_util import TrainBatchInfoer
-from longling.framework.ML.MXnet.mx_gluon.nn_cell import TextCNN
+
+from tqdm import tqdm
+from collections import defaultdict
+import json
+import math
+
+from longling.framework.ML.MXnet.mx_gluon.gluon_sym import PairwiseLoss
 
 
-def dnn():
+def build_map(filename):
+    entities_map, e_idx = defaultdict(int), 1
+    relations_map, r_idx = defaultdict(int), 1
+    with open(filename) as f:
+        for line in tqdm(f, desc="reading file[%s]" % filename):
+            if not line.strip():
+                continue
+            pos_neg = json.loads(line)
+            pos_sub, pos_rel, pos_obj = pos_neg["x"]
+            neg_sub, neg_rel, neg_obj = pos_neg["z"]
+            for entity in [pos_sub, pos_obj, neg_sub, neg_obj]:
+                if entity not in entities_map:
+                    entities_map[entity] = e_idx
+                    e_idx += 1
+            for relation in [pos_rel, neg_rel]:
+                if relation not in relations_map:
+                    relations_map[relation] = r_idx
+                    r_idx += 1
+    return entities_map, relations_map, e_idx, r_idx
+
+
+class TransE(gluon.HybridBlock):
+    def __init__(self,
+                 entities_size, relations_size, dim=50,
+                 **kwargs):
+        super(TransE, self).__init__(**kwargs)
+
+        with self.name_scope():
+            self.entity_embedding = gluon.nn.Embedding(entities_size, dim,
+                                                       weight_initializer=mx.init.Uniform(6 / math.sqrt(dim)))
+            self.relation_embedding = gluon.nn.Embedding(relations_size, dim,
+                                                         weight_initializer=mx.init.Uniform(6 / math.sqrt(dim)))
+
+    def hybrid_forward(self, F, sub, rel, obj, **kwargs):
+        sub = self.entity_embedding(sub)
+        rel = self.relation_embedding(rel)
+        obj = self.entity_embedding(obj)
+
+        distance = F.add_n(sub, rel, mx.sym.negative(obj))
+        return F.norm(distance, axis=1)
+
+
+def transE():
     ############################################################################
     # parameters config
-    # file path
-    root = "../../../../"
-
-    model_dir = root + "data/gluon/dnn/"
-    model_name = "dnn"
-
-    data_ctx = mx.cpu()
-    model_ctx = mx.cpu()
-
-    num_outputs = 10
-    num_hiddens = [128, 64, 32]
-
-    batch_size = 64
-    begin_epoch = 0
-    epoch_num = 10
-    bp_loss_f = {"cross-entropy": gluon.loss.SoftmaxCrossEntropyLoss()}
-    loss_function = {
-
-    }
-    loss_function.update(bp_loss_f)
-
-    # infoer
-    propagate = False
-    validation_logger = config_logging(
-        filename=model_dir + "result.log",
-        logger="validation",
-        mode="w",
-        log_format="%(message)s",
-        propagate=propagate,
-    )
-    validation_result_file = model_dir + "result"
-
-    timer = Clock()
-    eval_metrics = [PRF(argmax=False), Accuracy(argmax=False)]
-    batch_infoer = TrainBatchInfoer(loss_index=[name for name in loss_function], epoch_num=epoch_num - 1)
-    evaluater = ClassEvaluater(
-        metrics=eval_metrics,
-        model_ctx=model_ctx,
-        logger=validation_logger,
-        log_f=validation_result_file
-    )
-    # viz var
-    data_shape = (784,)
-    viz_shape = {'data': (batch_size,) + data_shape}
-    ############################################################################
-
-    ############################################################################
-    # network building
-    net = gluon.nn.HybridSequential()
-    with net.name_scope():
-        for num_hidden in num_hiddens:
-            net.add(gluon.nn.Dense(num_hidden, activation="relu"))
-        net.add(gluon.nn.Dense(num_outputs))
-    net.hybridize()
-
-    ############################################################################
-    # visulization
-    x = mx.sym.var("data")
-    sym = net(x)
-    plot_network(
-        nn_symbol=sym,
-        save_path=model_dir + "plot/network",
-        shape=viz_shape,
-        node_attrs={"fixedsize": "false"},
-        view=False
-    )
-
-    ############################################################################
-
-    ############################################################################
-    # loading data
-    def transform(data, label):
-        return (data.astype(np.float32) / 255).reshape((-1,)), label.astype(np.float32)
-
-    train_data = mx.gluon.data.DataLoader(mx.gluon.data.vision.MNIST(train=True, transform=transform),
-                                          batch_size, shuffle=True)
-    test_data = mx.gluon.data.DataLoader(mx.gluon.data.vision.MNIST(train=False, transform=transform),
-                                         batch_size, shuffle=False)
-    ############################################################################
-    # epoch training
-    net.collect_params().initialize(mx.init.Normal(sigma=.1), ctx=model_ctx)
-    trainer = gluon.Trainer(net.collect_params(), 'sgd', {'learning_rate': .01})
-
-    for epoch in range(begin_epoch, epoch_num):
-        # initial
-        cumulative_losses = {name: 0 for name in loss_function}
-        batch_infoer.batch_start(epoch)
-        timer.start()
-
-        # batch training
-        for i, (data, label) in enumerate(train_data):
-            data = data.as_in_context(model_ctx)
-            label = label.as_in_context(model_ctx)
-            bp_loss = None
-            with autograd.record():
-                output = net(data)
-                for name, function in loss_function.items():
-                    loss = function(output, label)
-                    if name in bp_loss_f:
-                        bp_loss = loss
-                    loss_value = nd.sum(loss).asscalar()
-                    cumulative_losses[name] += loss_value
-            assert bp_loss is not None
-            bp_loss.backward()
-            trainer.step(data.shape[0])
-
-            if i % 1 == 0:
-                loss_values = [cumulative_loss / ((i + 1) * batch_size) for cumulative_loss in
-                               cumulative_losses.values()]
-                batch_infoer.report(i, loss_value=loss_values)
-
-        if 'num_inst' not in locals().keys() or num_inst is None:
-            num_inst = (i + 1) * batch_size
-            assert num_inst is not None
-
-        loss_values = {name: cumulative_loss / num_inst for name, cumulative_loss in
-                       cumulative_losses.items()}.items()
-        batch_infoer.batch_end(i)
-        train_time = timer.end(wall=True)
-        test_eval_res = evaluater.evaluate(test_data, net, stage="test")
-        print(evaluater.format_eval_res(epoch, test_eval_res, loss_values, train_time,
-                                        logger=evaluater.logger, log_f=evaluater.log_f)[0])
-        net.save_params(model_dir + model_name + "-%04d.parmas" % (epoch + 1))
-    net.export(model_dir + model_name)
-
-    ############################################################################
-    # clean
-    evaluater.log_f.close()
-    ############################################################################
-
-
-def cnn():
-    ############################################################################
-    # parameters config
-    # file path
-    root = "../../../../"
-
-    model_dir = root + "data/gluon/cnn/"
-    model_name = "cnn"
-
-    data_ctx = mx.cpu()
-
-    def transform(data, label):
-        return nd.transpose(data.astype(np.float32), (2, 0, 1)) / 255, label.astype(np.float32)
-
-    model_ctx = mx.cpu()
-
-    num_outputs = 10
-    num_hiddens = [512]
-
-    batch_size = 128
-    begin_epoch = 0
-    epoch_num = 10
-    bp_loss_f = {"cross-entropy": gluon.loss.SoftmaxCrossEntropyLoss()}
-    smoothing_constant = 0.01
-    loss_function = {
-
-    }
-    loss_function.update(bp_loss_f)
-
-    # infoer
-    propagate = False
-    validation_logger = config_logging(
-        filename=model_dir + "result.log",
-        logger="validation",
-        mode="w",
-        log_format="%(message)s",
-        propagate=propagate,
-    )
-    validation_result_file = model_dir + "result"
-
-    timer = Clock()
-    eval_metrics = [PRF(argmax=False), Accuracy(argmax=False)]
-    batch_infoer = TrainBatchInfoer(loss_index=[name for name in loss_function], epoch_num=epoch_num - 1)
-    evaluater = ClassEvaluater(
-        metrics=eval_metrics,
-        model_ctx=model_ctx,
-        logger=validation_logger,
-        log_f=validation_result_file
-    )
-    # viz var
-    data_shape = (1, 32, 32)
-    viz_shape = {'data': (batch_size,) + data_shape}
-    ############################################################################
-
-    ############################################################################
-    # network building
-    net = gluon.nn.HybridSequential()
-    with net.name_scope():
-        net.add(gluon.nn.Conv2D(channels=20, kernel_size=5, activation='relu'))
-        net.add(gluon.nn.MaxPool2D(pool_size=2, strides=2))
-        net.add(gluon.nn.Conv2D(channels=50, kernel_size=5, activation='relu'))
-        net.add(gluon.nn.MaxPool2D(pool_size=2, strides=2))
-        # The Flatten layer collapses all axis, except the first one, into one axis.
-        net.add(gluon.nn.Flatten())
-        for num_hidden in num_hiddens:
-            net.add(gluon.nn.Dense(num_hidden, activation="relu"))
-        net.add(gluon.nn.Dense(num_outputs))
-    net.hybridize()
-
-    ############################################################################
-    # visulization
-    x = mx.sym.var("data")
-    sym = net(x)
-    plot_network(
-        nn_symbol=sym,
-        save_path=model_dir + "plot/network",
-        shape=viz_shape,
-        node_attrs={"fixedsize": "false"},
-        view=False
-    )
-    ############################################################################
-
-    ############################################################################
-    # loading data
-    train_data = mx.gluon.data.DataLoader(mx.gluon.data.vision.MNIST(train=True, transform=transform),
-                                          batch_size, shuffle=True)
-    test_data = mx.gluon.data.DataLoader(mx.gluon.data.vision.MNIST(train=False, transform=transform),
-                                         batch_size, shuffle=False)
-    ############################################################################
-    # epoch training
-    net.collect_params().initialize(mx.init.Normal(sigma=.1), ctx=model_ctx)
-    trainer = gluon.Trainer(net.collect_params(), 'sgd', {'learning_rate': .01})
-
-    for epoch in range(begin_epoch, epoch_num):
-        # initial
-        moving_losses = {name: 0 for name in loss_function}
-        batch_infoer.batch_start(epoch)
-        timer.start()
-
-        # batch training
-        for i, (data, label) in enumerate(train_data):
-            data = data.as_in_context(model_ctx)
-            label = label.as_in_context(model_ctx)
-            bp_loss = None
-            with autograd.record():
-                output = net(data)
-                for name, function in loss_function.items():
-                    loss = function(output, label)
-                    if name in bp_loss_f:
-                        bp_loss = loss
-                    loss_value = nd.mean(loss).asscalar()
-                    moving_losses[name] = (loss_value if ((i == 0) and (epoch == 0))
-                                           else (1 - smoothing_constant) * moving_losses[
-                        name] + smoothing_constant * loss_value)
-
-            assert bp_loss is not None
-            bp_loss.backward()
-            trainer.step(data.shape[0])
-
-            if i % 1 == 0:
-                loss_values = [loss for loss in moving_losses.values()]
-                batch_infoer.report(i, loss_value=loss_values)
-
-        if 'num_inst' not in locals().keys() or num_inst is None:
-            num_inst = (i + 1) * batch_size
-            assert num_inst is not None
-
-        loss_values = {name: loss for name, loss in moving_losses.items()}.items()
-        batch_infoer.batch_end(i)
-        train_time = timer.end(wall=True)
-        test_eval_res = evaluater.evaluate(test_data, net, stage="test")
-        print(evaluater.format_eval_res(epoch, test_eval_res, loss_values, train_time,
-                                        logger=evaluater.logger, log_f=evaluater.log_f)[0])
-        net.save_params(model_dir + model_name + "-%04d.parmas" % (epoch + 1))
-    net.export(model_dir + model_name)
-
-    ############################################################################
-    # clean
-    evaluater.log_f.close()
-    ############################################################################
-
-
-def cnn_use():
-    root = "../../../../"
-
-    model_dir = root + "data/gluon/cnn/"
-    model_name = "cnn"
-
-    epoch = 10
-
-    def transform(data, label):
-        return nd.transpose(data.astype(np.float32), (2, 0, 1)) / 255, label.astype(np.float32)
-
-    batch_size = 128
-
-    filename = model_dir + model_name + "-%04d.parmas" % epoch
-
-    model = nd.load(filename)
-    net = gluon.nn.HybridSequential()
-    with net.name_scope():
-        net.add(model)
-    test_data = mx.gluon.data.DataLoader(mx.gluon.data.vision.MNIST(train=False, transform=transform),
-                                         batch_size, shuffle=False)
-    for data, label in test_data:
-        output = net(data)
-        break
-
-    mx.gluon.model_zoo.vision.alexnet()
-def text_cnn():
-    ############################################################################
-    # parameters config
-    # file path
-    root = "../../../../"
-
-    model_dir = root + "data/gluon/text_cnn/"
-    model_name = "text_cnn"
-
-    dict_file = root + "data/word2vec/comment.vec.dat"
-    train_file = root + "data/text/mini.instance.train"
-    test_file = root + "data/text/mini.instance.test"
-
-    data_ctx = mx.cpu()
-    model_ctx = mx.cpu()
-
-    sentence_size = 25
-    num_outputs = 2
-
-    batch_size = 128
-    begin_epoch = 0
-    epoch_num = 10
-    bp_loss_f = {"cross-entropy": gluon.loss.SoftmaxCrossEntropyLoss()}
-    smoothing_constant = 0.01
-    loss_function = {
-
-    }
-    loss_function.update(bp_loss_f)
-
-    # infoer
-    propagate = False
-    validation_logger = config_logging(
-        filename=model_dir + "result.log",
-        logger="validation",
-        mode="w",
-        log_format="%(message)s",
-        propagate=propagate,
-    )
-    validation_result_file = model_dir + "result"
-
-    timer = Clock()
-    eval_metrics = [PRF(argmax=False), Accuracy(argmax=False)]
-    batch_infoer = TrainBatchInfoer(loss_index=[name for name in loss_function], epoch_num=epoch_num - 1)
-    evaluater = ClassEvaluater(
-        metrics=eval_metrics,
-        model_ctx=model_ctx,
-        logger=validation_logger,
-        log_f=validation_result_file
-    )
-    ############################################################################
-
-    ############################################################################
-    # loading data
-    w2v_dict = VecDict(dict_file)
-    vocab_size, vec_size = w2v_dict.vocab_size, w2v_dict.vec_size
-    embedding = w2v_dict.embedding
-
-    def get_iter(filename):
-        datas = []
-        labels = []
-        with open(filename) as f:
-            for line in tqdm(f, desc="reading file[%s]" % filename):
-                if not line.strip():
-                    continue
-                data = json.loads(line)
-                datas.extend(w2v_dict.s2i([data['x']], sentence_size=sentence_size, sentence_split=True).tolist())
-                labels.append(int(data['z']))
-
-        return gluon.data.DataLoader(gluon.data.ArrayDataset(datas, labels), batch_size=batch_size, shuffle=True)
-
-    train_data = get_iter(train_file)
-    test_data = get_iter(test_file)
-    ############################################################################
-
-    ############################################################################
-    # network building
-    net = TextCNN(sentence_size, vec_size, vocab_size=vocab_size, dropout=0.5, batch_norms=1, highway=True)
-    net.hybridize()
-    ############################################################################
-
-    ############################################################################
-    # visulization
-    # viz var
-    data_shape = (sentence_size,)
-    viz_shape = {'data': (batch_size,) + data_shape}
-
-    x = mx.sym.var("data")
-    sym = net(x)
-    plot_network(
-        nn_symbol=sym,
-        save_path=model_dir + "plot/network",
-        shape=viz_shape,
-        node_attrs={"fixedsize": "false"},
-        view=False
-    )
-    ############################################################################
-
-    ############################################################################
-    # epoch training
-    net.collect_params().initialize(mx.init.Normal(sigma=.1), ctx=model_ctx)
-    net.embedding.weight.set_data(nd.array(embedding).as_in_context(model_ctx))
-    trainer = gluon.Trainer(net.collect_params(), 'sgd', {'learning_rate': .01})
-
-    for epoch in range(begin_epoch, epoch_num):
-        # initial
-        moving_losses = {name: 0 for name in loss_function}
-        batch_infoer.batch_start(epoch)
-        timer.start()
-
-        # batch training
-        for i, (data, label) in enumerate(train_data):
-            data = data.as_in_context(model_ctx)
-            label = label.as_in_context(model_ctx)
-            bp_loss = None
-            with autograd.record():
-                output = net(data)
-                for name, function in loss_function.items():
-                    loss = function(output, label)
-                    if name in bp_loss_f:
-                        bp_loss = loss
-                    loss_value = nd.mean(loss).asscalar()
-                    moving_losses[name] = (loss_value if ((i == 0) and (epoch == 0))
-                                           else (1 - smoothing_constant) * moving_losses[
-                        name] + smoothing_constant * loss_value)
-
-            assert bp_loss is not None
-            bp_loss.backward()
-            trainer.step(data.shape[0])
-
-            if i % 1 == 0:
-                loss_values = [loss for loss in moving_losses.values()]
-                batch_infoer.report(i, loss_value=loss_values)
-
-        if 'num_inst' not in locals().keys() or num_inst is None:
-            num_inst = (i + 1) * batch_size
-            assert num_inst is not None
-
-        loss_values = {name: loss for name, loss in moving_losses.items()}.items()
-        batch_infoer.batch_end(i)
-        train_time = timer.end(wall=True)
-        test_eval_res = evaluater.evaluate(test_data, net, stage="test")
-        print(evaluater.format_eval_res(epoch, test_eval_res, loss_values, train_time,
-                                        logger=evaluater.logger, log_f=evaluater.log_f)[0])
-        net.save_params(model_dir + model_name + "-%04d.parmas" % (epoch + 1))
-    net.export(model_dir + model_name)
-
-    ############################################################################
-    # clean
-    evaluater.log_f.close()
-    ############################################################################
-
-
-if __name__ == '__main__':
-    # dnn()
-    # cnn()
-    # text_cnn()
-
-    # cnn_use()
-
-    # from longling.framework.ML.mxnet.mx_gluon.nn_cell import TextCNN
-    # net = TextCNN(100, 50, dropout=0.5, batch_norms=1, highway=True)
-    # net.collect_params().initialize(mx.init.Normal(sigma=.1), ctx=mx.cpu())
-    # # d = nd.ones((3, 1, 100, 50))
-    # # print(net(d))
-    #
-    # root = "../../../../"
-    #
-    # model_dir = root + "data/gluon/text_cnn/"
-    #
-    # # net.hybridize()
-    # x = mx.sym.var("data")
-    # sym = net(x)
-    # plot_network(
-    #     nn_symbol=sym,
-    #     save_path=model_dir + "plot/network",
-    #     shape={'data': (3, 1, 100, 50)},
-    #     node_attrs={"fixedsize": "false"},
-    #     show_tag=True,
-    # )
-    ############################################################################
-    # parameters config
-    dim = 60
-
     # file path
     root = "../../../../"
 
     model_dir = root + "data/gluon/transE/"
     model_name = "transE"
 
-    entity_dict_file = model_dir + "embedding/FB15%s.ent.dat" % dim
-    relation_dict_file = model_dir + "embedding/FB15%s.ent.dat" % dim
-
     train_file = root + "data/KG/FB15/train.jsonxz"
     test_file = root + "data/KG/FB15/test.jsonxz"
 
-    data_ctx = mx.cpu()
     model_ctx = mx.cpu()
 
     batch_size = 128
     begin_epoch = 0
     epoch_num = 10
-    bp_loss_f = {"cross-entropy": gluon.loss.SoftmaxCrossEntropyLoss()}
+
+    # infoer
+    bp_loss_f = {"pairwise_loss": PairwiseLoss(None, -1)}
     smoothing_constant = 0.01
     loss_function = {
 
     }
     loss_function.update(bp_loss_f)
-
-    # infoer
-    propagate = False
-    validation_logger = config_logging(
-        filename=model_dir + "result.log",
-        logger="validation",
-        mode="w",
-        log_format="%(message)s",
-        propagate=propagate,
-    )
-    validation_result_file = model_dir + "result"
-
     timer = Clock()
-    eval_metrics = [PRF(argmax=False), Accuracy(argmax=False)]
     batch_infoer = TrainBatchInfoer(loss_index=[name for name in loss_function], epoch_num=epoch_num - 1)
-    evaluater = ClassEvaluater(
-        metrics=eval_metrics,
-        model_ctx=model_ctx,
-        logger=validation_logger,
-        log_f=validation_result_file
-    )
+
+    # viz var
+    data_shape = (1,)
+    viz_shape = {
+        'sub': (batch_size,) + data_shape,
+        'rel': (batch_size,) + data_shape,
+        'obj': (batch_size,) + data_shape,
+    }
     ############################################################################
 
     ############################################################################
+    entities_map, relations_map, entities_size, relations_size = build_map(train_file)
 
-    def get_iter(filename):
-        datas = []
-        labels = []
+    def get_train_iter(filename):
+        pos_subs, pos_rels, pos_objs = [], [], []
+        neg_subs, neg_rels, neg_objs = [], [], []
         with open(filename) as f:
             for line in tqdm(f, desc="reading file[%s]" % filename):
                 if not line.strip():
                     continue
-                data = json.loads(line)
-                datas.extend(w2v_dict.s2i([data['x']], sentence_size=sentence_size, sentence_split=True).tolist())
-                labels.append(int(data['z']))
+                pos_neg = json.loads(line)
+                pos_sub, pos_rel, pos_obj = pos_neg["x"]
+                pos_subs.append(entities_map[pos_sub])
+                pos_rels.append(relations_map[pos_rel])
+                pos_objs.append(entities_map[pos_obj])
+                neg_sub, neg_rel, neg_obj = pos_neg["z"]
+                neg_subs.append(entities_map[neg_sub])
+                neg_rels.append(relations_map[neg_rel])
+                neg_objs.append(entities_map[neg_obj])
 
-        return gluon.data.DataLoader(gluon.data.ArrayDataset(datas, labels), batch_size=batch_size, shuffle=True)
+        return gluon.data.DataLoader(
+            gluon.data.ArrayDataset(pos_subs, pos_rels, pos_objs, neg_subs, neg_rels, neg_objs), batch_size=batch_size,
+            shuffle=True)
 
+    def get_test_iter(filename):
+        pos_negs = []
+        with open(filename) as f:
+            for i, line in tqdm(enumerate(f), desc="reading file[%s]" % filename):
+                if not line.strip():
+                    continue
+                pos_neg = json.loads(line)
+                pos_sub, pos_rel, pos_obj = pos_neg["x"]
+                pos_sub = entities_map[pos_sub]
+                pos_rel = relations_map[pos_rel]
+                pos_obj = entities_map[pos_obj]
+                negs = []
+                for neg_triple in pos_neg["z"]:
+                    neg_sub, neg_rel, neg_obj = neg_triple
+                    negs.append((entities_map[neg_sub], relations_map[neg_rel], entities_map[neg_obj]))
+                pos_negs.append([(pos_sub, pos_rel, pos_obj)] + negs)
+                if i > 10:
+                    break
+        return pos_negs
 
-    train_data = get_iter(train_file)
-    test_data = get_iter(test_file)
-    ############################################################################
+    train_data = get_train_iter(train_file)
+    test_data = get_test_iter(test_file)
 
     ############################################################################
     # network building
-    net = TextCNN(sentence_size, vec_size, vocab_size=vocab_size, dropout=0.5, batch_norms=1, highway=True)
+    net = TransE(
+        entities_size=entities_size,
+        relations_size=relations_size,
+        dim=50,
+    )
     net.hybridize()
-    ############################################################################
 
     ############################################################################
     # visulization
-    # viz var
-    data_shape = (sentence_size,)
-    viz_shape = {'data': (batch_size,) + data_shape}
-
-    x = mx.sym.var("data")
-    sym = net(x)
+    sub = mx.sym.var("sub")
+    rel = mx.sym.var("rel")
+    obj = mx.sym.var("obj")
+    sym = net(sub, rel, obj)
     plot_network(
         nn_symbol=sym,
         save_path=model_dir + "plot/network",
@@ -598,56 +174,69 @@ if __name__ == '__main__':
     )
     ############################################################################
 
-    ############################################################################
     # epoch training
     net.collect_params().initialize(mx.init.Normal(sigma=.1), ctx=model_ctx)
-    net.embedding.weight.set_data(nd.array(embedding).as_in_context(model_ctx))
     trainer = gluon.Trainer(net.collect_params(), 'sgd', {'learning_rate': .01})
 
     for epoch in range(begin_epoch, epoch_num):
         # initial
-        moving_losses = {name: 0 for name in loss_function}
-        batch_infoer.batch_start(epoch)
         timer.start()
+        batch_infoer.batch_start(epoch)
+        moving_losses = {name: 0 for name in loss_function}
+        bp_loss = None
 
         # batch training
-        for i, (data, label) in enumerate(train_data):
-            data = data.as_in_context(model_ctx)
-            label = label.as_in_context(model_ctx)
-            bp_loss = None
+        for i, (pos_sub, pos_rel, pos_obj, neg_sub, neg_rel, neg_obj) in enumerate(train_data):
+            pos_sub = pos_sub.as_in_context(model_ctx)
+            pos_rel = pos_rel.as_in_context(model_ctx)
+            pos_obj = pos_obj.as_in_context(model_ctx)
+            neg_sub = neg_sub.as_in_context(model_ctx)
+            neg_rel = neg_rel.as_in_context(model_ctx)
+            neg_obj = neg_obj.as_in_context(model_ctx)
             with autograd.record():
-                output = net(data)
+                neg_out = net(pos_sub, pos_rel, pos_obj)
+                pos_out = net(neg_sub, neg_rel, neg_obj)
                 for name, function in loss_function.items():
-                    loss = function(output, label)
+                    loss = function(pos_out, neg_out)
                     if name in bp_loss_f:
                         bp_loss = loss
                     loss_value = nd.mean(loss).asscalar()
                     moving_losses[name] = (loss_value if ((i == 0) and (epoch == 0))
                                            else (1 - smoothing_constant) * moving_losses[
                         name] + smoothing_constant * loss_value)
-
+            # assert bp_loss is not None
             assert bp_loss is not None
             bp_loss.backward()
-            trainer.step(data.shape[0])
-
+            trainer.step(batch_size=batch_size)
+            #
             if i % 1 == 0:
                 loss_values = [loss for loss in moving_losses.values()]
                 batch_infoer.report(i, loss_value=loss_values)
-
-        if 'num_inst' not in locals().keys() or num_inst is None:
-            num_inst = (i + 1) * batch_size
-            assert num_inst is not None
-
-        loss_values = {name: loss for name, loss in moving_losses.items()}.items()
         batch_infoer.batch_end(i)
-        train_time = timer.end(wall=True)
-        test_eval_res = evaluater.evaluate(test_data, net, stage="test")
-        print(evaluater.format_eval_res(epoch, test_eval_res, loss_values, train_time,
-                                        logger=evaluater.logger, log_f=evaluater.log_f)[0])
-        net.save_params(model_dir + model_name + "-%04d.parmas" % (epoch + 1))
-    net.export(model_dir + model_name)
 
-    ############################################################################
-    # clean
-    evaluater.log_f.close()
-    ############################################################################
+        train_time = timer.end(wall=True)
+
+        for data in tqdm(test_data, "testing"):
+            subs, rels, objs = [], [], []
+            for d in data:
+                subs.append(d[0])
+                rels.append(d[1])
+                objs.append(d[2])
+            eval_data = gluon.data.ArrayDataset(subs, rels, objs),
+            res = net(eval_data)
+            print(res)
+
+    #     test_eval_res = evaluater.evaluate(test_data, net, stage="test")
+    #     print(evaluater.format_eval_res(epoch, test_eval_res, loss_values, train_time,
+    #                                     logger=evaluater.logger, log_f=evaluater.log_f)[0])
+    #     net.save_params(model_dir + model_name + "-%04d.parmas" % (epoch + 1))
+    # net.export(model_dir + model_name)
+    #
+    # ############################################################################
+    # # clean
+    # evaluater.log_f.close()
+    # ############################################################################
+
+
+if __name__ == '__main__':
+    transE()

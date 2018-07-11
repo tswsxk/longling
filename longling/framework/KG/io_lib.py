@@ -66,6 +66,24 @@ def rdf2rso(rdf_triples):
     return rso, entities, relations
 
 
+def rdf2ors(rdf_triples):
+    rso = {}
+    entities = set()
+    relations = set()
+    for rdf_triple in tqdm(rdf_triples):
+        entities.add(rdf_triple[0])
+        entities.add(rdf_triple[2])
+        relations.add(rdf_triple[1])
+
+        if rdf_triple[2] not in rso:
+            rso[rdf_triple[2]] = {}
+        if rdf_triple[1] not in rso[rdf_triple[2]]:
+            rso[rdf_triple[2]][rdf_triple[1]] = set()
+        rso[rdf_triple[2]][rdf_triple[1]].add(rdf_triple[0])
+
+    return rso, entities, relations
+
+
 def plain2sro(loc_plain, loc_sro):
     rdf_triples = load_plain(loc_plain)
     sro, _, _ = rdf2sro(rdf_triples)

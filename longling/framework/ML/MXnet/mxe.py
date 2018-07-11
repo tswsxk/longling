@@ -20,16 +20,17 @@ from tqdm import tqdm
 from longling.framework.ML.MXnet.callback import tqdm_speedometer, \
     ClassificationLogValidationMetricsCallback, Speedometer, \
     TqdmEpochReset
-from longling.framework.ML.MXnet.metric import PRF, Accuracy, CrossEntropy
+from longling.framework.ML.MXnet.metric import PRF, Accuracy, CrossEntropy, PairwiseMetric
 from longling.framework.ML.MXnet.viz import plot_network, form_shape
 from longling.framework.ML.MXnet.io_lib import DictJsonIter, VecDict, SimpleBucketIter
 from longling.framework.ML.MXnet.monitor import TimeMonitor
 from longling.framework.ML.MXnet.sym_lib import lenet_cell, text_cnn_cell, mx_constant
 from longling.framework.ML.MXnet.util import get_fine_tune_model
+from longling.framework.ML.MXnet.sym_lib import pairwise_loss
 
 from longling.lib.utilog import config_logging
-from longling.lib.candylib import _as_list
-
+from longling.lib.candylib import as_list
+_as_list = as_list
 
 def text_sim_cnn():
     vocab_size = 365000
@@ -165,7 +166,7 @@ def transE():
     last_batch_handle = 'pad'
 
     begin_epoch = 0
-    num_epoch = 1
+    num_epoch = 20
     ctx = mx.cpu()
 
     # infoer
@@ -304,14 +305,11 @@ def transE():
         pos_sym = transE_body(pos_sub, pos_rel, pos_obj)
         neg_sym = transE_body(neg_sub, neg_obj, neg_rel)
 
-        def pairwise_loss(pos_sym, neg_sym, margin):
-            margin = mx_constant([margin])
-            loss = mx.sym.add_n(mx.sym.negative(neg_sym), pos_sym, margin)
-            sym = mx.sym.relu(loss)
-            loss = mx.sym.MakeLoss(sym)
-            return loss
-
-        return pairwise_loss(pos_sym, neg_sym, margin)
+        return pairwise_loss(
+            pos_sym=neg_sym,
+            neg_sym=pos_sym,
+            margin=margin
+        )
 
     def sym_gen():
         return transE_body(
@@ -321,13 +319,16 @@ def transE():
             )
 
 
-    sym = pairwise_sym_gen(margin)
+    sym = sym_gen()
+    pair_sym = pairwise_sym_gen(margin)
 
     from longling.framework.ML.MXnet.mx_model import PairWiseModule
     mod = PairWiseModule(
         symbol=sym,
-        data_names=['pos_sub', 'pos_rel', 'pos_obj', 'neg_sub', 'neg_rel', 'neg_obj'],
+        data_names=['sub', 'rel', 'obj'],
         label_names=[],
+        pairwise_symbol=pair_sym,
+        pair_data_names=['pos_sub', 'pos_rel', 'pos_obj', 'neg_sub', 'neg_rel', 'neg_obj'],
         logger=module_logger,
         context=ctx,
     )
@@ -343,66 +344,38 @@ def transE():
 
     ############################################################################
     # fitting
-    time_monitor = TimeMonitor()
-    # tins = tqdm_speedometer()
-    cross_entropy = CrossEntropy()
     speedometer = Speedometer(
         batch_size=batch_size,
         frequent=100,
-        metrics=cross_entropy,
+        # metrics=cross_entropy,
         logger=train_logger,
     )
-
-    mod.fit(
-        train_data=train_data,
-        # eval_data=test_data,
-        # eval_metric=[PRF(), Accuracy(), cross_entropy],
-        # eval_end_callback=ClassificationLogValidationMetricsCallback(
-        #     time_monitor,
-        #     logger=validation_logger,
-        #     logfile=validation_result_file,
-        # ),
-        begin_epoch=begin_epoch,
-        num_epoch=num_epoch,
-        optimizer='rmsprop',
-        allow_missing=True,
-        optimizer_params={'learning_rate': 0.0005},
-        # batch_end_callback=[speedometer],
-        epoch_end_callback=[
-            # mx.callback.do_checkpoint(model_dir + model_name),
-            #     TqdmEpochReset(tins, "training"),
-        ],
-        monitor=time_monitor,
-    )
+    with tqdm_speedometer() as tins, TimeMonitor() as time_monitor:
+        mod.pairwise_fit(
+            train_data=train_data,
+            eval_metric=[PairwiseMetric()],
+            # eval_data=test_data,
+            # validation_metric=[PRF(), Accuracy(), cross_entropy],
+            # eval_end_callback=ClassificationLogValidationMetricsCallback(
+            #     time_monitor,
+            #     logger=validation_logger,
+            #     logfile=validation_result_file,
+            # ),
+            begin_epoch=begin_epoch,
+            num_epoch=num_epoch,
+            optimizer='rmsprop',
+            allow_missing=True,
+            optimizer_params={'learning_rate': 0.0005},
+            batch_end_callback=[tins],
+            epoch_end_callback=[
+                # mx.callback.do_checkpoint(model_dir + model_name),
+                TqdmEpochReset(tins, "training"),
+            ],
+            monitor=time_monitor,
+        )
     ############################################################################
-
-    arg_params, aux_params = mod.get_params()
-
-    ############################################################################
-    # clean
-    # tins.close()
-    ############################################################################
-
-    sym = sym_gen()
-    mod = mx.mod.Module(
-        symbol=sym,
-        data_names=['sub', 'rel', 'obj'],
-        label_names=[],
-        logger=module_logger,
-        context=ctx,
-    )
-
-    mod.bind(data_shapes=test_data.provide_data, for_training=False, force_rebind=True)
-    mod.init_params(arg_params=arg_params, aux_params=aux_params)
-
-
-    preds = mod.predict(test_data)
-
-    print(preds)
-
-
 
 
 if __name__ == '__main__':
-    # transE()
+    transE()
 
