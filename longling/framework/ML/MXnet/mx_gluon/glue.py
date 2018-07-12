@@ -24,6 +24,35 @@ import math
 from longling.framework.ML.MXnet.mx_gluon.gluon_sym import PairwiseLoss
 
 
+def eval(test_data_part, net):
+    top10 = 0
+    for i, data in tqdm(enumerate(test_data_part), "testing"):
+        subs, rels, objs = [], [], []
+        for d in data:
+            subs.append(d[0])
+            rels.append(d[1])
+            objs.append(d[2])
+        eval_data = gluon.data.DataLoader(gluon.data.ArrayDataset(subs, rels, objs),
+                                          batch_size=len(subs), shuffle=False)
+
+        res = None
+        for (sub, rel, obj) in eval_data:
+            if res is None:
+                res = net(sub, rel, obj)
+            else:
+                res.concat(net(sub, rel, obj))
+        res = res.asnumpy().tolist()
+        smaller = 0
+        top10 += 1
+        for n in res[1:]:
+            if n < res[0]:
+                smaller += 1
+            if smaller >= 10:
+                top10 -= 1
+                break
+    return top10
+
+
 def build_map(filename):
     entities_map, e_idx = defaultdict(int), 1
     relations_map, r_idx = defaultdict(int), 1
@@ -48,27 +77,45 @@ def build_map(filename):
 class TransE(gluon.HybridBlock):
     def __init__(self,
                  entities_size, relations_size, dim=50,
-                 **kwargs):
+                 d='L1', **kwargs):
         super(TransE, self).__init__(**kwargs)
+        self.d = d
 
         with self.name_scope():
             self.entity_embedding = gluon.nn.Embedding(entities_size, dim,
                                                        weight_initializer=mx.init.Uniform(6 / math.sqrt(dim)))
+
             self.relation_embedding = gluon.nn.Embedding(relations_size, dim,
                                                          weight_initializer=mx.init.Uniform(6 / math.sqrt(dim)))
 
-    def hybrid_forward(self, F, sub, rel, obj, **kwargs):
-        sub = self.entity_embedding(sub)
-        rel = self.relation_embedding(rel)
-        obj = self.entity_embedding(obj)
+            self.embedding_normaliztion = gluon.nn.LayerNorm()
+            self.batch_norm = gluon.nn.BatchNorm()
 
-        distance = F.add_n(sub, rel, mx.sym.negative(obj))
-        return F.norm(distance, axis=1)
+    def hybrid_forward(self, F, sub, rel, obj, **kwargs):
+        sub = self.embedding_normaliztion(self.entity_embedding(sub))
+        rel = self.embedding_normaliztion(self.relation_embedding(rel))
+        obj = self.embedding_normaliztion(self.entity_embedding(obj))
+
+        sub = self.batch_norm(sub)
+        rel = self.batch_norm(rel)
+        obj = self.batch_norm(obj)
+        distance = F.add_n(sub, rel, F.negative(obj))
+        if self.d == 'L2':
+            return F.norm(distance, axis=1)
+        elif self.d == 'L1':
+            return F.sum(F.abs(distance), axis=1)
 
 
 def transE():
     ############################################################################
     # parameters config
+    dim = 50
+    gamma = 1
+    d = 'L1'
+    lr = 0.01
+    processer = 1
+    from multiprocessing import Pool
+
     # file path
     root = "../../../../"
 
@@ -77,6 +124,7 @@ def transE():
 
     train_file = root + "data/KG/FB15/train.jsonxz"
     test_file = root + "data/KG/FB15/test.jsonxz"
+    validation_result_file = model_dir + "result"
 
     model_ctx = mx.cpu()
 
@@ -85,7 +133,20 @@ def transE():
     epoch_num = 10
 
     # infoer
-    bp_loss_f = {"pairwise_loss": PairwiseLoss(None, -1)}
+    validation_logger = config_logging(
+        filename=model_dir + "result.log",
+        logger="validation",
+        mode="w",
+        log_format="%(message)s",
+    )
+    evaluater = ClassEvaluater(
+        # metrics=eval_metrics,
+        model_ctx=model_ctx,
+        logger=validation_logger,
+        log_f=validation_result_file
+    )
+
+    bp_loss_f = {"pairwise_loss": PairwiseLoss(None, -1, margin=gamma)}
     smoothing_constant = 0.01
     loss_function = {
 
@@ -143,19 +204,24 @@ def transE():
                     neg_sub, neg_rel, neg_obj = neg_triple
                     negs.append((entities_map[neg_sub], relations_map[neg_rel], entities_map[neg_obj]))
                 pos_negs.append([(pos_sub, pos_rel, pos_obj)] + negs)
-                if i > 10:
-                    break
         return pos_negs
 
     train_data = get_train_iter(train_file)
     test_data = get_test_iter(test_file)
+    if processer > 1:
+        p_size = math.floor(len(test_data) / processer)
+        test_data_parts = [test_data[k * p_size: (k + 1) * p_size + 1] for k in range(processer)]
+    else:
+        p_size = None
+        test_data_parts = None
 
     ############################################################################
     # network building
     net = TransE(
         entities_size=entities_size,
         relations_size=relations_size,
-        dim=50,
+        dim=dim,
+        d=d,
     )
     net.hybridize()
 
@@ -176,7 +242,7 @@ def transE():
 
     # epoch training
     net.collect_params().initialize(mx.init.Normal(sigma=.1), ctx=model_ctx)
-    trainer = gluon.Trainer(net.collect_params(), 'sgd', {'learning_rate': .01})
+    trainer = gluon.Trainer(net.collect_params(), 'sgd', {'learning_rate': lr})
 
     for epoch in range(begin_epoch, epoch_num):
         # initial
@@ -216,26 +282,27 @@ def transE():
 
         train_time = timer.end(wall=True)
 
-        for data in tqdm(test_data, "testing"):
-            subs, rels, objs = [], [], []
-            for d in data:
-                subs.append(d[0])
-                rels.append(d[1])
-                objs.append(d[2])
-            eval_data = gluon.data.ArrayDataset(subs, rels, objs),
-            res = net(eval_data)
-            print(res)
+        if processer > 1:
+            pool = Pool()
+            top10s = []
+            for i, test_data_part in enumerate(test_data_parts):
+                top10s.append(pool.apply_async(eval, args=(test_data_part, net, )))
+            pool.close()
+            pool.join()
+            top10_res = sum([top10.get() for top10 in top10s]) / len(test_data)
+        else:
+            top10_res = eval(test_data, net) / len(test_data)
 
-    #     test_eval_res = evaluater.evaluate(test_data, net, stage="test")
-    #     print(evaluater.format_eval_res(epoch, test_eval_res, loss_values, train_time,
-    #                                     logger=evaluater.logger, log_f=evaluater.log_f)[0])
-    #     net.save_params(model_dir + model_name + "-%04d.parmas" % (epoch + 1))
-    # net.export(model_dir + model_name)
-    #
-    # ############################################################################
-    # # clean
-    # evaluater.log_f.close()
-    # ############################################################################
+        loss_values = {name: loss for name, loss in moving_losses.items()}.items()
+        print(evaluater.format_eval_res(epoch, {'hits@10': top10_res}, loss_values, train_time,
+                                        logger=evaluater.logger, log_f=evaluater.log_f)[0])
+        net.save_params(model_dir + model_name + "-%04d.parmas" % (epoch + 1))
+    net.export(model_dir + model_name)
+
+    ############################################################################
+    # clean
+    evaluater.log_f.close()
+    ############################################################################
 
 
 if __name__ == '__main__':

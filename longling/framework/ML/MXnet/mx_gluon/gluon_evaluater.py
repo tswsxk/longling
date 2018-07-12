@@ -63,7 +63,7 @@ class ClassEvaluater(Evaluater):
             msg += "\tValidation Accuracy: %f" % name_value['accuracy']
             data['accuracy'] = accuracy
 
-        del name_value['accuracy']
+            del name_value['accuracy']
 
         if loss_name_value is not None:
             msg += "\tLoss - "

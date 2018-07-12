@@ -11,5 +11,5 @@
 
 ### hybrid_forward
 #### 第一个参数 F
-等价于 mx.sym.
+等价于 mxnet.ndarray
 
