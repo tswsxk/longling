@@ -14,9 +14,9 @@ from longling.base import string_types
 
 
 class Evaluater(object):
-    def __init__(self, metrics, model_ctx=mx.cpu(), logger=logging, log_f=None):
+    def __init__(self, metrics=None, model_ctx=mx.cpu(), logger=logging, log_f=None):
         if not isinstance(metrics, mx.metric.EvalMetric):
-            self.metrics = mx.metric.create(metrics)
+            self.metrics = mx.metric.create(metrics) if metrics is not None else None
         self.model_ctx = model_ctx
         self.logger = logger
         if log_f is not None and isinstance(log_f, string_types):
@@ -28,9 +28,35 @@ class Evaluater(object):
         raise NotImplementedError
 
     @staticmethod
-    def format_eval_res(eval_name_value, *args, **kwargs):
+    def format_eval_res(epoch, eval_name_value, loss_name_value=None, train_time=None, output=True, *args, **kwargs):
         assert isinstance(eval_name_value, dict), "input should be a dict"
-        raise NotImplementedError
+        data = {}
+        msg = 'Epoch [%d]:' % epoch
+        data['iteration'] = epoch
+        if train_time is not None:
+            msg += "\tTrain Time-%.3fs" % train_time
+            data['train_time'] = train_time
+
+        if loss_name_value is not None:
+            msg += "\tLoss - "
+            for n, v in loss_name_value:
+                msg += "%s: %f" % (n, v)
+
+        name_value = dict(eval_name_value)
+        for name, value in name_value.items():
+            msg += "\tValidation %s: %f" % (name, value)
+            data[name] = value
+
+        if output:
+            logger = kwargs.get('logger', logging)
+            logger.info(msg)
+            if kwargs.get('log_f', None) is not None:
+                log_f = kwargs['log_f']
+                try:
+                    print(json.dumps(data, ensure_ascii=False), file=log_f)
+                except Exception as e:
+                    logger.warning(e)
+        return msg, data
 
 
 class ClassEvaluater(Evaluater):
@@ -49,13 +75,18 @@ class ClassEvaluater(Evaluater):
         return self.metrics.get_name_value()
 
     @staticmethod
-    def format_eval_res(epoch, eval_name_value, loss_name_value=None, train_time=None, output=True, **kwargs):
+    def format_eval_res(epoch, eval_name_value, loss_name_value=None, train_time=None, output=True, *args, **kwargs):
         data = {}
         msg = 'Epoch [%d]:' % epoch
         data['iteration'] = epoch
         if train_time is not None:
             msg += "\tTrain Time-%.3fs" % train_time
             data['train_time'] = train_time
+
+        if loss_name_value is not None:
+            msg += "\tLoss - "
+            for n, v in loss_name_value:
+                msg += "%s: %f" % (n, v)
 
         name_value = dict(eval_name_value)
         if 'accuracy' in name_value:
@@ -64,11 +95,6 @@ class ClassEvaluater(Evaluater):
             data['accuracy'] = accuracy
 
             del name_value['accuracy']
-
-        if loss_name_value is not None:
-            msg += "\tLoss - "
-            for n, v in loss_name_value:
-                msg += "%s: %f" % (n, v)
 
         prf = {}
         eval_ids = set()

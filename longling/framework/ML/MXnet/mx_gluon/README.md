@@ -11,5 +11,6 @@
 
 ### hybrid_forward
 #### 第一个参数 F
-等价于 mxnet.ndarray
+等价于 mxnet.ndarray 或 mxnet.symbol
+根据输入变化
 

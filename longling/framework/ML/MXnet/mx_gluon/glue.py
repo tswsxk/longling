@@ -13,7 +13,7 @@ from longling.lib.utilog import config_logging
 
 from longling.framework.ML.MXnet.metric import PRF, Accuracy
 from longling.framework.ML.MXnet.viz import plot_network
-from longling.framework.ML.MXnet.mx_gluon.gluon_evaluater import ClassEvaluater
+from longling.framework.ML.MXnet.mx_gluon.gluon_evaluater import Evaluater
 from longling.framework.ML.MXnet.mx_gluon.gluon_util import TrainBatchInfoer
 
 from tqdm import tqdm
@@ -22,9 +22,10 @@ import json
 import math
 
 from longling.framework.ML.MXnet.mx_gluon.gluon_sym import PairwiseLoss
+from longling.lib.stream import wf_open
 
 
-def eval(test_data_part, net):
+def eval(test_data_part, net, model_ctx):
     top10 = 0
     for i, data in tqdm(enumerate(test_data_part), "testing"):
         subs, rels, objs = [], [], []
@@ -37,6 +38,9 @@ def eval(test_data_part, net):
 
         res = None
         for (sub, rel, obj) in eval_data:
+            sub = sub.as_in_context(model_ctx)
+            rel = sub.as_in_context(model_ctx)
+            obj = sub.as_in_context(model_ctx)
             if res is None:
                 res = net(sub, rel, obj)
             else:
@@ -74,6 +78,26 @@ def build_map(filename):
     return entities_map, relations_map, e_idx, r_idx
 
 
+def get_l2_embedding_weight(F, embedding_size, batch_size=None, prefix=""):
+    entries = list(range(embedding_size))
+    embedding_weight = []
+    batch_size = batch_size if batch_size else embedding_size
+    for entity in tqdm(gluon.data.DataLoader(gluon.data.ArrayDataset(entries),
+                                             batch_size=batch_size, shuffle=False),
+                       'getting %s embedding' % prefix):
+        embedding_weight.extend(mx.nd.L2Normalization(F(entity)).asnumpy().tolist())
+
+    return embedding_weight
+
+
+def embedding2file(filename, embedding_weight, embedding_map):
+    with wf_open(filename) as wf:
+        for thing_id, idx in tqdm(embedding_map.items(), filename):
+            print("%s %s" % (thing_id,
+                             " ".join([str(float('%.6f' % embedding)) for embedding in embedding_weight[idx]])),
+                  file=wf)
+
+
 class TransE(gluon.HybridBlock):
     def __init__(self,
                  entities_size, relations_size, dim=50,
@@ -88,13 +112,16 @@ class TransE(gluon.HybridBlock):
             self.relation_embedding = gluon.nn.Embedding(relations_size, dim,
                                                          weight_initializer=mx.init.Uniform(6 / math.sqrt(dim)))
 
-            self.embedding_normaliztion = gluon.nn.LayerNorm()
             self.batch_norm = gluon.nn.BatchNorm()
 
     def hybrid_forward(self, F, sub, rel, obj, **kwargs):
-        sub = self.embedding_normaliztion(self.entity_embedding(sub))
-        rel = self.embedding_normaliztion(self.relation_embedding(rel))
-        obj = self.embedding_normaliztion(self.entity_embedding(obj))
+        sub = self.entity_embedding(sub)
+        rel = self.relation_embedding(rel)
+        obj = self.entity_embedding(obj)
+
+        sub = F.L2Normalization(sub)
+        rel = F.L2Normalization(rel)
+        obj = F.L2Normalization(obj)
 
         sub = self.batch_norm(sub)
         rel = self.batch_norm(rel)
@@ -124,6 +151,7 @@ def transE():
 
     train_file = root + "data/KG/FB15/train.jsonxz"
     test_file = root + "data/KG/FB15/test.jsonxz"
+    vec_dir = root + "data/KG/FB15/"
     validation_result_file = model_dir + "result"
 
     model_ctx = mx.cpu()
@@ -139,7 +167,7 @@ def transE():
         mode="w",
         log_format="%(message)s",
     )
-    evaluater = ClassEvaluater(
+    evaluater = Evaluater(
         # metrics=eval_metrics,
         model_ctx=model_ctx,
         logger=validation_logger,
@@ -166,6 +194,8 @@ def transE():
 
     ############################################################################
     entities_map, relations_map, entities_size, relations_size = build_map(train_file)
+
+    print("entities_size: %s | relations_size: %s" % (entities_size, relations_size))
 
     def get_train_iter(filename):
         pos_subs, pos_rels, pos_objs = [], [], []
@@ -212,7 +242,6 @@ def transE():
         p_size = math.floor(len(test_data) / processer)
         test_data_parts = [test_data[k * p_size: (k + 1) * p_size + 1] for k in range(processer)]
     else:
-        p_size = None
         test_data_parts = None
 
     ############################################################################
@@ -244,6 +273,14 @@ def transE():
     net.collect_params().initialize(mx.init.Normal(sigma=.1), ctx=model_ctx)
     trainer = gluon.Trainer(net.collect_params(), 'sgd', {'learning_rate': lr})
 
+    def embedding_persistence():
+        entity_embedding = get_l2_embedding_weight(net.entity_embedding, entities_size, batch_size=batch_size,
+                                                   prefix="entity")
+        embedding2file(vec_dir + "entity.vec.dat", entity_embedding, entities_map)
+        relation_embedding = get_l2_embedding_weight(net.relation_embedding, relations_size, batch_size=batch_size,
+                                                   prefix="relation")
+        embedding2file(vec_dir + "relation.vec.dat", relation_embedding, relations_map)
+
     for epoch in range(begin_epoch, epoch_num):
         # initial
         timer.start()
@@ -274,7 +311,7 @@ def transE():
             assert bp_loss is not None
             bp_loss.backward()
             trainer.step(batch_size=batch_size)
-            #
+
             if i % 1 == 0:
                 loss_values = [loss for loss in moving_losses.values()]
                 batch_infoer.report(i, loss_value=loss_values)
@@ -286,17 +323,21 @@ def transE():
             pool = Pool()
             top10s = []
             for i, test_data_part in enumerate(test_data_parts):
-                top10s.append(pool.apply_async(eval, args=(test_data_part, net, )))
+                top10s.append(pool.apply_async(eval, args=(test_data_part, net, model_ctx,)))
             pool.close()
             pool.join()
             top10_res = sum([top10.get() for top10 in top10s]) / len(test_data)
         else:
-            top10_res = eval(test_data, net) / len(test_data)
+            top10_res = eval(test_data, net, model_ctx) / len(test_data)
 
         loss_values = {name: loss for name, loss in moving_losses.items()}.items()
         print(evaluater.format_eval_res(epoch, {'hits@10': top10_res}, loss_values, train_time,
                                         logger=evaluater.logger, log_f=evaluater.log_f)[0])
         net.save_params(model_dir + model_name + "-%04d.parmas" % (epoch + 1))
+
+        if i % 20 == 0:
+            embedding_persistence()
+    embedding_persistence()
     net.export(model_dir + model_name)
 
     ############################################################################
@@ -307,3 +348,21 @@ def transE():
 
 if __name__ == '__main__':
     transE()
+    # net = TransE(
+    #     entities_size=100,
+    #     relations_size=100,
+    #     dim=5,
+    #     d='L1',
+    # )
+    # net.collect_params().initialize(mx.init.Normal(sigma=.1), ctx=mx.cpu())
+    # net(nd.array([1, 1, 1]), nd.array([2, 3, 4]), nd.array([2, 2, 2]))
+
+    # a = [
+    #     [1, 2, 3, 4, 5],
+    #     [2, 2, 2, 3, 3],
+    #     [3, 4, 4, 5, 5],
+    # ]
+    # a = mx.nd.array(a)
+    # for d in mx.nd.L2Normalization(a).asnumpy():
+    #     print(d.tolist())
+    # # print(a / mx.nd.norm(a * a, axis=-1, keepdims=True))
