@@ -158,7 +158,7 @@ def transE():
 
     batch_size = 128
     begin_epoch = 0
-    epoch_num = 10
+    epoch_num = 200
 
     # infoer
     validation_logger = config_logging(
