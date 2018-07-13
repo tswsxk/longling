@@ -25,8 +25,8 @@ from longling.framework.ML.MXnet.mx_gluon.gluon_sym import PairwiseLoss
 from longling.lib.stream import wf_open
 
 
-def eval(test_data_part, net, model_ctx):
-    top10 = 0
+def eval(test_data_part, net, model_ctx, top_n=10):
+    topn = 0
     for i, data in tqdm(enumerate(test_data_part), "testing"):
         subs, rels, objs = [], [], []
         for d in data:
@@ -47,14 +47,14 @@ def eval(test_data_part, net, model_ctx):
                 res.concat(net(sub, rel, obj))
         res = res.asnumpy().tolist()
         smaller = 0
-        top10 += 1
+        topn += 1
         for n in res[1:]:
             if n < res[0]:
                 smaller += 1
-            if smaller >= 10:
-                top10 -= 1
+            if smaller >= top_n:
+                topn -= 1
                 break
-    return top10
+    return topn
 
 
 def build_map(filename):
@@ -142,6 +142,7 @@ def transE():
     lr = 0.01
     processer = 1
     from multiprocessing import Pool
+    top_n = 10
 
     # file path
     root = "../../../../"
@@ -219,9 +220,8 @@ def transE():
             shuffle=True)
 
     def get_test_iter(filename):
-        pos_negs = []
         with open(filename) as f:
-            for i, line in tqdm(enumerate(f), desc="reading file[%s]" % filename):
+            for i, line in f:
                 if not line.strip():
                     continue
                 pos_neg = json.loads(line)
@@ -233,8 +233,7 @@ def transE():
                 for neg_triple in pos_neg["z"]:
                     neg_sub, neg_rel, neg_obj = neg_triple
                     negs.append((entities_map[neg_sub], relations_map[neg_rel], entities_map[neg_obj]))
-                pos_negs.append([(pos_sub, pos_rel, pos_obj)] + negs)
-        return pos_negs
+                yield [(pos_sub, pos_rel, pos_obj)]
 
     train_data = get_train_iter(train_file)
     test_data = get_test_iter(test_file)
@@ -321,17 +320,17 @@ def transE():
 
         if processer > 1:
             pool = Pool()
-            top10s = []
+            topns = []
             for i, test_data_part in enumerate(test_data_parts):
-                top10s.append(pool.apply_async(eval, args=(test_data_part, net, model_ctx,)))
+                topns.append(pool.apply_async(eval, args=(test_data_part, net, model_ctx, top_n)))
             pool.close()
             pool.join()
-            top10_res = sum([top10.get() for top10 in top10s]) / len(test_data)
+            topn_res = sum([topn.get() for topn in topns]) / len(test_data)
         else:
-            top10_res = eval(test_data, net, model_ctx) / len(test_data)
+            topn_res = eval(test_data, net, model_ctx, top_n) / len(test_data)
 
         loss_values = {name: loss for name, loss in moving_losses.items()}.items()
-        print(evaluater.format_eval_res(epoch, {'hits@10': top10_res}, loss_values, train_time,
+        print(evaluater.format_eval_res(epoch, {'hits@%s' % top_n: topn_res}, loss_values, train_time,
                                         logger=evaluater.logger, log_f=evaluater.log_f)[0])
         net.save_params(model_dir + model_name + "-%04d.parmas" % (epoch + 1))
 

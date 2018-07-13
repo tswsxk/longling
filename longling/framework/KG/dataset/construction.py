@@ -8,14 +8,14 @@ import json
 from tqdm import tqdm
 
 from longling.lib.stream import wf_open, wf_close
-from longling.framework.KG.io_lib import load_plain, rdf2sro, rdf2rso, rdf2ors
+from longling.framework.KG.io_lib import load_plain, load_plains, rdf2sro, rdf2rso, rdf2ors
 
 
 def sro_jsonxz(source, loc_jsonxz, negtive_ratio=1.0):
     sro, entities, _ = rdf2sro(load_plain(source))
 
     wf = wf_open(loc_jsonxz)
-    for s, ro in tqdm(sro.items(), source):
+    for s, ro in tqdm(sro.items(), loc_jsonxz):
         for r, o in ro.items():
             for obj in o:
                 print(json.dumps({"x": (s, r, obj), 'z': 1}, ensure_ascii=False), file=wf)
@@ -30,41 +30,54 @@ def pair_jsonxz(source, loc_jsonxz):
     full_jsonxz(source, loc_jsonxz, negtive_ratio=1)
 
 
-def full_jsonxz(source, loc_jsonxz, negtive_ratio=None, max_num=30):
-    source_data = load_plain(source)
-    sro, entities, _ = rdf2sro(source_data)
-    ors, _, _ = rdf2ors(source_data)
+def full_jsonxz(source, loc_jsonxz, sources=None, negtive_ratio=None):
+    """
+    替换test
+    file中的头部或尾部构成全量测试集
+    输出格式
+    {'x': (s, r, o);
+    'z': [(s, r, no1), ..., (s, r, nok), (ns1, r, o), ..., (nsm, r, o)]}
 
-    tail_neg_samples = {}
-    head_neg_samples = {}
+    Parameters
+    ----------
+    test_file: str
+    sources: list[str] or None
+    loc_jsonxz: str
+
+    Returns
+    -------
+
+    """
+    sources_datas = load_plains(sources) if sources is not None else None
+
+    source_data = load_plain(source)
+
+    sro, entities, _ = rdf2sro(source_data)
+
+    if sources_datas:
+        pos_sro, _, _ = rdf2sro(sources_datas)
+        ors, _, _ = rdf2ors(sources_datas)
+
+    else:
+        pos_sro = sro
+        ors, _, _ = rdf2ors(source_data)
 
     wf = wf_open(loc_jsonxz)
-    for s, ro in tqdm(sro.items(), source):
+    for s, ro in tqdm(sro.items(), loc_jsonxz):
         for r, o in ro.items():
-            if (s, r) not in tail_neg_samples:
-                nobjs = entities - o
-                num = min(len(nobjs), max_num)
-                nobjs = nobjs if len(nobjs) < max_num else random.sample(nobjs, num)
-                tail_neg = [(s, r, nobj) for nobj in nobjs]
-                tail_neg_samples[(s, r)] = tail_neg
+            nobjs = entities - pos_sro[s][r]
             for obj in o:
-                if (r, obj) not in head_neg_samples:
-                    nsubs = entities - ors[obj][r]
-                    num = min(len(nsubs), max_num)
-                    nsubs = nsubs if len(nsubs) < max_num else random.sample(nsubs, num)
-                    head_neg = [(nsub, r, obj) for nsub in nsubs]
-                    head_neg_samples[(r, obj)] = head_neg
-                if negtive_ratio is None:
-                    print(json.dumps({'x': (s, r, obj), 'z': head_neg_samples[(r, obj)] + tail_neg_samples[(s, r)]}),
-                          file=wf)
-                elif negtive_ratio == 1:
-                    print(json.dumps({'x': (s, r, obj),
-                                      'z': random.sample(head_neg_samples[(r, obj)]
-                                                         + tail_neg_samples[(s, r)], 1)[0]}),
-                          file=wf)
-                else:
-                    print(json.dumps({'x': (s, r, obj),
-                                      'z': random.sample(head_neg_samples[(r, obj)] + tail_neg_samples[(s, r)],
-                                                         negtive_ratio)}),
-                          file=wf)
+                nsubs = entities - ors[obj][r]
+                if negtive_ratio is not None:
+                    max_sub_num = math.ceil(negtive_ratio * len(nsubs) / (len(nsubs) + len(nobjs)))
+                    sub_num = min(max_sub_num, len(nsubs))
+                    obj_num = min(negtive_ratio - sub_num, len(nobjs))
+
+                    nobjs = random.sample(nobjs, obj_num)
+                    nsubs = random.sample(nsubs, sub_num)
+                print(
+                    json.dumps({'x': (s, r, obj), 'z': [(s, r, no) for no in nobjs] + [(ns, r, obj) for ns in nsubs]},
+                               ensure_ascii=False),
+                    file=wf)
+
     wf_close(wf)
