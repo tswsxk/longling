@@ -13,7 +13,7 @@ from tqdm import tqdm
 from longling.base import string_types
 
 
-class Evaluater(object):
+class Evaluator(object):
     def __init__(self, metrics=None, model_ctx=mx.cpu(), logger=logging, log_f=None):
         if not isinstance(metrics, mx.metric.EvalMetric):
             self.metrics = mx.metric.create(metrics) if metrics is not None else None
@@ -58,10 +58,14 @@ class Evaluater(object):
                     logger.warning(e)
         return msg, data
 
+    def close(self):
+        if self.log_f:
+            self.log_f.close()
 
-class ClassEvaluater(Evaluater):
+
+class ClassEvaluator(Evaluator):
     def __init__(self, metrics=[], model_ctx=mx.cpu(), logger=logging, log_f=None):
-        super(ClassEvaluater, self).__init__(metrics=metrics, model_ctx=model_ctx, logger=logger,
+        super(ClassEvaluator, self).__init__(metrics=metrics, model_ctx=model_ctx, logger=logger,
                                              log_f=log_f)
 
     def evaluate(self, data_iterator, net, stage=""):

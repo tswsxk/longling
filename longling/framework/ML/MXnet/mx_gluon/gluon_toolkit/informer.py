@@ -6,9 +6,15 @@ import pickle
 
 from longling.lib.stream import flush_print
 
+try:
+    from math import nan
+    NAN = nan
+except ImportError:
+    NAN = float('nan')
 
-class TrainBatchInfoer(object):
-    def __init__(self, loss_index=[], eval_index=[], batch_num=math.nan, epoch_num=math.nan, output=True):
+
+class TrainBatchInformer(object):
+    def __init__(self, loss_index=[], eval_index=[], batch_num=NAN, epoch_num=NAN, output=True):
         self.batch_num = batch_num
         self.epoch_num = epoch_num
 
@@ -21,16 +27,17 @@ class TrainBatchInfoer(object):
                                 + (" " * 2).join(["{:>%s}" % min(len(index), 15) for index in loss_index]) \
                                 + (" " * 2).join(["{:>%s}" % min(len(index), 15) for index in eval_index])
 
+        arguments = list(self.loss_index) + list(self.eval_index)
         self.index_prefix = self.output_formatter.format("Epoch", "Total-E", "Batch", "Total-B",
-                                                         *self.loss_index, *self.eval_index)
+                                                         *arguments)
 
-        self.epoch = math.nan
+        self.epoch = NAN
 
-    def report(self, batch_no, loss_value=[], eval_value=[]):
+    def batch_report(self, batch_no, loss_value=[], eval_value=[]):
+        arguments = list(loss_value) + list(eval_value)
         res_str = self.output_formatter.format(self.epoch, self.epoch_num,
                                                batch_no, self.batch_num,
-                                               *loss_value,
-                                               *eval_value)
+                                               *arguments)
 
         if self.output:
             flush_print(res_str)
@@ -53,4 +60,3 @@ class TrainBatchInfoer(object):
             print("")
 
         return ""
-

@@ -1,6 +1,7 @@
 # coding:utf-8
 # created by tongshiwei on 2018/7/11
 from mxnet import gluon
+from mxnet.gluon.loss import *
 
 
 class PairwiseLoss(gluon.loss.Loss):

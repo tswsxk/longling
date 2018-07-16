@@ -11,6 +11,7 @@ from multiprocessing import Pool
 
 
 def FB15():
+    # full test 需要至少35G空间
     root = "../../data/KG/FB15/"
     raw_train_file = root + "freebase_mtr100_mte100-train.txt"
     raw_test_file = root + "freebase_mtr100_mte100-test.txt"
@@ -36,7 +37,7 @@ def FB15():
 
     pool = Pool()
     pool.apply_async(pair_jsonxz, args=(train_file, root + "train.jsonxz",))
-    # pool.apply_async(full_jsonxz, args=(test_file, root + "test.jsonxz", None, 100))
+    # pool.apply_async(full_jsonxz, args=(test_file, root + "test.jsonxz", 100))
     pool.apply_async(sro_jsonxz, args=(valid_file, root + "valid.jsonxz",))
     # pool.apply_async(full_jsonxz,
     #                  args=(test_file, root + "big_test.jsonxz", [train_file, test_file, valid_file], 14951, ))
@@ -44,7 +45,7 @@ def FB15():
     pool.close()
     pool.join()
 
-    full_jsonxz(test_file, root + "test.jsonxz", negtive_ratio=15)
+    full_jsonxz(test_file, root + "test.jsonxz", negtive_ratio=100)
     full_jsonxz(test_file, root + "big_test.jsonxz", [train_file, test_file, valid_file], 5000,)
     full_jsonxz(test_file, root + "full_test.jsonxz", [train_file, test_file, valid_file])
 

@@ -75,9 +75,16 @@ def full_jsonxz(source, loc_jsonxz, sources=None, negtive_ratio=None):
 
                     nobjs = random.sample(nobjs, obj_num)
                     nsubs = random.sample(nsubs, sub_num)
-                print(
-                    json.dumps({'x': (s, r, obj), 'z': [(s, r, no) for no in nobjs] + [(ns, r, obj) for ns in nsubs]},
-                               ensure_ascii=False),
-                    file=wf)
+                if negtive_ratio == 1:
+                    print(
+                        json.dumps(
+                            {'x': (s, r, obj), 'z': ([(s, r, no) for no in nobjs] + [(ns, r, obj) for ns in nsubs])[0]},
+                            ensure_ascii=False),
+                        file=wf)
+                else:
+                    print(
+                        json.dumps({'x': (s, r, obj), 'z': [(s, r, no) for no in nobjs] + [(ns, r, obj) for ns in nsubs]},
+                                   ensure_ascii=False),
+                        file=wf)
 
     wf_close(wf)

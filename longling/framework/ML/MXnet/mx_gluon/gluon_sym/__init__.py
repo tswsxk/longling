@@ -3,4 +3,5 @@
 
 from __future__ import absolute_import
 
-from .nn_sym import *
+from .nn_loss import *
+from .nn_cell import *

@@ -118,7 +118,7 @@ def fit(mod, train_data, eval_data=None, eval_metric='acc',
             >>> # Assume training dataIter and validation dataIter are ready
             >>> # Assume loading a previously checkpointed model
             >>> sym, arg_params, aux_params = mx.model.load_checkpoint(model_prefix, 3)
-            >>> mod.fit(train_data=train_dataiter, eval_data=val_dataiter, optimizer='sgd',
+            >>> mod.fit(train_data=train_dataiter, test_data=val_dataiter, optimizer='sgd',
             ...     optimizer_params={'learning_rate':0.01, 'momentum': 0.9},
             ...     arg_params=arg_params, aux_params=aux_params,
             ...     eval_metric='acc', num_epoch=10, begin_epoch=3)

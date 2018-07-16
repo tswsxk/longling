@@ -7,18 +7,16 @@ import json
 
 import mxnet as mx
 from mxnet import nd, autograd, gluon
-
 from tqdm import tqdm
-
-from longling.lib.clock import Clock
-from longling.lib.utilog import config_logging
 
 from longling.framework.ML.MXnet.io_lib import VecDict
 from longling.framework.ML.MXnet.metric import PRF, Accuracy
+from longling.framework.ML.MXnet.mx_gluon.gluon_sym.nn_cell import TextCNN
+from longling.framework.ML.MXnet.mx_gluon.gluon_toolkit.evaluator import ClassEvaluator
+from longling.framework.ML.MXnet.mx_gluon.gluon_toolkit.informer import TrainBatchInformer
 from longling.framework.ML.MXnet.viz import plot_network
-from longling.framework.ML.MXnet.mx_gluon.gluon_evaluater import ClassEvaluater
-from longling.framework.ML.MXnet.mx_gluon.gluon_util import TrainBatchInfoer
-from longling.framework.ML.MXnet.mx_gluon.nn_cell import TextCNN
+from longling.lib.clock import Clock
+from longling.lib.utilog import config_logging
 
 
 def text_cnn():
@@ -63,8 +61,8 @@ def text_cnn():
 
     timer = Clock()
     eval_metrics = [PRF(argmax=False), Accuracy(argmax=False)]
-    batch_infoer = TrainBatchInfoer(loss_index=[name for name in loss_function], epoch_num=epoch_num - 1)
-    evaluater = ClassEvaluater(
+    batch_infoer = TrainBatchInformer(loss_index=[name for name in loss_function], epoch_num=epoch_num - 1)
+    evaluater = ClassEvaluator(
         metrics=eval_metrics,
         model_ctx=model_ctx,
         logger=validation_logger,
@@ -152,7 +150,7 @@ def text_cnn():
 
             if i % 1 == 0:
                 loss_values = [loss for loss in moving_losses.values()]
-                batch_infoer.report(i, loss_value=loss_values)
+                batch_infoer.batch_report(i, loss_value=loss_values)
 
         if 'num_inst' not in locals().keys() or num_inst is None:
             num_inst = (i + 1) * batch_size
