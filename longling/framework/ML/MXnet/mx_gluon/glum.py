@@ -110,7 +110,6 @@ def train_module_name():
     #     logger=validation_logger,
     #     log_f=mod.validation_result_file
     # )
-    # infoer = TrainBatchInformer(loss_index=[name for name in loss_function], epoch_num=epoch_num - 1)
 
     # 4 todo 定义数据加载
     # logger.info("loading data")
@@ -121,11 +120,11 @@ def train_module_name():
     # 直接装载已有模型，确认这一步可以执行的话可以忽略 2 3 4
     # logger.info("start training")
     # try:
-    #     net = mod.load(begin_epoch)
-    #       logger.info("load params from existing model file %s" % mod.prefix + "-%04d.parmas" % begin_epoch)
+    #     net = mod.load(net, begin_epoch, mod.ctx)
+    #     logger.info("load params from existing model file %s" % mod.prefix + "-%04d.parmas" % begin_epoch)
     # except FileExistsError:
     #     logger.info("model doesn't exist, initializing")
-    #     GluonModule.net_initialize()
+    #     TransEModule.net_initialize(net, ctx)
     # trainer = GluonModule.get_trainer()
     # mod.fit(
     #     net=net, begin_epoch=begin_epoch, epoch_num=epoch_num, batch_size=batch_size
@@ -227,13 +226,17 @@ class GluonModule(object):
         return "\n".join(string)
 
     @staticmethod
-    def load_net(filename):
+    def load_net(filename, net, ctx=mx.cpu()):
         """
         Load the existing net parameters
         Parameters
         ----------
         filename: str
             The model file
+        net: HybridBlock
+            The network which has been initialized or loaded from the existed model
+        ctx: Context or list of Context
+                Defaults to ``mx.cpu()``.
         Returns
         -------
         The initialized net
@@ -241,26 +244,26 @@ class GluonModule(object):
         # 根据文件名装载已有的网络参数
         if not os.path.isfile(filename):
             raise FileExistsError
-        model = nd.load(filename)
-        net = gluon.nn.HybridSequential()
-        with net.name_scope():
-            net.add(model)
-        return net
+        return net.load_params(filename, ctx)
 
-    def load(self, epoch):
+    def load(self, net, epoch, ctx=mx.cpu()):
         """"
         Load the existing net parameters
         Parameters
         ----------
+        net: HybridBlock
+            The network which has been initialized or loaded from the existed model
         epoch: str or int
             The epoch which specify the model
+        ctx: Context or list of Context
+                Defaults to ``mx.cpu()``.
         Returns
         -------
         The initialized net
         """
         # 根据起始轮次装载已有的网络参数
         filename = self.prefix + "-%04d.parmas" % epoch
-        return self.load_net(filename)
+        return self.load_net(filename, net, ctx)
 
     @staticmethod
     def get_data_iter():
