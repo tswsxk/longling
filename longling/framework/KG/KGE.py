@@ -9,7 +9,7 @@ from multiprocessing import Pool
 
 from longling.framework.KG.base import logger
 from longling.framework.KG.io_lib import ERMapper, UniteMapper, SROMapper
-from longling.framework.KG.dataset import full_jsonxz
+from longling.framework.KG.dataset import *
 
 
 def FB15(map_type='er', test_num=100, big_test_num=5000, full_tag=True, verify_tag=True, link_class=True,
@@ -60,6 +60,34 @@ def FB15(map_type='er', test_num=100, big_test_num=5000, full_tag=True, verify_t
         pool.close()
         pool.join()
 
+    # relation classification
+    if link_class:
+        one2one_filename, one2many_filename, many2one_filename, many2many_filename = \
+            relation_classification(test_file, test_file, sources=[train_file, test_file, valid_file])
+        if verify_tag:
+            pool = Pool()
+            pool.apply_async(verify_data, args=(one2one_filename,))
+            pool.apply_async(verify_data, args=(one2many_filename,))
+            pool.apply_async(verify_data, args=(many2one_filename,))
+            pool.apply_async(verify_data, args=(many2many_filename,))
+            pool.close()
+            pool.join()
+
+    # relation prediction
+    if link_prediction:
+        n_rel_prefix = dataset_dir + "rp_n_rel"
+        n_rest_prefix = dataset_dir + "rp_n_rest"
+        n_rel_train, n_rel_test, n_rest_train, n_rest_test = relation_prediction([train_file, test_file, valid_file],
+                                                                                 n_rel_prefix,
+                                                                                 n_rest_prefix)
+        if verify_tag:
+            pool = Pool()
+            pool.apply_async(verify_data, args=(n_rel_train,))
+            pool.apply_async(verify_data, args=(n_rel_test,))
+            pool.apply_async(verify_data, args=(n_rest_train,))
+            pool.apply_async(verify_data, args=(n_rest_test,))
+            pool.close()
+            pool.join()
     # generate test file
     if test_num:
         filename = dataset_dir + "test.jsonxz"
@@ -76,13 +104,6 @@ def FB15(map_type='er', test_num=100, big_test_num=5000, full_tag=True, verify_t
         full_jsonxz(test_file, filename, [train_file, test_file, valid_file])
         if verify_tag:
             verify_data(filename, 'jsonxz')
-
-    # relation classification
-    if link_class:
-        pass
-    # relation prediction
-    if link_prediction:
-        pass
 
 
 def build_dataset(dataset_name, map_type, **kwargs):

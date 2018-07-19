@@ -3,7 +3,8 @@
 
 from __future__ import absolute_import
 
-from .entity_relation import *
-from .sro import *
-from .unite import *
+from .entity_relation import er_transform
+from .sro import sro_transform
+from .unite import unite_transform
 from .universe import *
+from .relation_relevant import relation_classification, relation_prediction
