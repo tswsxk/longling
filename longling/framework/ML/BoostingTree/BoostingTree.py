@@ -10,7 +10,7 @@ import codecs
 from catboost import Pool, CatBoostClassifier
 
 
-class boostingTree(object):
+class BoostingTree(object):
     __metaclass__ = ABCMeta
 
     def __init__(self, collaborate_feature_num=30, **kwargs):
@@ -58,19 +58,19 @@ class boostingTree(object):
         return model
 
 
-class Xgboost(boostingTree):
+class Xgboost(BoostingTree):
     def get_base_model(self):
         from xgboost import XGBClassifier
         return XGBClassifier
 
 
-class GBDT(boostingTree):
+class GBDT(BoostingTree):
     def get_base_model(self):
         from sklearn.ensemble import GradientBoostingClassifier
         return GradientBoostingClassifier
 
 
-class CatBoost(boostingTree):
+class CatBoost(BoostingTree):
     def __init__(self, collaborate_feature_num=30, column_description=None, model_dir="./", **kwargs):
         super(CatBoost, self).__init__(collaborate_feature_num, **kwargs)
         from longling.base import string_types

@@ -33,6 +33,10 @@
 - n to 1: avg_sub_objn \<= 1.5 and avg_obj_subn \> 1.5
 - n to n: avg_sub_objn \> 1.5 and avg_obj_subn \> 1.5
 
+注意:
+1. 只需要对test进行重新划分
+2. 关系类别分类的时候需要将三个集合整合在一起
+3. predicating tail 指的是给定subject, relation, 从 objects 中找出评分最高的(sub, rel, obj) 中的object
 ##### New relationships prediction (Mean-Rank & hits@n)
 1. 将数据集划分为两类
     - 待预测的 n 种关系(记为 n-rel), 每种关系包含 m 个三元组样本，并进一步分为 n-rel-train 和 n-rel-valid, 
@@ -43,3 +47,4 @@
     - 在 n-rest-train 上进行训练，在 n-rest-valid 进行评估选取
     - 设定 k 值, 在 n-rel-train 上继续训练
     - 在 n-rel-valid 得到评估结果
+3. 注意：这个划分需要重新将train-test-valid组合起来重新做
