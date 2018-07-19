@@ -195,7 +195,7 @@ def new_module(module_name, directory=None):
     return True
 
 if __name__ == '__main__':
-    new_module("transE")
+    new_module("RLSTM")
     # transE()
     # net = TransE(
     #     entities_size=100,
