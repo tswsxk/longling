@@ -10,3 +10,8 @@ from .lib import utilog
 
 from .base import *
 from .lib.stream import *
+
+from longling.lib import jsonxz
+
+import longling.framework.ML.NLP as NLP
+
