@@ -61,7 +61,7 @@ class Mapper(object):
         Parameters
         ----------
         source_datas: dict or list or tuple
-        defualt_key_value
+        defualt_key_value: tuple
 
         Returns
         -------
