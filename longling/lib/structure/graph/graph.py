@@ -18,6 +18,13 @@ class GraphRelationType(object):
     SingleRelation = 0
     MultiRelation = 1
 
+    @staticmethod
+    def is_multi_relation(relation_type):
+        if relation_type is GraphRelationType.SingleRelation:
+            return False
+        elif relation_type is GraphRelationType.MultiRelation:
+            return True
+
 
 class GraphRelationTypeError(TypeError):
     pass
@@ -33,19 +40,26 @@ VERTEX_CLASS = (None,) + GraphNodeType
 
 class Graph(object):
     def __init__(self, vertexes_class=AddList, edges_class=dict, vertex_class=None, edge_class=None, logger=logger):
-        '''
-
-        :param vertexes_class:
-        :param edges_class:
-        :param vertex_class:
-        :param edge_class: when edge class is None, it is a simple graph without weight and relation type;
-        when edge class in (int float), the graph is a simple weighted graph without relation type; in other conditions,
-        when relation_type is specified, the graph will become multi-relational graph if there are several relation,
-        which can be refered by querying attribute 'graph_relation_type'. In visualization, the relation will be first
-        prior to be shown while the weight next. More information to be shown in graph can be specified in the 'info'
-        attribute of the edge_class.
-        :param logger:
-        '''
+        """
+        图结构
+        Parameters
+        ----------
+        vertexes_class:
+            A structure to hold all vertexes.
+        edges_class:
+            A structure to hold all edges.
+        vertex_class: VERTEX_CLASS
+            A structure to generate new vertex.
+        edge_class: EDGE_CLASS
+            A structure to generate new edge.
+            When edge class is None, it is a simple graph without weight and relation type;
+            When edge class in (int float), the graph is a simple weighted graph without relation type;
+            In other conditions, when relation_type is specified, the graph will become multi-relational graph
+            If there are several relation, which can be refered by querying attribute 'graph_relation_type'.
+            In visualization, the relation will be first prior to be shown while the weight next.
+            More information to be shown in graph can be specified in the 'info' attribute of the edge_class.
+        logger: logging.logger
+        """
         assert hasattr(vertexes_class, 'add'), 'vertex_class must have add attribute'
         assert edge_class in EDGE_CLASS, 'edge class must be in %s, now is %s' % (EDGE_CLASS, edge_class)
         assert vertex_class in VERTEX_CLASS, 'vertex class must be in %s, now is %s' % (VERTEX_CLASS, vertex_class)
@@ -60,6 +74,12 @@ class Graph(object):
 
     @property
     def tips(self):
+        """
+        初始化的提示信息
+        Returns
+        -------
+
+        """
         tips = ""
         if self.edge_class is None:
             tips += "edge_class is %s, representing simple network, " \
@@ -75,15 +95,34 @@ class Graph(object):
                        tuple(n.__name__ for n in (tuple, list) + GraphEdgeType))
         return tips
 
-    @property
-    def info(self):
-        pass
+    def __str__(self):
+        return "%s\n%s" % (self.vertexes, self.edges)
 
     def add_vertex(self, vertex):
+        """
+        添加新的节点
+        Parameters
+        ----------
+        vertex: VERTEX_CLASS
+        Returns
+        -------
+
+        """
         self.vertexes.add(vertex)
         return vertex
 
     def add_edge(self, nodes, edge):
+        """
+        添加新的边
+        Parameters
+        ----------
+        nodes: tuple(VERTEX_CLASS, VERTEX_CLASS)
+        edge: EDGE_CLASS
+
+        Returns
+        -------
+
+        """
         if edge:
             if hasattr(edge, 'type'):
                 edge_type = edge.type
@@ -103,6 +142,17 @@ class Graph(object):
             self.edges[nodes] = None
 
     def new_vertex(self, *args, **kwargs):
+        """
+        生成新的顶点
+        Parameters
+        ----------
+        args
+        kwargs
+
+        Returns
+        -------
+
+        """
         if self.vertex_class:
             vertex = self.vertex_class(*args, **kwargs)
             self.add_vertex(vertex)
@@ -110,6 +160,17 @@ class Graph(object):
         return None
 
     def new_edge(self, *args, **kwargs):
+        """
+        生成新的边
+        Parameters
+        ----------
+        args
+        kwargs
+
+        Returns
+        -------
+
+        """
         if self.edge_class:
             if self.edge_class in (int, float):
                 return self.edge_class(kwargs['edge_weight'])
@@ -126,9 +187,33 @@ class Graph(object):
         return None
 
     def get_edge(self, node_1, node_2, edge_type=None):
+        """
+        获取node_1,node_2之间的某种连边
+        Parameters
+        ----------
+        node_1: VERTEX_CLASS
+        node_2: VERTEX_CLASS
+        edge_type:
+
+        Returns
+        -------
+
+        """
         raise NotImplementedError
 
     def get_edges(self, node_1, node_2, edge_types=None):
+        """
+        获取node_1,node_2之间的所有符合条件的连边
+        Parameters
+        ----------
+        node_1
+        node_2
+        edge_types: None or iterable
+
+        Returns
+        -------
+
+        """
         res_list = []
         if edge_types is None:
             if self.graph_relation_type is GraphRelationType.MultiRelation:
@@ -147,6 +232,16 @@ class Graph(object):
             logger.error(e)
 
     def real_edge_type(self, edge_type):
+        """
+        统一边类型
+        Parameters
+        ----------
+        edge_type
+
+        Returns
+        -------
+
+        """
         if edge_type is not None and self.edge_class in (None, int, float):
             self.logger.debug(
                 "edge_class is %s, representing simple network, "
@@ -157,9 +252,35 @@ class Graph(object):
         return edge_type
 
     def _link(self, node_1, node_2, edge):
+        """
+        将 node_1, node_2 通过 edge 连起来
+        Parameters
+        ----------
+        node_1: VERTEX_CLASS
+        node_2: VERTEX_CLASS
+        edge: EDGE_CLASS
+
+        Returns
+        -------
+
+        """
         raise NotImplementedError
 
     def link(self, node_1, node_2, edge_weight=None, edge_type=None):
+        """
+        将 node_1, node_2 连起来
+        边的权重为 edge_weight，边的类型为 edge_type
+        Parameters
+        ----------
+        node_1: VERTEX_CLASS
+        node_2: VERTEX_CLASS
+        edge_weight: int or float or None
+        edge_type:
+
+        Returns
+        -------
+
+        """
         edge_type = self.real_edge_type(edge_type)
         edge = self.get_edge(node_1, node_2, edge_type)
         if edge:
@@ -170,33 +291,176 @@ class Graph(object):
         return node_1, node_2, edge
 
     def del_link(self, node_1, node_2, edge_type=None):
+        """
+        删除某两个节点 node_1, node_2 的某关系连边
+        Parameters
+        ----------
+        node_1: VERTEX_CLASS
+        node_2: VERTEX_CLASS
+        edge_type
+
+        Returns
+        -------
+
+        """
         edges = self.get_edges(node_1, node_2, edge_type)
         if self.graph_relation_type is GraphRelationType.MultiRelation:
             for node_1, node_2, edge_type, _ in edges:
                 del self.edges[edge_type][(node_1, node_2)]
         return edges
 
-    def id_graph(self):
+    def is_multi_edge_type(self):
+        return GraphRelationType.is_multi_relation(self.graph_relation_type)
+
+    def id_graph(self, edge2id=None, force_v2idx=False):
+        """
+        替换vertexes里的所有节点为节点id，生成新的id标识的图，不改变原有图结构
+        Parameters
+        ----------
+        edge2id: None or bool or dict
+            When specified, transform the edge to edge id
+        force_v2idx: bool
+            When True, force the id become index
+        Returns
+        -------
+
+        """
         v2id = {}
         vertexes = []
         for idx, vertex in enumerate(self.vertexes):
-            if vertex.id:
+            if vertex.id and not force_v2idx:
                 v2id[vertex] = vertex.id
             else:
                 v2id[vertex] = idx
             vertexes.append(v2id[vertex])
         edges = {}
+        if edge2id is True:
+            edge2id = self.edge_type_id
+
+        if edge2id:
+            def rel_type_map(rel_type):
+                return edge2id[rel_type]
+        else:
+            def rel_type_map(rel_type):
+                return rel_type
+
         if self.graph_relation_type is GraphRelationType.SingleRelation:
             for nodes, edge in self.edges.items():
                 edges[(v2id[nodes[0]], v2id[nodes[1]])] = edge
         elif self.graph_relation_type is GraphRelationType.MultiRelation:
             for relation_type, nodes_edge in self.edges.items():
+                relation_type = rel_type_map(relation_type)
                 if relation_type not in edges:
                     edges[relation_type] = {}
                 for nodes, edge in nodes_edge.items():
                     edges[relation_type][(v2id[nodes[0]], v2id[nodes[1]])] = edge
 
         return vertexes, edges, self.__class__, self.graph_relation_type
+
+    @property
+    def vertex_num(self):
+        return len(self.vertexes)
+
+    @property
+    def edge_type_id(self):
+        if self.is_multi_edge_type():
+            return {edge_type: idx for idx, edge_type in enumerate(self.edges.keys())}
+        else:
+            return None
+
+    def _get_adjacent_matrix(self, keep_edge_dim=False, directed=False):
+        """
+        获取图对应的邻接矩阵
+        Parameters
+        ----------
+        keep_edge_dim: bool
+            是否在关系只有一种时,保留关系维度
+            为真时:  N * N * 1
+            为假时: N * N
+        directed: bool
+            是否为有向图
+        Returns
+        -------
+        """
+        vertexes, edges, _, _ = self.id_graph(edge2id=True, force_v2idx=True)
+
+        import numpy as np
+
+        n = len(vertexes)
+
+        if self.is_multi_edge_type():
+            edge_dim = len(edges.keys())
+            if edge_dim == 1 and not keep_edge_dim:
+                adjacent_matrix = np.zeros((n, n))
+                edges = edges.values()
+            else:
+                adjacent_matrix = np.zeros((n, n, edge_dim))
+        else:
+            if not keep_edge_dim:
+                adjacent_matrix = np.zeros((n, n))
+            else:
+                adjacent_matrix = np.zeros((n, n, 1))
+
+        if len(np.shape(adjacent_matrix)) == 3:
+            for edge_id, edge in edges.items():
+                for (head, tail), weight in edge.items():
+                    weight = 1 if weight is None else weight
+                    adjacent_matrix[head][tail][edge_id] = weight
+                    if not directed:
+                        adjacent_matrix[tail][head][edge_id] = weight
+
+        elif len(np.shape(adjacent_matrix)) == 2:
+            for (head, tail), weight in edges.items():
+                weight = 1 if weight is None else weight
+                adjacent_matrix[head][tail] = weight
+                if not directed:
+                    adjacent_matrix[tail][head] = weight
+
+        else:
+            raise AssertionError("adjacent_matrix must be 3 dim or 2 dim")
+
+        return adjacent_matrix
+
+    def get_adjacent_matrix(self, keep_edge_dim=False):
+        raise NotImplementedError
+
+    def load_from_adjacent_matrix(self, adjacent_matrix, vertexes=None, edge_types=None):
+        """
+        从邻接矩阵中构建图
+        Parameters
+        ----------
+        adjacent_matrix: list or np.array or np.matrix
+            邻接矩阵
+        vertexes: None or VERTEX_CLASS
+            顶点集合
+        edge_types: list or dict
+            边类型集合
+        Returns
+        -------
+
+        """
+        if vertexes is None:
+            for i in range(len(adjacent_matrix)):
+                self.new_vertex(i)
+        else:
+            for vertex in vertexes:
+                self.add_vertex(vertex)
+
+        if edge_types:
+            def get_edge_type(idx):
+                return edge_types[idx]
+        else:
+            def get_edge_type(idx):
+                return idx
+        for head, tail_weight in enumerate(adjacent_matrix):
+            for tail, weight in enumerate(tail_weight):
+                if hasattr(weight, "len"):
+                    for w_idx, weight in enumerate(weight):
+                        if weight:
+                            self.link(self.vertexes[head], self.vertexes[tail], weight, get_edge_type(w_idx))
+                else:
+                    if weight:
+                        self.link(self.vertexes[head], self.vertexes[tail], weight)
 
 
 class UndirectedGraph(Graph):
@@ -214,6 +478,9 @@ class UndirectedGraph(Graph):
         node_2.linkto(node_1)
         self.add_edge((node_1, node_2), edge)
 
+    def get_adjacent_matrix(self, keep_edge_dim=False):
+        return self._get_adjacent_matrix(keep_edge_dim, False)
+
 
 class DirectedGraph(Graph):
     def get_edge(self, precursor, successor, edge_type=None):
@@ -226,6 +493,9 @@ class DirectedGraph(Graph):
     def _link(self, precursor, successor, edge):
         precursor.linkto(successor)
         self.add_edge((precursor, successor), edge)
+
+    def get_adjacent_matrix(self, keep_edge_dim=False):
+        return self._get_adjacent_matrix(keep_edge_dim, True)
 
 
 '''
@@ -288,24 +558,31 @@ def plot_graph(graph, save_path="plot/network", save_format='pdf', view=False, *
 
 
 if __name__ == '__main__':
-    from longling.lib.structure.graph.graph_node import DirectedGraphNode
+    from longling.lib.structure.graph.graph_node import DirectedGraphNode, UndirectedGraphNode
 
-    vs = range(5)
-    es = [
-        (0, 1, 1, 'parent'),
-        (0, 1, 1, 'parent'),
-        (1, 2, 1, 'parent'),
-        (2, 4, 1, 'parent'),
-        (3, 4, 1, 'parent'),
-        (0, 4, 2, 'friend'),
-        (2, 4, 2, 'friend'),
-    ]
+    vs = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+          31, 32, 33, 34]
+
+    es = [[2, 1], [3, 1], [3, 2], [4, 1], [4, 2], [4, 3], [5, 1], [6, 1], [7, 1], [7, 5], [7, 6], [8, 1], [8, 2],
+          [8, 3], [8, 4], [9, 1], [9, 3], [10, 3], [11, 1], [11, 5], [11, 6], [12, 1], [13, 1], [13, 4], [14, 1],
+          [14, 2], [14, 3], [14, 4], [17, 6], [17, 7], [18, 1], [18, 2], [20, 1], [20, 2], [22, 1], [22, 2], [26, 24],
+          [26, 25], [28, 3], [28, 24], [28, 25], [29, 3], [30, 24], [30, 27], [31, 2], [31, 9], [32, 1], [32, 25],
+          [32, 26], [32, 29], [33, 3], [33, 9], [33, 15], [33, 16], [33, 19], [33, 21], [33, 23], [33, 24], [33, 30],
+          [33, 31], [33, 32], [34, 9], [34, 10], [34, 14], [34, 15], [34, 16], [34, 19], [34, 20], [34, 21], [34, 23],
+          [34, 24], [34, 27], [34, 28], [34, 29], [34, 30], [34, 31], [34, 32], [34, 33]]
 
     graph = DirectedGraph(vertex_class=DirectedGraphNode, edge_class=None)
     tv = {v: graph.new_vertex(None, id=v) for v in vs}
     for e in es:
         graph.link(tv[e[0]], tv[e[1]])
 
-    # print(self.id_graph())
+    print(graph.id_graph())
     # print(gen_viz_graph(self.id_graph()).source)
-    plot_graph(graph, view=True)
+    # plot_graph(graph, view=True)
+    adjacent_matrix = graph.get_adjacent_matrix()
+    print(adjacent_matrix.tolist())
+    # new_graph = UndirectedGraph(vertex_class=UndirectedGraphNode, edge_class=int)
+    # new_graph.load_from_adjacent_matrix(adjacent_matrix)
+    # print(new_graph.get_adjacent_matrix())
+    # assert new_graph.get_adjacent_matrix().all() == adjacent_matrix.all()
+#
