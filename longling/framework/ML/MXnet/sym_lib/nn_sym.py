@@ -1,6 +1,8 @@
 # coding: utf-8
 # create by tongshiwei on 2018/7/7
-
+"""
+此文件定义了一些新的symbol
+"""
 
 import mxnet as mx
 
@@ -27,6 +29,7 @@ class MXConstantRegister(Register):
         name = self.default_name.format(name, self.idx)
         self.idx += 1
         return name
+
 
 mx_constant_register = MXConstantRegister()
 
