@@ -22,10 +22,23 @@ from longling.framework.ML.MXnet.viz import plot_network
 from longling.framework.ML.MXnet.mx_gluon.gluon_sym import PairwiseLoss, SoftmaxCrossEntropyLoss
 
 
-########################################################################
+#######################################################################################################################
+# write network definition here
+class module_name(gluon.HybridBlock):
+    def __init__(self, **kwargs):
+        super(module_name, self).__init__(**kwargs)
+
+        with self.name_scope():
+            pass
+
+    def hybrid_forward(self, F, x, **kwargs):
+        pass
+#######################################################################################################################
+
+#######################################################################################################################
 # write the user function here
 
-#########################################################################
+#######################################################################################################################
 
 
 # todo 重命名eval_module_name函数到需要的模块名
