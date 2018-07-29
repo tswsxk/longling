@@ -27,20 +27,48 @@ from longling.framework.ML.MXnet.mx_gluon.gluon_sym import PairwiseLoss, Softmax
 class RLSTM(gluon.HybridBlock):
     def __init__(self, lstm_hidden=256, fc_output=32, **kwargs):
         super(RLSTM, self).__init__(**kwargs)
+        self.lstm_hidden = lstm_hidden
         with self.name_scope():
             self.lstms = [gluon.rnn.LSTMCell(lstm_hidden) for _ in range(4)]
             self.fc = gluon.nn.Dense(fc_output)
             self.loss = gluon.loss.SoftmaxCrossEntropyLoss()
+            self.layer_attention = [
+                mx.sym.softmax(
+                    mx.sym.Variable("layer%s_attention_weight" % i, shape=(lstm_hidden,), init=mx.init.Zero())) for i in
+                range(4)]
+            self.layers_attention = mx.sym.softmax(
+                mx.sym.Variable("layers_attention_weights", shape=(4,), init=mx.init.Zero()))
+        self.word_length = None
+        self.charater_length = None
 
     def hybrid_forward(self, F, word_embedding, word_radical_embedding, character_embedding,
-                       character_radical_embedding, word_length, character_length, label, *args, **kwargs):
-        w_e, _ = self.lstms[0].unroll(word_length, word_embedding)
-        wr_e, _ = self.lstms[1].unroll(word_length, word_radical_embedding)
-        c_e, _ = self.lstms[2].unroll(character_length, character_embedding)
-        cr_e, _ = self.lstms[3].unroll(character_length, character_radical_embedding)
+                       character_radical_embedding,
+                       label=None,
+                       *args, **kwargs):
+        word_length = self.word_length
+        character_length = self.charater_length
+        merge_outputs = True
+        w_e, _ = self.lstms[0].unroll(word_length, word_embedding, merge_outputs=merge_outputs)
+        wr_e, _ = self.lstms[1].unroll(word_length, word_radical_embedding, merge_outputs=merge_outputs)
+        c_e, _ = self.lstms[2].unroll(character_length, character_embedding, merge_outputs=merge_outputs)
+        cr_e, _ = self.lstms[3].unroll(character_length, character_radical_embedding, merge_outputs=merge_outputs)
 
-        fc_in = F.add_n(w_e[-1], wr_e[-1], c_e[-1], cr_e[-1]) / 4
-        return self.loss(self.fc(fc_in), label)
+        ess = [w_e, wr_e, c_e, cr_e]
+        final_hiddens = []
+        for es, la in zip(ess, self.layer_attention):
+            att = F.dot(F.swapaxes(es, 0, 1), la)
+            att = F.transpose(att)
+            att = F.expand_dims(att, axis=1)
+            res = F.batch_dot(att, es)
+            final_hiddens.append(F.reshape(res, shape=(0, -1)))
+
+        # final_hiddens = [w_e[-1], wr_e[-1], c_e[-1], cr_e[-1]]
+        attention = F.stack(*final_hiddens)
+        fc_in = F.dot(self.layers_attention, attention)
+        if not label:
+            return self.fc(fc_in)
+        else:
+            return self.loss(self.fc(fc_in), label)
 
 
 #########################################################################
@@ -93,6 +121,9 @@ def train_RLSTM():
     word_length = 1
     character_length = 2
 
+    net.word_length = word_length
+    net.charater_length = character_length
+
     # 3 todo 自行设定网络输入，可视化检查网络
     logger.info("visualization")
     viz_shape = {
@@ -100,15 +131,16 @@ def train_RLSTM():
         'word_radical_embedding': (batch_size,) + (word_length, 256,),
         'character_embedding': (batch_size,) + (character_length, 256,),
         'character_radical_embedding': (batch_size,) + (character_length, 256,),
-        'label': (batch_size,) + (1, )
+        # 'label': (batch_size,) + (1, )
     }
     word_embedding = mx.sym.var("word_embedding")
     word_radical_embedding = mx.sym.var("word_radical_embedding")
     character_embedding = mx.sym.var("character_embedding")
     character_radical_embedding = mx.sym.var("character_radical_embedding")
     label = mx.sym.var("label")
-    sym = net(word_embedding, word_radical_embedding, character_embedding, character_radical_embedding, word_length,
-              character_length, label)
+    sym = net(word_embedding, word_radical_embedding, character_embedding, character_radical_embedding,
+              # label
+              )
     plot_network(
         nn_symbol=sym,
         save_path=model_dir + "plot/network",
