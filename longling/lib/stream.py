@@ -52,6 +52,28 @@ def rf_open(filename, encoding='utf-8', **kwargs):
         return open(filename, **kwargs)
 
 
+def json_load(fp, **kwargs):
+    import json
+    if isinstance(fp, string_types):
+        fp = rf_open(fp, **kwargs)
+        datas = json.load(fp, **kwargs)
+        fp.close()
+        return datas
+    else:
+        return json.load(fp, **kwargs)
+
+
+def pickle_load(fp, encoding='utf-8', mode='rb', **kwargs):
+    import pickle
+    if isinstance(fp, string_types):
+        fp = open(fp, mode=mode, **kwargs)
+        datas = pickle.load(fp, encoding=encoding, **kwargs)
+        fp.close()
+        return datas
+    else:
+        return pickle.load(fp, encoding=encoding, **kwargs)
+
+
 def _wf_open(stream_name='', mode="w", encoding="utf-8"):
     '''
     打开一个codecs流
