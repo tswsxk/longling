@@ -9,7 +9,7 @@ from sklearn.metrics import classification_report
 
 from longling.framework.ML.NLP.FastText import FastText
 from longling.framework.ML.NLP.FastText import jsonxz2fast
-from longling.framework.ML.universe.fileio.jsonxz import load_jsonxz
+from longling.framework.ML.universe.fileio.jsonxz import load
 
 if __name__ == '__main__':
     root = "../../../../../data/fasttext/TextSim/"
@@ -19,7 +19,7 @@ if __name__ == '__main__':
     model = FastText()
     model.fit(location_train, root + "model/", cast_file_func=jsonxz2fast, array_tag=False)
 
-    datas, labels = load_jsonxz(location_test)
+    datas, labels = load(location_test)
     preds = [data[0] for data in model.predict(datas)]
 
     print(classification_report(labels, preds, digits=3))

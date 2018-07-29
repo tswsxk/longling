@@ -10,3 +10,6 @@ from .lib import utilog
 
 from .base import *
 from .lib.stream import *
+
+import longling.framework.ML.NLP as NLP
+

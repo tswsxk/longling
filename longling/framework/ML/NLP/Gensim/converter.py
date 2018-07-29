@@ -1,6 +1,8 @@
 # coding: utf-8
 # create by tongshiwei on 2018/7/8
-
+"""
+将gensim格式的词向量文件转变为tup格式词向量文件
+"""
 from tqdm import tqdm
 import gensim
 import json

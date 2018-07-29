@@ -3,9 +3,11 @@
 temp/
 data/
 model/
+graph/plot/
 **/data
 **/model
 **/temp
+**/graph/plot/
 test.py
 build/*
 dist/*

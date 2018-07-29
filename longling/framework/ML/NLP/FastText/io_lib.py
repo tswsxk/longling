@@ -14,21 +14,26 @@ from longling.lib.stream import wf_open, wf_close
 
 
 def jsonxz2fast(source_jsonxz, target_fast=None, label_prefix=LABEL_PREFIX, data_key='x', label_key='z', array_tag=True):
-    '''
+    """
     将jsonxz文件转为fasttext可用于训练的fast文件
     jsonxz文件格式
         ['x':"word1 word2 ... wordn", "z": %label%]
         ['x':"word1 word2 ... wordn", "z": %label%]
         ['x':"word1 word2 ... wordn", "z": %label%]
     'x' 对应的是 空格分割的分词后的句子
-    :param source_jsonxz: 输入文件
-    :param target_fast:
-    :param label_prefix
-    :param data_key
-    :param label_key
-    :param array_tag
-    :return: 修改格式后的文件
-    '''
+    Parameters
+    ----------
+    source_jsonxz: str
+    target_fast: str
+    label_prefix: str
+    data_key: str
+    label_key: str
+    array_tag: bool
+
+    Returns
+    -------
+
+    """
     if target_fast is None:
         target_fast = source_jsonxz + '.fast'
 

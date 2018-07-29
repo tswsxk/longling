@@ -36,6 +36,10 @@ class UndirectedGraphNode(GraphNode):
     def linkto(self, node):
         self.add_neighbor(node)
 
+    @property
+    def degree(self):
+        return len(self.neighbors)
+
 
 class DirectedGraphNode(GraphNode):
     def __init__(self, value, precursor=None, successor=None, *args, **kwargs):
@@ -49,6 +53,14 @@ class DirectedGraphNode(GraphNode):
 
     def linkto(self, node):
         self.successor.add(node)
+
+    @property
+    def in_degree(self):
+        return len(self.precursor)
+
+    @property
+    def out_degree(self):
+        return len(self.successor)
 
 
 GraphNodeType = tuple(get_all_subclass(GraphNode))

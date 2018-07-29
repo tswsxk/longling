@@ -24,9 +24,9 @@ from longling.framework.ML.MXnet.mx_gluon.gluon_sym import PairwiseLoss, Softmax
 
 #######################################################################################################################
 # write network definition here
-class module_name(gluon.HybridBlock):
+class GCN(gluon.HybridBlock):
     def __init__(self, **kwargs):
-        super(module_name, self).__init__(**kwargs)
+        super(GCN, self).__init__(**kwargs)
 
         with self.name_scope():
             pass
@@ -37,28 +37,31 @@ class module_name(gluon.HybridBlock):
 
 #######################################################################################################################
 # write the user function here
+def get_diagonal_degree_matrix(A):
+
+
 
 #######################################################################################################################
 
 
-# todo 重命名eval_module_name函数到需要的模块名
-def eval_module_name():
+# todo 重命名eval_GCN函数到需要的模块名
+def eval_GCN():
     pass
 
 
-# todo 重命名use_module_name函数到需要的模块名
-def use_module_name():
+# todo 重命名use_GCN函数到需要的模块名
+def use_GCN():
     pass
 
 
-# todo 重命名train_module_name函数到需要的模块名
-def train_module_name():
+# todo 重命名train_GCN函数到需要的模块名
+def train_GCN():
     # 1 配置参数初始化
     root = "../../../../"
-    model_name = "module_name"
+    model_name = "GCN"
     model_dir = root + "data/gluon/%s/" % model_name
 
-    mod = GluonModule(
+    mod = GCNModule(
         model_dir=model_dir,
         model_name=model_name,
         ctx=mx.cpu()
@@ -74,11 +77,11 @@ def train_module_name():
     # 2 todo 定义网络结构并保存
     # 2.1 重新生成
     # logger.info("generating symbol")
-    # net = GluonModule.sym_gen()
+    # net = GCNModule.sym_gen()
     # net.hybridize()
     # 2.2 装载已有模型
     # net = mod.load(epoch)
-    # net = GluonModule.load_net(filename)
+    # net = GCNModule.load_net(filename)
 
     # 5 todo 定义训练相关参数
     # begin_epoch = 0
@@ -126,8 +129,8 @@ def train_module_name():
 
     # 4 todo 定义数据加载
     # logger.info("loading data")
-    # train_data = GluonModule.get_data_iter()
-    # test_data = GluonModule.get_data_iter()
+    # train_data = GCNModule.get_data_iter()
+    # test_data = GCNModule.get_data_iter()
 
     # 6 todo 训练
     # 直接装载已有模型，确认这一步可以执行的话可以忽略 2 3 4
@@ -138,7 +141,7 @@ def train_module_name():
     # except FileExistsError:
     #     logger.info("model doesn't exist, initializing")
     #     TransEModule.net_initialize(net, ctx)
-    # trainer = GluonModule.get_trainer()
+    # trainer = GCNModule.get_trainer()
     # mod.fit(
     #     net=net, begin_epoch=begin_epoch, epoch_num=epoch_num, batch_size=batch_size
     #     train_data=train_data,
@@ -152,20 +155,20 @@ def train_module_name():
     # net.export(mod.prefix)
 
     # optional todo 评估
-    # GluonModule.eval()
+    # GCNModule.eval()
 
     # 7 todo 关闭输入输出流
     # evaluator.close()
 
 
-class GluonModule(object):
+class GCNModule(object):
     """
     模块模板
     train 修改流程
 
     # 1
     修改 __init__ 和 params 方法
-    GluonModule(....) 初始化一些通用的参数，比如模型的存储路径等
+    GCNModule(....) 初始化一些通用的参数，比如模型的存储路径等
 
     # 2
     定义网络部分，命名为
@@ -451,7 +454,7 @@ class GluonModule(object):
                 train_time = epoch_timer.end(wall=True) if epoch_timer else None
 
                 # todo 定义每一轮结束后的模型评估方法
-                # test_eval_res = GluonModule.eval(test_data, net)
+                # test_eval_res = GCNModule.eval(test_data, net)
                 # print(evaluator.format_eval_res(epoch, test_eval_res, loss_values, train_time,
                 #                                 logger=evaluator.logger, log_f=evaluator.log_f)[0])
 
@@ -588,4 +591,4 @@ class GluonModule(object):
 
 
 if __name__ == '__main__':
-    train_module_name()
+    train_GCN()
