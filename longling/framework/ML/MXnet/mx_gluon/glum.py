@@ -137,7 +137,7 @@ def train_module_name():
     #     logger.info("load params from existing model file %s" % mod.prefix + "-%04d.parmas" % begin_epoch)
     # except FileExistsError:
     #     logger.info("model doesn't exist, initializing")
-    #     TransEModule.net_initialize(net, ctx)
+    #     module_name.net_initialize(net, ctx)
     # trainer = GluonModule.get_trainer()
     # mod.fit(
     #     net=net, begin_epoch=begin_epoch, epoch_num=epoch_num, batch_size=batch_size
