@@ -10,12 +10,12 @@ import json
 from longling.lib.stream import wf_open, wf_close
 
 
-def bin2tup(loc_bin, loc_dat):
+def bin2tup(loc_bin, loc_tup):
     bin_dict = gensim.models.KeyedVectors.load_word2vec_format(
         loc_bin,
         binary=True
     )
-    wf = wf_open(loc_dat)
+    wf = wf_open(loc_tup)
     for word in tqdm(bin_dict.index2word):
         print(json.dumps((word, bin_dict[word].tolist()), ensure_ascii=False), file=wf)
     wf_close(wf)
