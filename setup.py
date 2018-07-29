@@ -13,7 +13,7 @@ setup(
     url='https://gitlab.com/tswsxk/longling.git',
     license='LICENSE.txt',
     description='handy wrapper for many libs',
-    long_description=open('README.txt').read(),
+    long_description=open('README.md').read(),
     install_requires=[
         "pip"
     ],
