@@ -11,6 +11,42 @@ from tqdm import tqdm
 from longling.lib.stream import wf_open, wf_close
 
 
+def data2tup(tuples, loc_tup):
+    """
+
+    Parameters
+    ----------
+    tuples
+    loc_tup
+
+    Returns
+    -------
+
+    """
+    wf = wf_open(loc_tup)
+    for tup in tqdm(tuples):
+        print(json.dumps(tup, ensure_ascii=False), file=wf)
+    wf_close(wf)
+
+
+def data2dat(tuples, loc_dat):
+    """
+
+    Parameters
+    ----------
+    tuples
+    loc_dat
+
+    Returns
+    -------
+
+    """
+    wf = wf_open(loc_dat)
+    for tup in tqdm(tuples):
+        print(r"%s %s" % (tup[0], " ".join([str(t) for t in tup[1]])), file=wf)
+    wf_close(wf)
+
+
 def tup2dat(loc_tup, loc_dat):
     """
     convert .vec.dup type file to type .vec.dat
@@ -27,7 +63,7 @@ def tup2dat(loc_tup, loc_dat):
     with open(loc_tup) as f:
         for line in tqdm(f):
             data = json.loads(line)
-            print("%s %s" % (data[0], " ".join([str(d) for d in data[1]])), file=wf)
+            print(r"%s %s" % (data[0], " ".join([str(d) for d in data[1]])), file=wf)
     wf_close(wf)
 
 
