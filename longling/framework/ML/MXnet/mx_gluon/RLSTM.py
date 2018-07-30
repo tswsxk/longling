@@ -39,13 +39,17 @@ class RLSTM(gluon.HybridBlock):
             self.char_embedding = gluon.nn.Embedding(char_embedding_size, dim)
             self.char_radical_embedding = gluon.nn.Embedding(char_radical_embedding_size, dim)
             self.lstms = [gluon.rnn.LSTMCell(lstm_hidden) for _ in range(4)]
+            for lstm in self.lstms:
+                self.register_child(lstm)
             self.fc = gluon.nn.Dense(fc_output)
             self.loss = gluon.loss.SoftmaxCrossEntropyLoss()
             self.layer_attention = [
 
             ]
+            self.params.get("layers_attention_weight", shape=(4, ), allow_deferred_init=True)
             self.layers_attention = mx.sym.softmax(
-                mx.sym.Variable("layers_attention_weights", shape=(4,), init=mx.init.Zero()))
+                mx.sym.Variable("layers_attention_weight", shape=(4,)))
+
         self.word_length = None
         self.charater_length = None
 
@@ -140,8 +144,6 @@ def train_RLSTM():
         char_embedding_size=len(char_embedding.token_to_idx),
         char_radical_embedding_size=len(char_radical_embedding.token_to_idx)
     )
-    for lstm in net.lstms:
-        net.register_child(lstm)
     net.hybridize()
     # 2.2 装载已有模型
     # net = mod.load(epoch)
