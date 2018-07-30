@@ -140,6 +140,8 @@ def train_RLSTM():
         char_embedding_size=len(char_embedding.token_to_idx),
         char_radical_embedding_size=len(char_radical_embedding.token_to_idx)
     )
+    for lstm in net.lstms:
+        net.register_child(lstm)
     net.hybridize()
     # 2.2 装载已有模型
     # net = mod.load(epoch)
@@ -442,8 +444,6 @@ class RLSTMModule(object):
     @staticmethod
     def net_initialize(net, model_ctx, initializer=mx.init.Normal(sigma=.1)):
         # 初始化网络参数
-        for lstm in net.lstms:
-            net.register_child(lstm)
         net.collect_params().initialize(initializer, ctx=model_ctx)
 
     @staticmethod
