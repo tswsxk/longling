@@ -101,7 +101,10 @@ def train_module_name():
 
     # 5 todo 定义损失函数
     # bp_loss_f 定义了用来进行 back propagation 的损失函数
-    # bp_loss_f = {"pairwise_loss": PairwiseLoss(None, -1, margin=1)}
+    # bp_loss_f = {
+    #     "pairwise_loss": PairwiseLoss(None, -1, margin=1),
+    #     "cross-entropy": gluon.loss.SoftmaxCrossEntropyLoss(),
+    # }
     # loss_function = {
     #
     # }
@@ -117,8 +120,9 @@ def train_module_name():
     #     mode="w",
     #     log_format="%(message)s",
     # )
+    # from longling.framework.ML.MXnet.metric import PRF, Accuracy
     # evaluator = Evaluator(
-    #     # metrics=eval_metrics,
+    #     # metrics=[PRF(argmax=False), Accuracy(argmax=False)],
     #     model_ctx=mod.ctx,
     #     logger=validation_logger,
     #     log_f=mod.validation_result_file
@@ -138,9 +142,9 @@ def train_module_name():
     # except FileExistsError:
     #     logger.info("model doesn't exist, initializing")
     #     module_name.net_initialize(net, ctx)
-    # trainer = GluonModule.get_trainer()
+    # trainer = GluonModule.get_trainer(net)
     # mod.fit(
-    #     net=net, begin_epoch=begin_epoch, epoch_num=epoch_num, batch_size=batch_size
+    #     net=net, begin_epoch=begin_epoch, epoch_num=epoch_num, batch_size=batch_size,
     #     train_data=train_data,
     #     trainer=trainer, bp_loss_f=bp_loss_f,
     #     loss_function=loss_function, losses_monitor=losses_monitor,
@@ -438,7 +442,7 @@ class GluonModule(object):
                 if epoch_timer:
                     epoch_timer.start()
                 loss_values, batch_num = batch_loop(
-                    net=net,
+                    net=net, batch_size=batch_size,
                     train_data=train_data,
                     trainer=trainer, bp_loss_f=bp_loss_f,
                     loss_function=loss_function, losses_monitor=losses_monitor,
