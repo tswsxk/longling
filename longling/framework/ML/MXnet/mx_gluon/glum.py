@@ -34,12 +34,34 @@ class module_name(gluon.HybridBlock):
 
     def hybrid_forward(self, F, x, *args, **kwargs):
         pass
+
+
 #######################################################################################################################
 
 #######################################################################################################################
 # write the user function here
 
 #######################################################################################################################
+# todo 重命名load_module_name函数到需要的模块名
+def load_module_name(epoch_num):
+    # 1 配置参数初始化
+    root = "../../../../"
+    model_name = "module_name"
+    model_dir = root + "data/gluon/%s/" % model_name
+
+    mod = GluonModule(
+        model_dir=model_dir,
+        model_name=model_name,
+        ctx=mx.cpu()
+    )
+    logger = config_logging(logger=model_name, console_log_level=LogLevel.INFO)
+    logger.info(str(mod))
+
+    # 2 装载已有网络
+    net = mod.sym_gen()
+    net = mod.load(net, epoch_num, mod.ctx)
+
+    return net
 
 
 # todo 重命名eval_module_name函数到需要的模块名
@@ -48,7 +70,7 @@ def eval_module_name():
 
 
 # todo 重命名use_module_name函数到需要的模块名
-def use_module_name():
+def use_module_name(epoch_num):
     pass
 
 
@@ -75,7 +97,7 @@ def train_module_name():
     # 2 todo 定义网络结构并保存
     # 2.1 重新生成
     # logger.info("generating symbol")
-    # net = GluonModule.sym_gen()
+    # net = mod.sym_gen()
     # 2.2 装载已有模型
     # net = mod.load(epoch)
     # net = GluonModule.load_net(filename)
