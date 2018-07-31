@@ -6,6 +6,7 @@ fit_f = epoch_loop(batch_loop(fit_f))
 复制此文件以进行修改
 大量使用 staticmethod 并用 get_params 对参数进行分离的原因是因为耦合性太高会导致改起来不太方便
 可能修改的地方用 todo 标出
+注意 hybridize 的用法
 """
 import os
 
