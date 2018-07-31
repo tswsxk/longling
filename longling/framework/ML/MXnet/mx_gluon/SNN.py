@@ -733,4 +733,6 @@ class SNNModule(object):
 
 
 if __name__ == '__main__':
-    train_SNN()
+    # train_SNN()
+
+    use_SNN()
