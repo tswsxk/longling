@@ -55,6 +55,24 @@ class SNN(gluon.HybridBlock):
 # write the user function here
 
 #######################################################################################################################
+# todo 重命名load_module_name函数到需要的模块名
+def load_SNN(epoch_num=10):
+    root = "../../../../"
+    model_name = "SNN"
+    model_dir = root + "data/gluon/%s/" % model_name
+
+    mod = SNNModule(
+        model_dir=model_dir,
+        model_name=model_name,
+        ctx=mx.cpu()
+    )
+    logger = config_logging(logger=model_name, console_log_level=LogLevel.INFO)
+    logger.info(str(mod))
+
+    net = mod.sym_gen()
+    net = mod.load(net, epoch_num, mod.ctx)
+
+    return net
 
 
 # todo 重命名eval_SNN函数到需要的模块名
@@ -63,8 +81,32 @@ def eval_SNN():
 
 
 # todo 重命名use_SNN函数到需要的模块名
-def use_SNN():
-    pass
+def use_SNN(begin_state, target_state):
+    import numpy as np
+    from longling.lib.candylib import as_list
+    begin_state = as_list(begin_state)
+    target_state = as_list(target_state)
+    net = load_SNN()
+    actions = range(10)
+
+    def list2ndarray(list_data):
+        return mx.nd.array(np.asarray(list_data))
+    value_func = DistanceLoss()
+
+    values = []
+    for action in actions:
+        action = list2ndarray(action)
+        begin_state = list2ndarray(begin_state)
+        target_state = list2ndarray(target_state)
+        states = net(action, begin_state, target_state)
+        value = value_func(states)
+        values.append(value)
+    return values
+
+
+
+
+
 
 
 # todo 重命名train_SNN函数到需要的模块名
@@ -90,7 +132,7 @@ def train_SNN():
     # 2 todo 定义网络结构并保存
     # 2.1 重新生成
     logger.info("generating symbol")
-    net = SNNModule.sym_gen()
+    net = mod.sym_gen()
     # 2.2 装载已有模型
     # net = mod.load(epoch)
     # net = SNNModule.load_net(filename)
@@ -167,6 +209,7 @@ def train_SNN():
     except FileExistsError:
         logger.info("model doesn't exist, initializing")
         SNNModule.net_initialize(net, ctx)
+    SNNModule.parameters_stabilize(net)
     trainer = SNNModule.get_trainer(net)
     mod.fit(
         net=net, begin_epoch=begin_epoch, epoch_num=epoch_num, batch_size=batch_size,
@@ -355,6 +398,35 @@ class SNNModule(object):
         return SNN()
 
     # 以下部分定义训练相关的方法
+    @staticmethod
+    def parameters_stabilize(net, key_lists=['embedding'], name_sets=set()):
+        """
+        固定部分参数
+        Parameters
+        ----------
+        net
+        key_lists: list
+            关键字列表
+        name_sets: set
+            全名集合
+        Returns
+        -------
+
+        """
+        if not key_lists and not name_sets:
+            return
+        else:
+            params = net.collect_params()
+            pers_keys = []
+            for k in params:
+                for k_str in key_lists:
+                    if k_str in k:
+                        pers_keys.append(k)
+                if k in name_sets:
+                    pers_keys.append(k)
+            for k in pers_keys:
+                params.get(k).grad_req = 'null'
+
     @staticmethod
     def net_initialize(net, model_ctx, initializer=mx.init.Normal(sigma=.1)):
         # 初始化网络参数
@@ -645,6 +717,7 @@ class SNNModule(object):
         bp_loss = None
         with autograd.record():
             net.action_len = len(action_seq[0])
+            begin_state.attach_grad()
             output = net(action_seq, begin_state)
             for name, func in loss_function.items():
                 loss = func(output, target_state)
