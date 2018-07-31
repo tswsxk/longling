@@ -31,7 +31,7 @@ class module_name(gluon.HybridBlock):
         with self.name_scope():
             pass
 
-    def hybrid_forward(self, F, x, **kwargs):
+    def hybrid_forward(self, F, x, *args, **kwargs):
         pass
 #######################################################################################################################
 
@@ -75,7 +75,6 @@ def train_module_name():
     # 2.1 重新生成
     # logger.info("generating symbol")
     # net = GluonModule.sym_gen()
-    # net.hybridize()
     # 2.2 装载已有模型
     # net = mod.load(epoch)
     # net = GluonModule.load_net(filename)
@@ -88,9 +87,12 @@ def train_module_name():
 
     # 3 todo 自行设定网络输入，可视化检查网络
     # logger.info("visualization")
+    # from copy import deepcopy
+    # viz_net = deepcopy(net)
     # viz_shape = {'data': (batch_size,) + (1, )}
     # x = mx.sym.var("data")
-    # sym = net(x)
+    # sym = viz_net(x)
+    # viz_net.hybridize()
     # plot_network(
     #     nn_symbol=sym,
     #     save_path=model_dir + "plot/network",
@@ -141,7 +143,7 @@ def train_module_name():
     #     logger.info("load params from existing model file %s" % mod.prefix + "-%04d.parmas" % begin_epoch)
     # except FileExistsError:
     #     logger.info("model doesn't exist, initializing")
-    #     module_name.net_initialize(net, ctx)
+    #     module_nameModule.net_initialize(net, ctx)
     # trainer = GluonModule.get_trainer(net)
     # mod.fit(
     #     net=net, begin_epoch=begin_epoch, epoch_num=epoch_num, batch_size=batch_size,
@@ -285,11 +287,6 @@ class GluonModule(object):
     @staticmethod
     def get_data_iter():
         # 在这里定义数据加载方法
-        return
-
-    @staticmethod
-    def eval():
-        # 在这里定义数据评估方法
         return
 
     @staticmethod
@@ -535,6 +532,11 @@ class GluonModule(object):
             return loss_values, i
 
         return decorator
+
+    @staticmethod
+    def eval():
+        # 在这里定义数据评估方法
+        return
 
     @staticmethod
     def _fit_f(net, batch_size,
