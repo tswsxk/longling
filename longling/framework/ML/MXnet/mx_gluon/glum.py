@@ -109,19 +109,24 @@ def train_module_name():
     # ctx = mod.ctx
 
     # 3 todo 自行设定网络输入，可视化检查网络
-    # logger.info("visualization")
-    # from copy import deepcopy
-    # viz_net = deepcopy(net)
-    # viz_shape = {'data': (batch_size,) + (1, )}
-    # x = mx.sym.var("data")
-    # sym = viz_net(x)
-    # plot_network(
-    #     nn_symbol=sym,
-    #     save_path=model_dir + "plot/network",
-    #     shape=viz_shape,
-    #     node_attrs={"fixedsize": "false"},
-    #     view=True
-    # )
+    # try:
+    #     logger.info("visualization")
+    #     from copy import deepcopy
+    #     viz_net = deepcopy(net)
+    #     viz_shape = {'data': (batch_size,) + (1, )}
+    #     x = mx.sym.var("data")
+    #     sym = viz_net(x)
+    #     plot_network(
+    #         nn_symbol=sym,
+    #         save_path=model_dir + "plot/network",
+    #         shape=viz_shape,
+    #         node_attrs={"fixedsize": "false"},
+    #         view=True
+    #     )
+    # except Exception as e:
+    #     logger.error("error happen in visualization, aborted")
+    #     logger.error(e)
+
 
     # 5 todo 定义损失函数
     # bp_loss_f 定义了用来进行 back propagation 的损失函数
@@ -326,7 +331,15 @@ class GluonModule(object):
         net.collect_params().initialize(initializer, ctx=model_ctx)
 
     @staticmethod
-    def get_trainer(net, optimizer='sgd', optimizer_params={'learning_rate': .01}):
+    def get_trainer(
+            net, optimizer='sgd',
+            optimizer_params={
+                'learning_rate': .01, 'wd': 0.5,
+                'gamma1': 0.999,
+                'momentum': 0.01,
+                'lr_scheduler': mx.lr_scheduler.FactorScheduler(step=50, factor=0.99),
+            }
+    ):
         # 把优化器安装到网络上
         trainer = gluon.Trainer(net.collect_params(), optimizer, optimizer_params)
         return trainer
