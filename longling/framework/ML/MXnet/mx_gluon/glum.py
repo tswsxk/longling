@@ -92,7 +92,6 @@ def train_module_name():
     # viz_shape = {'data': (batch_size,) + (1, )}
     # x = mx.sym.var("data")
     # sym = viz_net(x)
-    # viz_net.hybridize()
     # plot_network(
     #     nn_symbol=sym,
     #     save_path=model_dir + "plot/network",
@@ -145,6 +144,7 @@ def train_module_name():
     #     logger.info("model doesn't exist, initializing")
     #     module_nameModule.net_initialize(net, ctx)
     # trainer = GluonModule.get_trainer(net)
+    # net.hybridize() # todo whether to use static symbol to accelerate
     # mod.fit(
     #     net=net, begin_epoch=begin_epoch, epoch_num=epoch_num, batch_size=batch_size,
     #     train_data=train_data,
