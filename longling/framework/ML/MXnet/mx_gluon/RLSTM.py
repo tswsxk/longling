@@ -44,10 +44,12 @@ class RLSTM(gluon.HybridBlock):
                 self.register_child(lstm)
             self.fc = gluon.nn.Dense(fc_output)
             self.loss = gluon.loss.SoftmaxCrossEntropyLoss()
-            # self.layer_attention = [
-            #     self.get_weight("layer%s_attention_weight" % i, shape=(lstm_hidden,)) for i in range(4)
-            # ]
-            self.layers_attention = self.get_weight("layers_attention_weight", shape=(4,))
+            self.layer0_attention = self.params.get("layer0_attention_weight", shape=(lstm_hidden,))
+            self.layer1_attention = self.params.get("layer1_attention_weight", shape=(lstm_hidden,))
+            self.layer2_attention = self.params.get("layer2_attention_weight", shape=(lstm_hidden,))
+            self.layer3_attention = self.params.get("layer3_attention_weight", shape=(lstm_hidden,))
+            # self.layers_attention = self.get_weight("layers_attention_weight", shape=(4,))
+            self.layers_attention = self.params.get('layers_attention_weight', shape=(4, ))
 
         self.word_length = None
         self.charater_length = None
@@ -63,7 +65,6 @@ class RLSTM(gluon.HybridBlock):
 
     def hybrid_forward(self, F, word_seq, word_radical_seq, character_seq,
                        character_radical_seq,
-                       label=None,
                        *args, **kwargs):
         word_embedding = F.BlockGrad(self.word_embedding(word_seq))
         word_radical_embedding = F.BlockGrad(self.word_radical_embedding(word_radical_seq))
@@ -77,34 +78,35 @@ class RLSTM(gluon.HybridBlock):
         c_e, c_s = self.lstms[2].unroll(character_length, character_embedding, merge_outputs=merge_outputs)
         cr_e, cr_s = self.lstms[3].unroll(character_length, character_radical_embedding, merge_outputs=merge_outputs)
 
-        ess = [w_e, wr_e, c_e, cr_e]
-        ss = [w_s[-1], wr_s[-1], c_s[-1], cr_s[-1]]
-        final_hiddens = []
-        for es, la in zip(ess, ss):
-            la = F.expand_dims(la, axis=1)
-            att = F.softmax(F.batch_dot(es, F.swapaxes(la, 1, 2)))
-            att = F.swapaxes(att, 1, 2)
-            res = F.batch_dot(att, es)
-            final_hiddens.append(F.reshape(res, (0, -1)))
-
+        # use final state as attention vector
         # ess = [w_e, wr_e, c_e, cr_e]
-        # ss = [la(F) for la in self.layer_attention]
+        # ss = [w_s[-1], wr_s[-1], c_s[-1], cr_s[-1]]
         # final_hiddens = []
         # for es, la in zip(ess, ss):
-        #     att = F.softmax(F.dot(F.swapaxes(es, 0, 1), la))
-        #     att = F.transpose(att)
-        #     att = F.expand_dims(att, axis=1)
+        #     la = F.expand_dims(la, axis=1)
+        #     att = F.softmax(F.batch_dot(es, F.swapaxes(la, 1, 2)))
+        #     att = F.swapaxes(att, 1, 2)
         #     res = F.batch_dot(att, es)
-        #     final_hiddens.append(F.reshape(res, shape=(0, -1)))
+        #     final_hiddens.append(F.reshape(res, (0, -1)))
+
+        # use hyper parameter as attention vector
+        layer_attention = [kwargs['layer%s_attention' % i] for i in range(4)]
+        ess = [w_e, wr_e, c_e, cr_e]
+        ss = [la for la in layer_attention]
+        final_hiddens = []
+        for es, la in zip(ess, ss):
+            att = F.softmax(F.dot(F.swapaxes(es, 0, 1), la))
+            att = F.transpose(att)
+            att = F.expand_dims(att, axis=1)
+            res = F.batch_dot(att, es)
+            final_hiddens.append(F.reshape(res, shape=(0, -1)))
 
 
         # final_hiddens = [w_e[-1], wr_e[-1], c_e[-1], cr_e[-1]]
         attention = F.stack(*final_hiddens)
-        fc_in = F.dot(self.layers_attention(F), attention)
-        if not label:
-            return self.fc(fc_in)
-        else:
-            return self.loss(self.fc(fc_in), label)
+        layers_attention = kwargs['layers_attention']
+        fc_in = F.dot(layers_attention, attention)
+        return self.fc(fc_in)
 
 
 #########################################################################
@@ -171,7 +173,9 @@ def train_RLSTM():
     logger.info("visualization")
     word_length = 1
     character_length = 2
-    net.set_network_unroll(word_length, character_length)
+    from copy import deepcopy
+    viz_net = deepcopy(net)
+    viz_net.set_network_unroll(word_length, character_length)
     viz_shape = {
         'word_seq': (batch_size,) + (word_length,),
         'word_radical_seq': (batch_size,) + (word_length,),
@@ -183,10 +187,8 @@ def train_RLSTM():
     word_radical_seq = mx.sym.var("word_radical_seq")
     character_seq = mx.sym.var("character_seq")
     character_radical_seq = mx.sym.var("character_radical_seq")
-    label = mx.sym.var("label")
-    sym = net(word_seq, word_radical_seq, character_seq, character_radical_seq,
-              # label
-              )
+    viz_net.initialize()
+    sym = viz_net(word_seq, word_radical_seq, character_seq, character_radical_seq,)
     plot_network(
         nn_symbol=sym,
         save_path=model_dir + "plot/network",
