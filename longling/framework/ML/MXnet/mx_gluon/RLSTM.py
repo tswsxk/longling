@@ -66,10 +66,10 @@ class RLSTM(gluon.HybridBlock):
     def hybrid_forward(self, F, word_seq, word_radical_seq, character_seq,
                        character_radical_seq,
                        *args, **kwargs):
-        word_embedding = F.BlockGrad(self.word_embedding(word_seq))
-        word_radical_embedding = F.BlockGrad(self.word_radical_embedding(word_radical_seq))
-        character_embedding = F.BlockGrad(self.char_embedding(character_seq))
-        character_radical_embedding = F.BlockGrad(self.char_radical_embedding(character_radical_seq))
+        word_embedding = self.word_embedding(word_seq)
+        word_radical_embedding = self.word_radical_embedding(word_radical_seq)
+        character_embedding = self.char_embedding(character_seq)
+        character_radical_embedding = self.char_radical_embedding(character_radical_seq)
         word_length = self.word_length
         character_length = self.charater_length
         merge_outputs = True
@@ -194,7 +194,7 @@ def train_RLSTM():
         save_path=model_dir + "plot/network",
         shape=viz_shape,
         node_attrs={"fixedsize": "false"},
-        view=True
+        view=False
     )
 
     # 5 todo 定义损失函数
@@ -252,6 +252,7 @@ def train_RLSTM():
         # net.word_radical_embedding.weight.set_data(word_radical_embedding.idx_to_vec)
         # net.char_embedding.weight.set_data(char_embedding.idx_to_vec)
         # net.char_radical_embedding.weight.set_data(char_radical_embedding.idx_to_vec)
+    RLSTMModule.parameters_stabilize(net)
     trainer = RLSTMModule.get_trainer(net)
     mod.fit(
         net=net, begin_epoch=begin_epoch, epoch_num=epoch_num, batch_size=batch_size,
@@ -455,6 +456,35 @@ class RLSTMModule(object):
         )
 
     # 以下部分定义训练相关的方法
+    @staticmethod
+    def parameters_stabilize(net, key_lists=['embedding'], name_sets=set()):
+        """
+        固定部分参数
+        Parameters
+        ----------
+        net
+        key_lists: list
+            关键字列表
+        name_sets: set
+            全名集合
+        Returns
+        -------
+
+        """
+        if not key_lists and not name_sets:
+            return
+        else:
+            params = net.collect_params()
+            pers_keys = []
+            for k in params:
+                for k_str in key_lists:
+                    if k_str in k:
+                        pers_keys.append(k)
+                if k in name_sets:
+                    pers_keys.append(k)
+            for k in pers_keys:
+                params.get(k).grad_req = 'null'
+
     @staticmethod
     def net_initialize(net, model_ctx, initializer=mx.init.Normal(sigma=.1)):
         # 初始化网络参数
@@ -756,6 +786,7 @@ class RLSTMModule(object):
         bp_loss = None
         with autograd.record():
             net.set_network_unroll(len(word[0]), len(char[0]))
+            word.attach_grad()
             output = net(word, word_radical, char, char_radical)  # todo
             for name, func in loss_function.items():
                 loss = func(output, label)  # todo
