@@ -114,7 +114,7 @@ class ClassEvaluator(Evaluator):
 
         if prf:
             avg = {eval_id: [] for eval_id in eval_ids}
-            for class_id in sorted(prf.keys()):
+            for class_id in [str(k) for k in sorted([int(k) for k in prf.keys()])]:
                 for eval_id, values in avg.items():
                     values.append(prf[class_id][eval_id])
                 msg += "\n"
@@ -123,7 +123,7 @@ class ClassEvaluator(Evaluator):
                 msg += ("\t{}={:.10f}" * len(prf[class_id])).format(*sum(msg_res, ()))
             avg = {eval_id: np.average(values) for eval_id, values in avg.items()}
             msg += "\n"
-            msg += "--- Category_A "
+            msg += "--- Category_Avg "
             msg_res = sorted(avg.items(), reverse=True)
             msg += ("\t{}={:.10f}" * len(avg)).format(*sum(msg_res, ()))
             prf['avg'] = avg
