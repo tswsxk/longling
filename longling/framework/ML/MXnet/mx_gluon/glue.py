@@ -29,4 +29,4 @@ def new_module(module_name, directory=None):
 
 
 if __name__ == '__main__':
-    new_module("GCN")
+    new_module("SNN")
