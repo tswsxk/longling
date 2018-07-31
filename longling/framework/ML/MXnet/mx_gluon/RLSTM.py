@@ -46,10 +46,10 @@ class RLSTM(gluon.HybridBlock):
                 self.register_child(lstm)
             self.fc = gluon.nn.Dense(fc_output)
             self.loss = gluon.loss.SoftmaxCrossEntropyLoss()
-            # self.layer0_attention = self.params.get("layer0_attention_weight", shape=(lstm_hidden,))
-            # self.layer1_attention = self.params.get("layer1_attention_weight", shape=(lstm_hidden,))
-            # self.layer2_attention = self.params.get("layer2_attention_weight", shape=(lstm_hidden,))
-            # self.layer3_attention = self.params.get("layer3_attention_weight", shape=(lstm_hidden,))
+            self.layer0_attention = self.params.get("layer0_attention_weight", shape=(lstm_hidden,))
+            self.layer1_attention = self.params.get("layer1_attention_weight", shape=(lstm_hidden,))
+            self.layer2_attention = self.params.get("layer2_attention_weight", shape=(lstm_hidden,))
+            self.layer3_attention = self.params.get("layer3_attention_weight", shape=(lstm_hidden,))
             self.layers_attention = self.params.get('layers_attention_weight', shape=(4, ))
 
         self.word_length = None
@@ -80,27 +80,27 @@ class RLSTM(gluon.HybridBlock):
         cr_e, cr_s = self.lstms[3].unroll(character_length, character_radical_embedding, merge_outputs=merge_outputs)
 
         # use final state as attention vector
-        ess = [w_e, wr_e, c_e, cr_e]
-        ss = [w_s[-1], wr_s[-1], c_s[-1], cr_s[-1]]
-        final_hiddens = []
-        for es, la in zip(ess, ss):
-            la = F.expand_dims(la, axis=1)
-            att = F.softmax(F.batch_dot(es, F.swapaxes(la, 1, 2)))
-            att = F.swapaxes(att, 1, 2)
-            res = F.batch_dot(att, es)
-            final_hiddens.append(F.reshape(res, (0, -1)))
-
-        # use hyper parameter as attention vector
-        # layer_attention = [kwargs['layer%s_attention' % i] for i in range(4)]
         # ess = [w_e, wr_e, c_e, cr_e]
-        # ss = [la for la in layer_attention]
+        # ss = [w_s[-1], wr_s[-1], c_s[-1], cr_s[-1]]
         # final_hiddens = []
         # for es, la in zip(ess, ss):
-        #     att = F.softmax(F.dot(F.swapaxes(es, 0, 1), la))
-        #     att = F.transpose(att)
-        #     att = F.expand_dims(att, axis=1)
+        #     la = F.expand_dims(la, axis=1)
+        #     att = F.softmax(F.batch_dot(es, F.swapaxes(la, 1, 2)))
+        #     att = F.swapaxes(att, 1, 2)
         #     res = F.batch_dot(att, es)
-        #     final_hiddens.append(F.reshape(res, shape=(0, -1)))
+        #     final_hiddens.append(F.reshape(res, (0, -1)))
+
+        # use hyper parameter as attention vector
+        layer_attention = [kwargs['layer%s_attention' % i] for i in range(4)]
+        ess = [w_e, wr_e, c_e, cr_e]
+        ss = [la for la in layer_attention]
+        final_hiddens = []
+        for es, la in zip(ess, ss):
+            att = F.softmax(F.dot(F.swapaxes(es, 0, 1), la))
+            att = F.transpose(att)
+            att = F.expand_dims(att, axis=1)
+            res = F.batch_dot(att, es)
+            final_hiddens.append(F.reshape(res, shape=(0, -1)))
 
 
         # final_hiddens = [w_e[-1], wr_e[-1], c_e[-1], cr_e[-1]]
@@ -127,13 +127,13 @@ def use_RLSTM():
 def train_RLSTM():
     # 1 配置参数初始化
     root = "../../../../"
-    model_name = "RLSTM"
+    model_name = "RLSTM2"
     model_dir = root + "data/gluon/%s/" % model_name
 
     mod = RLSTMModule(
         model_dir=model_dir,
         model_name=model_name,
-        ctx=mx.cpu(3)
+        ctx=mx.cpu(2)
     )
     logger = config_logging(logger=model_name, console_log_level=LogLevel.INFO)
     logger.info(str(mod))
