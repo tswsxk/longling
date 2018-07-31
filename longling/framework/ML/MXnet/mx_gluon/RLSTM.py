@@ -27,10 +27,12 @@ from longling.framework.ML.MXnet.mx_gluon.gluon_sym import PVWeight
 # write the user function here
 
 
+
+
 class RLSTM(gluon.HybridBlock):
     def __init__(self, lstm_hidden=256, fc_output=32, embedding_dim=256,
-                 word_embedding_size=4000, word_radical_embedding_size=3000,
-                 char_embedding_size=2000, char_radical_embedding_size=1000,
+                 word_embedding_size=352183, word_radical_embedding_size=31759,
+                 char_embedding_size=4746, char_radical_embedding_size=242,
                  **kwargs):
         super(RLSTM, self).__init__(**kwargs)
         self.lstm_hidden = lstm_hidden
@@ -44,11 +46,10 @@ class RLSTM(gluon.HybridBlock):
                 self.register_child(lstm)
             self.fc = gluon.nn.Dense(fc_output)
             self.loss = gluon.loss.SoftmaxCrossEntropyLoss()
-            self.layer0_attention = self.params.get("layer0_attention_weight", shape=(lstm_hidden,))
-            self.layer1_attention = self.params.get("layer1_attention_weight", shape=(lstm_hidden,))
-            self.layer2_attention = self.params.get("layer2_attention_weight", shape=(lstm_hidden,))
-            self.layer3_attention = self.params.get("layer3_attention_weight", shape=(lstm_hidden,))
-            # self.layers_attention = self.get_weight("layers_attention_weight", shape=(4,))
+            # self.layer0_attention = self.params.get("layer0_attention_weight", shape=(lstm_hidden,))
+            # self.layer1_attention = self.params.get("layer1_attention_weight", shape=(lstm_hidden,))
+            # self.layer2_attention = self.params.get("layer2_attention_weight", shape=(lstm_hidden,))
+            # self.layer3_attention = self.params.get("layer3_attention_weight", shape=(lstm_hidden,))
             self.layers_attention = self.params.get('layers_attention_weight', shape=(4, ))
 
         self.word_length = None
@@ -79,27 +80,27 @@ class RLSTM(gluon.HybridBlock):
         cr_e, cr_s = self.lstms[3].unroll(character_length, character_radical_embedding, merge_outputs=merge_outputs)
 
         # use final state as attention vector
-        # ess = [w_e, wr_e, c_e, cr_e]
-        # ss = [w_s[-1], wr_s[-1], c_s[-1], cr_s[-1]]
-        # final_hiddens = []
-        # for es, la in zip(ess, ss):
-        #     la = F.expand_dims(la, axis=1)
-        #     att = F.softmax(F.batch_dot(es, F.swapaxes(la, 1, 2)))
-        #     att = F.swapaxes(att, 1, 2)
-        #     res = F.batch_dot(att, es)
-        #     final_hiddens.append(F.reshape(res, (0, -1)))
-
-        # use hyper parameter as attention vector
-        layer_attention = [kwargs['layer%s_attention' % i] for i in range(4)]
         ess = [w_e, wr_e, c_e, cr_e]
-        ss = [la for la in layer_attention]
+        ss = [w_s[-1], wr_s[-1], c_s[-1], cr_s[-1]]
         final_hiddens = []
         for es, la in zip(ess, ss):
-            att = F.softmax(F.dot(F.swapaxes(es, 0, 1), la))
-            att = F.transpose(att)
-            att = F.expand_dims(att, axis=1)
+            la = F.expand_dims(la, axis=1)
+            att = F.softmax(F.batch_dot(es, F.swapaxes(la, 1, 2)))
+            att = F.swapaxes(att, 1, 2)
             res = F.batch_dot(att, es)
-            final_hiddens.append(F.reshape(res, shape=(0, -1)))
+            final_hiddens.append(F.reshape(res, (0, -1)))
+
+        # use hyper parameter as attention vector
+        # layer_attention = [kwargs['layer%s_attention' % i] for i in range(4)]
+        # ess = [w_e, wr_e, c_e, cr_e]
+        # ss = [la for la in layer_attention]
+        # final_hiddens = []
+        # for es, la in zip(ess, ss):
+        #     att = F.softmax(F.dot(F.swapaxes(es, 0, 1), la))
+        #     att = F.transpose(att)
+        #     att = F.expand_dims(att, axis=1)
+        #     res = F.batch_dot(att, es)
+        #     final_hiddens.append(F.reshape(res, shape=(0, -1)))
 
 
         # final_hiddens = [w_e[-1], wr_e[-1], c_e[-1], cr_e[-1]]
@@ -132,7 +133,7 @@ def train_RLSTM():
     mod = RLSTMModule(
         model_dir=model_dir,
         model_name=model_name,
-        ctx=mx.cpu()
+        ctx=mx.cpu(3)
     )
     logger = config_logging(logger=model_name, console_log_level=LogLevel.INFO)
     logger.info(str(mod))
@@ -147,17 +148,17 @@ def train_RLSTM():
     vec_suffix = ".vec.dat"
     from gluonnlp.embedding import TokenEmbedding
     logger.info("loading embedding")
-    # word_embedding = TokenEmbedding.from_file(vec_root + "word" + vec_suffix)
-    # word_radical_embedding = TokenEmbedding.from_file(vec_root + "word_radical" + vec_suffix)
-    # char_embedding = TokenEmbedding.from_file(vec_root + "char" + vec_suffix)
-    # char_radical_embedding = TokenEmbedding.from_file(vec_root + "char_radical" + vec_suffix)
+    word_embedding = TokenEmbedding.from_file(vec_root + "word" + vec_suffix)
+    word_radical_embedding = TokenEmbedding.from_file(vec_root + "word_radical" + vec_suffix)
+    char_embedding = TokenEmbedding.from_file(vec_root + "char" + vec_suffix)
+    char_radical_embedding = TokenEmbedding.from_file(vec_root + "char_radical" + vec_suffix)
     # 2.1 重新生成
     logger.info("generating symbol")
     net = RLSTMModule.sym_gen(
-        # word_embedding_size=len(word_embedding.token_to_idx),
-        # word_radical_embedding_size=len(word_radical_embedding.token_to_idx),
-        # char_embedding_size=len(char_embedding.token_to_idx),
-        # char_radical_embedding_size=len(char_radical_embedding.token_to_idx)
+        word_embedding_size=len(word_embedding.token_to_idx),
+        word_radical_embedding_size=len(word_radical_embedding.token_to_idx),
+        char_embedding_size=len(char_embedding.token_to_idx),
+        char_radical_embedding_size=len(char_radical_embedding.token_to_idx)
     )
     # 2.2 装载已有模型
     # net = mod.load(epoch)
@@ -165,37 +166,41 @@ def train_RLSTM():
 
     # 5 todo 定义训练相关参数
     begin_epoch = 0
-    epoch_num = 1
-    batch_size = 128
+    epoch_num = 50
+    batch_size = 64
     ctx = mod.ctx
 
     # 3 todo 自行设定网络输入，可视化检查网络
-    logger.info("visualization")
-    word_length = 1
-    character_length = 2
-    from copy import deepcopy
-    viz_net = deepcopy(net)
-    viz_net.set_network_unroll(word_length, character_length)
-    viz_shape = {
-        'word_seq': (batch_size,) + (word_length,),
-        'word_radical_seq': (batch_size,) + (word_length,),
-        'character_seq': (batch_size,) + (character_length,),
-        'character_radical_seq': (batch_size,) + (character_length,),
-        # 'label': (batch_size,) + (1, )
-    }
-    word_seq = mx.sym.var("word_seq")
-    word_radical_seq = mx.sym.var("word_radical_seq")
-    character_seq = mx.sym.var("character_seq")
-    character_radical_seq = mx.sym.var("character_radical_seq")
-    viz_net.initialize()
-    sym = viz_net(word_seq, word_radical_seq, character_seq, character_radical_seq,)
-    plot_network(
-        nn_symbol=sym,
-        save_path=model_dir + "plot/network",
-        shape=viz_shape,
-        node_attrs={"fixedsize": "false"},
-        view=False
-    )
+    try:
+        logger.info("visualization")
+        word_length = 1
+        character_length = 2
+        from copy import deepcopy
+        viz_net = deepcopy(net)
+        viz_net.set_network_unroll(word_length, character_length)
+        viz_shape = {
+            'word_seq': (batch_size,) + (word_length,),
+            'word_radical_seq': (batch_size,) + (word_length,),
+            'character_seq': (batch_size,) + (character_length,),
+            'character_radical_seq': (batch_size,) + (character_length,),
+            # 'label': (batch_size,) + (1, )
+        }
+        word_seq = mx.sym.var("word_seq")
+        word_radical_seq = mx.sym.var("word_radical_seq")
+        character_seq = mx.sym.var("character_seq")
+        character_radical_seq = mx.sym.var("character_radical_seq")
+        viz_net.initialize()
+        sym = viz_net(word_seq, word_radical_seq, character_seq, character_radical_seq,)
+        plot_network(
+            nn_symbol=sym,
+            save_path=model_dir + "plot/network",
+            shape=viz_shape,
+            node_attrs={"fixedsize": "false"},
+            view=False
+        )
+    except Exception as e:
+        logger.error("error happen in visualization, aborted")
+        logger.error(e)
 
     # 5 todo 定义损失函数
     # bp_loss_f 定义了用来进行 back propagation 的损失函数
@@ -229,13 +234,13 @@ def train_RLSTM():
     test_data_file = data_root + "test"
 
     logger.info("loading data")
-    # unknown_token = word_embedding.unknown_token
+    unknown_token = word_embedding.unknown_token
     train_data = RLSTMModule.get_data_iter(train_data_file, batch_size,
-                                           # padding=word_embedding.token_to_idx[unknown_token]
+                                           padding=word_embedding.token_to_idx[unknown_token]
                                            )
-    # unknown_token = char_embedding.unknown_token
+    unknown_token = char_embedding.unknown_token
     test_data = RLSTMModule.get_data_iter(test_data_file, batch_size,
-                                          # padding=char_embedding.token_to_idx[unknown_token]
+                                          padding=char_embedding.token_to_idx[unknown_token]
                                           )
 
     # 6 todo 训练
@@ -248,10 +253,10 @@ def train_RLSTM():
         logger.info("model doesn't exist, initializing")
         import numpy as np
         RLSTMModule.net_initialize(net, ctx)
-        # net.word_embedding.weight.set_data(word_embedding.idx_to_vec)
-        # net.word_radical_embedding.weight.set_data(word_radical_embedding.idx_to_vec)
-        # net.char_embedding.weight.set_data(char_embedding.idx_to_vec)
-        # net.char_radical_embedding.weight.set_data(char_radical_embedding.idx_to_vec)
+        net.word_embedding.weight.set_data(word_embedding.idx_to_vec)
+        net.word_radical_embedding.weight.set_data(word_radical_embedding.idx_to_vec)
+        net.char_embedding.weight.set_data(char_embedding.idx_to_vec)
+        net.char_radical_embedding.weight.set_data(char_radical_embedding.idx_to_vec)
     RLSTMModule.parameters_stabilize(net)
     trainer = RLSTMModule.get_trainer(net)
     mod.fit(
@@ -400,32 +405,36 @@ class RLSTMModule(object):
         from tqdm import tqdm
         import numpy as np
         from gluonnlp.data import FixedBucketSampler, PadSequence
-        # word_feature = []
-        # word_radical_feature = []
-        # char_feature = []
-        # char_radical_feature = []
-        # features = [word_feature, word_radical_feature, char_feature, char_radical_feature]
-        # labels = []
-        # with open(filename) as f:
-        #     for line in tqdm(f, "loading data from %s" % filename):
-        #         ds = json.loads(line)
-        #         data, label = ds['x'], ds['z']
-        #         word_feature.append(data[0])
-        #         word_radical_feature.append(data[0])
-        #         char_feature.append(data[0])
-        #         char_radical_feature.append(data[0])
-        #         labels.append(label)
-        import random
-        length = 20
-        word_length = sorted([random.randint(1, length) for _ in range(1000)])
-        char_length = sorted([i + random.randint(0, 5) for i in word_length])
-        word_feature = [[random.randint(0, length) for _ in range(i)] for i in word_length]
-        word_radical_feature = [[random.randint(0, length) for _ in range(i)] for i in word_length]
-        char_feature = [[random.randint(0, length) for _ in range(i)] for i in char_length]
-        char_radical_feature = [[random.randint(0, length) for _ in range(i)] for i in char_length]
-
+        word_feature = []
+        word_radical_feature = []
+        char_feature = []
+        char_radical_feature = []
         features = [word_feature, word_radical_feature, char_feature, char_radical_feature]
-        labels = [random.randint(0, 32) for _ in word_length]
+        labels = []
+        with open(filename) as f:
+            for line in tqdm(f, "loading data from %s" % filename):
+                ds = json.loads(line)
+                data, label = ds['x'], ds['z']
+                word_feature.append(data[0])
+                word_radical_feature.append(data[0])
+                char_feature.append(data[0])
+                char_radical_feature.append(data[0])
+                labels.append(label)
+
+
+        # import random
+        # length = 20
+        # word_length = sorted([random.randint(1, length) for _ in range(1000)])
+        # char_length = sorted([i + random.randint(0, 5) for i in word_length])
+        # word_feature = [[random.randint(0, length) for _ in range(i)] for i in word_length]
+        # word_radical_feature = [[random.randint(0, length) for _ in range(i)] for i in word_length]
+        # char_feature = [[random.randint(0, length) for _ in range(i)] for i in char_length]
+        # char_radical_feature = [[random.randint(0, length) for _ in range(i)] for i in char_length]
+        #
+        # features = [word_feature, word_radical_feature, char_feature, char_radical_feature]
+        # labels = [random.randint(0, 32) for _ in word_length]
+
+
         batch_idxes = FixedBucketSampler([len(word_f) for word_f in word_feature], batch_size, num_buckets=num_buckets)
         batch = []
         for batch_idx in batch_idxes:
@@ -445,8 +454,8 @@ class RLSTMModule(object):
         return batch[::-1]
 
     @staticmethod
-    def sym_gen(word_embedding_size=4000, word_radical_embedding_size=3000,
-                char_embedding_size=2000, char_radical_embedding_size=1000):
+    def sym_gen(word_embedding_size=352183, word_radical_embedding_size=31759,
+                char_embedding_size=4746, char_radical_embedding_size=242):
         # 在这里定义网络结构
         return RLSTM(
             word_embedding_size=word_embedding_size,
@@ -491,7 +500,14 @@ class RLSTMModule(object):
         net.collect_params().initialize(initializer, ctx=model_ctx)
 
     @staticmethod
-    def get_trainer(net, optimizer='sgd', optimizer_params={'learning_rate': .01}):
+    def get_trainer(
+            net, optimizer='rmsprop',
+            optimizer_params={
+                'learning_rate': 0.0005, 'wd': 0.5,
+                'gamma1': 0.999,
+                'lr_scheduler': mx.lr_scheduler.FactorScheduler(step=50, factor=0.99),
+            }
+    ):
         # 把优化器安装到网络上
         trainer = gluon.Trainer(net.collect_params(), optimizer, optimizer_params)
         return trainer
@@ -786,7 +802,6 @@ class RLSTMModule(object):
         bp_loss = None
         with autograd.record():
             net.set_network_unroll(len(word[0]), len(char[0]))
-            word.attach_grad()
             output = net(word, word_radical, char, char_radical)  # todo
             for name, func in loss_function.items():
                 loss = func(output, label)  # todo
