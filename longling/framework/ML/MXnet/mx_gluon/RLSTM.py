@@ -17,41 +17,45 @@ from mxnet import gluon
 
 from longling.lib.utilog import config_logging, LogLevel
 from longling.lib.clock import Clock
-from longling.framework.ML.MXnet.mx_gluon.gluon_toolkit import TrainBatchInformer, Evaluator, MovingLosses
+from longling.framework.ML.MXnet.mx_gluon.gluon_toolkit import TrainBatchInformer, MovingLosses
+from longling.framework.ML.MXnet.mx_gluon.gluon_toolkit import Evaluator, ClassEvaluator
 from longling.framework.ML.MXnet.viz import plot_network
 from longling.framework.ML.MXnet.mx_gluon.gluon_sym import PairwiseLoss, SoftmaxCrossEntropyLoss
-
+from longling.framework.ML.MXnet.mx_gluon.gluon_sym import PVWeight
 
 ########################################################################
 # write the user function here
 
 
 class RLSTM(gluon.HybridBlock):
-    def __init__(self, lstm_hidden=256, fc_output=32, dim=256,
+    def __init__(self, lstm_hidden=256, fc_output=32, embedding_dim=256,
                  word_embedding_size=4000, word_radical_embedding_size=3000,
                  char_embedding_size=2000, char_radical_embedding_size=1000,
                  **kwargs):
         super(RLSTM, self).__init__(**kwargs)
         self.lstm_hidden = lstm_hidden
         with self.name_scope():
-            self.word_embedding = gluon.nn.Embedding(word_embedding_size, dim)
-            self.word_radical_embedding = gluon.nn.Embedding(word_radical_embedding_size, dim)
-            self.char_embedding = gluon.nn.Embedding(char_embedding_size, dim)
-            self.char_radical_embedding = gluon.nn.Embedding(char_radical_embedding_size, dim)
+            self.word_embedding = gluon.nn.Embedding(word_embedding_size, embedding_dim)
+            self.word_radical_embedding = gluon.nn.Embedding(word_radical_embedding_size, embedding_dim)
+            self.char_embedding = gluon.nn.Embedding(char_embedding_size, embedding_dim)
+            self.char_radical_embedding = gluon.nn.Embedding(char_radical_embedding_size, embedding_dim)
             self.lstms = [gluon.rnn.LSTMCell(lstm_hidden) for _ in range(4)]
             for lstm in self.lstms:
                 self.register_child(lstm)
             self.fc = gluon.nn.Dense(fc_output)
             self.loss = gluon.loss.SoftmaxCrossEntropyLoss()
-            self.layer_attention = [
-
-            ]
-            self.params.get("layers_attention_weight", shape=(4, ), allow_deferred_init=True)
-            self.layers_attention = mx.sym.softmax(
-                mx.sym.Variable("layers_attention_weight", shape=(4,)))
+            # self.layer_attention = [
+            #     self.get_weight("layer%s_attention_weight" % i, shape=(lstm_hidden,)) for i in range(4)
+            # ]
+            self.layers_attention = self.get_weight("layers_attention_weight", shape=(4,))
 
         self.word_length = None
         self.charater_length = None
+
+    def get_weight(self, name, shape):
+        parmas = self.params.get(name, shape=shape)
+        var = mx.sym.Variable(name, shape=shape)
+        return PVWeight(parmas, var)
 
     def set_network_unroll(self, word_length, character_length):
         self.word_length = word_length
@@ -67,27 +71,36 @@ class RLSTM(gluon.HybridBlock):
         character_radical_embedding = F.BlockGrad(self.char_radical_embedding(character_radical_seq))
         word_length = self.word_length
         character_length = self.charater_length
-        merge_outputs = False
+        merge_outputs = True
         w_e, w_s = self.lstms[0].unroll(word_length, word_embedding, merge_outputs=merge_outputs)
         wr_e, wr_s = self.lstms[1].unroll(word_length, word_radical_embedding, merge_outputs=merge_outputs)
         c_e, c_s = self.lstms[2].unroll(character_length, character_embedding, merge_outputs=merge_outputs)
         cr_e, cr_s = self.lstms[3].unroll(character_length, character_radical_embedding, merge_outputs=merge_outputs)
 
+        ess = [w_e, wr_e, c_e, cr_e]
+        ss = [w_s[-1], wr_s[-1], c_s[-1], cr_s[-1]]
+        final_hiddens = []
+        for es, la in zip(ess, ss):
+            la = F.expand_dims(la, axis=1)
+            att = F.softmax(F.batch_dot(es, F.swapaxes(la, 1, 2)))
+            att = F.swapaxes(att, 1, 2)
+            res = F.batch_dot(att, es)
+            final_hiddens.append(F.reshape(res, (0, -1)))
+
         # ess = [w_e, wr_e, c_e, cr_e]
-        # ss = [w_s, wr_s, c_s, cr_s]
-        # ss = self.layer_attention()
+        # ss = [la(F) for la in self.layer_attention]
         # final_hiddens = []
         # for es, la in zip(ess, ss):
-        #     att = F.Softmax(F.dot(F.swapaxes(es, 0, 1), la))
+        #     att = F.softmax(F.dot(F.swapaxes(es, 0, 1), la))
         #     att = F.transpose(att)
         #     att = F.expand_dims(att, axis=1)
         #     res = F.batch_dot(att, es)
         #     final_hiddens.append(F.reshape(res, shape=(0, -1)))
-        #
 
-        final_hiddens = [w_e[-1], wr_e[-1], c_e[-1], cr_e[-1]]
+
+        # final_hiddens = [w_e[-1], wr_e[-1], c_e[-1], cr_e[-1]]
         attention = F.stack(*final_hiddens)
-        fc_in = F.dot(self.layers_attention, attention)
+        fc_in = F.dot(self.layers_attention(F), attention)
         if not label:
             return self.fc(fc_in)
         else:
@@ -132,19 +145,18 @@ def train_RLSTM():
     vec_suffix = ".vec.dat"
     from gluonnlp.embedding import TokenEmbedding
     logger.info("loading embedding")
-    word_embedding = TokenEmbedding.from_file(vec_root + "word" + vec_suffix)
-    word_radical_embedding = TokenEmbedding.from_file(vec_root + "word_radical" + vec_suffix)
-    char_embedding = TokenEmbedding.from_file(vec_root + "char" + vec_suffix)
-    char_radical_embedding = TokenEmbedding.from_file(vec_root + "char_radical" + vec_suffix)
+    # word_embedding = TokenEmbedding.from_file(vec_root + "word" + vec_suffix)
+    # word_radical_embedding = TokenEmbedding.from_file(vec_root + "word_radical" + vec_suffix)
+    # char_embedding = TokenEmbedding.from_file(vec_root + "char" + vec_suffix)
+    # char_radical_embedding = TokenEmbedding.from_file(vec_root + "char_radical" + vec_suffix)
     # 2.1 重新生成
     logger.info("generating symbol")
     net = RLSTMModule.sym_gen(
-        word_embedding_size=len(word_embedding.token_to_idx),
-        word_radical_embedding_size=len(word_radical_embedding.token_to_idx),
-        char_embedding_size=len(char_embedding.token_to_idx),
-        char_radical_embedding_size=len(char_radical_embedding.token_to_idx)
+        # word_embedding_size=len(word_embedding.token_to_idx),
+        # word_radical_embedding_size=len(word_radical_embedding.token_to_idx),
+        # char_embedding_size=len(char_embedding.token_to_idx),
+        # char_radical_embedding_size=len(char_radical_embedding.token_to_idx)
     )
-    net.hybridize()
     # 2.2 装载已有模型
     # net = mod.load(epoch)
     # net = RLSTMModule.load_net(filename)
@@ -202,7 +214,7 @@ def train_RLSTM():
         log_format="%(message)s",
     )
     from longling.framework.ML.MXnet.metric import PRF, Accuracy
-    evaluator = Evaluator(
+    evaluator = ClassEvaluator(
         metrics=[PRF(argmax=False), Accuracy(argmax=False)],
         model_ctx=mod.ctx,
         logger=validation_logger,
@@ -215,12 +227,14 @@ def train_RLSTM():
     test_data_file = data_root + "test"
 
     logger.info("loading data")
-    unknown_token = word_embedding.unknown_token
+    # unknown_token = word_embedding.unknown_token
     train_data = RLSTMModule.get_data_iter(train_data_file, batch_size,
-                                           padding=word_embedding.token_to_idx[unknown_token])
-    unknown_token = char_embedding.unknown_token
+                                           # padding=word_embedding.token_to_idx[unknown_token]
+                                           )
+    # unknown_token = char_embedding.unknown_token
     test_data = RLSTMModule.get_data_iter(test_data_file, batch_size,
-                                          padding=char_embedding.token_to_idx[unknown_token])
+                                          # padding=char_embedding.token_to_idx[unknown_token]
+                                          )
 
     # 6 todo 训练
     # 直接装载已有模型，确认这一步可以执行的话可以忽略 2 3 4
@@ -232,10 +246,10 @@ def train_RLSTM():
         logger.info("model doesn't exist, initializing")
         import numpy as np
         RLSTMModule.net_initialize(net, ctx)
-        net.word_embedding.weight.set_data(word_embedding.idx_to_vec)
-        net.word_radical_embedding.weight.set_data(word_radical_embedding.idx_to_vec)
-        net.char_embedding.weight.set_data(char_embedding.idx_to_vec)
-        net.char_radical_embedding.weight.set_data(char_radical_embedding.idx_to_vec)
+        # net.word_embedding.weight.set_data(word_embedding.idx_to_vec)
+        # net.word_radical_embedding.weight.set_data(word_radical_embedding.idx_to_vec)
+        # net.char_embedding.weight.set_data(char_embedding.idx_to_vec)
+        # net.char_radical_embedding.weight.set_data(char_radical_embedding.idx_to_vec)
     trainer = RLSTMModule.get_trainer(net)
     mod.fit(
         net=net, begin_epoch=begin_epoch, epoch_num=epoch_num, batch_size=batch_size,
@@ -247,7 +261,7 @@ def train_RLSTM():
         informer=informer, epoch_timer=timer, evaluator=evaluator,
         prefix=mod.prefix,
     )
-    net.export(mod.prefix)
+    # net.export(mod.prefix)
 
     # optional todo 评估
     # RLSTMModule.eval()
@@ -383,21 +397,32 @@ class RLSTMModule(object):
         from tqdm import tqdm
         import numpy as np
         from gluonnlp.data import FixedBucketSampler, PadSequence
-        word_feature = []
-        word_radical_feature = []
-        char_feature = []
-        char_radical_feature = []
+        # word_feature = []
+        # word_radical_feature = []
+        # char_feature = []
+        # char_radical_feature = []
+        # features = [word_feature, word_radical_feature, char_feature, char_radical_feature]
+        # labels = []
+        # with open(filename) as f:
+        #     for line in tqdm(f, "loading data from %s" % filename):
+        #         ds = json.loads(line)
+        #         data, label = ds['x'], ds['z']
+        #         word_feature.append(data[0])
+        #         word_radical_feature.append(data[0])
+        #         char_feature.append(data[0])
+        #         char_radical_feature.append(data[0])
+        #         labels.append(label)
+        import random
+        length = 20
+        word_length = sorted([random.randint(1, length) for _ in range(1000)])
+        char_length = sorted([i + random.randint(0, 5) for i in word_length])
+        word_feature = [[random.randint(0, length) for _ in range(i)] for i in word_length]
+        word_radical_feature = [[random.randint(0, length) for _ in range(i)] for i in word_length]
+        char_feature = [[random.randint(0, length) for _ in range(i)] for i in char_length]
+        char_radical_feature = [[random.randint(0, length) for _ in range(i)] for i in char_length]
+
         features = [word_feature, word_radical_feature, char_feature, char_radical_feature]
-        labels = []
-        with open(filename) as f:
-            for line in tqdm(f, "loading data from %s" % filename):
-                ds = json.loads(line)
-                data, label = ds['x'], ds['z']
-                word_feature.append(data[0])
-                word_radical_feature.append(data[0])
-                char_feature.append(data[0])
-                char_radical_feature.append(data[0])
-                labels.append(label)
+        labels = [random.randint(0, 32) for _ in word_length]
         batch_idxes = FixedBucketSampler([len(word_f) for word_f in word_feature], batch_size, num_buckets=num_buckets)
         batch = []
         for batch_idx in batch_idxes:
@@ -414,22 +439,7 @@ class RLSTMModule(object):
                 batch_data.append(mx.ndarray.array(np.asarray(feature)))
             batch_data.append(mx.ndarray.array(np.asarray(batch_labels, dtype=np.int)))
             batch.append(batch_data)
-        return batch
-
-    @staticmethod
-    def eval(evaluater, test_data, net, ctx=mx.cpu()):
-        # 在这里定义数据评估方法
-        from tqdm import tqdm
-        for i, (word, word_radical, char, char_radical, label) in enumerate(tqdm(test_data, desc="evaluating")):
-            word = word.as_in_context(ctx)
-            word_radical = word_radical.as_in_context(ctx)
-            char = char.as_in_context(ctx)
-            char_radical = char_radical.as_in_context(ctx)
-            label = label.as_in_context(ctx)
-            output = net(word, word_radical, char, char_radical)
-            predictions = mx.nd.argmax(output, axis=1)
-            evaluater.metrics.update(preds=predictions, labels=label)
-        return evaluater.metrics.get_name_value()
+        return batch[::-1]
 
     @staticmethod
     def sym_gen(word_embedding_size=4000, word_radical_embedding_size=3000,
@@ -681,6 +691,22 @@ class RLSTMModule(object):
             return loss_values, i
 
         return decorator
+
+    @staticmethod
+    def eval(evaluater, test_data, net, ctx=mx.cpu()):
+        # 在这里定义数据评估方法
+        from tqdm import tqdm
+        for i, (word, word_radical, char, char_radical, label) in enumerate(tqdm(test_data, desc="evaluating")):
+            word = word.as_in_context(ctx)
+            word_radical = word_radical.as_in_context(ctx)
+            char = char.as_in_context(ctx)
+            char_radical = char_radical.as_in_context(ctx)
+            label = label.as_in_context(ctx)
+            net.set_network_unroll(len(word[0]), len(char[0]))
+            output = net(word, word_radical, char, char_radical)
+            predictions = mx.nd.argmax(output, axis=1)
+            evaluater.metrics.update(preds=predictions, labels=label)
+        return dict(evaluater.metrics.get_name_value())
 
     @staticmethod
     def _fit_f(net, batch_size,
