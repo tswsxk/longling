@@ -144,8 +144,10 @@ def train_module_name():
     # except FileExistsError:
     #     logger.info("model doesn't exist, initializing")
     #     module_nameModule.net_initialize(net, ctx)
+    # module_nameModule.parameters_stabilize(net)
     # trainer = GluonModule.get_trainer(net)
     # net.hybridize() # todo whether to use static symbol to accelerate
+    # logger.info("start training")
     # mod.fit(
     #     net=net, begin_epoch=begin_epoch, epoch_num=epoch_num, batch_size=batch_size,
     #     train_data=train_data,
