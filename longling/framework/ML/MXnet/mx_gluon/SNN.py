@@ -91,6 +91,7 @@ def use_SNN(begin_state, target_state):
 
     def list2ndarray(list_data):
         return mx.nd.array(np.asarray(list_data))
+
     value_func = DistanceLoss()
 
     values = []
@@ -102,11 +103,6 @@ def use_SNN(begin_state, target_state):
         value = value_func(states)
         values.append(value)
     return values
-
-
-
-
-
 
 
 # todo 重命名train_SNN函数到需要的模块名
@@ -139,31 +135,35 @@ def train_SNN():
 
     # 5 todo 定义训练相关参数
     begin_epoch = 0
-    epoch_num = 10
+    epoch_num = 100
     batch_size = 128
     ctx = mod.ctx
 
     # 3 todo 自行设定网络输入，可视化检查网络
-    logger.info("visualization")
-    from copy import deepcopy
-    viz_net = deepcopy(net)
-    action_len = 1
-    viz_shape = {
-        'data': (batch_size,) + (action_len,),
-        'state': (batch_size,) + (256,),
-    }
-    x = mx.sym.var("data")
-    state = mx.sym.var("state")
-    viz_net.action_len = action_len
-    sym = viz_net(x, state)
-    viz_net.hybridize()
-    plot_network(
-        nn_symbol=sym,
-        save_path=model_dir + "plot/network",
-        shape=viz_shape,
-        node_attrs={"fixedsize": "false"},
-        view=False
-    )
+    try:
+        logger.info("visualization")
+        from copy import deepcopy
+        viz_net = deepcopy(net)
+        action_len = 1
+        viz_shape = {
+            'data': (batch_size,) + (action_len,),
+            'state': (batch_size,) + (256,),
+        }
+        x = mx.sym.var("data")
+        state = mx.sym.var("state")
+        viz_net.action_len = action_len
+        sym = viz_net(x, state)
+        viz_net.hybridize()
+        plot_network(
+            nn_symbol=sym,
+            save_path=model_dir + "plot/network",
+            shape=viz_shape,
+            node_attrs={"fixedsize": "false"},
+            view=False
+        )
+    except Exception as e:
+        logger.error("error happen in visualization, aborted")
+        logger.error(e)
 
     # 5 todo 定义损失函数
     # bp_loss_f 定义了用来进行 back propagation 的损失函数
@@ -433,7 +433,14 @@ class SNNModule(object):
         net.collect_params().initialize(initializer, ctx=model_ctx)
 
     @staticmethod
-    def get_trainer(net, optimizer='sgd', optimizer_params={'learning_rate': .01}):
+    def get_trainer(
+            net, optimizer='rmsprop',
+            optimizer_params={
+                'learning_rate': 0.005, 'wd': 0.5,
+                'gamma1': 0.9,
+                'momentum': 0.01,
+                'lr_scheduler': mx.lr_scheduler.FactorScheduler(step=50, factor=0.99),
+            }):
         # 把优化器安装到网络上
         trainer = gluon.Trainer(net.collect_params(), optimizer, optimizer_params)
         return trainer
@@ -733,6 +740,6 @@ class SNNModule(object):
 
 
 if __name__ == '__main__':
-    # train_SNN()
-
-    use_SNN()
+    train_SNN()
+    #
+    # use_SNN()
