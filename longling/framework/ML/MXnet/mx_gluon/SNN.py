@@ -73,7 +73,7 @@ def load_SNN(epoch_num=10):
     mod = SNNModule(
         model_dir=model_dir,
         model_name=model_name,
-        ctx=mx.cpu()
+        ctx=mx.gpu()
     )
     logger = config_logging(logger=model_name, console_log_level=LogLevel.INFO)
     logger.info(str(mod))
