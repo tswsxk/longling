@@ -18,7 +18,7 @@ from mxnet import gluon
 from longling.lib.utilog import config_logging, LogLevel
 from longling.lib.clock import Clock
 from longling.framework.ML.MXnet.mx_gluon.gluon_toolkit import TrainBatchInformer, Evaluator, MovingLosses
-from longling.framework.ML.MXnet.viz import plot_network
+from longling.framework.ML.MXnet.viz import plot_network, VizError
 from longling.framework.ML.MXnet.mx_gluon.gluon_sym import PairwiseLoss, SoftmaxCrossEntropyLoss
 
 
@@ -37,15 +37,24 @@ class SNN(gluon.HybridBlock):
         with self.name_scope():
             self.action_embedding = gluon.nn.Embedding(action_num, dim)
             self.lstm = gluon.rnn.LSTMCell(dim)
+            # self.batch_norm = gluon.nn.BatchNorm()
             self.loss = DistanceLoss()
         self.action_len = None
 
-    def hybrid_forward(self, F, action_seq, begin_state, *args, **kwargs):
+    def hybrid_forward(self, F, action_seq, begin_state, action_seq_mask, *args, **kwargs):
         actions = self.action_embedding(action_seq)
-        states, _ = self.lstm.unroll(self.action_len, actions,
-                                     begin_state=[begin_state] * 2,
-                                     )
-        current_state = states[-1]
+        actions = F.SequenceMask(actions, sequence_length=action_seq_mask, use_sequence_length=True, axis=1)
+        if F is mx.ndarray and not self.action_len:
+            action_len = F.max(F.cast(action_seq_mask, dtype='int')).asscalar()
+        else:
+            action_len = self.action_len
+
+        _, (states, _) = self.lstm.unroll(action_len, actions,
+                                          begin_state=[begin_state] * 2,
+                                          merge_outputs=True,
+                                          valid_length=action_seq_mask,
+                                          )
+        current_state = states
         return current_state
 
 
@@ -82,23 +91,17 @@ def eval_SNN():
 
 # todo 重命名use_SNN函数到需要的模块名
 def use_SNN(begin_state, target_state):
-    import numpy as np
     from longling.lib.candylib import as_list
-    begin_state = as_list(begin_state)
-    target_state = as_list(target_state)
     net = load_SNN()
     actions = range(10)
-
-    def list2ndarray(list_data):
-        return mx.nd.array(np.asarray(list_data))
 
     value_func = DistanceLoss()
 
     values = []
     for action in actions:
-        action = list2ndarray(action)
-        begin_state = list2ndarray(begin_state)
-        target_state = list2ndarray(target_state)
+        action = mx.nd.array(action)
+        begin_state = mx.nd.array(begin_state)
+        target_state = mx.nd.array(target_state)
         states = net(action, begin_state, target_state)
         value = value_func(states)
         values.append(value)
@@ -148,12 +151,13 @@ def train_SNN():
         viz_shape = {
             'data': (batch_size,) + (action_len,),
             'state': (batch_size,) + (256,),
+            'action_mask': (batch_size,)
         }
         x = mx.sym.var("data")
         state = mx.sym.var("state")
+        action_mask = mx.sym.var("action_mask")
         viz_net.action_len = action_len
-        sym = viz_net(x, state)
-        viz_net.hybridize()
+        sym = viz_net(x, state, action_mask)
         plot_network(
             nn_symbol=sym,
             save_path=model_dir + "plot/network",
@@ -161,7 +165,7 @@ def train_SNN():
             node_attrs={"fixedsize": "false"},
             view=False
         )
-    except Exception as e:
+    except VizError as e:
         logger.error("error happen in visualization, aborted")
         logger.error(e)
 
@@ -329,7 +333,8 @@ class SNNModule(object):
         # 根据文件名装载已有的网络参数
         if not os.path.isfile(filename):
             raise FileExistsError
-        return net.load_params(filename, ctx)
+        net.load_params(filename, ctx)
+        return net
 
     def load(self, net, epoch, ctx=mx.cpu()):
         """"
@@ -357,6 +362,7 @@ class SNNModule(object):
         # begin_states = []
         # target_states = []
         import random
+        random.seed(10)
         pesudo_num = 1000
         action_seqs = sorted([
             [random.randint(1, 10) for _ in range(random.randint(1, 20))]
@@ -384,11 +390,13 @@ class SNNModule(object):
                 batch_begin_states.append(begin_states[idx])
                 batch_target_states.append(target_states[idx])
             batch_data = []
-            padder = PadSequence(max([len(action_seq) for action_seq in batch_action_seqs]), pad_val=padding)
-            batch_action_seqs = [padder(action_seq) for action_seq in batch_action_seqs]
-            batch_data.append(mx.ndarray.array(np.asarray(batch_action_seqs)))
-            batch_data.append(mx.ndarray.array(np.asarray(batch_begin_states)))
-            batch_data.append(mx.ndarray.array(np.asarray(batch_target_states)))
+            max_len = max([len(action_seq) for action_seq in batch_action_seqs])
+            padder = PadSequence(max_len, pad_val=padding)
+            batch_action_seqs, mask = zip(*[(padder(action_seq), len(action_seq)) for action_seq in batch_action_seqs])
+            batch_data.append(mx.nd.array(batch_action_seqs))
+            batch_data.append(mx.nd.array(batch_begin_states))
+            batch_data.append(mx.nd.array(mask))
+            batch_data.append(mx.nd.array(batch_target_states))
             batch.append(batch_data)
         return batch
 
@@ -438,7 +446,6 @@ class SNNModule(object):
             optimizer_params={
                 'learning_rate': 0.005, 'wd': 0.5,
                 'gamma1': 0.9,
-                'momentum': 0.01,
                 'lr_scheduler': mx.lr_scheduler.FactorScheduler(step=50, factor=0.99),
             }):
         # 把优化器安装到网络上
@@ -656,10 +663,10 @@ class SNNModule(object):
             # 定义批次训练过程
             # 这部分改动可能会比较多，主要是train_data的输出部分
             # write batch loop body here
-            for i, (action_seq, begin_state, target_state) in enumerate(train_data):
+            for i, (action_seq, begin_state, action_mask, target_state) in enumerate(train_data):
                 fit_f(
                     net=net, batch_size=batch_size,
-                    action_seq=action_seq, begin_state=begin_state, target_state=target_state,
+                    action_seq=action_seq, begin_state=begin_state, action_mask=action_mask, target_state=target_state,
                     trainer=trainer, bp_loss_f=bp_loss_f, loss_function=loss_function,
                     losses_monitor=losses_monitor,
                     ctx=ctx,
@@ -676,15 +683,14 @@ class SNNModule(object):
     def eval(test_data, net, eval_func=DistanceLoss()):
         # 在这里定义数据评估方法
         accumulative_loss = 0
-        for (action_seq, begin_state, target_state) in test_data:
-            net.action_len = len(action_seq[0])
-            output = net(action_seq, begin_state)
+        for (action_seq, begin_state, action_mask, target_state) in test_data:
+            output = net(action_seq, begin_state, action_mask)
             accumulative_loss += nd.sum(eval_func(output, target_state)).asscalar()
         return {'accumulative_loss': accumulative_loss}
 
     @staticmethod
     def _fit_f(net, batch_size,
-               action_seq, begin_state, target_state,
+               action_seq, begin_state, action_mask, target_state,
                trainer, bp_loss_f, loss_function, losses_monitor=None,
                ctx=mx.cpu()
                ):
@@ -719,13 +725,12 @@ class SNNModule(object):
 
         action_seq = action_seq.as_in_context(ctx)
         begin_state = begin_state.as_in_context(ctx)
+        action_mask = action_mask.as_in_context(ctx)
         target_state = target_state.as_in_context(ctx)
 
         bp_loss = None
         with autograd.record():
-            net.action_len = len(action_seq[0])
-            begin_state.attach_grad()
-            output = net(action_seq, begin_state)
+            output = net(action_seq, begin_state, action_mask)
             for name, func in loss_function.items():
                 loss = func(output, target_state)
                 if name in bp_loss_f:
@@ -741,5 +746,11 @@ class SNNModule(object):
 
 if __name__ == '__main__':
     train_SNN()
-    #
+
     # use_SNN()
+    # snn = load_SNN(10)
+    # pesudo_data = [
+    #     [mx.nd.array([[1, 0, 0], [1, 2, 0], [1, 2, 3]]), mx.nd.ones((3, 256)), mx.nd.array([1, 2, 3])],
+    # ]
+    # for (actions, begin_state, action_mask) in pesudo_data:
+    #     print(snn(actions, begin_state, action_mask))
