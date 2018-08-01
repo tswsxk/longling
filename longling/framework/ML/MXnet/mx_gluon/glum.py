@@ -19,7 +19,7 @@ from mxnet import gluon
 from longling.lib.utilog import config_logging, LogLevel
 from longling.lib.clock import Clock
 from longling.framework.ML.MXnet.mx_gluon.gluon_toolkit import TrainBatchInformer, Evaluator, MovingLosses
-from longling.framework.ML.MXnet.viz import plot_network
+from longling.framework.ML.MXnet.viz import plot_network, VizError
 from longling.framework.ML.MXnet.mx_gluon.gluon_sym import PairwiseLoss, SoftmaxCrossEntropyLoss
 
 
@@ -123,7 +123,7 @@ def train_module_name():
     #         node_attrs={"fixedsize": "false"},
     #         view=True
     #     )
-    # except Exception as e:
+    # except VizError as e:
     #     logger.error("error happen in visualization, aborted")
     #     logger.error(e)
 
@@ -293,7 +293,8 @@ class GluonModule(object):
         # 根据文件名装载已有的网络参数
         if not os.path.isfile(filename):
             raise FileExistsError
-        return net.load_params(filename, ctx)
+        net.load_params(filename, ctx)
+        return net
 
     def load(self, net, epoch, ctx=mx.cpu()):
         """"
