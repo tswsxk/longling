@@ -3,7 +3,6 @@
 """
 对gluon的训练、测试过程进行封装
 fit_f = epoch_loop(batch_loop(fit_f))
-复制此文件以进行修改
 大量使用 staticmethod 并用 get_params 对参数进行分离的原因是因为耦合性太高会导致改起来不太方便
 可能修改的地方用 todo 标出
 """
@@ -60,7 +59,7 @@ class RLSTM_CNNATN_CROSS(RLSTM):
             self.layers_attention = gluon.nn.Dense(lstm_hidden, activation='tanh')
             self.batch_norm = gluon.nn.BatchNorm()
             self.fc = gluon.nn.Dense(fc_output)
-            self.text_cnn = TextCNN(lstm_hidden, 2)
+            self.text_cnn = TextCNN(lstm_hidden, 4)
             self.dropout = gluon.nn.Dropout(0.5)
 
     def hybrid_forward(self, F, word_seq, word_radical_seq, character_seq,
@@ -86,16 +85,17 @@ class RLSTM_CNNATN_CROSS(RLSTM):
                                                   valid_length=charater_mask)
 
         # use final state as attention vector
-        ess = [w_e, c_e]
-        ss = [wr_o, cr_o]
-        final_hiddens = []
-        for es, la in zip(ess, ss):
-            la = F.expand_dims(la, axis=1)
-            att = F.softmax(F.batch_dot(es, F.swapaxes(la, 1, 2)))
-            att = F.swapaxes(att, 1, 2)
-            res = F.batch_dot(att, es)
-            final_hiddens.append(F.reshape(res, (0, -1)))
+        # ess = [w_e, c_e]
+        # ss = [wr_o, cr_o]
+        # final_hiddens = []
+        # for es, la in zip(ess, ss):
+        #     la = F.expand_dims(la, axis=1)
+        #     att = F.softmax(F.batch_dot(es, F.swapaxes(la, 1, 2)))
+        #     att = F.swapaxes(att, 1, 2)
+        #     res = F.batch_dot(att, es)
+        #     final_hiddens.append(F.reshape(res, (0, -1)))
 
+        final_hiddens=[w_o, wr_o, c_o, cr_o]
         attention = F.stack(*final_hiddens, axis=1)
         attention = self.text_cnn(F.swapaxes(attention, 1, 2))
         fc_in = self.batch_norm(F.Dropout(self.layers_attention(attention), 0.5))
@@ -241,17 +241,20 @@ def use_RLSTM():
     pass
 
 
+test_tag = False
+
+
 # todo 重命名train_RLSTM函数到需要的模块名
 def train_RLSTM():
     # 1 配置参数初始化
     root = "../../../../"
-    model_name = "RLSTM2"
+    model_name = "RLSTM"
     model_dir = root + "data/gluon/%s/" % model_name
 
     mod = RLSTMModule(
         model_dir=model_dir,
         model_name=model_name,
-        ctx=mx.cpu()
+        ctx=mx.gpu(1)
     )
     logger = config_logging(logger=model_name, console_log_level=LogLevel.INFO)
     logger.info(str(mod))
@@ -266,18 +269,28 @@ def train_RLSTM():
     vec_suffix = ".vec.dat"
     from gluonnlp.embedding import TokenEmbedding
     logger.info("loading embedding")
-    # word_embedding = TokenEmbedding.from_file(vec_root + "word" + vec_suffix)
-    # word_radical_embedding = TokenEmbedding.from_file(vec_root + "word_radical" + vec_suffix)
-    # char_embedding = TokenEmbedding.from_file(vec_root + "char" + vec_suffix)
-    # char_radical_embedding = TokenEmbedding.from_file(vec_root + "char_radical" + vec_suffix)
+    if not test_tag:
+        word_embedding = TokenEmbedding.from_file(vec_root + "word" + vec_suffix)
+        word_radical_embedding = TokenEmbedding.from_file(vec_root + "word_radical" + vec_suffix)
+        char_embedding = TokenEmbedding.from_file(vec_root + "char" + vec_suffix)
+        char_radical_embedding = TokenEmbedding.from_file(vec_root + "char_radical" + vec_suffix)
     # 2.1 重新生成
     logger.info("generating symbol")
-    net = RLSTMModule.sym_gen(
-        # word_embedding_size=len(word_embedding.token_to_idx),
-        # word_radical_embedding_size=len(word_radical_embedding.token_to_idx),
-        # char_embedding_size=len(char_embedding.token_to_idx),
-        # char_radical_embedding_size=len(char_radical_embedding.token_to_idx)
-    )
+    if not test_tag:
+        net = RLSTMModule.sym_gen(
+            word_embedding_size=len(word_embedding.token_to_idx),
+            word_radical_embedding_size=len(word_radical_embedding.token_to_idx),
+            char_embedding_size=len(char_embedding.token_to_idx),
+            char_radical_embedding_size=len(char_radical_embedding.token_to_idx)
+        )
+    else:
+        net = RLSTMModule.sym_gen(
+            # word_embedding_size=len(word_embedding.token_to_idx),
+            # word_radical_embedding_size=len(word_radical_embedding.token_to_idx),
+            # char_embedding_size=len(char_embedding.token_to_idx),
+            # char_radical_embedding_size=len(char_radical_embedding.token_to_idx)
+        )
+
     # 2.2 装载已有模型
     # net = mod.load(epoch)
     # net = RLSTMModule.load_net(filename)
@@ -285,7 +298,7 @@ def train_RLSTM():
     # 5 todo 定义训练相关参数
     begin_epoch = 0
     epoch_num = 50
-    batch_size = 64
+    batch_size = 32
     ctx = mod.ctx
 
     # 3 todo 自行设定网络输入，可视化检查网络
@@ -309,14 +322,13 @@ def train_RLSTM():
         character_radical_seq = mx.sym.var("character_radical_seq")
         word_mask = mx.sym.var("word_mask")
         char_mask = mx.sym.var("char_mask")
-        viz_net.initialize()
         sym = viz_net(word_seq, word_radical_seq, character_seq, character_radical_seq, word_mask, char_mask)
         plot_network(
             nn_symbol=sym,
             save_path=model_dir + "plot/network",
             shape=viz_shape,
             node_attrs={"fixedsize": "false"},
-            view=True
+            view=False
         )
     except VizError as e:
         logger.error("error happen in visualization, aborted")
@@ -343,7 +355,7 @@ def train_RLSTM():
     from longling.framework.ML.MXnet.metric import PRF, Accuracy
     evaluator = ClassEvaluator(
         metrics=[PRF(argmax=False), Accuracy(argmax=False)],
-        model_ctx=mod.ctx,
+        model_ctx=ctx,
         logger=validation_logger,
         log_f=mod.validation_result_file
     )
@@ -354,29 +366,40 @@ def train_RLSTM():
     test_data_file = data_root + "test"
 
     logger.info("loading data")
-    # unknown_token = word_embedding.unknown_token
-    train_data = RLSTMModule.get_data_iter(train_data_file, batch_size,
-                                           # padding=word_embedding.token_to_idx[unknown_token]
-                                           )
-    # unknown_token = char_embedding.unknown_token
-    test_data = RLSTMModule.get_data_iter(test_data_file, batch_size,
-                                          # padding=char_embedding.token_to_idx[unknown_token]
-                                          )
+    if not test_tag:
+        unknown_token = word_embedding.unknown_token
+        train_data = RLSTMModule.get_data_iter(train_data_file, batch_size,
+                                               padding=word_embedding.token_to_idx[unknown_token]
+                                               )
+        unknown_token = char_embedding.unknown_token
+        test_data = RLSTMModule.get_data_iter(test_data_file, batch_size,
+                                              padding=char_embedding.token_to_idx[unknown_token]
+                                              )
+    else:
+        # unknown_token = word_embedding.unknown_token
+        train_data = RLSTMModule.get_data_iter(train_data_file, batch_size,
+                                               # padding=word_embedding.token_to_idx[unknown_token]
+                                               )
+        # unknown_token = char_embedding.unknown_token
+        test_data = RLSTMModule.get_data_iter(test_data_file, batch_size,
+                                              # padding=char_embedding.token_to_idx[unknown_token]
+                                              )
 
     # 6 todo 训练
     # 直接装载已有模型，确认这一步可以执行的话可以忽略 2 3 4
     logger.info("start training")
     try:
-        net = mod.load(net, begin_epoch, mod.ctx)
+        net = mod.load(net, begin_epoch, ctx)
         logger.info("load params from existing model file %s" % mod.prefix + "-%04d.parmas" % begin_epoch)
     except FileExistsError:
         logger.info("model doesn't exist, initializing")
         import numpy as np
         RLSTMModule.net_initialize(net, ctx)
-        # net.word_embedding.weight.set_data(word_embedding.idx_to_vec)
-        # net.word_radical_embedding.weight.set_data(word_radical_embedding.idx_to_vec)
-        # net.char_embedding.weight.set_data(char_embedding.idx_to_vec)
-        # net.char_radical_embedding.weight.set_data(char_radical_embedding.idx_to_vec)
+        if not test_tag:
+            net.word_embedding.weight.set_data(word_embedding.idx_to_vec)
+            net.word_radical_embedding.weight.set_data(word_radical_embedding.idx_to_vec)
+            net.char_embedding.weight.set_data(char_embedding.idx_to_vec)
+            net.char_radical_embedding.weight.set_data(char_radical_embedding.idx_to_vec)
     RLSTMModule.parameters_stabilize(net)
     trainer = RLSTMModule.get_trainer(net)
     mod.fit(
@@ -526,33 +549,34 @@ class RLSTMModule(object):
         from tqdm import tqdm
         import numpy as np
         from gluonnlp.data import FixedBucketSampler, PadSequence
-        # word_feature = []
-        # word_radical_feature = []
-        # char_feature = []
-        # char_radical_feature = []
-        # features = [word_feature, word_radical_feature, char_feature, char_radical_feature]
-        # labels = []
-        # with open(filename) as f:
-        #     for line in tqdm(f, "loading data from %s" % filename):
-        #         ds = json.loads(line)
-        #         data, label = ds['x'], ds['z']
-        #         word_feature.append(data[0])
-        #         word_radical_feature.append(data[0])
-        #         char_feature.append(data[0])
-        #         char_radical_feature.append(data[0])
-        #         labels.append(label)
-        #
-        import random
-        length = 20
-        word_length = sorted([random.randint(1, length) for _ in range(1000)])
-        char_length = sorted([i + random.randint(0, 5) for i in word_length])
-        word_feature = [[random.randint(0, length) for _ in range(i)] for i in word_length]
-        word_radical_feature = [[random.randint(0, length) for _ in range(i)] for i in word_length]
-        char_feature = [[random.randint(0, length) for _ in range(i)] for i in char_length]
-        char_radical_feature = [[random.randint(0, length) for _ in range(i)] for i in char_length]
+        if not test_tag:
+            word_feature = []
+            word_radical_feature = []
+            char_feature = []
+            char_radical_feature = []
+            features = [word_feature, word_radical_feature, char_feature, char_radical_feature]
+            labels = []
+            with open(filename) as f:
+                for line in tqdm(f, "loading data from %s" % filename):
+                    ds = json.loads(line)
+                    data, label = ds['x'], ds['z']
+                    word_feature.append(data[0])
+                    word_radical_feature.append(data[0])
+                    char_feature.append(data[0])
+                    char_radical_feature.append(data[0])
+                    labels.append(label)
+        else:
+            import random
+            length = 20
+            word_length = sorted([random.randint(1, length) for _ in range(1000)])
+            char_length = sorted([i + random.randint(0, 5) for i in word_length])
+            word_feature = [[random.randint(0, length) for _ in range(i)] for i in word_length]
+            word_radical_feature = [[random.randint(0, length) for _ in range(i)] for i in word_length]
+            char_feature = [[random.randint(0, length) for _ in range(i)] for i in char_length]
+            char_radical_feature = [[random.randint(0, length) for _ in range(i)] for i in char_length]
 
-        features = [word_feature, word_radical_feature, char_feature, char_radical_feature]
-        labels = [random.randint(0, 32) for _ in word_length]
+            features = [word_feature, word_radical_feature, char_feature, char_radical_feature]
+            labels = [random.randint(0, 32) for _ in word_length]
 
         batch_idxes = FixedBucketSampler([len(word_f) for word_f in word_feature], batch_size, num_buckets=num_buckets)
         batch = []
@@ -598,33 +622,28 @@ class RLSTMModule(object):
 
     # 以下部分定义训练相关的方法
     @staticmethod
-    def parameters_stabilize(net, key_lists=['embedding'], name_sets=set()):
+    def parameters_stabilize(net, select='.*embedding'):
         """
         固定部分参数
         Parameters
         ----------
         net
-        key_lists: list
-            关键字列表
-        name_sets: set
-            全名集合
+        select
         Returns
         -------
 
         """
-        if not key_lists and not name_sets:
-            return
-        else:
-            params = net.collect_params()
-            pers_keys = []
-            for k in params:
-                for k_str in key_lists:
-                    if k_str in k:
-                        pers_keys.append(k)
-                if k in name_sets:
-                    pers_keys.append(k)
-            for k in pers_keys:
-                params.get(k).grad_req = 'null'
+        params = net.collect_params(select)
+        pers_keys = []
+        for k in params:
+            pers_keys.append(k)
+        for k in pers_keys:
+            params.get(k).grad_req = 'null'
+
+    @staticmethod
+    def save_params(filename, net, select='^(?!.*embedding)'):
+        net.collect_params(select).save(filename)
+
 
     @staticmethod
     def net_initialize(net, model_ctx, initializer=mx.init.Normal(sigma=.1)):
@@ -635,9 +654,9 @@ class RLSTMModule(object):
     def get_trainer(
             net, optimizer='rmsprop',
             optimizer_params={
-                'learning_rate': 0.0005, 'wd': 0.5,
+                'learning_rate': 0.0005,
                 'gamma1': 0.999,
-                'lr_scheduler': mx.lr_scheduler.FactorScheduler(step=50, factor=0.99),
+                'lr_scheduler': mx.lr_scheduler.FactorScheduler(step=50, factor=0.9, stop_factor_lr=0.0001),
             }
     ):
         # 把优化器安装到网络上
@@ -790,13 +809,13 @@ class RLSTMModule(object):
                 train_time = epoch_timer.end(wall=True) if epoch_timer else None
 
                 # todo 定义每一轮结束后的模型评估方法
-                test_eval_res = RLSTMModule.eval(evaluator, test_data, net)
+                test_eval_res = RLSTMModule.eval(evaluator, test_data, net, ctx)
                 print(evaluator.format_eval_res(epoch, test_eval_res, loss_values, train_time,
                                                 logger=evaluator.logger, log_f=evaluator.log_f)[0])
 
                 # todo 定义模型保存方案
                 if kwargs.get('prefix'):
-                    net.save_params(kwargs['prefix'] + "-%04d.parmas" % (epoch + 1))
+                    RLSTMModule.save_params(kwargs['prefix'] + "-%04d.parmas" % (epoch + 1), net)
 
         return decorator
 
