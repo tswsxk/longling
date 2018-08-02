@@ -8,3 +8,5 @@ from .nn_cell import TextCNN, TransE, highway_cell
 from .nn_sym import PVWeight
 
 from mxnet.gluon.rnn.rnn_cell import ResidualCell
+
+# todo TextCNN3D, ATN_RNN
