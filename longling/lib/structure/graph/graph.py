@@ -482,6 +482,10 @@ class UndirectedGraph(Graph):
         return self._get_adjacent_matrix(keep_edge_dim, False)
 
 
+class DirectedGraphLoopError(Exception):
+    pass
+
+
 class DirectedGraph(Graph):
     def get_edge(self, precursor, successor, edge_type=None):
         edges = self.edges.get(edge_type, None) if edge_type else self.edges
@@ -496,6 +500,131 @@ class DirectedGraph(Graph):
 
     def get_adjacent_matrix(self, keep_edge_dim=False):
         return self._get_adjacent_matrix(keep_edge_dim, True)
+
+    def get_heads(self):
+        """
+        获取所有入度为0的点
+        Returns
+        -------
+
+        """
+        heads = []
+        for vertex in self.vertexes:
+            if vertex.in_degree == 0:
+                heads.append(vertex)
+        return heads
+
+    def get_tails(self):
+        """
+        获取所有出度为0的点
+        Returns
+        -------
+
+        """
+        tails = []
+        for vertex in self.vertexes:
+            if vertex.out_degree == 0:
+                tails.append(vertex)
+        return tails
+
+    def toposort(self, level=False, merge_tag=True, reversed=False):
+        """
+        暂时只支持单/全关系的拓扑排序，不支持特定关系下的关系排序
+        Parameters
+        ----------
+        level: bool
+            层次排序
+        merge_tag: bool
+            是否将输出合并为一个列表，只在 level 为 True 时有效
+        reversed: bool
+            是否进行反向层次排序，只在 level 为 True 时有效
+        Returns
+        -------
+
+        """
+        from copy import deepcopy
+        vertexes = deepcopy(self.vertexes)
+        id2vertexes = {repr(true_vertex): true_vertex for true_vertex in self.vertexes}
+        true_vertexes = {repr(vertex): id2vertexes[repr(vertex)] for vertex in vertexes}
+
+        toposort_list = []
+        visited = set()
+        for vertex in vertexes:
+            vertex.successor = set(vertex.successor)
+            vertex.precursor = set(vertex.precursor)
+        if not level:
+            loop_tag = True
+            while loop_tag:
+                loop_tag = False
+                for vertex in vertexes:
+                    if vertex not in visited and vertex.in_degree == 0:
+                        visited.add(vertex)
+                        toposort_list.append(true_vertexes[repr(vertex)])
+                        for successor in vertex.successor:
+                            successor.precursor.remove(vertex)
+                    elif vertex not in visited:
+                        loop_tag = True
+        elif not reversed:
+            loop_tag = True
+            while loop_tag:
+                level_sort = []
+                move_dict = {}
+                loop_tag = False
+                for vertex in vertexes:
+                    if vertex not in visited and vertex.in_degree == 0:
+                        visited.add(vertex)
+                        level_sort.append(true_vertexes[repr(vertex)])
+                        move_dict[vertex] = vertex.successor
+                    elif vertex not in visited:
+                        loop_tag = True
+                toposort_list.append(level_sort)
+                for vertex, successor_list in move_dict.items():
+                    for successor in successor_list:
+                        successor.precursor.remove(vertex)
+        else:
+            loop_tag = True
+            while loop_tag:
+                level_sort = []
+                move_dict = {}
+                loop_tag = False
+                for vertex in vertexes:
+                    if vertex not in visited and vertex.out_degree == 0:
+                        visited.add(vertex)
+                        level_sort.append(true_vertexes[repr(vertex)])
+                        move_dict[vertex] = vertex.precursor
+                    elif vertex not in visited:
+                        loop_tag = True
+                toposort_list.append(level_sort)
+                for vertex, precursor_list in move_dict.items():
+                    for precursor in precursor_list:
+                        precursor.successor.remove(vertex)
+            toposort_list.reverse()
+        if level and merge_tag:
+            tmp = []
+            for level_sort in toposort_list:
+                tmp.extend(level_sort)
+            toposort_list = tmp
+        if not level or merge_tag:
+            if len(toposort_list) != self.vertex_num:
+                raise DirectedGraphLoopError
+        else:
+            if sum([len(level_sort) for level_sort in toposort_list]) != self.vertex_num:
+                raise DirectedGraphLoopError
+
+        return toposort_list
+
+    def isloop(self):
+        """
+        检查图中是否有回路
+        Returns
+        -------
+
+        """
+        try:
+            self.toposort()
+        except DirectedGraphLoopError:
+            return True
+        return False
 
 
 '''
@@ -557,6 +686,29 @@ def plot_graph(graph, save_path="plot/network", save_format='pdf', view=False, *
     dot.render(save_path, view=view)
 
 
+from mxnet import gluon
+
+
+class GraphNN(gluon.Block):
+    def __init__(self, graph: DirectedGraph, graph_node_num, dim=256, **kwargs):
+        super(GraphNN, self).__init__(**kwargs)
+        self.graph = graph
+        self.graph_node_num = graph_node_num
+        with self.name_scope():
+            self.graph_embedding = gluon.nn.Embedding(graph_node_num, dim)
+            for i in range(self.graph.vertex_num):
+                setattr(self, "node%s", gluon.nn.Dense(dim))
+        self.visit_seq = self.graph.toposort(level=True, merge_tag=False, reversed=True)
+
+    def forward(self, whole_node, *args):
+        node_embeddings = self.graph_embedding(whole_node)
+        for visits in self.visit_seq:
+
+
+    def graph_viz(self):
+        plot_graph(self.graph, view=True)
+
+
 if __name__ == '__main__':
     from longling.lib.structure.graph.graph_node import DirectedGraphNode, UndirectedGraphNode
 
@@ -577,12 +729,14 @@ if __name__ == '__main__':
         graph.link(tv[e[0]], tv[e[1]])
 
     print(graph.id_graph())
-    # print(gen_viz_graph(self.id_graph()).source)
-    # plot_graph(graph, view=True)
+    # print(gen_viz_graph(graph.id_graph()).source)
+    plot_graph(graph, view=True)
     adjacent_matrix = graph.get_adjacent_matrix()
     print(adjacent_matrix.tolist())
     # new_graph = UndirectedGraph(vertex_class=UndirectedGraphNode, edge_class=int)
     # new_graph.load_from_adjacent_matrix(adjacent_matrix)
     # print(new_graph.get_adjacent_matrix())
     # assert new_graph.get_adjacent_matrix().all() == adjacent_matrix.all()
-#
+    print(repr(graph.get_heads()))
+    print(repr(graph.get_tails()))
+    print(repr(graph.toposort(level=True, merge_tag=False, reversed=True)))
