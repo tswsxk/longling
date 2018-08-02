@@ -20,6 +20,8 @@ from longling.lib.clock import Clock
 from longling.framework.ML.MXnet.mx_gluon.gluon_toolkit import TrainBatchInformer, Evaluator, MovingLosses
 from longling.framework.ML.MXnet.viz import plot_network, VizError
 from longling.framework.ML.MXnet.mx_gluon.gluon_sym import PairwiseLoss, SoftmaxCrossEntropyLoss
+from longling.framework.ML.MXnet.mx_gluon.gluon_util import format_sequence, mask_sequence_variable_length
+from longling.lib.candylib import as_list
 
 
 #######################################################################################################################
@@ -30,13 +32,81 @@ class DistanceLoss(gluon.HybridBlock):
         return F.MakeLoss(F.sum(distance * distance, axis=-1))
 
 
+class UnrollSeq(object):
+    def __call__(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def reset(self):
+        self._init_counter = -1
+        self._counter = -1
+
+    @staticmethod
+    def seq_output(func):
+        def decorator(*args, **kwargs):
+            output = func(*args, **kwargs)
+            return output, [output]
+
+        return decorator
+
+    def unroll(self, length, inputs, begin_state=None, layout='NTC', merge_outputs=None,
+               valid_length=None):
+        assert begin_state is not None
+        inputs, axis, F, batch_size = format_sequence(length, inputs, layout, False)
+
+        final_outputs = begin_state
+        outputs = []
+        all_states = []
+        for i in range(length):
+            output = self(inputs[i], final_outputs)
+            final_outputs = output
+            outputs.append(output)
+            if valid_length is not None:
+                all_states.append([final_outputs])
+        if valid_length is not None:
+            final_outputs = [F.SequenceLast(F.stack(*ele_list, axis=0),
+                                            sequence_length=valid_length,
+                                            use_sequence_length=True,
+                                            axis=0)
+                             for ele_list in zip(*all_states)]
+            outputs = mask_sequence_variable_length(F, outputs, length, valid_length, axis, True)
+        outputs, _, _, _ = format_sequence(length, outputs, layout, merge_outputs)
+
+        return outputs, final_outputs[0]
+
+
+class ActionNN(gluon.rnn.HybridRecurrentCell, UnrollSeq):
+    def __init__(self, output_dim=256, hidden_list=[128], prefix=None, params=None):
+        super(ActionNN, self).__init__(prefix=prefix, params=params)
+        with self.name_scope():
+            self.dense = gluon.nn.HybridSequential()
+            for hidden in hidden_list:
+                self.dense.add(gluon.nn.Dense(hidden))
+
+            self.dense.add(gluon.nn.Dense(output_dim))
+
+    @UnrollSeq.seq_output
+    def hybrid_forward(self, F, action, state, *args, **kwargs):
+        data = F.concat(action, as_list(state)[0])
+        new_state = self.dense(data)
+        return new_state
+
+    def unroll(self, length, inputs, begin_state=None, layout='NTC', merge_outputs=None,
+               valid_length=None):
+        UnrollSeq.unroll(self, length, inputs, begin_state, layout, merge_outputs, valid_length)
+
+    def reset(self):
+        UnrollSeq.reset(self)
+
+
 class SNN(gluon.HybridBlock):
     def __init__(self, dim=256, action_num=10, **kwargs):
         super(SNN, self).__init__(**kwargs)
 
         with self.name_scope():
             self.action_embedding = gluon.nn.Embedding(action_num, dim)
-            self.lstm = gluon.rnn.LSTMCell(dim)
+            # self.lstm = gluon.rnn.LSTMCell(dim)
+            # self.lstm = gluon.rnn.ZoneoutCell(gluon.rnn.ResidualCell(gluon.rnn.LSTMCell(dim)))
+            self.ann = gluon.rnn.ZoneoutCell(ActionNN(dim))
             # self.batch_norm = gluon.nn.BatchNorm()
             self.dropout = gluon.nn.Dropout(0.5)
             self.loss = DistanceLoss()
@@ -50,12 +120,21 @@ class SNN(gluon.HybridBlock):
         else:
             action_len = self.action_len
 
-        (states, ss) = self.lstm.unroll(action_len, actions,
-                                             begin_state=[begin_state] * 2,
+        # for lstm
+        # _, (states, _) = self.lstm.unroll(action_len, actions,
+        #                                   begin_state=[begin_state] * 2,
+        #                                   merge_outputs=True,
+        #                                   valid_length=action_seq_mask,
+        #                                   )
+        # current_state = states
+
+        # for ann
+        all_states, states = self.ann.unroll(action_len, actions,
+                                             begin_state=begin_state,
                                              merge_outputs=True,
                                              valid_length=action_seq_mask,
                                              )
-        current_state = states
+        current_state = states[0]
         return current_state
 
 
@@ -148,7 +227,7 @@ def train_SNN():
         logger.info("visualization")
         from copy import deepcopy
         viz_net = deepcopy(net)
-        action_len = 1
+        action_len = 2
         viz_shape = {
             'data': (batch_size,) + (action_len,),
             'state': (batch_size,) + (256,),
@@ -164,7 +243,7 @@ def train_SNN():
             save_path=model_dir + "plot/network",
             shape=viz_shape,
             node_attrs={"fixedsize": "false"},
-            view=False
+            view=True
         )
     except VizError as e:
         logger.error("error happen in visualization, aborted")
