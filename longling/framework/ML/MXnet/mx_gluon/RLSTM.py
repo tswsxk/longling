@@ -115,7 +115,7 @@ class RLSTM_CNNATN_CROSS(RLSTM):
             self.char_embedding = gluon.nn.Embedding(char_embedding_size, embedding_dim)
             self.char_radical_embedding = gluon.nn.Embedding(char_radical_embedding_size, embedding_dim)
             for i in range(4):
-                setattr(self, "lstms%s" % i, gluon.rnn.LSTMCell(lstm_hidden))
+                setattr(self, "lstms%s" % i, gluon.rnn.ZoneoutCell(gluon.rnn.LSTMCell(lstm_hidden)))
             self.layers_attention = gluon.nn.Dense(lstm_hidden, activation='tanh')
             self.batch_norm = gluon.nn.BatchNorm()
             self.fc = gluon.nn.Dense(fc_output)
@@ -716,9 +716,9 @@ class RLSTMModule(object):
     def get_trainer(
             net, optimizer='rmsprop',
             optimizer_params={
-                'learning_rate': 0.0075,  # 0.007 > 0.005
+                'learning_rate': 0.014,  # 32 0.007 > 0.005
                 # 'gamma1': 0.999,
-                'lr_scheduler': mx.lr_scheduler.FactorScheduler(step=200, factor=0.99, stop_factor_lr=0.006),
+                'lr_scheduler': mx.lr_scheduler.FactorScheduler(step=200, factor=0.99, stop_factor_lr=0.008),
             }
     ):
         # 把优化器安装到网络上
