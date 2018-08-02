@@ -716,9 +716,9 @@ class RLSTMModule(object):
     def get_trainer(
             net, optimizer='rmsprop',
             optimizer_params={
-                'learning_rate': 0.014,  # 32 0.007 > 0.005
+                'learning_rate': 0.016,  # 32 0.007 > 0.005
                 # 'gamma1': 0.999,
-                'lr_scheduler': mx.lr_scheduler.FactorScheduler(step=200, factor=0.99, stop_factor_lr=0.008),
+                'lr_scheduler': mx.lr_scheduler.FactorScheduler(step=750, factor=0.99, stop_factor_lr=0.012),
             }
     ):
         # 把优化器安装到网络上
