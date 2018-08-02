@@ -5,10 +5,16 @@ from setuptools import find_packages
 
 setup(
     name='longling',
-    version='0.0.10',
+    version='0.0.11',
     author='Sherlock, Shiwei Tong',
     author_email='tongsw@mail.ustc.edu.cn',
-    packages=find_packages(),
+    packages=find_packages(
+        include=[
+            "*.lib", "*.lib.*",
+            "*.framework.ML.MXnet", "*.framework.ML.MXnet.*"
+            "*.framework.ML.universe", "*.framework.ML.universe.*",
+        ]
+    ),
     scripts=[],
     url='https://gitlab.com/tswsxk/longling.git',
     license='LICENSE.txt',
