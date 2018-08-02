@@ -22,6 +22,7 @@ from longling.framework.ML.MXnet.mx_gluon.gluon_toolkit import TrainBatchInforme
 from longling.framework.ML.MXnet.viz import plot_network, VizError
 from longling.framework.ML.MXnet.mx_gluon.gluon_sym import PairwiseLoss, SoftmaxCrossEntropyLoss
 
+# todo embedding exclude saving and loading
 
 #######################################################################################################################
 # write network definition here
