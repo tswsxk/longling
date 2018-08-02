@@ -51,10 +51,10 @@ class TextCNN(gluon.HybridBlock):
 
         pooled_outputs = []
         for i, _ in enumerate(self.filter_list):
-            convi = eval("self.conv%s" % i)(x)
-            pooli = eval("self.pool%s" % i)(convi)
+            convi = getattr(self, "conv%s" % i)(x)
+            pooli = getattr(self, "pool%s" % i)(convi)
             if self.batch_norms > 0:
-                pooli = eval("self.bn%s" % i)(pooli)
+                pooli = getattr(self, "bn%s" % i)(pooli)
             pooled_outputs.append(pooli)
 
         total_filters = self.num_filter * len(self.filter_list)
