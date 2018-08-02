@@ -22,11 +22,11 @@ from longling.framework.ML.MXnet.viz import plot_network, VizError
 from longling.framework.ML.MXnet.mx_gluon.gluon_sym import PairwiseLoss, SoftmaxCrossEntropyLoss
 from longling.framework.ML.MXnet.mx_gluon.gluon_sym import PVWeight, TextCNN
 
-
-test_tag = True
-view_tag = True
+test_tag = False
+view_tag = False
 cnn_tag = False
-cnn_len = 4
+cnn_len = 27
+CTX = mx.gpu()
 
 
 ########################################################################
@@ -46,6 +46,7 @@ class RLSTM(gluon.HybridBlock):
         self.word_length = word_length
         self.charater_length = character_length
 
+
 class RLSTM_CNN3D(RLSTM):
     def __init__(self, lstm_hidden=256, fc_output=32, embedding_dim=256,
                  word_embedding_size=352183, word_radical_embedding_size=31759,
@@ -58,13 +59,13 @@ class RLSTM_CNN3D(RLSTM):
             self.word_radical_embedding = gluon.nn.Embedding(word_radical_embedding_size, embedding_dim)
             self.char_embedding = gluon.nn.Embedding(char_embedding_size, embedding_dim)
             self.char_radical_embedding = gluon.nn.Embedding(char_radical_embedding_size, embedding_dim)
-            for i in range(4):
-                setattr(self, "lstms%s" % i, gluon.rnn.LSTMCell(lstm_hidden))
-            self.layers_attention = gluon.nn.Dense(lstm_hidden, activation='tanh')
-            self.batch_norm = gluon.nn.BatchNorm()
-            self.fc = gluon.nn.Dense(fc_output)
-            self.text_cnn = TextCNN(cnn_len, embedding_dim, 4, num_output=64)
-            self.dropout = gluon.nn.Dropout(0.5)
+            # for i in range(4):
+            #     setattr(self, "lstms%s" % i, gluon.rnn.LSTMCell(lstm_hidden))
+            # self.layers_attention = gluon.nn.Dense(lstm_hidden, activation='tanh')
+            # self.batch_norm = gluon.nn.BatchNorm()
+            # self.fc = gluon.nn.Dense(fc_output)
+            self.text_cnn = TextCNN(cnn_len, embedding_dim, 4, num_output=fc_output)
+            # self.dropout = gluon.nn.Dropout(0.5)
 
     def hybrid_forward(self, F, word_seq, word_radical_seq, character_seq,
                        character_radical_seq, word_mask, charater_mask,
@@ -74,25 +75,31 @@ class RLSTM_CNN3D(RLSTM):
         character_embedding = self.char_embedding(character_seq)
         character_radical_embedding = self.char_radical_embedding(character_radical_seq)
 
-        word_length = self.word_length
-        character_length = self.charater_length
+        # word_length = self.word_length
+        # character_length = self.charater_length
 
-        merge_outputs = True
-        w_e, (w_o, w_s) = getattr(self, "lstms0").unroll(word_length, word_embedding, merge_outputs=merge_outputs,
-                                                         valid_length=word_mask)
-        wr_e, (wr_o, wr_s) = getattr(self, "lstms1").unroll(word_length, word_radical_embedding, merge_outputs=merge_outputs,
-                                                  valid_length=word_mask)
-        c_e, (c_o, c_s) = getattr(self, "lstms2").unroll(character_length, character_embedding, merge_outputs=merge_outputs,
-                                               valid_length=charater_mask)
-        cr_e, (cr_o, cr_s) = getattr(self, "lstms3").unroll(character_length, character_radical_embedding,
-                                                  merge_outputs=merge_outputs,
-                                                  valid_length=charater_mask)
+        # merge_outputs = True
+        # w_e, (w_o, w_s) = getattr(self, "lstms0").unroll(word_length, word_embedding, merge_outputs=merge_outputs,
+        #                                                  valid_length=word_mask)
+        # wr_e, (wr_o, wr_s) = getattr(self, "lstms1").unroll(word_length, word_radical_embedding, merge_outputs=merge_outputs,
+        #                                           valid_length=word_mask)
+        # c_e, (c_o, c_s) = getattr(self, "lstms2").unroll(character_length, character_embedding, merge_outputs=merge_outputs,
+        #                                        valid_length=charater_mask)
+        # cr_e, (cr_o, cr_s) = getattr(self, "lstms3").unroll(character_length, character_radical_embedding,
+        #                                           merge_outputs=merge_outputs,
+        #                                           valid_length=charater_mask)
 
+        w_e = F.SequenceMask(word_embedding, sequence_length=word_mask, use_sequence_length=True, axis=1)
+        wr_e = F.SequenceMask(word_radical_embedding, sequence_length=word_mask, use_sequence_length=True, axis=1)
+        c_e = F.SequenceMask(character_embedding, sequence_length=charater_mask, use_sequence_length=True, axis=1)
+        cr_e = F.SequenceMask(character_radical_embedding, sequence_length=charater_mask, use_sequence_length=True,
+                              axis=1)
 
         attention = F.stack(*[w_e, wr_e, c_e, cr_e], axis=-1)
         attention = self.text_cnn(attention)
-        fc_in = self.batch_norm(F.Dropout(self.layers_attention(attention), 0.5))
-        return self.fc(fc_in)
+        # fc_in = attention
+        # self.batch_norm(F.Dropout(self.layers_attention(attention), 0.5))
+        return attention
 
 
 class RLSTM_CNNATN_CROSS(RLSTM):
@@ -129,13 +136,15 @@ class RLSTM_CNNATN_CROSS(RLSTM):
         merge_outputs = True
         w_e, (w_o, w_s) = getattr(self, "lstms0").unroll(word_length, word_embedding, merge_outputs=merge_outputs,
                                                          valid_length=word_mask)
-        wr_e, (wr_o, wr_s) = getattr(self, "lstms1").unroll(word_length, word_radical_embedding, merge_outputs=merge_outputs,
-                                                  valid_length=word_mask)
-        c_e, (c_o, c_s) = getattr(self, "lstms2").unroll(character_length, character_embedding, merge_outputs=merge_outputs,
-                                               valid_length=charater_mask)
+        wr_e, (wr_o, wr_s) = getattr(self, "lstms1").unroll(word_length, word_radical_embedding,
+                                                            merge_outputs=merge_outputs,
+                                                            valid_length=word_mask)
+        c_e, (c_o, c_s) = getattr(self, "lstms2").unroll(character_length, character_embedding,
+                                                         merge_outputs=merge_outputs,
+                                                         valid_length=charater_mask)
         cr_e, (cr_o, cr_s) = getattr(self, "lstms3").unroll(character_length, character_radical_embedding,
-                                                  merge_outputs=merge_outputs,
-                                                  valid_length=charater_mask)
+                                                            merge_outputs=merge_outputs,
+                                                            valid_length=charater_mask)
 
         # use final state as attention vector
         # ess = [w_e, c_e]
@@ -304,7 +313,7 @@ def train_RLSTM():
     mod = RLSTMModule(
         model_dir=model_dir,
         model_name=model_name,
-        ctx=mx.cpu()
+        ctx=CTX
     )
     logger = config_logging(logger=model_name, console_log_level=LogLevel.INFO)
     logger.info(str(mod))
@@ -347,8 +356,8 @@ def train_RLSTM():
 
     # 5 todo 定义训练相关参数
     begin_epoch = 0
-    epoch_num = 50
-    batch_size = 32
+    epoch_num = 200
+    batch_size = 64
     ctx = mod.ctx
 
     # 3 todo 自行设定网络输入，可视化检查网络
@@ -667,6 +676,11 @@ class RLSTMModule(object):
             word_radical_embedding_size=word_radical_embedding_size,
             char_embedding_size=char_embedding_size,
             char_radical_embedding_size=char_radical_embedding_size,
+        ) if not cnn_tag else RLSTM_CNN3D(
+            word_embedding_size=word_embedding_size,
+            word_radical_embedding_size=word_radical_embedding_size,
+            char_embedding_size=char_embedding_size,
+            char_radical_embedding_size=char_radical_embedding_size,
         )
 
     # 以下部分定义训练相关的方法
@@ -694,7 +708,7 @@ class RLSTMModule(object):
         net.collect_params(select).save(filename)
 
     @staticmethod
-    def net_initialize(net, model_ctx, initializer=mx.init.Normal(sigma=.1)):
+    def net_initialize(net, model_ctx, initializer=mx.init.Xavier()):
         # 初始化网络参数
         net.collect_params().initialize(initializer, ctx=model_ctx)
 
@@ -702,9 +716,9 @@ class RLSTMModule(object):
     def get_trainer(
             net, optimizer='rmsprop',
             optimizer_params={
-                'learning_rate': 0.0005,
-                'gamma1': 0.999,
-                'lr_scheduler': mx.lr_scheduler.FactorScheduler(step=50, factor=0.9, stop_factor_lr=0.0001),
+                'learning_rate': 0.0075,  # 0.007 > 0.005
+                # 'gamma1': 0.999,
+                'lr_scheduler': mx.lr_scheduler.FactorScheduler(step=200, factor=0.99, stop_factor_lr=0.006),
             }
     ):
         # 把优化器安装到网络上
