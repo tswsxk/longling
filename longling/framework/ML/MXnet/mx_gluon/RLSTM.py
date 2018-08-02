@@ -718,7 +718,7 @@ class RLSTMModule(object):
             optimizer_params={
                 'learning_rate': 0.02,  # 32 0.007 > 0.005
                 # 'gamma1': 0.999,
-                'lr_scheduler': mx.lr_scheduler.FactorScheduler(step=1500, factor=0.99, stop_factor_lr=0.014),
+                'lr_scheduler': mx.lr_scheduler.FactorScheduler(step=2250, factor=0.99, stop_factor_lr=0.014),
             }
     ):
         # 把优化器安装到网络上
