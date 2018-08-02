@@ -339,7 +339,8 @@ class GluonModule(object):
                 'gamma1': 0.999,
                 'momentum': 0.01,
                 'lr_scheduler': mx.lr_scheduler.FactorScheduler(step=50, factor=0.99),
-            }
+                'clip_gradient': 5,
+            }  # note the parameters are not suitable for all optimizer
     ):
         # 把优化器安装到网络上
         trainer = gluon.Trainer(net.collect_params(), optimizer, optimizer_params)
