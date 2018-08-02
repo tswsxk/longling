@@ -67,7 +67,7 @@ class TextCNN(gluon.HybridBlock):
 
         total_filters = self.num_filter * len(self.filter_list)
         concat = F.Concat(dim=1, *pooled_outputs)
-        h_pool = F.Reshape(data=concat, shape=(-1, total_filters))
+        h_pool = F.Reshape(data=concat, shape=(0, total_filters))
         if self.highway:
             h_pool = highway_cell(h_pool, self.high_fc, self.high_trans_fc)
 
