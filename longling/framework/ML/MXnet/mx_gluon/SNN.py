@@ -38,22 +38,23 @@ class SNN(gluon.HybridBlock):
             self.action_embedding = gluon.nn.Embedding(action_num, dim)
             self.lstm = gluon.rnn.LSTMCell(dim)
             # self.batch_norm = gluon.nn.BatchNorm()
+            self.dropout = gluon.nn.Dropout(0.5)
             self.loss = DistanceLoss()
         self.action_len = None
 
     def hybrid_forward(self, F, action_seq, begin_state, action_seq_mask, *args, **kwargs):
         actions = self.action_embedding(action_seq)
-        actions = F.SequenceMask(actions, sequence_length=action_seq_mask, use_sequence_length=True, axis=1)
+        actions = self.dropout(actions)
         if F is mx.ndarray and not self.action_len:
             action_len = F.max(F.cast(action_seq_mask, dtype='int')).asscalar()
         else:
             action_len = self.action_len
 
-        _, (states, _) = self.lstm.unroll(action_len, actions,
-                                          begin_state=[begin_state] * 2,
-                                          merge_outputs=True,
-                                          valid_length=action_seq_mask,
-                                          )
+        (states, ss) = self.lstm.unroll(action_len, actions,
+                                             begin_state=[begin_state] * 2,
+                                             merge_outputs=True,
+                                             valid_length=action_seq_mask,
+                                             )
         current_state = states
         return current_state
 
@@ -447,6 +448,7 @@ class SNNModule(object):
                 'learning_rate': 0.005, 'wd': 0.5,
                 'gamma1': 0.9,
                 'lr_scheduler': mx.lr_scheduler.FactorScheduler(step=50, factor=0.99),
+                'clip_gradient': 5,
             }):
         # 把优化器安装到网络上
         trainer = gluon.Trainer(net.collect_params(), optimizer, optimizer_params)
