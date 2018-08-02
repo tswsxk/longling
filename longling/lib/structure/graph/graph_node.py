@@ -24,6 +24,9 @@ class GraphNode(object):
     def id(self):
         return self._id
 
+    def __repr__(self):
+        return str(self._id)
+
 
 class UndirectedGraphNode(GraphNode):
     def __init__(self, value, neighbors=None, *args, **kwargs):
@@ -53,6 +56,7 @@ class DirectedGraphNode(GraphNode):
 
     def linkto(self, node):
         self.successor.add(node)
+        node.precursor.add(self)
 
     @property
     def in_degree(self):
