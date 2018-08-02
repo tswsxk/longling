@@ -7,12 +7,14 @@ from mxnet import gluon
 
 
 class TextCNN(gluon.HybridBlock):
-    def __init__(self, sentence_size, vec_size, num_output=2, filter_list=[1, 2, 3, 4], num_filter=60,
-                 dropout=0.0, batch_norms=0, highway=True, activation="relu",
+    def __init__(self, sentence_size, vec_size, channel_size=None, num_output=2, filter_list=[1, 2, 3, 4],
+                 num_filter=60,
+                 dropout=0.0, batch_norms=0, highway=True, activation="relu", pool_type='max',
                  **kwargs):
         super(TextCNN, self).__init__(**kwargs)
         self.sentence_size = sentence_size
         self.vec_size = vec_size
+        self.channel_size = channel_size
         self.num_output = num_output
         self.filter_list = filter_list
         self.num_filter = num_filter
@@ -27,13 +29,19 @@ class TextCNN(gluon.HybridBlock):
 
         self.dropout = None
 
+        pool2d = gluon.nn.MaxPool2D if pool_type == "max" else gluon.nn.AvgPool2D
+        pool3d = gluon.nn.MaxPool3D if pool_type == "max" else gluon.nn.AvgPool3D
+
         with self.name_scope():
             for i, filter_size in enumerate(self.filter_list):
                 conv = gluon.nn.Conv2D(self.num_filter, kernel_size=(filter_size, self.vec_size),
-                                       activation=self.activation)
+                                       activation=self.activation) if not self.channel_size else gluon.nn.Conv3D(
+                    self.num_filter, kernel_size=(filter_size, self.vec_size, self.channel_size), activation=activation)
                 setattr(self, "conv%s" % i, conv)
 
-                pool = gluon.nn.MaxPool2D(pool_size=(self.sentence_size - filter_size + 1, 1), strides=(1, 1))
+                pool = pool2d(pool_size=(self.sentence_size - filter_size + 1, 1),
+                                          strides=(1, 1)) if not self.channel_size else pool3d(
+                    pool_size=(self.sentence_size - filter_size + 1, 1, 1), strides=(1, 1, 1))
                 setattr(self, "pool%s" % i, pool)
                 if self.batch_norms > 0:
                     setattr(self, "bn%s" % i, gluon.nn.BatchNorm())
@@ -125,13 +133,16 @@ if __name__ == '__main__':
     batch_size = 3
     max_len = 10
     vec_dim = 5
+    channel_size = 4
     length = [random.randint(1, max_len) for _ in range(128)]
-    data = [[[random.random() for _ in range(vec_dim)] for _ in range(max_len)] for l in length]
+    data = [[[[random.random() for _ in range(channel_size)] for _ in range(vec_dim)] for _ in range(max_len)] for l in
+            length]
 
     data = mx.nd.array(data)
     print(data.shape)
 
-    text_cnn = TextCNN(max_len, vec_dim)
+    text_cnn = TextCNN(max_len, vec_dim, channel_size, 2)
     text_cnn.initialize()
 
     a = text_cnn(data)
+    print(a.shape)
