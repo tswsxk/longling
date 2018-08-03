@@ -64,6 +64,8 @@ class Clock(object):
         return self.process_et - self.process_st
 
     def __enter__(self):
+        if self.tips:
+            self.logger.info(self.tips)
         self.start()
         return self
 
