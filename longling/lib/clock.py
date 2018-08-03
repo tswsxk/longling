@@ -15,13 +15,15 @@ class Clock(object):
     单位：秒
     '''
 
-    def __init__(self, store_dict=None):
+    def __init__(self, store_dict=None, logger=logger, tips=''):
         assert store_dict is None or type(store_dict) is dict
         self.process_st = 0
         self.process_et = 0
         self.wall_st = 0
         self.wall_et = 0
         self.store_dict = store_dict
+        self.logger = logger
+        self.tips = tips
 
     def start(self):
         '''
@@ -61,12 +63,13 @@ class Clock(object):
         '''
         return self.process_et - self.process_st
 
-    def __enter__(self):
+    def __enter__(self, tips):
+        self.tips = tips
         self.start()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        logger.info(self.end())
+        self.logger.info(self.end())
         if self.store_dict is not None:
             self.store_dict['wall_time'] = self.wall_time
             self.store_dict['process_time'] = self.process_time
