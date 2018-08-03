@@ -70,7 +70,7 @@ class Clock(object):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.logger.info(self.end() if not self.tips else '%s %s' % (self.tips, self.end()))
+        self.logger.info('%ss' % self.end() if not self.tips else '%s %ss' % (self.tips, self.end()))
         if self.store_dict is not None:
             self.store_dict['wall_time'] = self.wall_time
             self.store_dict['process_time'] = self.process_time
