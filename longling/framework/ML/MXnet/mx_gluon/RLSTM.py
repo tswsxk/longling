@@ -13,6 +13,7 @@ from collections import OrderedDict
 import mxnet as mx
 from mxnet import autograd, nd
 from mxnet import gluon
+from mxnet.gluon import utils as gutil
 
 from longling.lib.utilog import config_logging, LogLevel
 from longling.lib.clock import Clock
@@ -26,7 +27,11 @@ test_tag = False
 view_tag = False
 cnn_tag = False
 cnn_len = 27
-CTX = mx.gpu()
+NUM = 0
+CTX = [mx.gpu(NUM)]
+BATCH_SIZE = 32
+MODEL_NAME = 'RLSTM%s' % NUM
+LEARNING_RATE = 0.03
 
 
 ########################################################################
@@ -64,7 +69,7 @@ class RLSTM_CNN3D(RLSTM):
             # self.layers_attention = gluon.nn.Dense(lstm_hidden, activation='tanh')
             # self.batch_norm = gluon.nn.BatchNorm()
             # self.fc = gluon.nn.Dense(fc_output)
-            self.text_cnn = TextCNN(cnn_len, embedding_dim, 4, num_output=fc_output)
+            self.text_cnn = TextCNN(cnn_len, embedding_dim, 4, num_output=fc_output, highway=False, dropout=0.2)
             # self.dropout = gluon.nn.Dropout(0.5)
 
     def hybrid_forward(self, F, word_seq, word_radical_seq, character_seq,
@@ -116,10 +121,10 @@ class RLSTM_CNNATN_CROSS(RLSTM):
             self.char_radical_embedding = gluon.nn.Embedding(char_radical_embedding_size, embedding_dim)
             for i in range(4):
                 setattr(self, "lstms%s" % i, gluon.rnn.ZoneoutCell(gluon.rnn.LSTMCell(lstm_hidden)))
-            self.layers_attention = gluon.nn.Dense(lstm_hidden, activation='tanh')
-            self.batch_norm = gluon.nn.BatchNorm()
+            self.layers_attention = gluon.nn.Dense(lstm_hidden, activation='relu')
             self.fc = gluon.nn.Dense(fc_output)
-            self.text_cnn = TextCNN(lstm_hidden, 4)
+            # self.text_cnn = TextCNN(lstm_hidden, 4, highway=False, dropout=0.5, num_output=64)
+            self.nn = gluon.nn.Dense(64)
             self.dropout = gluon.nn.Dropout(0.5)
 
     def hybrid_forward(self, F, word_seq, word_radical_seq, character_seq,
@@ -129,6 +134,11 @@ class RLSTM_CNNATN_CROSS(RLSTM):
         word_radical_embedding = self.word_radical_embedding(word_radical_seq)
         character_embedding = self.char_embedding(character_seq)
         character_radical_embedding = self.char_radical_embedding(character_radical_seq)
+
+        # word_embedding = self.dropout(word_embedding)
+        # word_radical_embedding = self.dropout(word_radical_embedding)
+        # character_embedding = self.dropout(character_embedding)
+        # character_radical_embedding = self.dropout(character_radical_embedding)
 
         word_length = self.word_length
         character_length = self.charater_length
@@ -158,9 +168,11 @@ class RLSTM_CNNATN_CROSS(RLSTM):
         #     final_hiddens.append(F.reshape(res, (0, -1)))
 
         final_hiddens = [w_o, wr_o, c_o, cr_o]
-        attention = F.stack(*final_hiddens, axis=1)
-        attention = self.text_cnn(F.swapaxes(attention, 1, 2))
-        fc_in = self.batch_norm(F.Dropout(self.layers_attention(attention), 0.5))
+        # attention = F.stack(*final_hiddens, axis=1)
+        attention = F.concat(w_o, wr_o, c_o, cr_o)
+        # attention = self.text_cnn(F.swapaxes(attention, 1, 2))
+        attention = self.dropout(F.Activation(self.nn(attention), act_type='softrelu'))
+        fc_in = self.layers_attention(attention)
         return self.fc(fc_in)
 
 
@@ -307,7 +319,7 @@ def use_RLSTM():
 def train_RLSTM():
     # 1 配置参数初始化
     root = "../../../../"
-    model_name = "RLSTM"
+    model_name = MODEL_NAME
     model_dir = root + "data/gluon/%s/" % model_name
 
     mod = RLSTMModule(
@@ -327,12 +339,24 @@ def train_RLSTM():
     vec_root = root + "data/vec/"
     vec_suffix = ".vec.dat"
     from gluonnlp.embedding import TokenEmbedding
-    logger.info("loading embedding")
     if not test_tag:
-        word_embedding = TokenEmbedding.from_file(vec_root + "word" + vec_suffix)
-        word_radical_embedding = TokenEmbedding.from_file(vec_root + "word_radical" + vec_suffix)
-        char_embedding = TokenEmbedding.from_file(vec_root + "char" + vec_suffix)
-        char_radical_embedding = TokenEmbedding.from_file(vec_root + "char_radical" + vec_suffix)
+        with Clock(logger=logger, tips='loading embedding'):
+            from multiprocessing.pool import ThreadPool
+            pool = ThreadPool(4)
+
+            p1 = pool.apply_async(TokenEmbedding.from_file, args=(vec_root + "word" + vec_suffix,))
+            p2 = pool.apply_async(TokenEmbedding.from_file, args=(vec_root + "word_radical" + vec_suffix,))
+            p3 = pool.apply_async(TokenEmbedding.from_file, args=(vec_root + "word_radical" + vec_suffix,))
+            p4 = pool.apply_async(TokenEmbedding.from_file, args=(vec_root + "word_radical" + vec_suffix,))
+
+            pool.close()
+            pool.join()
+
+            word_embedding = p1.get()
+            word_radical_embedding = p2.get()
+            char_embedding = p3.get()
+            char_radical_embedding = p4.get()
+
     # 2.1 重新生成
     logger.info("generating symbol")
     if not test_tag:
@@ -357,7 +381,7 @@ def train_RLSTM():
     # 5 todo 定义训练相关参数
     begin_epoch = 0
     epoch_num = 200
-    batch_size = 64
+    batch_size = BATCH_SIZE
     ctx = mod.ctx
 
     # 3 todo 自行设定网络输入，可视化检查网络
@@ -458,7 +482,7 @@ def train_RLSTM():
             net.word_radical_embedding.weight.set_data(word_radical_embedding.idx_to_vec)
             net.char_embedding.weight.set_data(char_embedding.idx_to_vec)
             net.char_radical_embedding.weight.set_data(char_radical_embedding.idx_to_vec)
-    RLSTMModule.parameters_stabilize(net)
+    # RLSTMModule.parameters_stabilize(net)
     trainer = RLSTMModule.get_trainer(net)
     mod.fit(
         net=net, begin_epoch=begin_epoch, epoch_num=epoch_num, batch_size=batch_size,
@@ -714,15 +738,16 @@ class RLSTMModule(object):
 
     @staticmethod
     def get_trainer(
-            net, optimizer='rmsprop',
+            net, optimizer='adagrad',
             optimizer_params={
-                'learning_rate': 0.02,  # 32 0.007 > 0.005
+                'learning_rate': LEARNING_RATE,  # 32 0.007 > 0.005
                 # 'gamma1': 0.999,
-                'lr_scheduler': mx.lr_scheduler.FactorScheduler(step=2250, factor=0.99, stop_factor_lr=0.014),
-            }
+                # 'lr_scheduler': mx.lr_scheduler.FactorScheduler(step=2250, factor=0.99, stop_factor_lr=0.014),
+            },
+            params_select='^(?!.*embedding)'
     ):
         # 把优化器安装到网络上
-        trainer = gluon.Trainer(net.collect_params(), optimizer, optimizer_params)
+        trainer = gluon.Trainer(net.collect_params(params_select), optimizer, optimizer_params)
         return trainer
 
     def fit(
@@ -960,13 +985,28 @@ class RLSTMModule(object):
         from tqdm import tqdm
         for i, (word, word_radical, char, char_radical, word_mask, char_mask, label) in enumerate(
                 tqdm(test_data, desc="evaluating")):
+            from longling.lib.candylib import as_list
+            ctx = as_list(ctx)[0]
+            # word = gutil.split_and_load(word, ctx)
+            # word_radical = gutil.split_and_load(word_radical, ctx)
+            # char = gutil.split_and_load(char, ctx)
+            # char_radical = gutil.split_and_load(char_radical, ctx)
+            #
+            # word_mask = gutil.split_and_load(word_mask, ctx)
+            # char_mask = gutil.split_and_load(char_mask, ctx)
+            #
+            # label = gutil.split_and_load(label, ctx)
+
             word = word.as_in_context(ctx)
             word_radical = word_radical.as_in_context(ctx)
             char = char.as_in_context(ctx)
             char_radical = char_radical.as_in_context(ctx)
+
             word_mask = word_mask.as_in_context(ctx)
             char_mask = char_mask.as_in_context(ctx)
+
             label = label.as_in_context(ctx)
+
             net.set_network_unroll(len(word[0]), len(char[0]))
             output = net(word, word_radical, char, char_radical, word_mask, char_mask)
             predictions = mx.nd.argmax(output, axis=1)
@@ -1008,30 +1048,46 @@ class RLSTMModule(object):
 
         """
         # 此函数定义训练过程
-
+        from longling.lib.candylib import as_list
+        ctx = as_list(ctx)
+        if len(word) < len(ctx):
+            ctx = ctx[:1]
         # todo
-        word = word.as_in_context(ctx)
-        word_radical = word_radical.as_in_context(ctx)
-        char = char.as_in_context(ctx)
-        char_radical = char_radical.as_in_context(ctx)
+        words = gutil.split_and_load(word, ctx, even_split=False)
+        word_radicals = gutil.split_and_load(word_radical, ctx, even_split=False)
+        chars = gutil.split_and_load(char, ctx, even_split=False)
+        char_radicals = gutil.split_and_load(char_radical, ctx, even_split=False)
 
-        word_mask = word_mask.as_in_context(ctx)
-        char_mask = char_mask.as_in_context(ctx)
+        word_masks = gutil.split_and_load(word_mask, ctx, even_split=False)
+        char_masks = gutil.split_and_load(char_mask, ctx, even_split=False)
 
-        label = label.as_in_context(ctx)
+        labels = gutil.split_and_load(label, ctx, even_split=False)
+
+        # word = word.as_in_context(ctx)
+        # word_radical = word_radical.as_in_context(ctx)
+        # char = char.as_in_context(ctx)
+        # char_radical = char_radical.as_in_context(ctx)
+        #
+        # word_mask = word_mask.as_in_context(ctx)
+        # char_mask = char_mask.as_in_context(ctx)
+        #
+        # label = label.as_in_context(ctx)
 
         bp_loss = None
         with autograd.record():
-            net.set_network_unroll(len(word[0]), len(char[0]))
-            output = net(word, word_radical, char, char_radical, word_mask, char_mask)  # todo
-            for name, func in loss_function.items():
-                loss = func(output, label)  # todo
-                if name in bp_loss_f:
-                    bp_loss = loss
-                loss_value = nd.mean(loss).asscalar()
-                if losses_monitor:
-                    losses_monitor.update(name, loss_value)
-
+            for (word, word_radical, char, char_radical, word_mask, char_mask, label) in zip(words, word_radicals,
+                                                                                             chars, char_radicals,
+                                                                                             word_masks, char_masks,
+                                                                                             labels):
+                net.set_network_unroll(len(word[0]), len(char[0]))
+                output = net(word, word_radical, char, char_radical, word_mask, char_mask)  # todo
+                for name, func in loss_function.items():
+                    loss = func(output, label)  # todo
+                    if name in bp_loss_f:
+                        bp_loss = loss
+                    loss_value = nd.mean(loss).asscalar()
+                    if losses_monitor:
+                        losses_monitor.update(name, loss_value)
         assert bp_loss is not None
         bp_loss.backward()
         trainer.step(batch_size)
