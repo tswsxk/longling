@@ -9,7 +9,7 @@ from mxnet import gluon
 class TextCNN(gluon.HybridBlock):
     def __init__(self, sentence_size, vec_size, channel_size=None, num_output=2, filter_list=[1, 2, 3, 4],
                  num_filter=60,
-                 dropout=0.0, batch_norms=0, highway=True, activation="relu", pool_type='max',
+                 dropout=0.0, batch_norm=True, highway=True, activation="relu", pool_type='max',
                  **kwargs):
         super(TextCNN, self).__init__(**kwargs)
         self.sentence_size = sentence_size
@@ -19,7 +19,7 @@ class TextCNN(gluon.HybridBlock):
         self.filter_list = filter_list
         self.num_filter = num_filter
         self.dropout_p = dropout
-        self.batch_norms = batch_norms
+        self.batch_norm = batch_norm
         self.highway = highway
         self.activation = activation
 
@@ -43,7 +43,7 @@ class TextCNN(gluon.HybridBlock):
                                           strides=(1, 1)) if not self.channel_size else pool3d(
                     pool_size=(self.sentence_size - filter_size + 1, 1, 1), strides=(1, 1, 1))
                 setattr(self, "pool%s" % i, pool)
-                if self.batch_norms > 0:
+                if self.batch_norm:
                     setattr(self, "bn%s" % i, gluon.nn.BatchNorm())
             if self.highway:
                 self.high_fc = gluon.nn.Dense(len(filter_list) * self.num_filter, activation="relu")
@@ -61,7 +61,7 @@ class TextCNN(gluon.HybridBlock):
         for i, _ in enumerate(self.filter_list):
             convi = getattr(self, "conv%s" % i)(x)
             pooli = getattr(self, "pool%s" % i)(convi)
-            if self.batch_norms > 0:
+            if self.batch_norm:
                 pooli = getattr(self, "bn%s" % i)(pooli)
             pooled_outputs.append(pooli)
 
