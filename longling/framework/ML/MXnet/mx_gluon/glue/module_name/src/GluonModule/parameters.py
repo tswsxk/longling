@@ -59,11 +59,10 @@ class Parameters(object):
         'clip_gradient': 5,
     }
 
-    train_params = {
-        'begin_epoch': 0,
-        'end_epoch': 100,
-        'batch_size': 128,
-    }
+    begin_epoch = 0
+    end_epoch = 100
+    batch_size = 128
+
     ctx = cpu()
 
     def __init__(self, params_yaml=None, **kwargs):
