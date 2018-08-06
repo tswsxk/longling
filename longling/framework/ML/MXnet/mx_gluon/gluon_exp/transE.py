@@ -91,7 +91,7 @@ def eval_transE():
 
 # todo 重命名use_transE函数到需要的模块名
 def use_transE():
-    root = "../../../../"
+    root = "../../../../../"
     model_name = "transE"
     model_dir = root + "data/gluon/%s/" % model_name
     vec_dir = root + "data/KG/FB15/"

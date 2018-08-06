@@ -318,7 +318,7 @@ def use_RLSTM():
 # todo 重命名train_RLSTM函数到需要的模块名
 def train_RLSTM():
     # 1 配置参数初始化
-    root = "../../../../"
+    root = "../../../../../"
     model_name = MODEL_NAME
     model_dir = root + "data/gluon/%s/" % model_name
 

@@ -191,7 +191,7 @@ def use_SNN(begin_state, target_state):
 # todo 重命名train_SNN函数到需要的模块名
 def train_SNN():
     # 1 配置参数初始化
-    root = "../../../../"
+    root = "../../../../../"
     model_name = "SNN"
     model_dir = root + "data/gluon/%s/" % model_name
 

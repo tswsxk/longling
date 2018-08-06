@@ -46,7 +46,7 @@ class module_name(gluon.HybridBlock):
 # todo 重命名load_module_name函数到需要的模块名
 def load_module_name(epoch_num):
     # 1 配置参数初始化
-    root = "../../../../"
+    root = "../../../../../"
     model_name = "module_name"
     model_dir = root + "data/gluon/%s/" % model_name
 
