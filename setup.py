@@ -16,7 +16,7 @@ setup(
         ],
         exclude=[
             "*glue*", "*glum*",
-            "*mx_example", "*gluon_example*",
+            "*mx_example", "*gluon_example*", "*gluon_exp*",
         ]
     ),
     scripts=[],
