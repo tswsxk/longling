@@ -95,7 +95,7 @@ class Parameters(object):
                 store_vars['ctx'] = MXCtx.dump(store_vars['ctx'])
             dump_data = yaml.dump(store_vars, default_flow_style=False)
             print(dump_data, file=wf)
-            # self.logger.info(dump_data)
+            self.logger.info(dump_data)
 
     @property
     def class_var(self):
@@ -105,10 +105,7 @@ class Parameters(object):
         return variables
 
 
-if __name__ == '__main__':
-    default_yaml_file = os.path.join(Parameters.model_dir, "parameters.yaml")
-
-    # 命令行参数配置
+def get_params_parser():
     import argparse
 
     parser = argparse.ArgumentParser()
@@ -119,8 +116,19 @@ if __name__ == '__main__':
               not inspect.isroutine(v) and k not in {'__doc__', '__module__', '__dict__', '__weakref__',
                                                      'class_var'}}
     for param, value in params.items():
+        if param == 'logger':
+            continue
         parser.add_argument('--%s' % param, help='set %s, default is %s' % (param, value), default=value)
     parser.add_argument('--kwargs', required=False, help=r"add extra argument here, use format: <key>=<value>")
+
+    return parser
+
+
+if __name__ == '__main__':
+    default_yaml_file = os.path.join(Parameters.model_dir, "parameters.yaml")
+
+    # 命令行参数配置
+    parser = get_params_parser()
     args = parser.parse_args()
     print(args)
     parser.print_help()
