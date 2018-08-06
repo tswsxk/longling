@@ -113,7 +113,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--root_prefix', dest='root_prefix', default='', help='set root prefix')
-    parser.add_argument('--dump', action="store", nargs='*', default=default_yaml_file,
+    parser.add_argument('--dump', action="store", nargs='?', default=default_yaml_file,
                         help='dump parameters to file or not')
     params = {k: v for k, v in vars(Parameters).items() if
               not inspect.isroutine(v) and k not in {'__doc__', '__module__', '__dict__', '__weakref__',
