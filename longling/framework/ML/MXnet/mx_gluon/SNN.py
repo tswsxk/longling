@@ -227,7 +227,7 @@ def train_SNN():
         logger.info("visualization")
         from copy import deepcopy
         viz_net = deepcopy(net)
-        action_len = 2
+        action_len = 1
         viz_shape = {
             'data': (batch_size,) + (action_len,),
             'state': (batch_size,) + (256,),
