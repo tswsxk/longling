@@ -95,7 +95,7 @@ class Parameters(object):
                 store_vars['ctx'] = MXCtx.dump(store_vars['ctx'])
             dump_data = yaml.dump(store_vars, default_flow_style=False)
             print(dump_data, file=wf)
-            self.logger.info(dump_data)
+            # self.logger.info(dump_data)
 
     @property
     def class_var(self):
@@ -106,19 +106,21 @@ class Parameters(object):
 
 
 if __name__ == '__main__':
+    default_yaml_file = os.path.join(Parameters.model_dir, "parameters.yaml")
+
     # 命令行参数配置
     import argparse
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--root_prefix', dest='root_prefix', default='', help='set root prefix')
-    parser.add_argument('-dump', '-d', action="store_false", help='Turn A off')
+    parser.add_argument('--dump', action="store", nargs='*', default=default_yaml_file,
+                        help='dump parameters to file or not')
     params = {k: v for k, v in vars(Parameters).items() if
-                     not inspect.isroutine(v) and k not in {'__doc__', '__module__', '__dict__', '__weakref__',
-                                                            'class_var'}}
-    for param in params:
-        parser.add_argument()
-    parser.add_argument('--root', dest='root', default=Parameters.root, help='set root argument')
-    # parser.add_argument('kwargs', default=)
+              not inspect.isroutine(v) and k not in {'__doc__', '__module__', '__dict__', '__weakref__',
+                                                     'class_var'}}
+    for param, value in params.items():
+        parser.add_argument('--%s' % param, help='set %s, default is %s' % (param, value), default=value)
+    parser.add_argument('--kwargs', required=False, help=r"add extra argument here, use format: <key>=<value>")
     args = parser.parse_args()
     print(args)
     parser.print_help()
