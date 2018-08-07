@@ -67,6 +67,7 @@ class GluonModule(object):
         """
         显示模块参数
         Display the necessary params of this Module
+
         Returns
         -------
 
@@ -80,6 +81,7 @@ class GluonModule(object):
     def load_net(filename, net, ctx=mx.cpu()):
         """
         Load the existing net parameters
+
         Parameters
         ----------
         filename: str
@@ -88,6 +90,7 @@ class GluonModule(object):
             The network which has been initialized or loaded from the existed model
         ctx: Context or list of Context
                 Defaults to ``mx.cpu()``.
+
         Returns
         -------
         The initialized net
@@ -101,6 +104,7 @@ class GluonModule(object):
     def load(self, net, epoch, ctx=mx.cpu()):
         """"
         Load the existing net parameters
+
         Parameters
         ----------
         net: HybridBlock
@@ -118,6 +122,10 @@ class GluonModule(object):
         return self.load_net(filename, net, ctx)
 
     @staticmethod
+    def save_params(filename, net, select='^(?!.*embedding)'):
+        net.collect_params(select).save(filename)
+
+    @staticmethod
     def get_data_iter():
         # 在这里定义数据加载方法
         return
@@ -125,13 +133,13 @@ class GluonModule(object):
     # 以下部分定义训练相关的方法
     @staticmethod
     def net_initialize(net, model_ctx, initializer=mx.init.Normal(sigma=.1)):
-        # 初始化网络参数
+        """初始化网络参数"""
         net.collect_params().initialize(initializer, ctx=model_ctx)
 
     @staticmethod
-    def get_trainer(net, optimizer='sgd', optimizer_params=None):
-        # 把优化器安装到网络上
-        trainer = gluon.Trainer(net.collect_params(), optimizer, optimizer_params)
+    def get_trainer(net, optimizer='sgd', optimizer_params=None, train_params_select='^(?!.*embedding)'):
+        """把优化器安装到网络上"""
+        trainer = gluon.Trainer(net.collect_params(train_params_select), optimizer, optimizer_params)
         return trainer
 
     def fit(
@@ -293,7 +301,7 @@ class GluonModule(object):
 
                 # todo 定义模型保存方案
                 if kwargs.get('prefix'):
-                    net.save_params(kwargs['prefix'] + "-%04d.parmas" % (epoch + 1))
+                    GluonModule.save_params(kwargs['prefix'] + "-%04d.parmas" % (epoch + 1), net)
 
         return decorator
 
