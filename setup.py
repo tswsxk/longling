@@ -13,6 +13,10 @@ setup(
             "*.lib", "*.lib.*",
             "*.framework.ML.MXnet", "*.framework.ML.MXnet.*"
             "*.framework.ML.universe", "*.framework.ML.universe.*",
+        ],
+        exclude=[
+            "*glue*", "*glum*",
+            "*mx_example", "*gluon_example*", "*gluon_exp*",
         ]
     ),
     scripts=[],

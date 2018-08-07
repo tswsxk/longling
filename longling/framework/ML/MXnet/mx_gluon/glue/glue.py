@@ -9,21 +9,49 @@ import sys
 from longling.lib.stream import wf_open
 from longling.lib.utilog import config_logging, LogLevel
 
-
 logger = config_logging(logger="glue", console_log_level=LogLevel.INFO)
 
 
 def new_module(module_name, directory=None):
-    glum_directory = os.path.dirname(sys._getframe().f_code.co_filename)
-    glum_py = os.path.join(glum_directory, "glum.py")
-    module_filename = module_name + ".py"
-    target = os.path.join(directory, module_filename) if directory else module_filename
-    if os.path.isfile(target):
-        logger.error("file already existed, will not override, generation abort")
-        return False
-    logger.info("generating file, path is %s", target)
+    glum_directory = os.path.join(os.path.dirname(sys._getframe().f_code.co_filename), "module_name")
+    target_dir = os.path.join(directory, module_name) if directory else module_name
+    if os.path.isdir(target_dir):
+        logger.error("directory already existed, will not override, generation abort")
+        # return False
+    logger.info("generating file, root path is %s", target_dir)
     big_module_name = "%sModule" % (module_name[0].upper() + module_name[1:])
-    with open(glum_py, encoding="utf-8") as f, wf_open(target) as wf:
-        for line in f:
-            print(line.replace("module_name", module_name).replace("GluonModule", big_module_name), end="", file=wf)
+
+    def name_replace(name):
+        return name.replace("module_name", module_name).replace("GluonModule", big_module_name)
+
+    for root, dirs, files in os.walk(glum_directory):
+        for raw_dir in dirs:
+            if raw_dir in {'data'} or 'data' in root:
+                continue
+            dirname = os.path.abspath(os.path.join(target_dir, name_replace(raw_dir)))
+            if not os.path.isdir(dirname):
+                os.makedirs(dirname)
+        for filename in files:
+            dirname = os.path.abspath(name_replace(root))
+            source_file = os.path.abspath(os.path.join(root, filename))
+            target_file = os.path.abspath(os.path.join(dirname, name_replace(filename)))
+            print(source_file, '->', target_file)
+            # with open(source_file, encoding="utf-8") as f, wf_open(target_file) as wf:
+            #     for line in f:
+            #         print(name_replace(line), end="", file=wf)
     return True
+
+
+if __name__ == '__main__':
+    import argparse
+
+    module_name = "Test"
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--module_name", default="%s" % module_name,
+                        help="set the module name, default is %s" % module_name)
+
+    parser.add_argument("--directory", default=None, help="set the directory, default is None")
+
+    args = parser.parse_args()
+
+    new_module(module_name=args.module_name, directory=args.directory)

@@ -20,6 +20,10 @@ def train_module_name():
     mod = GluonModule(params)
     mod.logger.info(str(mod))
 
+    batch_size = mod.params.batch_size
+    begin_epoch = mod.params.begin_epoch
+    end_epoch = mod.params.end_epoch
+
     # 2 todo 定义网络结构并保存
     # 2.1 重新生成
     # logger.info("generating symbol")
