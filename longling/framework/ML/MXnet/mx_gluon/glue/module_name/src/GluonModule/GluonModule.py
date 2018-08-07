@@ -147,6 +147,7 @@ class GluonModule(object):
     ):
         """
         API for train
+
         Parameters
         ----------
         net: HybridBlock
@@ -179,8 +180,10 @@ class GluonModule(object):
         evaluator: Evaluator
             Default to ``None``
         kwargs
+
         Returns
         -------
+
         """
         # 此方法可以直接使用
         return self.epoch_loop(self.batch_loop(self._fit_f))(
@@ -199,10 +202,12 @@ class GluonModule(object):
         """
         此函数包裹批次训练过程，形成轮次训练过程
         只需要修改 decorator 部分就可以
+
         Parameters
         ----------
         batch_loop: Function
             The function defining how the batch training processes
+
         Returns
         -------
             Decorator
@@ -220,6 +225,7 @@ class GluonModule(object):
         ):
             """
             The true body of the epoch loop
+
             Parameters
             ----------
             net: HybridBlock
@@ -252,6 +258,7 @@ class GluonModule(object):
             evaluator: Evaluator
                 Default to ``None``
             kwargs
+
             Returns
             -------
 
@@ -295,6 +302,7 @@ class GluonModule(object):
         """
         此函数包裹训练过程，形成批次训练过程
         只需要修改 decorator 部分就可以
+
         Parameters
         ----------
         fit_f
@@ -314,6 +322,7 @@ class GluonModule(object):
         ):
             """
             The true body of batch loop
+
             Parameters
             ----------
             net: HybridBlock
@@ -374,6 +383,7 @@ class GluonModule(object):
                ):
         """
         Defined how each step of batch train goes
+
         Parameters
         ----------
         net: HybridBlock
