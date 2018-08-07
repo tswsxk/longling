@@ -5,6 +5,8 @@ import re
 import os
 from distutils.core import setup
 from setuptools import find_packages
+from longling.framework.ML.MXnet.mx_gluon.glue import glue
+
 
 def read(*names, **kwargs):
     with io.open(
@@ -44,7 +46,7 @@ setup(
         ]
     ),
     scripts=[
-        # todo, 添加 glue 命令
+        glue.__file__,
     ],
     url='https://gitlab.com/tswsxk/longling.git',
     license='LICENSE.txt',
