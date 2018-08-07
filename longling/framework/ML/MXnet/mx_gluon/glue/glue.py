@@ -43,7 +43,7 @@ def new_module(module_name, directory=None):
 if __name__ == '__main__':
     import argparse
 
-    module_name = "Test"
+    module_name = "SNN"
     parser = argparse.ArgumentParser()
     parser.add_argument("--module_name", default="%s" % module_name,
                         help="set the module name, default is %s" % module_name)
