@@ -15,6 +15,8 @@
 import os
 import sys
 
+sys.path.insert(0, os.path.abspath(
+    os.path.join(os.path.dirname(sys._getframe().f_code.co_filename), ''.join(['../' for _ in range(8)]))))
 sys.path.insert(0, os.path.abspath('../'))
 
 # -- Project information -----------------------------------------------------
