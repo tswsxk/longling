@@ -3,4 +3,4 @@
 
 from __future__ import absolute_import
 
-from .src import eval, train, GluonModule
+from .module_name import eval, train, GluonModule
