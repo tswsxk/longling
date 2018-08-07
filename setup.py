@@ -35,10 +35,10 @@ setup(
     author_email='tongsw@mail.ustc.edu.cn',
     packages=find_packages(
         include=[
-            "__init__.py"
+            "longling", "longling.*"
             "*.lib", "*.lib.*",
-            "*.framework.ML.MXnet", "*.framework.ML.MXnet.*"
-            "*.framework.ML.universe", "*.framework.ML.universe.*",
+            "*.framework.ML.MXnet", "*.framework.ML.MXnet.*", "framework.ML.MXnet.*", "framework.ML.MXnet"
+            "*.framework.ML.universe", "*.framework.ML.universe.*", "framework.ML.universe.*", "framework.ML.universe",
         ],
         exclude=[
             "*mx_example", "*gluon_example*", "*gluon_exp*",
@@ -65,5 +65,4 @@ setup(
         "Operating System :: OS Independent",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
-
 )
