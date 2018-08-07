@@ -33,6 +33,7 @@ setup(
     author_email='tongsw@mail.ustc.edu.cn',
     packages=find_packages(
         include=[
+            "__init__.py"
             "*.lib", "*.lib.*",
             "*.framework.ML.MXnet", "*.framework.ML.MXnet.*"
             "*.framework.ML.universe", "*.framework.ML.universe.*",
