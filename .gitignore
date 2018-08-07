@@ -9,9 +9,11 @@ graph/plot/
 **/temp
 **/_build/
 **/_build/*
+**/docs/source/
 **/graph/plot/
 test.py
 build/*
 dist/*
+docs/source/*
 *.egg-info
 *.egg-info/*
