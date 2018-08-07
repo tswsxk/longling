@@ -16,6 +16,7 @@ setup(
         ],
         exclude=[
             "*mx_example", "*gluon_example*", "*gluon_exp*",
+            "*mxnet_old*",
         ]
     ),
     scripts=[],
