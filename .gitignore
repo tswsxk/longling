@@ -7,6 +7,8 @@ graph/plot/
 **/data
 **/model
 **/temp
+**/_build/
+**/_build/*
 **/graph/plot/
 test.py
 build/*
