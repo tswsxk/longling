@@ -42,7 +42,9 @@ setup(
             "*mxnet_old*",
         ]
     ),
-    scripts=[],
+    scripts=[
+        # todo, 添加 glue 命令
+    ],
     url='https://gitlab.com/tswsxk/longling.git',
     license='LICENSE.txt',
     description='handy wrapper for many libs',
