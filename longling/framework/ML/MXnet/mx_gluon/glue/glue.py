@@ -13,7 +13,7 @@ logger = config_logging(logger="glue", console_log_level=LogLevel.INFO)
 
 
 def new_module(module_name, directory=None):
-    glum_directory = os.path.join(os.path.dirname(sys._getframe().f_code.co_filename), "module_name")
+    glum_directory = os.path.join(os.path.dirname(__file__), "module_name")
     target_dir = os.path.join(directory, module_name) if directory else module_name
     target_dir = os.path.abspath(target_dir)
     logger.debug(glum_directory, "->", target_dir)
@@ -51,17 +51,20 @@ def new_module(module_name, directory=None):
 if __name__ == '__main__':
     import argparse
 
-    module_name = "SNN"
+    module_name = ""
     parser = argparse.ArgumentParser()
-    parser.add_argument("--module_name", default="%s" % module_name,
-                        help="set the module name, default is %s" % module_name)
+    if module_name:
+        parser.add_argument("--module_name", default="%s" % module_name,
+                            help="set the module name, default is %s" % module_name)
+    else:
+        parser.add_argument("--module_name",  help="set the module name, default is %s" % module_name, required=True)
 
     parser.add_argument("--directory", default=None, help="set the directory, default is None")
     parser.add_argument("--loglevel", default=LogLevel.INFO, help="set the loglevel, default is %s" % LogLevel.INFO)
 
     args = parser.parse_args()
 
-    logger.setLevel(level=args.loglevel)
+    logger.setLevel(level=int(args.loglevel))
     if new_module(module_name=args.module_name, directory=args.directory):
         logger.info("success")
     else:
