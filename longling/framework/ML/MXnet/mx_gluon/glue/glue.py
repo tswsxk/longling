@@ -5,18 +5,22 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import os
-import sys
 from longling.lib.stream import wf_open
 from longling.lib.utilog import config_logging, LogLevel
+from longling.framework import ML
+from longling.framework.ML.MXnet.mx_gluon.glue import module_name as glum
 
-logger = config_logging(logger="glue", console_log_level=LogLevel.INFO)
+print()
+
+logger = config_logging(logger="glue", console_log_level=LogLevel.DEBUG)
 
 
 def new_module(module_name, directory=None):
-    glum_directory = os.path.join(os.path.dirname(__file__), "module_name")
+    glum_directory = os.path.abspath(os.path.join(glum.__file__))
+    logger.info(glum_directory)
     target_dir = os.path.join(directory, module_name) if directory else module_name
     target_dir = os.path.abspath(target_dir)
-    logger.debug(glum_directory, "->", target_dir)
+    logger.info(glum_directory + "->" + target_dir)
     if os.path.isdir(target_dir):
         logger.error("directory already existed, will not override, generation abort")
         return False
@@ -60,11 +64,9 @@ if __name__ == '__main__':
         parser.add_argument("--module_name",  help="set the module name, default is %s" % module_name, required=True)
 
     parser.add_argument("--directory", default=None, help="set the directory, default is None")
-    parser.add_argument("--loglevel", default=LogLevel.INFO, help="set the loglevel, default is %s" % LogLevel.INFO)
 
     args = parser.parse_args()
 
-    logger.setLevel(level=int(args.loglevel))
     if new_module(module_name=args.module_name, directory=args.directory):
         logger.info("success")
     else:
