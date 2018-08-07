@@ -54,7 +54,7 @@ def new_module(module_name, directory=None):
 if __name__ == '__main__':
     import argparse
 
-    module_name = "SNN"
+    module_name = "RLSTM"
     parser = argparse.ArgumentParser()
     if module_name:
         parser.add_argument("--module_name", default="%s" % module_name,
