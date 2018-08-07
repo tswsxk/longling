@@ -44,8 +44,7 @@ def new_module(module_name, directory=None):
                         print(name_replace(line), end="", file=wf)
                 except UnicodeDecodeError:
                     print(source_file, line)
-                    exit(-1)
-                    return False
+                    raise UnicodeDecodeError
     return True
 
 
@@ -58,7 +57,12 @@ if __name__ == '__main__':
                         help="set the module name, default is %s" % module_name)
 
     parser.add_argument("--directory", default=None, help="set the directory, default is None")
+    parser.add_argument("--loglevel", default=LogLevel.INFO, help="set the loglevel, default is %s" % LogLevel.INFO)
 
     args = parser.parse_args()
 
-    new_module(module_name=args.module_name, directory=args.directory)
+    logger.setLevel(level=args.loglevel)
+    if new_module(module_name=args.module_name, directory=args.directory):
+        logger.info("success")
+    else:
+        logger.error("error")
