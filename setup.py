@@ -15,7 +15,6 @@ setup(
             "*.framework.ML.universe", "*.framework.ML.universe.*",
         ],
         exclude=[
-            "*glue*", "*glum*",
             "*mx_example", "*gluon_example*", "*gluon_exp*",
         ]
     ),
