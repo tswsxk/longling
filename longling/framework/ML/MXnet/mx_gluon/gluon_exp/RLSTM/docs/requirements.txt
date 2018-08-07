@@ -1,0 +1,9 @@
+sphinx>=1.5.5
+sphinx-gallery
+nbsphinx
+sphinx_rtd_theme
+matplotlib
+Image
+recommonmark
+ipython
+rst2pdf
