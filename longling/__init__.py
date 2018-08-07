@@ -12,4 +12,8 @@ from .base import *
 from .lib.stream import *
 
 import longling.framework.ML.NLP as NLP
+from longling.framework.ML import MXnet
+from longling.framework.ML import MXnet as mxnet
+from longling.framework.ML.MXnet import mx_gluon
+from longling.framework.ML.MXnet import mx_gluon as gluon
 
