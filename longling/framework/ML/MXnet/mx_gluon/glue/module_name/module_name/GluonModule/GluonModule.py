@@ -133,13 +133,13 @@ class GluonModule(object):
         net.collect_params().initialize(initializer, ctx=model_ctx)
 
     @staticmethod
-    def get_trainer(net, optimizer='sgd', optimizer_params=None, train_params_select='^(?!.*embedding)'):
+    def get_trainer(net, optimizer='sgd', optimizer_params=None, select=Parameters.train_select):
         """把优化器安装到网络上"""
-        trainer = gluon.Trainer(net.collect_params(train_params_select), optimizer, optimizer_params)
+        trainer = gluon.Trainer(net.collect_params(select), optimizer, optimizer_params)
         return trainer
 
     @staticmethod
-    def save_params(filename, net, select='^(?!.*embedding)'):
+    def save_params(filename, net, select=Parameters.save_select):
         net.collect_params(select).save(filename)
 
     def fit(
