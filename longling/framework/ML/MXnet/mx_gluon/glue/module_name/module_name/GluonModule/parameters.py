@@ -10,46 +10,18 @@ import yaml
 from longling.lib.utilog import config_logging, LogLevel
 from longling.lib.stream import wf_open
 from longling.lib.candylib import as_list
+from longling.framework.ML.MXnet.mx_gluon.glue.parser import MXCtx
 
-from mxnet import Context, cpu, gpu
-
-
-class MXCtx(object):
-    @staticmethod
-    def load(data):
-        ctx_vars = []
-        for device_type, device_ids in data.items():
-            if isinstance(device_ids, int):
-                device_ids = as_list(device_ids)
-            elif isinstance(device_ids, str):
-                device_ids = map(int, device_ids.split(','))
-            for device_id in device_ids:
-                ctx_vars.append(eval(device_type)(device_id))
-        return ctx_vars
-
-    @staticmethod
-    def dump(data):
-        ctx_vars = {}
-        for ctx in as_list(data):
-            assert isinstance(ctx, Context)
-            if ctx.device_type not in ctx_vars:
-                ctx_vars[ctx.device_type] = []
-            ctx_vars[ctx.device_type].append(ctx.device_id)
-        for device_type, device_ids in ctx_vars.items():
-            if len(device_ids) > 1:
-                ctx_vars[device_type] = ",".join(list(map(str, device_ids)))
-            else:
-                ctx_vars[device_type] = device_ids[0]
-        return ctx_vars
+from mxnet import cpu, gpu
 
 
 class Parameters(object):
-    root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
+    root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")) + os.sep
     model_name = "module_name"
     logger = config_logging(logger=model_name, console_log_level=LogLevel.INFO)
 
-    data_dir = os.path.abspath(os.path.join(root, "data"))
-    model_dir = os.path.abspath(os.path.join(data_dir, "module_name"))
+    data_dir = os.path.abspath(os.path.join(root, "data")) + os.sep
+    model_dir = os.path.abspath(os.path.join(data_dir, "module_name")) + os.sep
 
     optimizer = 'sgd'
     optimizer_params = {
