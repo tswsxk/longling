@@ -78,7 +78,7 @@ class GluonModule(object):
         return "\n".join(string)
 
     @staticmethod
-    def load_net(filename, net, ctx=mx.cpu()):
+    def load_net(filename, net, ctx=mx.cpu(), allow_missing=False, ignore_extra=False):
         """
         Load the existing net parameters
 
@@ -90,6 +90,8 @@ class GluonModule(object):
             The network which has been initialized or loaded from the existed model
         ctx: Context or list of Context
                 Defaults to ``mx.cpu()``.
+        allow_missing: bool
+        ignore_extra: bool
 
         Returns
         -------
@@ -98,10 +100,10 @@ class GluonModule(object):
         # 根据文件名装载已有的网络参数
         if not os.path.isfile(filename):
             raise FileExistsError
-        net.load_params(filename, ctx)
+        net.load_params(filename, ctx, allow_missing=allow_missing, ignore_extra=ignore_extra)
         return net
 
-    def load(self, net, epoch, ctx=mx.cpu()):
+    def load(self, net, epoch, ctx=mx.cpu(), allow_missing=False, ignore_extra=False):
         """"
         Load the existing net parameters
 
@@ -113,13 +115,16 @@ class GluonModule(object):
             The epoch which specify the model
         ctx: Context or list of Context
                 Defaults to ``mx.cpu()``.
+        allow_missing: bool
+        ignore_extra: bool
+
         Returns
         -------
         The initialized net
         """
         # 根据起始轮次装载已有的网络参数
         filename = self.prefix + "-%04d.parmas" % epoch
-        return self.load_net(filename, net, ctx)
+        return self.load_net(filename, net, ctx, allow_missing=allow_missing, ignore_extra=ignore_extra)
 
     @staticmethod
     def get_data_iter():
@@ -140,7 +145,14 @@ class GluonModule(object):
 
     @staticmethod
     def save_params(filename, net, select=Parameters.save_select):
-        net.collect_params(select).save(filename)
+        import re
+        from mxnet import ndarray
+        params = net._collect_params_with_prefix()
+        if select:
+            pattern = re.compile(select)
+            params = {name: value for name, value in params.items() if pattern.match(name)}
+        arg_dict = {key: val._reduce() for key, val in params.items()}
+        ndarray.save(filename, arg_dict)
 
     def fit(
             self,
