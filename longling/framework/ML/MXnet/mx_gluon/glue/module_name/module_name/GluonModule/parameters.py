@@ -9,7 +9,6 @@ import yaml
 
 from longling.lib.utilog import config_logging, LogLevel
 from longling.lib.stream import wf_open
-from longling.lib.candylib import as_list
 from longling.framework.ML.MXnet.mx_gluon.glue.parser import MXCtx
 
 from mxnet import cpu, gpu
