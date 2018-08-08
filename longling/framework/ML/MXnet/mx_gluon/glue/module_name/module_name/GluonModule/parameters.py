@@ -20,7 +20,7 @@ class Parameters(object):
     logger = config_logging(logger=model_name, console_log_level=LogLevel.INFO)
 
     data_dir = os.path.abspath(os.path.join(root, "data")) + os.sep
-    model_dir = os.path.abspath(os.path.join(data_dir, "module_name")) + os.sep
+    model_dir = os.path.abspath(os.path.join(data_dir, model_name)) + os.sep
 
     optimizer = 'sgd'
     optimizer_params = {
@@ -35,6 +35,11 @@ class Parameters(object):
     batch_size = 128
 
     ctx = cpu()
+
+    validation_result_file = os.path.abspath(os.path.join(model_dir, "result.json"))
+    save_epoch = 1
+
+    view_tag = True
 
     def __init__(self, params_yaml=None, **kwargs):
         params = self.class_var

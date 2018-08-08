@@ -73,7 +73,7 @@ class GluonModule(object):
 
         """
         string = ["Params"]
-        for k, v in self.params.items():
+        for k, v in vars(self.params).items():
             string.append("%s: %s" % (k, v))
         return "\n".join(string)
 
@@ -122,10 +122,6 @@ class GluonModule(object):
         return self.load_net(filename, net, ctx)
 
     @staticmethod
-    def save_params(filename, net, select='^(?!.*embedding)'):
-        net.collect_params(select).save(filename)
-
-    @staticmethod
     def get_data_iter():
         # 在这里定义数据加载方法
         return
@@ -142,9 +138,13 @@ class GluonModule(object):
         trainer = gluon.Trainer(net.collect_params(train_params_select), optimizer, optimizer_params)
         return trainer
 
+    @staticmethod
+    def save_params(filename, net, select='^(?!.*embedding)'):
+        net.collect_params(select).save(filename)
+
     def fit(
             self,
-            net, begin_epoch, epoch_num, batch_size,
+            net, begin_epoch, end_epoch, batch_size,
             train_data,
             trainer, bp_loss_f,
             loss_function, losses_monitor=None,
@@ -162,7 +162,7 @@ class GluonModule(object):
             The network which has been initialized or loaded from the existed model
         begin_epoch: int
             The begin epoch of this train procession
-        epoch_num: int
+        end_epoch: int
             The end epoch of this train procession
         batch_size: int
                 The size of each batch
@@ -195,7 +195,7 @@ class GluonModule(object):
         """
         # 此方法可以直接使用
         return self.epoch_loop(self.batch_loop(self._fit_f))(
-            net=net, begin_epoch=begin_epoch, epoch_num=epoch_num, batch_size=batch_size,
+            net=net, begin_epoch=begin_epoch, end_epoch=end_epoch, batch_size=batch_size,
             train_data=train_data,
             trainer=trainer, bp_loss_f=bp_loss_f,
             loss_function=loss_function, losses_monitor=losses_monitor,
@@ -222,7 +222,7 @@ class GluonModule(object):
         """
 
         def decorator(
-                net, begin_epoch, epoch_num, batch_size,
+                net, begin_epoch, end_epoch, batch_size,
                 train_data,
                 trainer, bp_loss_f,
                 loss_function, losses_monitor=None,
@@ -240,7 +240,7 @@ class GluonModule(object):
                 The network which has been initialized or loaded from the existed model
             begin_epoch: int
                 The begin epoch of this train procession
-            epoch_num: int
+            end_epoch: int
                 The end epoch of this train procession
             batch_size: int
                 The size of each batch
@@ -273,7 +273,7 @@ class GluonModule(object):
             """
             # 参数修改时需要同步修改 fit 函数中的参数
             # 定义轮次训练过程
-            for epoch in range(begin_epoch, epoch_num):
+            for epoch in range(begin_epoch, end_epoch):
                 # initial
                 if losses_monitor:
                     losses_monitor.reset()
@@ -300,7 +300,7 @@ class GluonModule(object):
                 #                                 logger=evaluator.logger, log_f=evaluator.log_f)[0])
 
                 # todo 定义模型保存方案
-                if kwargs.get('prefix'):
+                if kwargs.get('prefix') and (epoch % kwargs.get('save_epoch', 1) == 0 or epoch == end_epoch - 1):
                     GluonModule.save_params(kwargs['prefix'] + "-%04d.parmas" % (epoch + 1), net)
 
         return decorator

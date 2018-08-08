@@ -26,6 +26,11 @@ def net_viz(net, params, logger=logging):
     model_dir = params.model_dir
 
     try:
+        view_tag = params.view_tag
+    except AttributeError:
+        view_tag = True
+
+    try:
         viz_dir = os.path.abspath(model_dir + "plot/network")
         logger.info("visualization: file in %s" % viz_dir)
         from copy import deepcopy
@@ -39,7 +44,7 @@ def net_viz(net, params, logger=logging):
             save_path=viz_dir,
             shape=viz_shape,
             node_attrs={"fixedsize": "false"},
-            view=True
+            view=view_tag
         )
     except VizError as e:
         logger.error("error happen in visualization, aborted")

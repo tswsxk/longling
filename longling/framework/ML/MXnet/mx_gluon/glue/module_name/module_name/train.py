@@ -10,11 +10,11 @@ from longling.framework.ML.MXnet.mx_gluon.gluon_sym import PairwiseLoss, Softmax
 from .GluonModule import GluonModule, Parameters, net_viz
 
 
-def train_module_name():
+def train_module_name(**kwargs):
     # 1 配置参数初始化
     # todo 到Parameters定义处定义相关参数
     params = Parameters(
-
+        **kwargs
     )
 
     mod = GluonModule(params)
@@ -23,6 +23,7 @@ def train_module_name():
     batch_size = mod.params.batch_size
     begin_epoch = mod.params.begin_epoch
     end_epoch = mod.params.end_epoch
+    ctx = mod.params.ctx
 
     # 2 todo 定义网络结构并保存
     # 2.1 重新生成
@@ -52,8 +53,8 @@ def train_module_name():
     # timer = Clock()
     # informer = TrainBatchInformer(loss_index=[name for name in loss_function], epoch_num=epoch_num - 1)
     # validation_logger = config_logging(
-    #     filename=model_dir + "result.log",
-    #     logger="%s-validation" % model_name,
+    #     filename=params.model_dir + "result.log",
+    #     logger="%s-validation" % params.model_name,
     #     mode="w",
     #     log_format="%(message)s",
     # )
@@ -62,29 +63,29 @@ def train_module_name():
     #     # metrics=[PRF(argmax=False), Accuracy(argmax=False)],
     #     model_ctx=mod.ctx,
     #     logger=validation_logger,
-    #     log_f=mod.validation_result_file
+    #     log_f=mod.params.validation_result_file
     # )
 
     # 4 todo 定义数据加载
-    # logger.info("loading data")
+    # mod.logger.info("loading data")
     # train_data = GluonModule.get_data_iter()
     # test_data = GluonModule.get_data_iter()
 
     # 6 todo 训练
     # 直接装载已有模型，确认这一步可以执行的话可以忽略 2 3 4
-    # logger.info("start training")
+    # mod.logger.info("start training")
     # try:
     #     net = mod.load(net, begin_epoch, mod.ctx)
-    #     logger.info("load params from existing model file %s" % mod.prefix + "-%04d.parmas" % begin_epoch)
+    #     mod.logger.info("load params from existing model file %s" % mod.prefix + "-%04d.parmas" % begin_epoch)
     # except FileExistsError:
-    #     logger.info("model doesn't exist, initializing")
+    #     mod.logger.info("model doesn't exist, initializing")
     #     module_nameModule.net_initialize(net, ctx)
     # module_nameModule.parameters_stabilize(net)
     # trainer = GluonModule.get_trainer(net)
     # net.hybridize() # todo whether to use static symbol to accelerate
     # logger.info("start training")
     # mod.fit(
-    #     net=net, begin_epoch=begin_epoch, epoch_num=epoch_num, batch_size=batch_size,
+    #     net=net, begin_epoch=begin_epoch, end_epoch=end_epoch, batch_size=batch_size,
     #     train_data=train_data,
     #     trainer=trainer, bp_loss_f=bp_loss_f,
     #     loss_function=loss_function, losses_monitor=losses_monitor,
