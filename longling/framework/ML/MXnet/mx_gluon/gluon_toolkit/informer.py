@@ -14,9 +14,9 @@ except ImportError:
 
 
 class TrainBatchInformer(object):
-    def __init__(self, loss_index=[], eval_index=[], batch_num=NAN, epoch_num=NAN, output=True):
+    def __init__(self, loss_index=[], eval_index=[], batch_num=NAN, end_epoch=NAN, output=True):
         self.batch_num = batch_num
-        self.epoch_num = epoch_num
+        self.end_epoch = end_epoch
 
         self.eval_index = eval_index
         self.loss_index = ["Loss-%s" % ln for ln in loss_index]
@@ -35,7 +35,7 @@ class TrainBatchInformer(object):
 
     def batch_report(self, batch_no, loss_value=[], eval_value=[]):
         arguments = list(loss_value) + list(eval_value)
-        res_str = self.output_formatter.format(self.epoch, self.epoch_num,
+        res_str = self.output_formatter.format(self.epoch, self.end_epoch,
                                                batch_no, self.batch_num,
                                                *arguments)
 

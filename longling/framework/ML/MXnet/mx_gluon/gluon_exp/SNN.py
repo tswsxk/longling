@@ -264,7 +264,7 @@ def train_SNN():
 
     # 5 todo 初始化一些训练过程中的交互信息
     timer = Clock()
-    informer = TrainBatchInformer(loss_index=[name for name in loss_function], epoch_num=epoch_num - 1)
+    informer = TrainBatchInformer(loss_index=[name for name in loss_function], end_epoch=epoch_num - 1)
     validation_logger = config_logging(
         filename=model_dir + "result.log",
         logger="%s-validation" % model_name,

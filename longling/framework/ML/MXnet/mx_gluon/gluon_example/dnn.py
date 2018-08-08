@@ -51,7 +51,7 @@ def dnn():
 
     timer = Clock()
     eval_metrics = [PRF(argmax=False), Accuracy(argmax=False)]
-    batch_infoer = TrainBatchInformer(loss_index=[name for name in loss_function], epoch_num=epoch_num - 1)
+    batch_infoer = TrainBatchInformer(loss_index=[name for name in loss_function], end_epoch=epoch_num - 1)
     evaluater = ClassEvaluator(
         metrics=eval_metrics,
         model_ctx=model_ctx,
