@@ -42,7 +42,7 @@ class Parameters(object):
     view_tag = True
 
     train_select = '^(?!.*embedding)'
-    save_select = '^(?!.*embedding)'
+    save_select = train_select
 
     def __init__(self, params_yaml=None, **kwargs):
         params = self.class_var
