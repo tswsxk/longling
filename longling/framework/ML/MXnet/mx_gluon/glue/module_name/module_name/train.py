@@ -36,7 +36,6 @@ def train_module_name(**kwargs):
     # 3 可视化检查网络
     # net_viz(net, mod.params, mod.logger)
 
-
     # 5 todo 定义损失函数
     # bp_loss_f 定义了用来进行 back propagation 的损失函数
     # bp_loss_f = {
@@ -81,7 +80,7 @@ def train_module_name(**kwargs):
     #     mod.logger.info("model doesn't exist, initializing")
     #     module_nameModule.net_initialize(net, ctx)
     # module_nameModule.parameters_stabilize(net)
-    # trainer = GluonModule.get_trainer(net)
+    # trainer = GluonModule.get_trainer(net, optimizer=params.optimizer, optimizer_params=params.optimizer_params)
     # net.hybridize() # todo whether to use static symbol to accelerate
     # logger.info("start training")
     # mod.fit(
