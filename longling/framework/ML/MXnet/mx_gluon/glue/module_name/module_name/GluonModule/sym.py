@@ -51,24 +51,25 @@ def net_viz(net, params, logger=logging):
         logger.error(e)
 
 
+# def get_data_iter():
+#     pass
+
 # if __name__ == '__main__':
-# set parameters
-# try:
-#     from .parameters import Parameters
-# except ImportError:
-#     from parameters import Parameters
-#
-# batch_size = 128
-# params = Parameters(batch_size=batch_size)
-
-# generate sym
-# net = NetName()
-
-# visualiztion check
-# net_viz(net, params, params.logger)
-
-# numerical check
-# def gen_data():
-#     return
-# data = gen_data()
-# net()
+    # set parameters
+    # try:
+    #     from .parameters import Parameters
+    # except (ImportError, SystemError):
+    #     from parameters import Parameters
+    #
+    # batch_size = 128
+    # params = Parameters(batch_size=batch_size)
+    #
+    # generate sym
+    # net = NetName()
+    #
+    # visualiztion check
+    # net_viz(net, params, params.logger)
+    #
+    # numerical check
+    # data = get_data_iter()
+    # net()

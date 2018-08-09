@@ -303,18 +303,6 @@ class RLSTM_HATN(RLSTM):
 
 
 #########################################################################
-
-
-# todo 重命名eval_RLSTM函数到需要的模块名
-def eval_RLSTM():
-    pass
-
-
-# todo 重命名use_RLSTM函数到需要的模块名
-def use_RLSTM():
-    pass
-
-
 # todo 重命名train_RLSTM函数到需要的模块名
 def train_RLSTM():
     # 1 配置参数初始化
