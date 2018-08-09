@@ -4,7 +4,15 @@
 import mxnet as mx
 import numpy as np
 
+from longling.lib.candylib import as_list
 from longling.framework.ML.MXnet.io_lib import SimpleBucketIter
+
+
+def real_ctx(ctx, data_len):
+    ctx = as_list(ctx)
+    if data_len < len(ctx):
+        ctx = ctx[:1]
+    return ctx
 
 
 def form_shape(data_iter):
@@ -40,7 +48,7 @@ class BasePredictor(object):
     def predict(self, datas, label_tag=False):
         batch_size = min(len(datas), self.batch_size)
         datas = mx.io.NDArrayIter(data=np.asarray(datas), batch_size=batch_size, data_name="data")
-        self.mod.bind(data_shapes=[('data', (batch_size, ) + self.data_shapes)], force_rebind=True)
+        self.mod.bind(data_shapes=[('data', (batch_size,) + self.data_shapes)], force_rebind=True)
         preds = self.mod.predict(datas)
         if label_tag:
             return mx.ndarray.argmax(preds, axis=1)
@@ -66,7 +74,7 @@ class RNNPredictor(object):
             )
             self.mod.bind(
                 data_shapes=[('data', (batch_size, max(buckets)))],
-                label_shapes=[('label', (batch_size, ))],
+                label_shapes=[('label', (batch_size,))],
                 force_rebind=True,
                 for_training=False,
             )
@@ -116,4 +124,3 @@ class RNNPredictor(object):
     def predict_label(self, datas):
         labels = self.predict(datas, label_tag=True)
         return labels.asnumpy()
-

@@ -6,6 +6,9 @@ import os
 
 import mxnet as mx
 from mxnet import gluon, autograd, nd
+from mxnet.gluon import utils as gutil
+
+from longling.framework.ML.MXnet.util import real_ctx
 
 from .parameters import Parameters
 from .sym import NetName
@@ -431,20 +434,22 @@ class GluonModule(object):
         """
         # 此函数定义训练过程
 
-        # todo
-        data = data.as_in_context(ctx)
-        label = label.as_in_context(ctx)
+        ctx = real_ctx(ctx, data_len=len(data))
+
+        datas = gutil.split_and_load(data, ctx, even_split=False)
+        labels = gutil.split_and_load(label, ctx, even_split=False)
 
         bp_loss = None
         with autograd.record():
-            output = net(data)  # todo
-            for name, func in loss_function.items():
-                loss = func(output, label)  # todo
-                if name in bp_loss_f:
-                    bp_loss = loss
-                loss_value = nd.mean(loss).asscalar()
-                if losses_monitor:
-                    losses_monitor.update(name, loss_value)
+            for (data, label) in zip(datas, labels):
+                output = net(data)  # todo
+                for name, func in loss_function.items():
+                    loss = func(output, label)  # todo
+                    if name in bp_loss_f:
+                        bp_loss = loss
+                    loss_value = nd.mean(loss).asscalar()
+                    if losses_monitor:
+                        losses_monitor.update(name, loss_value)
 
         assert bp_loss is not None
         bp_loss.backward()
