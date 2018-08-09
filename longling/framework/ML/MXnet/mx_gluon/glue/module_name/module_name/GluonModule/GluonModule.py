@@ -6,9 +6,8 @@ import os
 
 import mxnet as mx
 from mxnet import gluon, autograd, nd
-from mxnet.gluon import utils as gutil
 
-from longling.framework.ML.MXnet.util import real_ctx
+from longling.framework.ML.MXnet.util import split_and_load
 
 from .parameters import Parameters
 from .sym import NetName
@@ -434,14 +433,15 @@ class GluonModule(object):
         """
         # 此函数定义训练过程
 
-        ctx = real_ctx(ctx, data_len=len(data))
-
-        datas = gutil.split_and_load(data, ctx, even_split=False)
-        labels = gutil.split_and_load(label, ctx, even_split=False)
+        ctx_data = split_and_load(
+            ctx,
+            data, label,
+            even_split=False
+        )
 
         bp_loss = None
         with autograd.record():
-            for (data, label) in zip(datas, labels):
+            for (data, label) in ctx_data:
                 output = net(data)  # todo
                 for name, func in loss_function.items():
                     loss = func(output, label)  # todo

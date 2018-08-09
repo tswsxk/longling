@@ -2,6 +2,7 @@
 # created by tongshiwei on 18-1-27
 
 import mxnet as mx
+from mxnet.gluon import utils as gutil
 import numpy as np
 
 from longling.lib.candylib import as_list
@@ -13,6 +14,11 @@ def real_ctx(ctx, data_len):
     if data_len < len(ctx):
         ctx = ctx[:1]
     return ctx
+
+
+def split_and_load(ctx, *args, **kwargs):
+    ctx = real_ctx(ctx, len(args[0]))
+    return zip(*[gutil.split_and_load(arg, ctx, **kwargs) for arg in args])
 
 
 def form_shape(data_iter):
