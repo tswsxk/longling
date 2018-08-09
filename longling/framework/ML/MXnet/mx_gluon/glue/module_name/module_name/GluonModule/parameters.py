@@ -37,10 +37,14 @@ class Parameters(object):
     ctx = cpu()
 
     validation_result_file = os.path.abspath(os.path.join(model_dir, "result.json"))
+
+    # 参数保存频率
     save_epoch = 1
 
+    # 是否显示网络图
     view_tag = True
 
+    # 更新保存参数，一般需要保持一致
     train_select = '^(?!.*embedding)'
     save_select = train_select
 
