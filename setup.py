@@ -3,10 +3,13 @@
 import io
 import re
 import os
+import sys
 from distutils.core import setup
 from setuptools import find_packages
 from longling.framework.ML.MXnet.mx_gluon.glue import glue
 
+CURRENT_DIR = os.path.dirname(__file__)
+sys.path.insert(0, CURRENT_DIR)
 
 def read(*names, **kwargs):
     with io.open(
