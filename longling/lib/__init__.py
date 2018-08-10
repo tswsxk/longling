@@ -7,6 +7,4 @@ from . import candylib
 from . import clock
 from . import stream
 from . import utilog
-from . import utilog
-from . import structure
 from . import process_pattern
