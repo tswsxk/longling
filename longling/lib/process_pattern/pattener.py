@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import re
 import sys
 
-from longling.base import type_assert
+from longling.lib.candylib import type_assert
 
 from .process_pattern_base import *
 

@@ -2,7 +2,8 @@
 import logging
 import sys
 
-from longling.base import string_types, type_assert
+from longling.base import string_types
+from longling.lib.candylib import type_assert
 from longling.lib.stream import build_dir
 
 '''

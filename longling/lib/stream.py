@@ -7,7 +7,8 @@ import sys
 import codecs
 import os
 
-from longling.base import string_types, type_assert
+from longling.base import string_types
+from longling.lib.candylib import type_assert
 
 
 class StreamError(Exception):

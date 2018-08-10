@@ -3,13 +3,13 @@
 import io
 import re
 import os
-import sys
+# import sys
 from distutils.core import setup
 from setuptools import find_packages
 from longling.framework.ML.MXnet.mx_gluon.glue import glue
 
-CURRENT_DIR = os.path.dirname(__file__)
-sys.path.insert(0, CURRENT_DIR)
+# CURRENT_DIR = os.path.dirname(__file__)
+# sys.path.insert(0, CURRENT_DIR)
 
 def read(*names, **kwargs):
     with io.open(
@@ -38,8 +38,9 @@ setup(
     author_email='tongsw@mail.ustc.edu.cn',
     packages=find_packages(
         include=[
-            "longling", "longling.*"
-            "*.lib", "*.lib.*",
+            # "longling",
+            "longling.base.py", "longling.__init__.py"
+            "*.lib", "*.lib.*", "lib.*", "lib"
             "*.framework.ML.MXnet", "*.framework.ML.MXnet.*", "framework.ML.MXnet.*", "framework.ML.MXnet"
             "*.framework.ML.universe", "*.framework.ML.universe.*", "framework.ML.universe.*", "framework.ML.universe",
         ],
