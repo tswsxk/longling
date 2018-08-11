@@ -8,13 +8,14 @@ from distutils.core import setup
 from setuptools import find_packages
 from longling.framework.ML.MXnet.mx_gluon.glue import glue
 
+
 # CURRENT_DIR = os.path.dirname(__file__)
 # sys.path.insert(0, CURRENT_DIR)
 
 def read(*names, **kwargs):
     with io.open(
-        os.path.join(os.path.dirname(__file__), *names),
-        encoding=kwargs.get("encoding", "utf8")
+            os.path.join(os.path.dirname(__file__), *names),
+            encoding=kwargs.get("encoding", "utf8")
     ) as fp:
         return fp.read()
 
@@ -30,7 +31,6 @@ def find_version(*file_paths):
 
 VERSION = find_version('longling', '__init__.py')
 
-
 setup(
     name='longling',
     version=VERSION,
@@ -38,15 +38,16 @@ setup(
     author_email='tongsw@mail.ustc.edu.cn',
     packages=find_packages(
         include=[
-            # "longling",
-            "longling.base.py", "longling.__init__.py"
-            "*.lib", "*.lib.*", "lib.*", "lib"
-            "*.framework.ML.MXnet", "*.framework.ML.MXnet.*", "framework.ML.MXnet.*", "framework.ML.MXnet"
-            "*.framework.ML.universe", "*.framework.ML.universe.*", "framework.ML.universe.*", "framework.ML.universe",
+            "longling",
+            "*.lib", "*.lib.*",
+            "*.framework",
+            "*.framework.ML",
+            "*.framework.ML.MXnet*",
+            "*.framework.ML.universe*"
         ],
         exclude=[
-            "*mx_example", "*gluon_example*", "*gluon_exp*",
-            "*mxnet_old*",
+            "*.mx_example", "*.gluon_example*", "*.gluon_exp*",
+            "*.mxnet_old*",
         ]
     ),
     scripts=[
