@@ -4,6 +4,7 @@
 import argparse
 import inspect
 import os
+import datetime
 
 import yaml
 
@@ -17,6 +18,7 @@ from mxnet import cpu, gpu
 class Parameters(object):
     root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")) + os.sep
     model_name = "module_name"
+    time_stamp = False
     logger = config_logging(logger=model_name, console_log_level=LogLevel.INFO)
 
     data_dir = os.path.abspath(os.path.join(root, "data")) + os.sep
@@ -55,6 +57,9 @@ class Parameters(object):
         params.update(**kwargs)
         for param, value in params.items():
             setattr(self, "%s" % param, value)
+        if hasattr(self, 'time_stamp') and self.time_stamp and hasattr(self, 'model_dir'):
+            time_stamp = "_%s" % datetime.datetime.now().strftime("%Y%m%d%H%M%S%f")
+            self.model_dir = os.path.abspath(os.path.join(data_dir, self.model_name)) + time_stamp + os.sep
 
     def items(self):
         return {k: v for k, v in vars(self).items() if k not in {'logger'}}
