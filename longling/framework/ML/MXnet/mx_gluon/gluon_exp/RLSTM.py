@@ -69,7 +69,7 @@ class RLSTM_CNN3D(RLSTM):
             # self.layers_attention = gluon.nn.Dense(lstm_hidden, activation='tanh')
             # self.batch_norm = gluon.nn.BatchNorm()
             # self.fc = gluon.nn.Dense(fc_output)
-            self.text_cnn = TextCNN(cnn_len, embedding_dim, 4, num_output=fc_output, highway=False, dropout=0.2)
+            self.text_cnn = TextCNN(cnn_len, embedding_dim, 4, num_output=fc_output, num_highway=False, dropout=0.2)
             # self.dropout = gluon.nn.Dropout(0.5)
 
     def hybrid_forward(self, F, word_seq, word_radical_seq, character_seq,

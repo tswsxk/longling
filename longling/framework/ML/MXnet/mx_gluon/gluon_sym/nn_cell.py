@@ -7,50 +7,88 @@ from mxnet import gluon
 
 
 class TextCNN(gluon.HybridBlock):
-    def __init__(self, sentence_size, vec_size, channel_size=None, num_output=2, filter_list=[1, 2, 3, 4],
-                 num_filter=60,
-                 dropout=0.0, batch_norm=True, highway=True, activation="relu", pool_type='max',
+    def __init__(self, sentence_size, vec_size, channel_size=None, num_output=2,
+                 filter_list=(1, 2, 3, 4), num_filters=60,
+                 dropout=0.0, batch_norm=True, activation="tanh",
+                 num_highway=1,
+                 highway_layer_activation='relu', highway_trans_layer_activation=None,
+                 pool_type='max',
                  **kwargs):
+        """
+        TextCNN 模型，for 2D and 3D
+
+        Parameters
+        ----------
+        sentence_size: int
+            句子长度
+        vec_size: int
+            特征向量维度
+        channel_size: int or None
+            if None, use Text2D
+            int 则为 channel（特征向量二维维度）
+        num_output: int
+            输出维度
+        filter_list: Iterable
+            The output dimension for each convolutional layer according to the filter sizes,
+            which are the number of the filters learned by the layers.
+        num_filters: int or Iterable
+            The size of each convolutional layer, int or Iterable.
+            When Iterable, len(filter_list) equals to the number of convolutional layers.
+        dropout: float
+        batch_norm: bool
+        activation: str
+        num_highway: int
+        highway_layer_activation: str
+        highway_trans_layer_activation: str or None
+        pool_type: str
+        kwargs
+        """
         super(TextCNN, self).__init__(**kwargs)
         self.sentence_size = sentence_size
         self.vec_size = vec_size
         self.channel_size = channel_size
         self.num_output = num_output
         self.filter_list = filter_list
-        self.num_filter = num_filter
-        self.dropout_p = dropout
+        if isinstance(num_filters, int):
+            self.num_filters = [num_filters] * len(self.filter_list)
+        assert len(self.filter_list) == len(self.num_filters)
         self.batch_norm = batch_norm
-        self.highway = highway
+        self.num_highway = num_highway
         self.activation = activation
+        self.highway_layer_activation = highway_layer_activation
+        self.highway_trans_layer_activation = highway_trans_layer_activation if highway_trans_layer_activation \
+            else highway_layer_activation
 
         self.conv = [0] * len(self.filter_list)
         self.pool = [0] * len(self.filter_list)
         self.bn = [0] * len(self.filter_list)
 
-        self.dropout = None
-
         pool2d = gluon.nn.MaxPool2D if pool_type == "max" else gluon.nn.AvgPool2D
         pool3d = gluon.nn.MaxPool3D if pool_type == "max" else gluon.nn.AvgPool3D
 
         with self.name_scope():
-            for i, filter_size in enumerate(self.filter_list):
-                conv = gluon.nn.Conv2D(self.num_filter, kernel_size=(filter_size, self.vec_size),
+            for i, (filter_size, num_filter) in enumerate(zip(self.filter_list, self.num_filters)):
+                conv = gluon.nn.Conv2D(num_filter, kernel_size=(filter_size, self.vec_size),
                                        activation=self.activation) if not self.channel_size else gluon.nn.Conv3D(
-                    self.num_filter, kernel_size=(filter_size, self.vec_size, self.channel_size), activation=activation)
+                    num_filter, kernel_size=(filter_size, self.vec_size, self.channel_size), activation=activation)
                 setattr(self, "conv%s" % i, conv)
 
                 pool = pool2d(pool_size=(self.sentence_size - filter_size + 1, 1),
-                                          strides=(1, 1)) if not self.channel_size else pool3d(
+                              strides=(1, 1)) if not self.channel_size else pool3d(
                     pool_size=(self.sentence_size - filter_size + 1, 1, 1), strides=(1, 1, 1))
                 setattr(self, "pool%s" % i, pool)
+
                 if self.batch_norm:
                     setattr(self, "bn%s" % i, gluon.nn.BatchNorm())
-            if self.highway:
-                self.high_fc = gluon.nn.Dense(len(filter_list) * self.num_filter, activation="relu")
-                self.high_trans_fc = gluon.nn.Dense(len(filter_list) * self.num_filter, activation="sigmoid")
 
-            if self.dropout_p > 0:
-                self.dropout = gluon.nn.Dropout(self.dropout_p)
+            if self.num_highway:
+                dim = sum(self.num_filters)
+                for i in range(self.num_highway):
+                    setattr(self, "highway%s" % i,
+                            HighwayCell(dim, highway_layer_activation=self.highway_layer_activation,
+                                        highway_trans_layer_activation=self.highway_trans_layer_activation))
+
+            self.dropout = gluon.nn.Dropout(dropout)
 
             self.fc = gluon.nn.Dense(num_output)
 
@@ -65,29 +103,34 @@ class TextCNN(gluon.HybridBlock):
                 pooli = getattr(self, "bn%s" % i)(pooli)
             pooled_outputs.append(pooli)
 
-        total_filters = self.num_filter * len(self.filter_list)
+        total_filters = sum(self.num_filters)
         concat = F.Concat(dim=1, *pooled_outputs)
         h_pool = F.Reshape(data=concat, shape=(0, total_filters))
-        if self.highway:
-            h_pool = highway_cell(h_pool, self.high_fc, self.high_trans_fc)
+        if self.num_highway:
+            for i in range(self.num_highway):
+                h_pool = getattr(self, "highway%s" % i)(h_pool)
 
-        if self.dropout_p > 0.0:
-            h_drop = self.dropout(h_pool)
-        else:
-            h_drop = h_pool
+        h_drop = self.dropout(h_pool)
 
         fc = self.fc(h_drop)
 
         return fc
 
 
-def highway_cell(data, high_fc, high_trans_fc):
-    _data = data
+class HighwayCell(gluon.HybridBlock):
+    def __init__(self, dim, highway_layer_activation='relu', highway_trans_layer_activation=None, prefix=None,
+                 params=None):
+        super(HighwayCell, self).__init__(prefix, params)
+        highway_trans_layer_activation = highway_trans_layer_activation if highway_trans_layer_activation \
+            else highway_layer_activation
+        with self.name_scope():
+            self.high_fc = gluon.nn.Dense(dim, activation=highway_layer_activation)
+            self.high_trans_fc = gluon.nn.Dense(dim, activation=highway_trans_layer_activation)
 
-    high_relu = high_fc(_data)
-    high_trans_sigmoid = high_trans_fc(_data)
-
-    return high_relu * high_trans_sigmoid + _data * (1 - high_trans_sigmoid)
+    def hybrid_forward(self, F, x, *args, **kwargs):
+        high_fc = self.high_fc(x)
+        high_trans_fc = self.high_trans_fc(x)
+        return high_fc * high_trans_fc + x * (1 - high_trans_fc)
 
 
 class TransE(gluon.HybridBlock):

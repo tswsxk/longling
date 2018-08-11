@@ -95,7 +95,7 @@ def text_cnn():
 
     ############################################################################
     # network building
-    net = TextCNN(sentence_size, vec_size, vocab_size=vocab_size, dropout=0.5, batch_norm=1, highway=True)
+    net = TextCNN(sentence_size, vec_size, vocab_size=vocab_size, dropout=0.5, batch_norm=1, num_highway=True)
     net.hybridize()
     ############################################################################
 
