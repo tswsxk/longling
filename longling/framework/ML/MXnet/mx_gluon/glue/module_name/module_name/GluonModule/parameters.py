@@ -26,7 +26,7 @@ class Parameters(object):
 
     optimizer = 'sgd'
     optimizer_params = {
-        'learning_rate': .01,
+        'learning_rate': 0.01,
         'wd': 0.5,
         'momentum': 0.01,
         'clip_gradient': 5,
@@ -59,7 +59,7 @@ class Parameters(object):
             setattr(self, "%s" % param, value)
         if hasattr(self, 'time_stamp') and self.time_stamp and hasattr(self, 'model_dir'):
             time_stamp = "_%s" % datetime.datetime.now().strftime("%Y%m%d%H%M%S%f")
-            self.model_dir = os.path.abspath(os.path.join(data_dir, self.model_name)) + time_stamp + os.sep
+            self.model_dir = os.path.abspath(os.path.join(self.data_dir, self.model_name)) + time_stamp + os.sep
 
     def items(self):
         return {k: v for k, v in vars(self).items() if k not in {'logger'}}
