@@ -470,3 +470,59 @@ class DotProductAttentionCell(AttentionCell):
         att_score = F.batch_dot(query, key, transpose_b=True)
         att_weights = self._dropout_layer(_masked_softmax(F, att_score, mask))
         return att_weights
+
+
+class SelfAttentionCell(HybridBlock):
+    r"""Self Attention, query, key and value are the same
+
+
+    This type of attention is first proposed in
+
+    .. Lin Z, Feng M, Santos C N, et al. A structured self-attentive sentence embedding[J].
+    arXiv preprint arXiv:1703.03130, 2017.
+
+    Parameters
+    ----------
+    s1_units : int
+    s2_units : int
+    normalized : bool, default False
+        Whether to normalize the weight that maps the embedded
+        hidden states to the final score. This strategy can be interpreted as a type of
+        "[NIPS2016] Weight Normalization".
+    dropout : float, default 0.0
+        Attention dropout.
+    weight_initializer : str or `Initializer` or None, default None
+        Initializer of the weights.
+    prefix : str or None, default None
+        See document of `Block`.
+    params : ParameterDict or None, default None
+        See document of `Block`.
+    """
+
+    def __init__(self, s1_units, s2_units,
+                 normalized=False, dropout=0.0,
+                 weight_initializer=None, prefix=None, params=None):
+        super(SelfAttentionCell, self).__init__(prefix=prefix, params=params)
+        self._normalized = normalized
+        self._dropout = dropout
+        with self.name_scope():
+            self._dropout_layer = nn.Dropout(dropout)
+            self._s1_layer = nn.Dense(s1_units, flatten=False, use_bias=False, weight_initializer=weight_initializer)
+            self._s2_layer = nn.Dense(s2_units, flatten=False, use_bias=False, weight_initializer=weight_initializer)
+            self._s1_act = nn.Activation('tanh')
+
+    def hybrid_forward(self, F, x, mask=None, **kwargs):
+        att_score_s1 = self._s1_act(self._s1_layer(x))
+        att_score_s2 = self._s2_layer(att_score_s1)
+        att_weights = self._dropout_layer(_masked_softmax(F, att_score_s2, mask))
+        return att_weights
+
+
+if __name__ == '__main__':
+    from mxnet import nd
+    a = nd.ones((128, 10, 7))
+    b = nd.ones((128, 10, 7))
+    self_attention = SelfAttentionCell(5, 3)
+    self_attention.initialize()
+    s = self_attention(a)
+    print(s.shape)
