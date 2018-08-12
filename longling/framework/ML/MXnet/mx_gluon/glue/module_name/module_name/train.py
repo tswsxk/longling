@@ -97,6 +97,3 @@ def train_module_name(**kwargs):
 
     # optional todo 评估
     # GluonModule.eval()
-
-    # 7 todo 关闭输入输出流
-    # evaluator.close()

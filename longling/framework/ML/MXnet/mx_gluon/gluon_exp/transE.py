@@ -273,9 +273,6 @@ def train_transE():
     embedding_persistence(net, mod.entities_embedding, mod.relations_embedding, entities_idx2str, relations_idx2str,
                           len(entities_idx2str), len(relations_idx2str))
 
-    # 7 todo 关闭输入输出流
-    evaluator.close()
-
 
 class TransEModule(object):
     """

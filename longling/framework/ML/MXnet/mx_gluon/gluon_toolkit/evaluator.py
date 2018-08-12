@@ -20,9 +20,9 @@ class Evaluator(object):
         self.model_ctx = model_ctx
         self.logger = logger
         if log_f is not None and isinstance(log_f, string_types):
-            self.log_f = codecs.open(log_f, "w", "utf-8")
-        else:
-            self.log_f = log_f
+            # clean file
+            codecs.open(log_f, "w", "utf-8").close()
+        self.log_f = log_f
 
     def evaluate(self, data_iterator, net, stage=""):
         raise NotImplementedError
@@ -57,10 +57,6 @@ class Evaluator(object):
                 except Exception as e:
                     logger.warning(e)
         return msg, data
-
-    def close(self):
-        if self.log_f:
-            self.log_f.close()
 
 
 class ClassEvaluator(Evaluator):
@@ -135,7 +131,12 @@ class ClassEvaluator(Evaluator):
             if kwargs.get('log_f', None) is not None:
                 log_f = kwargs['log_f']
                 try:
-                    print(json.dumps(data, ensure_ascii=False), file=log_f)
+                    if log_f is not None and isinstance(log_f, string_types):
+                        log_f = codecs.open(log_f, "a", encoding="utf-8")
+                        print(json.dumps(data, ensure_ascii=False), file=log_f)
+                        log_f.close()
+                    else:
+                        print(json.dumps(data, ensure_ascii=False), file=log_f)
                 except Exception as e:
                     logger.warning(e)
         return msg, data
