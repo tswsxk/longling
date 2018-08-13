@@ -53,7 +53,12 @@ class Evaluator(object):
             if kwargs.get('log_f', None) is not None:
                 log_f = kwargs['log_f']
                 try:
-                    print(json.dumps(data, ensure_ascii=False), file=log_f)
+                    if log_f is not None and isinstance(log_f, string_types):
+                        log_f = codecs.open(log_f, "a", encoding="utf-8")
+                        print(json.dumps(data, ensure_ascii=False), file=log_f)
+                        log_f.close()
+                    else:
+                        print(json.dumps(data, ensure_ascii=False), file=log_f)
                 except Exception as e:
                     logger.warning(e)
         return msg, data
