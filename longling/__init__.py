@@ -25,4 +25,4 @@ from longling.framework.ML.MXnet import mx_gluon
 from longling.framework.ML.MXnet import mx_gluon as gluon
 
 
-__version__ = '0.0.11'
+__version__ = '0.0.12'
