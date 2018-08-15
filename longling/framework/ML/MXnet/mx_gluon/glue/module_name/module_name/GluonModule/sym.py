@@ -1,5 +1,5 @@
 # coding: utf-8
-# create by tongshiwei on 2018/8/5
+# Copyright @tongshiwei
 
 import logging
 import os
@@ -21,9 +21,10 @@ class NetName(gluon.HybridBlock):
         pass
 
 
-def net_viz(net, params, logger=logging):
+def net_viz(net, params, **kwargs):
     batch_size = params.batch_size
     model_dir = params.model_dir
+    logger = kwargs.get('logger', params.logger if hasattr(params, 'logger') else logging)
 
     try:
         view_tag = params.view_tag
@@ -51,25 +52,38 @@ def net_viz(net, params, logger=logging):
         logger.error(e)
 
 
-# def get_data_iter():
-#     pass
+def get_data_iter(params):
+    import random
+    random.seed(10)
+    pass
 
-# if __name__ == '__main__':
-    # set parameters
-    # try:
-    #     from .parameters import Parameters
-    # except (ImportError, SystemError):
-    #     from parameters import Parameters
-    #
+
+if __name__ == '__main__':
+    # # set parameters
+    try:
+        # for python module
+        from .parameters import Parameters
+    except (ImportError, SystemError):
+        # for python script
+        from parameters import Parameters
+
+    params = Parameters()
+
+    # # set batch size
     # batch_size = 128
     # params = Parameters(batch_size=batch_size)
     #
-    # generate sym
+    # # generate sym
     # net = NetName()
     #
     # visualiztion check
-    # net_viz(net, params, params.logger)
+    # params.view_tag = True
+    # net_viz(net, params)
     #
-    # numerical check
-    # data = get_data_iter()
-    # net()
+    # # numerical check
+    # datas = get_data_iter()
+    # from tqdm import tqdm
+    #
+    # bp_loss_f = lambda x, y: (x, y)
+    # for data, label in tqdm(get_data_iter(params)):
+    #     loss = bp_loss_f(net(data), label)
