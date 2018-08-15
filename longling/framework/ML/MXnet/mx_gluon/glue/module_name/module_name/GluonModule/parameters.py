@@ -46,7 +46,7 @@ class Parameters(object):
     save_epoch = 1
 
     # 是否显示网络图
-    view_tag = True
+    view_tag = False
 
     # 更新保存参数，一般需要保持一致
     train_select = '^(?!.*embedding)'
