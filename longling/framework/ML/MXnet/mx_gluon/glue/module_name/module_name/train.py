@@ -1,18 +1,15 @@
 # coding: utf-8
 # Copyright @tongshiwei
 
-
 from longling.lib.clock import Clock
 from longling.framework.ML.MXnet.mx_gluon.gluon_toolkit import TrainBatchInformer, Evaluator, MovingLosses
 from longling.framework.ML.MXnet.viz import plot_network, VizError
 from longling.framework.ML.MXnet.mx_gluon.gluon_sym import PairwiseLoss, SoftmaxCrossEntropyLoss
 
 try:
-    from .GluonModule import GluonModule, Parameters, net_viz
+    from .GluonModule import *
 except ModuleNotFoundError:
-    import sys
-    import os
-    sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+    from GluonModule import *
 
 
 def train_module_name(**kwargs):
