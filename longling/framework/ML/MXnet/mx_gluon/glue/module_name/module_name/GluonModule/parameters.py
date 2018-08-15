@@ -93,8 +93,7 @@ class Parameters(object):
     @property
     def class_var(self):
         variables = {k: v for k, v in vars(type(self)).items() if
-                     not inspect.isroutine(v) and k not in {'__doc__', '__module__', '__dict__', '__weakref__',
-                                                            'class_var', 'parsable_var'}}
+                     not inspect.isroutine(v) and k not in self.excluded_names()}
         return variables
 
     @property
@@ -104,14 +103,25 @@ class Parameters(object):
             store_vars['ctx'] = MXCtx.dump(store_vars['ctx'])
         return store_vars
 
+    @staticmethod
+    def excluded_names():
+        """
+        获取非参变量集
+        Returns
+        -------
+        exclude names set: set
+            所有非参变量
+        """
+        return {'__doc__', '__module__', '__dict__', '__weakref__',
+                'class_var', 'parsable_var'}
+
 
 class ParameterParser(argparse.ArgumentParser):
     def __init__(self, *args, **kwargs):
         super(ParameterParser, self).__init__(*args, **kwargs)
         self.add_argument('--root_prefix', dest='root_prefix', default='', help='set root prefix')
         params = {k: v for k, v in vars(Parameters).items() if
-                  not inspect.isroutine(v) and k not in {'__doc__', '__module__', '__dict__', '__weakref__',
-                                                         'class_var', 'parsable_var'}}
+                  not inspect.isroutine(v) and k not in Parameters.excluded_names()}
         for param, value in params.items():
             if param == 'logger':
                 continue
