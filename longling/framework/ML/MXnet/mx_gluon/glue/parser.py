@@ -1,6 +1,7 @@
 # coding:utf-8
 # created by tongshiwei on 2018/8/8
 from mxnet import Context
+from mxnet import cpu, gpu
 
 from longling.lib.candylib import as_list
 
