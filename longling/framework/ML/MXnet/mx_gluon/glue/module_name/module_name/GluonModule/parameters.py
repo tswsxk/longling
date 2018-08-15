@@ -1,5 +1,5 @@
 # coding: utf-8
-# create by tongshiwei on 2018/8/5
+# Copyright @tongshiwei
 
 import argparse
 import inspect
@@ -17,7 +17,9 @@ from mxnet import cpu, gpu
 
 class Parameters(object):
     root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")) + os.sep
-    model_name = "module_name"
+    model_name = os.path.basename(os.path.abspath(os.path.dirname(__file__)))
+    # Can also specify the model_name using explicit string
+    # model_name = "module_name"
     time_stamp = False
     logger = config_logging(logger=model_name, console_log_level=LogLevel.INFO)
 
