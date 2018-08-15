@@ -17,7 +17,7 @@ from mxnet import cpu, gpu
 
 class Parameters(object):
     root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")) + os.sep
-    model_name = os.path.basename(os.path.abspath(os.path.dirname(__file__)))
+    model_name = os.path.basename(os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
     # Can also specify the model_name using explicit string
     # model_name = "module_name"
     time_stamp = False
@@ -67,13 +67,18 @@ class Parameters(object):
         return {k: v for k, v in vars(self).items() if k not in {'logger'}}
 
     @staticmethod
-    def load(params_yaml):
+    def load(params_yaml, logger=None):
         f = open(params_yaml)
         params = yaml.load(f)
         if 'ctx' in params:
             params['ctx'] = MXCtx.load(params['ctx'])
         f.close()
+        if logger:
+            params['logger'] = logger
         return params
+
+    def __str__(self):
+        return str(self.parsable_var)
 
     def dump(self, param_yaml, override=False):
         if os.path.isfile(param_yaml) and not override:
@@ -81,10 +86,7 @@ class Parameters(object):
             return
         self.logger.info("writing parameters to %s" % param_yaml)
         with wf_open(param_yaml) as wf:
-            store_vars = {k: v for k, v in vars(self).items() if k not in {'logger'}}
-            if 'ctx' in store_vars:
-                store_vars['ctx'] = MXCtx.dump(store_vars['ctx'])
-            dump_data = yaml.dump(store_vars, default_flow_style=False)
+            dump_data = yaml.dump(self.parsable_var, default_flow_style=False)
             print(dump_data, file=wf)
             self.logger.info(dump_data)
 
@@ -92,8 +94,15 @@ class Parameters(object):
     def class_var(self):
         variables = {k: v for k, v in vars(type(self)).items() if
                      not inspect.isroutine(v) and k not in {'__doc__', '__module__', '__dict__', '__weakref__',
-                                                            'class_var'}}
+                                                            'class_var', 'parsable_var'}}
         return variables
+
+    @property
+    def parsable_var(self):
+        store_vars = {k: v for k, v in vars(self).items() if k not in {'logger'}}
+        if 'ctx' in store_vars:
+            store_vars['ctx'] = MXCtx.dump(store_vars['ctx'])
+        return store_vars
 
 
 class ParameterParser(argparse.ArgumentParser):
@@ -102,7 +111,7 @@ class ParameterParser(argparse.ArgumentParser):
         self.add_argument('--root_prefix', dest='root_prefix', default='', help='set root prefix')
         params = {k: v for k, v in vars(Parameters).items() if
                   not inspect.isroutine(v) and k not in {'__doc__', '__module__', '__dict__', '__weakref__',
-                                                         'class_var'}}
+                                                         'class_var', 'parsable_var'}}
         for param, value in params.items():
             if param == 'logger':
                 continue
@@ -136,3 +145,10 @@ if __name__ == '__main__':
         **kwargs
     )
     parameters.dump(default_yaml_file, override=True)
+    try:
+        logger = parameters.logger
+        parameters.load(default_yaml_file, logger=logger)
+        parameters.logger.info('format check done')
+    except Exception as e:
+        print("parameters format error, may contain illegal data type")
+        raise e
