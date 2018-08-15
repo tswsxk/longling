@@ -436,10 +436,13 @@ class GluonModule(object):
 
         bp_loss = None
         with autograd.record():
+            # todo modify the component extracted from ctx_data
             for (data, label) in ctx_data:
-                output = net(data)  # todo
+                # todo modify the input to net
+                output = net(data)
                 for name, func in loss_function.items():
-                    loss = func(output, label)  # todo
+                    # todo modify the input to func
+                    loss = func(output, label)
                     if name in bp_loss_f:
                         bp_loss = loss
                     loss_value = nd.mean(loss).asscalar()
