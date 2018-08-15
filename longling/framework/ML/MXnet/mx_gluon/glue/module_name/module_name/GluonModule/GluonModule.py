@@ -1,5 +1,6 @@
 # coding: utf-8
-# create by tongshiwei on 2018/8/5
+# Copyright @tongshiwei
+
 from __future__ import absolute_import
 
 import os
@@ -376,10 +377,9 @@ class GluonModule(object):
             # 定义批次训练过程
             # 这部分改动可能会比较多，主要是train_data的输出部分
             # write batch loop body here
-            for i, (data, label) in enumerate(train_data):
+            for i, batch_data in enumerate(train_data):
                 fit_f(
-                    net=net, batch_size=batch_size,
-                    data=data, label=label,
+                    net=net, batch_size=batch_size, batch_data=batch_data,
                     trainer=trainer, bp_loss_f=bp_loss_f, loss_function=loss_function,
                     losses_monitor=losses_monitor,
                     ctx=ctx,
@@ -398,8 +398,7 @@ class GluonModule(object):
         return
 
     @staticmethod
-    def _fit_f(net, batch_size,
-               data, label,
+    def _fit_f(net, batch_size, batch_data,
                trainer, bp_loss_f, loss_function, losses_monitor=None,
                ctx=mx.cpu()
                ):
@@ -412,10 +411,8 @@ class GluonModule(object):
             The network which has been initialized or loaded from the existed model
         batch_size: int
                 The size of each batch
-        data: Iterable
-            The data for train
-        label: Iterable
-            The lable for train
+        batch_data: Iterable
+            The batch data for train
         trainer:
             The trainer used to update the parameters of the net
         bp_loss_f: dict with only one value and one key
@@ -432,10 +429,8 @@ class GluonModule(object):
 
         """
         # 此函数定义训练过程
-
         ctx_data = split_and_load(
-            ctx,
-            data, label,
+            ctx, *batch_data,
             even_split=False
         )
 
