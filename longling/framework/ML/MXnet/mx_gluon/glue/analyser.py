@@ -78,7 +78,7 @@ class ResultAnalyser(object):
         Parameters
         ----------
         x_select: str
-        y_selects: tuple[str]
+        y_selects: tuple[str] or list[str]
             path select
 
         Returns
@@ -99,7 +99,7 @@ class ResultAnalyser(object):
         x = None
         x_key = None
         ys = [[] for _ in y_patterns]
-        for key, value in self:
+        for key, value in self.items():
             if x_pattern.match(key):
                 assert x is None, "x has been set, duplicated x, %s [stored] vs %s [store]" % (x_key, key)
                 x_key = key
@@ -139,7 +139,7 @@ class ResultAnalyser(object):
         x = None
         x_key = None
         ys = []
-        for key, value in self:
+        for key, value in self.items():
             if x_pattern.match(key):
                 assert x is None, "x has been set, duplicated x, %s [stored] vs %s [store]" % (x_key, key)
                 x_key = key
@@ -161,15 +161,25 @@ def universe(result):
     """
     (x_key, x), ys = result.visual_select(y_select='accuracy|prf_avg_*')
     plt.figure()
+    plt.title('universe')
     for y_key, y in ys:
-        plt.plot(x, y, label=y_key)
+        plt.plot(x, y, label=y_key.split('_')[-1])
 
     plt.xlabel(x_key)
 
     plt.legend(bbox_to_anchor=(1, 0.8), loc=1, borderaxespad=0.)
     plt.show()
 
-def precision_group(result):
+
+def bd(num):
+    import math
+    for i in range(int(math.floor(math.sqrt(num))), 2, -1):
+        if num % i == 0:
+            return i, num // i
+    return 1, num
+
+
+def precision(result, class_num):
     """
 
     Parameters
@@ -177,7 +187,18 @@ def precision_group(result):
     result: ResultAnalyser
 
     """
-    result.visual_select()
+    (x_key, x), yss = result.visual_selects(y_selects=['prf_%s_*' % class_id for class_id in range(class_num)])
+    row, col = bd(class_num)
+    plt.figure()
+    for ys in yss:
+        for y_key, y in ys:
+            plt.subplot(row, col, int(y_key.split('_')[1]) + 1)
+            plt.plot(x, y, label=y_key.split('_')[-1])
+
+    plt.xlabel(x_key)
+
+    plt.legend(bbox_to_anchor=(1, 0.8), loc=1, borderaxespad=0.)
+    plt.show()
 
 
 def recall_group(result):
