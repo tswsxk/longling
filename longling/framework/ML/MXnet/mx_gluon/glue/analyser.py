@@ -4,6 +4,7 @@
 此模块用来针对result.json中的数据进行数据分析
 开发测试中，非稳定版本
 """
+import math
 import matplotlib.pyplot as plt
 import re
 from collections import defaultdict
@@ -57,7 +58,7 @@ class ResultAnalyser(object):
     def select(self, select='iteration'):
         pattern = re.compile(select)
         key_value = []
-        for key, value in self:
+        for key, value in self.items():
             if pattern.match(key):
                 key_value.append((key, value))
         return key_value
@@ -71,7 +72,7 @@ class ResultAnalyser(object):
                     data[i].append((key, value))
         return data
 
-    def visual_selects(self, x_select='iteration', y_selects=('accuracy|prf_avg_*', 'prf_\d+_f1')):
+    def visual_selects(self, x_select='iteration', y_selects=('accuracy|prf_avg_.*', 'prf_\d+_f1')):
         """
         按 x，y 格式选取数据，x_select 和 y_selects 都是正则匹配式，采用 re.match 方式匹配
 
@@ -111,7 +112,7 @@ class ResultAnalyser(object):
 
         return (x_key, x), ys
 
-    def visual_select(self, x_select='iteration', y_select='accuracy|prf_avg_*'):
+    def visual_select(self, x_select='iteration', y_select='accuracy|prf_avg_.*'):
         """
         按 x，y 格式选取数据，x_select 和 y_select 都是正则匹配式，采用 re.match 方式匹配
 
@@ -159,27 +160,25 @@ def universe(result):
     result: ResultAnalyser
 
     """
-    (x_key, x), ys = result.visual_select(y_select='accuracy|prf_avg_*')
+    (x_key, x), ys = result.visual_select(y_select='accuracy|prf_avg_.*')
     plt.figure()
     plt.title('universe')
     for y_key, y in ys:
         plt.plot(x, y, label=y_key.split('_')[-1])
 
     plt.xlabel(x_key)
-
-    plt.legend(bbox_to_anchor=(1, 0.8), loc=1, borderaxespad=0.)
+    plt.legend(labels=plt.get_figlabels())
     plt.show()
 
 
 def bd(num):
-    import math
-    for i in range(int(math.floor(math.sqrt(num))), 2, -1):
+    for i in range(int(math.ceil(math.sqrt(num))), 1, -1):
         if num % i == 0:
             return i, num // i
     return 1, num
 
 
-def precision(result, class_num):
+def prf(result, class_num, figure_max_class=8):
     """
 
     Parameters
@@ -187,17 +186,58 @@ def precision(result, class_num):
     result: ResultAnalyser
 
     """
-    (x_key, x), yss = result.visual_selects(y_selects=['prf_%s_*' % class_id for class_id in range(class_num)])
-    row, col = bd(class_num)
-    plt.figure()
+    import math
+    (x_key, x), yss = result.visual_selects(y_selects=[r'prf_%s_.*' % class_id for class_id in range(class_num)])
+    figure_max_class = class_num if not figure_max_class else figure_max_class
+    row, col = bd(figure_max_class)
+    figures = [plt.figure(i) for i in range(int(math.floor(class_num / figure_max_class)))]
+    subplots = [figures[i].subplots(row, col, sharex='all', squeeze=False).flat for i in range(len(figures))]
     for ys in yss:
         for y_key, y in ys:
-            plt.subplot(row, col, int(y_key.split('_')[1]) + 1)
-            plt.plot(x, y, label=y_key.split('_')[-1])
+            class_id = int(ys[0][0].split('_')[1])
+            sp = subplots[class_id // figure_max_class][class_id % figure_max_class]
+            sp.set_title('class_' + str(class_id))
+            sp.plot(x, y, label=y_key.split('_')[-1])
+            plt.xlabel(x_key)
+
+    for sps in subplots:
+        for sp in sps:
+            handles, labels = sp.get_legend_handles_labels()
+            sp.legend(handles, labels)
+
+    for figure in figures:
+        figure.tight_layout()
+    plt.show()
+
+
+def prf_group(result, detailed=True):
+    (x_key, x), yss = result.visual_selects(
+        y_selects=['accuracy|prf_avg_.*', 'prf_\d+_precision', 'prf_\d+_recall', 'prf_\d+_f1'])
+
+
+
+def precision_group(result):
+    """
+
+    Parameters
+    ----------
+    result: ResultAnalyser
+
+    """
+    (x_key, x), ys = result.visual_select(y_select='prf_\d+_precision')
+    plt.figure()
+    plt.title('precision')
+    for y_key, y in ys:
+        label = y_key.split('_')[1]
+        plt.plot(x, y, label=label)
 
     plt.xlabel(x_key)
+    plt.ylabel(r'%')
 
-    plt.legend(bbox_to_anchor=(1, 0.8), loc=1, borderaxespad=0.)
+    axes = plt.gca()
+    handles, labels = axes.get_legend_handles_labels()
+    lines, labels = zip(*sorted(zip(handles, labels), key=lambda x: int(x[1])))
+    plt.legend(lines, labels, ncol=math.ceil(len(labels) / 8))
     plt.show()
 
 
@@ -209,5 +249,17 @@ def f1_group(result):
     pass
 
 
-def prf():
+def precision():
     pass
+
+
+if __name__ == '__main__':
+    import json
+
+    result = ResultAnalyser()
+    with open("result1.json") as f:
+        for line in f:
+            result.add_record(json.loads(line))
+    precision_group(result)
+
+    # print(plt)
