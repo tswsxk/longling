@@ -152,41 +152,139 @@ class ResultAnalyser(object):
         return (x_key, x), ys
 
 
-def universe(result):
+def method_compare(method_args, x_select='iteration', y_select='accuracy|prf_avg_.*|.*loss.*', last_only=True):
     """
+    @ Dev
+
+    对比不同方法在不同指标下的表现，两种呈现方式，一种以表的形式，一种以图的形式
+    在图形式下，如果有多个指标，将会绘制多个子图
+    # todo 统一相同label的线的颜色
+    # todo 处理x_select出的x长度不一致的case
+
+    Parameters
+    ----------
+    method_args: list[tuple(method_name, filename)]
+    x_select: str
+    y_select: str
+    last_only: bool
+        只返回每个指标的最终值
+        是的话，以pandas.DataFrame的形式返回一个表，
+        # todo 如果没有 pandas 包, 将返回一个字典，
+        此时 x_select 将被无视
+        否则，进行可视化
+
+    Returns
+    -------
+
+    """
+    import json
+    key_results = {}
+
+    x_key = None
+    x = None
+    for model_name, filename in method_args:
+        result = ResultAnalyser()
+        with open(filename) as f:
+            for line in f:
+                result.add_record(json.loads(line))
+        (x_key, x), ys = result.visual_select(x_select, y_select)
+        for y_key, y in ys:
+            y_key = y_key.replace('prf_avg_', '')
+            if y_key not in key_results:
+                key_results[y_key] = {}
+            if last_only:
+                key_results[y_key][model_name] = y[-1]
+            else:
+                key_results[y_key][model_name] = y
+    if last_only:
+        import pandas
+        return pandas.DataFrame.from_dict(key_results)
+
+    figure = plt.figure()
+    row, col = bd(len(key_results))
+    axes = figure.subplots(row, col, sharex='all').flat
+    for i, (key, class_values) in enumerate(key_results.items()):
+        for class_name, class_value in class_values.items():
+            axes[i].plot(x, class_value, label=class_name)
+        axes[i].set_title(key)
+        axes[i].set_xlabel(x_key)
+        handles, labels = axes[i].get_legend_handles_labels()
+        lines, labels = zip(*sorted(zip(handles, labels), key=lambda x: x[1]))
+        axes[i].legend(lines, labels)
+    figure.tight_layout()
+    plt.show()
+
+
+def universe(result, select='accuracy|prf_avg_.*|.*loss.*'):
+    """
+    平均指标可视化
 
     Parameters
     ----------
     result: ResultAnalyser
 
+    select: str
+
     """
-    (x_key, x), ys = result.visual_select(y_select='accuracy|prf_avg_.*')
+    (x_key, x), ys = result.visual_select(y_select=select)
     plt.figure()
     plt.title('universe')
     for y_key, y in ys:
         plt.plot(x, y, label=y_key.split('_')[-1])
+        # todo 添加最终结果的线annotation
+        # plt.plot([0, x[-1]], [y[-1], y[-1]], '--')
+        # todo 添加收敛位置的线annotation
 
     plt.xlabel(x_key)
-    plt.legend(labels=plt.get_figlabels())
+
+    plt.legend()
+
     plt.show()
 
 
 def bd(num):
+    """
+    合数最大分解
+
+    Parameters
+    ----------
+    num: int
+
+    Returns
+    -------
+
+    """
     for i in range(int(math.ceil(math.sqrt(num))), 1, -1):
         if num % i == 0:
             return i, num // i
     return 1, num
 
 
-def prf(result, class_num, figure_max_class=8):
+def prf(result, class_num, figure_max_class=8, class_key_map=None):
     """
+    @分类问题
+    分别显示每个类的prf图
+    每个子图包含三条线：precision, recall, f1
 
     Parameters
     ----------
     result: ResultAnalyser
-
+        结果记录
+    class_num: int
+        类别总数
+    figure_max_class: int
+        每一幅图可包含的最大子图数
+    class_key_map: dict{int: *}
+        类名映射字典
     """
     import math
+
+    def key_name(key):
+        if class_key_map is not None:
+            return class_key_map[key]
+        else:
+            return str(key)
+
     (x_key, x), yss = result.visual_selects(y_selects=[r'prf_%s_.*' % class_id for class_id in range(class_num)])
     figure_max_class = class_num if not figure_max_class else figure_max_class
     row, col = bd(figure_max_class)
@@ -196,7 +294,7 @@ def prf(result, class_num, figure_max_class=8):
         for y_key, y in ys:
             class_id = int(ys[0][0].split('_')[1])
             sp = subplots[class_id // figure_max_class][class_id % figure_max_class]
-            sp.set_title('class_' + str(class_id))
+            sp.set_title('class_' + key_name(class_id))
             sp.plot(x, y, label=y_key.split('_')[-1])
             plt.xlabel(x_key)
 
@@ -210,21 +308,20 @@ def prf(result, class_num, figure_max_class=8):
     plt.show()
 
 
-def prf_group(result, detailed=True):
-    (x_key, x), yss = result.visual_selects(
-        y_selects=['accuracy|prf_avg_.*', 'prf_\d+_precision', 'prf_\d+_recall', 'prf_\d+_f1'])
-
-
-
-def precision_group(result):
+def evaluation_group(result, select):
     """
 
     Parameters
     ----------
     result: ResultAnalyser
+    select: str
+
+    Returns
+    -------
 
     """
-    (x_key, x), ys = result.visual_select(y_select='prf_\d+_precision')
+    # todo 统一不同子图间相同label的颜色
+    (x_key, x), ys = result.visual_select(y_select=select)
     plt.figure()
     plt.title('precision')
     for y_key, y in ys:
@@ -241,25 +338,62 @@ def precision_group(result):
     plt.show()
 
 
+def precision_group(result):
+    """
+
+    Parameters
+    ----------
+    result: ResultAnalyser
+
+    """
+    evaluation_group(result, "prf_\d+_precision")
+
+
 def recall_group(result):
-    pass
+    """
+
+    Parameters
+    ----------
+    result: ResultAnalyser
+
+    """
+    evaluation_group(result, "prf_\d+_precision")
 
 
 def f1_group(result):
-    pass
+    """
+
+    Parameters
+    ----------
+    result: ResultAnalyser
+
+    """
+    evaluation_group(result, "prf_\d+_f1")
 
 
-def precision():
-    pass
+def pandas_api(result):
+    # todo use pandas axes to form the graph
+    """try to plot the a1 and a2 on the same figure, but now will have three figure, and target figure empty"""
+    import pandas
+    import numpy as np
+    (x_key, x), yss = result.visual_select()
+    column, datas = zip(*yss)
+    f = plt.figure()
+    a1 = pandas.DataFrame.from_records(np.asarray(list(datas)).T, columns=column)
+    b = a1.plot()
+    f.axes.append(b)
+    a2 = pandas.DataFrame.from_records(np.asarray(list(datas)).T, columns=column)
+    b = a2.plot()
+    f.axes.append(b)
+    f.canvas.draw()
+    plt.show()
 
 
 if __name__ == '__main__':
-    import json
-
-    result = ResultAnalyser()
-    with open("result1.json") as f:
-        for line in f:
-            result.add_record(json.loads(line))
-    precision_group(result)
-
-    # print(plt)
+    print(method_compare(
+        method_args=[('m1', 'result1.json'), ('m2', 'result2.json')]
+    ))
+    method_compare(
+        method_args=[('m1', 'result1.json'), ('m2', 'result2.json')],
+        last_only=False
+    )
