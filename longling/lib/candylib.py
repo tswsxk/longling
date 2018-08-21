@@ -3,19 +3,28 @@ from functools import wraps
 
 from longling.base import LONGLING_TYPE_CHECK
 
+__all__ = ['as_list']
+
 
 def as_list(obj):
-    """A utility function that converts the argument to a list if it is not already.
+    r"""A utility function that converts the argument to a list if it is not already.
 
     Parameters
     ----------
     obj : object
+        argument to be converted to a list
 
     Returns
     -------
-    If `obj` is a list or tuple, return it. Otherwise, return `[obj]` as a
-    single-element list.
+    list_obj: list
+        If `obj` is a list or tuple, return it. Otherwise, return `[obj]` as a single-element list.
 
+    Examples
+    --------
+    >>> as_list(1)
+    [1]
+    >>> as_list([1])
+    [1]
     """
     if isinstance(obj, (list, tuple)):
         return obj
@@ -24,10 +33,19 @@ def as_list(obj):
 
 
 def _type_assert(check_tag=True, *ty_args, **ty_kwargs):
-    '''
-    :param ty_args:
-    :param ty_kwargs:
-    :return:
+    """
+
+    Parameters
+    ----------
+    check_tag
+    ty_args
+    ty_kwargs
+
+    Returns
+    -------
+
+    Examples
+    --------
     >>> @type_assert(False, int, z=int)
     ... def spam(x, y, z=42):
     ...     print(x, y, z)
@@ -40,7 +58,7 @@ def _type_assert(check_tag=True, *ty_args, **ty_kwargs):
     ...
     >>> spam(1, 2, 3)
     1 2 3
-    '''
+    """
 
     def decorate(func):
         # Map function argument names to supplied types
@@ -66,10 +84,18 @@ def _type_assert(check_tag=True, *ty_args, **ty_kwargs):
 
 
 def type_assert(*ty_args, **ty_kwargs):
-    '''
-    :param ty_args:
-    :param ty_kwargs:
-    :return:
+    """
+
+    Parameters
+    ----------
+    ty_args
+    ty_kwargs
+
+    Returns
+    -------
+
+    Examples
+    --------
     >>> @type_assert(int, z=int)
     ... def spam(x, y, z=42):
     ...     print(x, y, z)
@@ -82,7 +108,8 @@ def type_assert(*ty_args, **ty_kwargs):
     ...
     >>> spam(1, 2, 3)
     1 2 3
-    '''
+
+    """
     return _type_assert(LONGLING_TYPE_CHECK, *ty_args, **ty_kwargs)
 
 

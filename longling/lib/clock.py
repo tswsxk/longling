@@ -8,14 +8,23 @@ from longling.lib.utilog import config_logging
 
 logger = config_logging(logger="clock", console_log_level=logging.INFO)
 
+__all__ = ["Clock"]
+
 
 class Clock(object):
-    '''
+    r"""
     计时器
     单位：秒
-    '''
-
+    """
     def __init__(self, store_dict=None, logger=logger, tips=''):
+        """
+
+        Parameters
+        ----------
+        store_dict: dict or None
+        logger: logging.logger
+        tips: str
+        """
         assert store_dict is None or type(store_dict) is dict
         self.process_st = 0
         self.process_et = 0
@@ -26,20 +35,28 @@ class Clock(object):
         self.tips = tips
 
     def start(self):
-        '''
+        """
         开始计时
-        :return:
-        '''
+        Returns
+        -------
+
+        """
         self.process_st = time.clock()
         self.wall_st = time.time()
         return self.process_st
 
     def end(self, wall=False):
-        '''
+        """
         计时结束，返回间隔时间
-        :param wall:
-        :return:
-        '''
+
+        Parameters
+        ----------
+        wall
+
+        Returns
+        -------
+
+        """
         self.process_et = time.clock()
         self.wall_et = time.time()
         if wall:
@@ -49,18 +66,23 @@ class Clock(object):
 
     @property
     def wall_time(self):
-        '''
+        """
         获取程序运行时间（包括等待时间）
-        :return:
-        '''
+
+        Returns
+        -------
+
+        """
         return self.wall_et - self.wall_st
 
     @property
     def process_time(self):
-        '''
+        """
         获取程序运行时间（不包括等待时间）
-        :return:
-        '''
+        Returns
+        -------
+
+        """
         return self.process_et - self.process_st
 
     def __enter__(self):

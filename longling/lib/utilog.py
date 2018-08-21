@@ -1,14 +1,13 @@
 # coding: utf-8
+
+"""日志设定文件"""
+
 import logging
 import sys
 
 from longling.base import string_types
 from longling.lib.candylib import type_assert
 from longling.lib.stream import build_dir
-
-'''
-日志设定文件
-'''
 
 
 class LogLevel(object):
@@ -23,18 +22,29 @@ def _config_logging(filename=None, log_format='%(name)s, %(levelname)s %(message
                     level=logging.INFO,
                     logger=None, console_log_level=None, propagate=False, mode='a',
                     file_format=None):
-    '''
+    """
     主日志设定文件
-    :param filename: 日志存储文件名，不为空时将创建文件存储日志
-    :param log_format: 默认日志输出格式
-    :param level: 默认日志等级
-    :param logger: 日志logger名，可以为空（使用root logger），字符串类型（创建对应名logger），logger
-    :param console_log_level: 屏幕日志等级，不为空时，使能屏幕日志输出
-    :param propagate:
-    :param mode:
-    :param file_format: 文件日志输出格式，为空时，使用log_format
-    :return:
-    '''
+
+    Parameters
+    ----------
+    filename: str or None
+        日志存储文件名，不为空时将创建文件存储日志
+    log_format: str
+        默认日志输出格式
+    level: int
+        默认日志等级
+    logger: str or logging.logger
+        日志logger名，可以为空（使用root logger），字符串类型（创建对应名logger），logger
+    console_log_level: int or None
+        屏幕日志等级，不为空时，使能屏幕日志输出
+    propagate: bool
+    mode: str
+    file_format: str or None
+        文件日志输出格式，为空时，使用log_format
+    Returns
+    -------
+
+    """
     if logger is None:
         logger = logging.getLogger()
     elif isinstance(logger, string_types):

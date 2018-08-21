@@ -1,6 +1,8 @@
 # coding: utf-8
 
-# 此模块用以进行流处理
+"""此模块用以进行流处理"""
+# todo 完善注释
+
 from __future__ import print_function
 
 import sys
@@ -9,6 +11,8 @@ import os
 
 from longling.base import string_types
 from longling.lib.candylib import type_assert
+
+__all__ = ['rf_open', 'wf_open', 'wf_close', 'StreamError', 'flush_print', 'json_load', 'pickle_load']
 
 
 class StreamError(Exception):
@@ -22,12 +26,18 @@ def flush_print(*values, **kwargs):
 
 
 def _build_dir(path, mode=0o775):
-    '''
+    """
     创建目录，从path中解析出目录路径，如果目录不存在，创建目录
-    :param path:
-    :param mode:
-    :return:
-    '''
+
+    Parameters
+    ----------
+    path
+    mode
+
+    Returns
+    -------
+
+    """
     dirname = os.path.dirname(path)
     if not dirname or os.path.exists(dirname):
         return
@@ -35,12 +45,18 @@ def _build_dir(path, mode=0o775):
 
 
 def _check_file(path, size=None):
-    '''
+    """
     检查文件是否存在，size给定时，检查文件大小是否一致
-    :param path:
-    :param size:
-    :return:
-    '''
+
+    Parameters
+    ----------
+    path
+    size
+
+    Returns
+    -------
+
+    """
     if os.path.exists(path):
         return size == os.path.getsize(path) if size is not None else True
     return False
@@ -76,13 +92,20 @@ def pickle_load(fp, encoding='utf-8', mode='rb', **kwargs):
 
 
 def _wf_open(stream_name='', mode="w", encoding="utf-8"):
-    '''
+    """
     打开一个codecs流
-    :param stream_name: str，默认为空
-    :param mode: str，默认为 写 模式
-    :param encoding: str，编码方式，默认为 utf-8
-    :return: 返回打开的流，stream_name为空时 mode - w 返回标准错误输出; 否则，返回标准输出，不为空时，返回文件流
-    '''
+
+    Parameters
+    ----------
+    stream_name：str or None
+    mode: str
+    encoding: str
+        编码方式，默认为 utf-8
+    Returns
+    -------
+    write_stream: StreamReaderWriter
+        返回打开的流，stream_name为空时 mode - w 返回标准错误输出; 否则，返回标准输出，不为空时，返回文件流
+    """
     if not stream_name:
         if mode == "w":
             return sys.stderr
