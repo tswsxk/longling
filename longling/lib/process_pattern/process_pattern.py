@@ -1,7 +1,7 @@
 # coding:utf-8
-'''
+# todo 文件说明写成 README.md
+"""
 此文件用以处理文件正则，需要指定一个正则规则文件
-
 文件正则文件各式如下
 
 不可命中规则1 不可命中规则2: 命中规则1 命中规则2
@@ -10,7 +10,7 @@
 在 分号: 前的规则有一个被命中视为与该正则规则不符， 分号: 后的规则有一个被命中，视为符合
 
 规则实例文件见example/process_pattern_regex.exp
-'''
+"""
 from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
@@ -35,8 +35,11 @@ def regex(ps, line):
 
 
 class PatternHitter(object):
-    '''
+    """
     模式识别器
+
+    Examples
+    --------
     >>> p = PatternHitter(":世界 和平", 1)
     >>> print(p.hit_num("世界 和平"))
     1
@@ -47,14 +50,16 @@ class PatternHitter(object):
     1
     >>> print(p.is_in(u"世界和平"))
     False
-    '''
-
+    """
     @type_assert(mode=int)
     def __init__(self, location, mode=0):
-        '''
-        :param location:
-        :param mode:
-        '''
+        """
+
+        Parameters
+        ----------
+        location
+        mode
+        """
         if ':' in location:
             self.pps = dict()
             line_init_patterns(location, mode, self.pps)
@@ -62,11 +67,18 @@ class PatternHitter(object):
             self.pps = init_patterns(location, mode)
 
     def is_in(self, line):
-        '''
+        """
         检查输入中是否命中规则
-        :param line: str or unicode
-        :return: 命中返回True
-        '''
+
+        Parameters
+        ----------
+        line: string_type
+
+        Returns
+        -------
+        bool
+            命中返回True
+        """
         if isinstance(line, str):
             line = unistr(line)
         if not isinstance(line, string_types):
@@ -80,11 +92,18 @@ class PatternHitter(object):
         return False
 
     def hit_num(self, line):
-        '''
+        """
         计算输入命中规则的次数
-        :param line: str or unicode
-        :return: int, 命中次数
-        '''
+
+        Parameters
+        ----------
+        line: string_type
+
+        Returns
+        -------
+        int
+            命中次数
+        """
         if isinstance(line, str):
             line = unistr(line)
         if not isinstance(line, string_types):

@@ -3,7 +3,7 @@ from functools import wraps
 
 from longling.base import LONGLING_TYPE_CHECK
 
-__all__ = ['as_list']
+__all__ = ['as_list', 'type_assert']
 
 
 def as_list(obj):

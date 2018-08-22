@@ -14,17 +14,19 @@ __all__ = ["Clock"]
 class Clock(object):
     r"""
     计时器
-    单位：秒
+
+    Parameters
+    ----------
+    store_dict: dict or None
+    logger: logging.logger
+    tips: str
+
+    Examples
+    --------
+    >>> with Clock():
+    ...     print("hello world")
     """
     def __init__(self, store_dict=None, logger=logger, tips=''):
-        """
-
-        Parameters
-        ----------
-        store_dict: dict or None
-        logger: logging.logger
-        tips: str
-        """
         assert store_dict is None or type(store_dict) is dict
         self.process_st = 0
         self.process_et = 0

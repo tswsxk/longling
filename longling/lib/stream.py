@@ -10,9 +10,8 @@ import codecs
 import os
 
 from longling.base import string_types
-from longling.lib.candylib import type_assert
 
-__all__ = ['rf_open', 'wf_open', 'wf_close', 'StreamError', 'flush_print', 'json_load', 'pickle_load']
+__all__ = ['rf_open', 'wf_open', 'wf_close', 'flush_print', 'json_load', 'pickle_load']
 
 
 class StreamError(Exception):
@@ -25,17 +24,14 @@ def flush_print(*values, **kwargs):
     print('\r', *values, sep=sep, end=end, flush=True)
 
 
-def _build_dir(path, mode=0o775):
+def build_dir(path, mode=0o775):
     """
     创建目录，从path中解析出目录路径，如果目录不存在，创建目录
 
     Parameters
     ----------
-    path
-    mode
-
-    Returns
-    -------
+    path: str
+    mode: int
 
     """
     dirname = os.path.dirname(path)
@@ -44,17 +40,18 @@ def _build_dir(path, mode=0o775):
     os.makedirs(dirname, mode)
 
 
-def _check_file(path, size=None):
+def check_file(path, size=None):
     """
     检查文件是否存在，size给定时，检查文件大小是否一致
 
     Parameters
     ----------
-    path
-    size
+    path: str
+    size: int
 
     Returns
     -------
+    file exist or not: bool
 
     """
     if os.path.exists(path):
@@ -91,20 +88,24 @@ def pickle_load(fp, encoding='utf-8', mode='rb', **kwargs):
         return pickle.load(fp, encoding=encoding, **kwargs)
 
 
-def _wf_open(stream_name='', mode="w", encoding="utf-8"):
-    """
-    打开一个codecs流
+def wf_open(stream_name='', mode="w", encoding="utf-8"):
+    r"""
+    Simple wrapper to codecs for writing.
+
+    stream_name为空时 mode - w 返回标准错误输出 stderr; 否则，返回标准输出 stdout
+
+    stream_name不为空时，返回文件流
 
     Parameters
     ----------
-    stream_name：str or None
+    stream_name: str or None
     mode: str
     encoding: str
         编码方式，默认为 utf-8
     Returns
     -------
     write_stream: StreamReaderWriter
-        返回打开的流，stream_name为空时 mode - w 返回标准错误输出; 否则，返回标准输出，不为空时，返回文件流
+        返回打开的流
     """
     if not stream_name:
         if mode == "w":
@@ -128,21 +129,3 @@ def wf_close(stream):
             stream.close()
         except Exception:
             raise StreamError('wf_close: %s' % stream)
-
-
-# type checker
-if sys.version_info[0] == 3:
-    def wf_open(stream_name: string_types = '', mode: string_types = "w", encoding: string_types = "utf-8"):
-        return _wf_open(stream_name, mode, encoding)
-
-
-    def check_file(path: string_types, size: int = None) -> bool:
-        return _check_file(path, size)
-
-
-    def build_dir(path: string_types, mode: int = 0o775):
-        return _build_dir(path, mode)
-else:
-    wf_open = type_assert(stream_name=string_types, mode=string_types, encoding=string_types)(_wf_open)
-    check_file = type_assert(path=string_types, size=int)(_check_file)
-    build_dir = type_assert(path=string_types, mode=int)(_build_dir)

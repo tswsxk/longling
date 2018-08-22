@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 
 import re
-import sys
 
 from longling.lib.candylib import type_assert
 
@@ -94,12 +93,20 @@ def _init_patterns1(line, pps):
 
 
 def _init_patterns(location, patterns):
-    '''
+    """
     创建一个模式字典
-    :param location: str, 正则规则文件位置
-    :param patterns,
-    :return: dict, 模式字典
-    '''
+
+    Parameters
+    ----------
+    location: str
+        正则规则文件位置
+    patterns:
+
+    Returns
+    -------
+    dict
+        模式字典
+    """
     pps = {}
     with open(location) as f:
         for line in f:
@@ -115,15 +122,19 @@ def init_patterns(location, mode):
     return _init_patterns(location, mode_dict[mode])
 
 
-def _line_init_patterns(line, mode, pps=None):
+def line_init_patterns(line, mode, pps=None):
+    """
+
+    Parameters
+    ----------
+    line
+    mode: int
+    pps
+
+    Returns
+    -------
+
+    """
     if mode not in mode_dict:
         raise ProcessPatternNotExistedPatternError("available mode is %s" % list(mode_dict.keys()))
     return mode_dict[mode](line, pps)
-
-
-# type checker
-if sys.version_info[0] == 3:
-    def line_init_patterns(line, mode: int, pps=None):
-        return _line_init_patterns(line, mode, pps)
-else:
-    line_init_patterns = type_assert(mode=int)(_line_init_patterns)
