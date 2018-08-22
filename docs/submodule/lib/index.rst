@@ -1,8 +1,8 @@
 longling.lib
 ============
 
-overview
---------
+Quick Reference
+---------------
 .. currentmodule:: longling.lib
 
 .. autosummary::
@@ -11,12 +11,12 @@ overview
     candylib.as_list
     clock.Clock
     stream.wf_open
-    stream.wf_close
+    process_pattern.PatternHitter
 
 
 candylib
 -------------
-.. automodule:: longling.lib.candylib
+.. automodule:: longling.lib
    :members:
    :imported-members:
 
@@ -35,5 +35,11 @@ stream
 utilog
 -------------
 .. automodule:: longling.lib.utilog
+   :members:
+   :imported-members:
+
+process_pattern
+---------------
+.. automodule:: longling.lib.process_pattern
    :members:
    :imported-members:
