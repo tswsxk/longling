@@ -2,27 +2,41 @@
 # create by tongshiwei on 2017/10/5
 from __future__ import print_function
 
-import logging
 import re
 import sqlite3
 
 from longling.base import *
-from longling.lib.utilog import config_logging
-from longling.lib.stream import *
+from longling.lib.utilog import config_logging, LogLevel
+from longling.lib.stream import rf_open, wf_open, wf_close
 
-logger = config_logging(logger='dataBase', level=logging.DEBUG, console_log_level=logging.DEBUG, propagate=False)
+default_logger = config_logging(logger='dataBase', console_log_level=LogLevel.INFO, propagate=False)
 
 
 class DataBase(object):
-    def __init__(self, database_path, log_level=logging.DEBUG):
+    def __init__(self, database_path, logger=default_logger):
         self.db = sqlite3.connect(database_path)
         self.cursor = self.db.cursor()
-        logger.setLevel(log_level)
+        self.logger = logger
 
     def set_logger_level(self, level):
-        logger.setLevel(level)
+        """设定数据库日志器的日志等级"""
+        self.logger.setLevel(level)
 
     def get_table_info(self, table_name):
+        """
+        获取表信息
+
+        Parameters
+        ----------
+        table_name: str
+
+        Returns
+        -------
+        record_num: int
+            表记录数
+        create_statement: str
+            创建语句
+        """
         sql = "select * from sqlite_master where type='table' and name='%s'" % table_name
         self.cursor.execute(sql)
         info = self.fetchall()
@@ -33,6 +47,19 @@ class DataBase(object):
         return record_num, create_statement
 
     def get_column_name(self, table_name):
+        """
+        获取对应表的列名
+
+        Parameters
+        ----------
+        table_name: str
+            表名
+
+        Returns
+        -------
+        column_names: list
+            列名
+        """
         _, create_statement = self.get_table_info(table_name)
         column_name = re.findall(r"\((.*)\)", create_statement)[0]
         return [name.split()[0] for name in column_name.split(',')]
@@ -44,27 +71,66 @@ class DataBase(object):
             else:
                 self.cursor.execute(sql)
         except Exception as e:
-            logger.info("%s %s" % (sql, args))
+            self.logger.error("%s %s" % (sql, args))
             raise Exception(e)
 
     def fetchall(self, return_type=list):
+        """
+        取回所有数据
+
+        Parameters
+        ----------
+        return_type: type(list) or type(dict)
+            指定以何种形式返回数据
+
+        Returns
+        -------
+        data: list or dict
+            return_type指定格式的数据
+
+        """
         if return_type == list:
             return self.cursor.fetchall()
         elif return_type == dict:
-            keysName = self.fetch_fieldName()
+            keysName = self.fetch_field_name()
             return [dict(zip(keysName, values)) for values in self.cursor.fetchall()]
 
     def fetchmany(self, size=10000, return_type=list):
+        """
+        取回指定缓冲条目数的数据
+
+        Parameters
+        ----------
+        size: int
+            最大缓冲条目数
+        return_type: type(list) or type(dict)
+            指定以何种形式返回数据
+
+        Returns
+        -------
+        data: list or dict
+            return_type指定格式的数据，最多不超过size指定的数据条目
+
+        """
         if return_type == list:
             return self.cursor.fetchmany(size)
         elif return_type == dict:
-            keysName = self.fetch_fieldName()
+            keysName = self.fetch_field_name()
             return [dict(zip(keysName, values)) for values in self.cursor.fetchmany(size)]
 
-    def fetch_fieldName(self):
+    def fetch_field_name(self):
+        """
+        执行fetchall或fetchmany后可用，返回取出数据对应的列名
+
+        Returns
+        -------
+        column_names: list
+            fetchall或fetchmany操作取出的数据对应的列名
+        """
         return [t[0] for t in self.cursor.description]
 
     def commit(self):
+        """表修改操作后的许可操作"""
         self.db.commit()
 
     def close(self):
@@ -99,18 +165,24 @@ class DataBase(object):
         return sql
 
     def output_table_to_csv(self, tableName, csvPath, batchSize=10000):
-        '''
+        """
         将数据库内的表导出为csv格式
-        :param tableName:
-        :param csvPath:
-        :param batchSize:
-        :return:
-        '''
+
+        Parameters
+        ----------
+        tableName: str
+            要导出的的表的表名
+        csvPath: str
+            导出以逗号分隔的文件路径
+        batchSize: int
+            缓冲区条目数
+        """
+
         sql = "select * from %s" % tableName
         self.execute(sql)
-        fieldName = self.fetch_fieldName()
+        fieldName = self.fetch_field_name()
         self.db.text_factory = str
-        logger.info("output_table_to_csv: %s-%s" % (tableName, fieldName))
+        self.logger.info("output_table_to_csv: %s-%s" % (tableName, fieldName))
         wf = wf_open(csvPath)
         print(",".join(fieldName), file=wf)
         cnt = 0
@@ -119,25 +191,35 @@ class DataBase(object):
         while datas:
             print("\n".join([",".join([d.decode('utf-8') for d in data]) for data in datas]), file=wf)
             cnt += len(datas)
-            logger.debug("output_table_to_csv: %s-%s" % (tableName, cnt))
+            self.logger.debug("output_table_to_csv: %s-%s" % (tableName, cnt))
             datas = self.fetchmany()
         wf_close(wf)
-        logger.info("output_table_to_csv: output %s to %s-%s" % (tableName, csvPath, cnt))
+        self.logger.info("output_table_to_csv: output %s to %s-%s" % (tableName, csvPath, cnt))
 
     def import_csv_to_databse(self, csvPath, tableName, batchSize=50000):
-        '''
-        向数据库中导入表（原格式csv），如有列名重复，取第一次出现的
-        :param csvPath:
-        :param tableName:
-        :param batchSize:
-        :return:
-        '''
+        """
+        向数据库中导入表（原格式csv, 逗号分隔），如有列名重复，取第一次出现的
+
+        Parameters
+        ----------
+        csvPath: str
+            逗号分隔的含列名数据文件路径
+        tableName: str
+            要导出的的表的表名
+        batchSize: int
+            缓冲区条目数
+
+        Returns
+        -------
+        cnt: int
+            导入数据条目数
+        """
         try:
-            logger.info("import_csv_to_databse: clean exsiting table %s" % tableName)
+            self.logger.info("import_csv_to_databse: clean exsiting table %s" % tableName)
             sql = "drop table %s" % tableName
             self.execute(sql)
             self.commit()
-            logger.debug("import_csv_to_databse: drop table %s" % tableName)
+            self.logger.debug("import_csv_to_databse: drop table %s" % tableName)
         except:
             pass
 
@@ -152,7 +234,7 @@ class DataBase(object):
 
             placeholder = '(' + ",".join(['?'] * len(keys)) + ')'
             sql = "insert into %s values %s" % (tableName, placeholder)
-            logger.info("import_csv_to_databse: start import csv-%s to table-%s" % (csvPath, tableName))
+            self.logger.info("import_csv_to_databse: start import csv-%s to table-%s" % (csvPath, tableName))
             buff = []
             cnt = 0
             for line in f:
@@ -162,29 +244,29 @@ class DataBase(object):
                     line = line.split(",")
                     line = df.filter_values(line)
                     if len(line) != len(keys):
-                        logger.warning("Incorrect number of bindings supplied: %s" % line)
-                        logger.warning(
+                        self.logger.warning("Incorrect number of bindings supplied: %s" % line)
+                        self.logger.warning(
                             "Incorrect number of bindings supplied. "
                             "The current statement uses %s, but there are %s supplied"
                             % (len(keys), len(line)))
                         if len(line) > len(keys):
-                            logger.warning("%s values in line will be abandoned" % (len(line) - len(keys)))
+                            self.logger.warning("%s values in line will be abandoned" % (len(line) - len(keys)))
                             line = line[:len(keys)]
                         else:
-                            logger.warning("only %s values are supplied, this record will be abandoned" % len(line))
+                            self.logger.warning("only %s values are supplied, this record will be abandoned" % len(line))
                             continue
                     buff.append(line)
                     cnt += 1
                     if cnt % batchSize == 0:
                         self.db.executemany(sql, buff)
                         self.commit()
-                        logger.debug("import_csv_to_databse: %s-%s" % (tableName, cnt))
+                        self.logger.debug("import_csv_to_databse: %s-%s" % (tableName, cnt))
                         buff = []
             if buff:
                 self.db.executemany(sql, buff)
                 self.commit()
-                logger.debug("%s-%s" % (tableName, cnt))
-            logger.info("import_csv_to_databse: import %s to %s-%s" % (csvPath, tableName, cnt))
+                self.logger.debug("%s-%s" % (tableName, cnt))
+            self.logger.info("import_csv_to_databse: import %s to %s-%s" % (csvPath, tableName, cnt))
             return cnt
 
 

@@ -17,7 +17,7 @@ class DBBatchIterator(OriginBatchIterator):
         self.batch = batch
 
     def get_field_name(self):
-        return self.db.fetch_fieldName()
+        return self.db.fetch_field_name()
 
     def next_batch(self):
         try:
