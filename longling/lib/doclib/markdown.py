@@ -27,8 +27,9 @@ def csv_string_to_table(long_string, delimiter=','):
 
 if __name__ == '__main__':
     long_string = '''
-        12884	148691	1420714809324	ATTEMPT	RESULT	telling-time	time_terminology	time_terminology--analog_word	1420714806324	time_terminology--analog_word	INCORRECT	Choose_Exercise	NA	NA	NA	NA	time_terminology	telling-time	arithmetic	0	0
+Anon Student Id	Session Id	Time	Student Response Type	Tutor Response Type	Level (Unit)	Level (Section)	Problem Name	Problem Start Time	Step Name	Outcome	Condition Name	Condition Type	Selection	Action	Input	KC (Exercise)	KC (Topic)	KC (Area)	CF (points_earned)	CF (earned_proficiency)
+12884	148691	1420714809324	ATTEMPT	RESULT	telling-time	time_terminology	time_terminology--analog_word	1420714806324	time_terminology--analog_word	INCORRECT	Choose_Exercise	NA	NA	NA	NA	time_terminology	telling-time	arithmetic	0	0
 12884	148691	1420714810324	ATTEMPT	RESULT	telling-time	time_terminology	time_terminology--analog_word	1420714809324	time_terminology--analog_word	INCORRECT	Choose_Exercise	NA	NA	NA	NA	time_terminology	telling-time	arithmetic	0	0
-
+239464	93497	1403098400837	ATTEMPT	RESULT	multiplication-division	multiplication_1	multiplication_1--0	1403098398837	multiplication_1--0	CORRECT	Choose_Exercise	NA	NA	NA	NA	multiplication_1	multiplication-division	arithmetic	14	0
         '''
-    csv_string_to_table(long_string, None)
+    csv_string_to_table(long_string, "\t")
