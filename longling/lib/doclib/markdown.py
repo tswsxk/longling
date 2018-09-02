@@ -2,7 +2,7 @@
 # create by tongshiwei on 2018/8/22
 
 
-def csv_string_to_table(long_string, delimiter=','):
+def csv_string_to_table(long_string, delimiter=',', col_num=None):
     """
 
     Parameters
@@ -17,12 +17,22 @@ def csv_string_to_table(long_string, delimiter=','):
     ... 1, 2, 3
     ... '''
     """
+    output = ""
     row_data = [list(map(lambda x: x.strip(), _.split(delimiter))) for _ in long_string.strip().split("\n") if _]
-    print('|'.join(row_data[0]))
-    table_delimiter_line = '|'.join(['---'] * len(row_data[0]))
+    if col_num is not None:
+        row_data[0] = [''] * (col_num - len(row_data[0])) + row_data[0]
+    else:
+        col_num = len(row_data[0])
+    output += '|' + '|'.join(row_data[0]) + '\n'
+    print('|' + '|'.join(row_data[0]))
+    table_delimiter_line = '|' + '|'.join(['---'] * col_num)
+    output += table_delimiter_line + '\n'
     print(table_delimiter_line)
     for data in row_data[1:]:
-        print('|'.join(data))
+        output += '|' + '|'.join(data) + '\n'
+        print('|' + '|'.join(data))
+
+    return output
 
 
 if __name__ == '__main__':
@@ -39,4 +49,4 @@ if __name__ == '__main__':
     90%          72.000000      6.000000   1024.00000
     max        1107.000000    143.000000   7573.38600
  '''
-    csv_string_to_table(long_string, None)
+    csv_string_to_table(long_string, None, 4)
