@@ -23,7 +23,7 @@ def eval_module_name(load_epoch):
 
 
 # todo 重命名use_module_name函数到需要的模块名
-class module_name():
+class module_name(object):
     def __init__(self, load_epoch):
         self.net = load_net()
 
