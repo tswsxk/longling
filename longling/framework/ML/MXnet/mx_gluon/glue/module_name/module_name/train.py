@@ -83,7 +83,8 @@ def train_module_name(**kwargs):
     #     module_nameModule.net_initialize(net, ctx)
     # module_nameModule.parameters_stabilize(net)
     # trainer = GluonModule.get_trainer(net, optimizer=params.optimizer, optimizer_params=params.optimizer_params)
-    # net.hybridize() # todo whether to use static symbol to accelerate
+    # # todo whether to use static symbol to accelerate, do not invoke this method for dynamic structure like rnn
+    # # net.hybridize()
     # logger.info("start training")
     # mod.fit(
     #     net=net, begin_epoch=begin_epoch, end_epoch=end_epoch, batch_size=batch_size,
@@ -95,7 +96,7 @@ def train_module_name(**kwargs):
     #     informer=informer, epoch_timer=timer, evaluator=evaluator,
     #     prefix=mod.prefix,
     # )
-    # net.export(mod.prefix)
+    # # net.export(mod.prefix)  # 需要在这之前调用 hybridize 方法,并至少forward一次
 
     # optional todo 评估
     # GluonModule.eval()

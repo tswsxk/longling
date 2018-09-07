@@ -103,7 +103,7 @@ class GluonModule(object):
         # 根据文件名装载已有的网络参数
         if not os.path.isfile(filename):
             raise FileExistsError
-        net.load_params(filename, ctx, allow_missing=allow_missing, ignore_extra=ignore_extra)
+        net.load_parameters(filename, ctx, allow_missing=allow_missing, ignore_extra=ignore_extra)
         return net
 
     def load(self, net, epoch, ctx=mx.cpu(), allow_missing=False, ignore_extra=False):
@@ -315,7 +315,8 @@ class GluonModule(object):
                 #                                 logger=evaluator.logger, log_f=evaluator.log_f)[0])
 
                 # todo 定义模型保存方案
-                if kwargs.get('prefix') and (epoch % kwargs.get('save_epoch', 1) == 0 or epoch == end_epoch - 1):
+                if kwargs.get('prefix') and (epoch % kwargs.get('save_epoch', 1) == 0
+                                             or end_epoch - 10 <= epoch <= end_epoch - 1):
                     GluonModule.save_params(kwargs['prefix'] + "-%04d.parmas" % (epoch + 1), net)
 
         return decorator

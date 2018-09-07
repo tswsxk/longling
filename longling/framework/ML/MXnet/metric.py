@@ -29,7 +29,6 @@ class NoLabelMetric(EvalMetric):
             self.sum_metric += float(self.feval(pred))
 
 
-
 class PairwiseMetric(NoLabelMetric):
     def __init__(self, name='pairwise', output_names=None,
                  label_names=None, **kwargs):
