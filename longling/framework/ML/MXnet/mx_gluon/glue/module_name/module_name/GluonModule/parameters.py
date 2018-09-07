@@ -26,17 +26,17 @@ class Parameters(object):
     data_dir = os.path.abspath(os.path.join(root, "data")) + os.sep
     model_dir = os.path.abspath(os.path.join(data_dir, model_name)) + os.sep
 
-    optimizer = 'sgd'
+    optimizer = 'adam'
     optimizer_params = {
         'learning_rate': 0.01,
-        'wd': 0.5,
-        'momentum': 0.01,
-        'clip_gradient': 5,
+        # 'wd': 0.5,
+        # 'momentum': 0.01,
+        # 'clip_gradient': 5,
     }
 
     begin_epoch = 0
     end_epoch = 100
-    batch_size = 128
+    batch_size = 32
 
     ctx = cpu()
 
