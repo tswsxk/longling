@@ -96,6 +96,7 @@ def train_module_name(**kwargs):
     #     ctx=ctx,
     #     informer=informer, epoch_timer=timer, evaluator=evaluator,
     #     prefix=mod.prefix,
+    #     save_epoch = params.save_epoch,
     # )
     # # net.export(mod.prefix)  # 需要在这之前调用 hybridize 方法,并至少forward一次
 
