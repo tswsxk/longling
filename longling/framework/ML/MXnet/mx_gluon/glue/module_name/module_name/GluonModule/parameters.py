@@ -27,6 +27,7 @@ class Parameters(object):
     logger = config_logging(logger=model_name, console_log_level=LogLevel.INFO)
 
     data_dir = os.path.abspath(os.path.join(root, "data")) + os.sep
+    model_dir = os.path.abspath(os.path.join(data_dir, model_name)) + os.sep
 
     optimizer = 'adam'
     optimizer_params = {
@@ -54,7 +55,6 @@ class Parameters(object):
 
     def __init__(self, params_yaml=None, **kwargs):
         params = self.class_var
-        self.model_dir = os.path.abspath(os.path.join(data_dir, self.model_name)) + os.sep
         self.validation_result_file = os.path.abspath(os.path.join(self.model_dir, "result.json"))
 
         if params_yaml:
