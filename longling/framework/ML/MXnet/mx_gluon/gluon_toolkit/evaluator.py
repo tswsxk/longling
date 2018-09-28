@@ -11,6 +11,7 @@ import numpy as np
 from tqdm import tqdm
 
 from longling.base import string_types
+from longling.lib.stream import wf_open
 
 
 class Evaluator(object):
@@ -21,7 +22,7 @@ class Evaluator(object):
         self.logger = logger
         if log_f is not None and isinstance(log_f, string_types):
             # clean file
-            codecs.open(log_f, "w", "utf-8").close()
+            wf_open(log_f).close()
         self.log_f = log_f
 
     def evaluate(self, data_iterator, net, stage=""):
