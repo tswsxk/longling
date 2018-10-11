@@ -42,7 +42,7 @@ def train_module_name(**kwargs):
     # 5 todo 定义损失函数
     # bp_loss_f 定义了用来进行 back propagation 的损失函数，命名中不能出现 下划线
     # bp_loss_f = {
-    #     "pairwise_loss": PairwiseLoss(None, -1, margin=1),
+    #     "pairwise-loss": PairwiseLoss(None, -1, margin=1),
     #     "cross-entropy": gluon.loss.SoftmaxCrossEntropyLoss(),
     # }
     # loss_function = {
@@ -86,7 +86,7 @@ def train_module_name(**kwargs):
     # trainer = GluonModule.get_trainer(net, optimizer=params.optimizer, optimizer_params=params.optimizer_params)
     # # todo whether to use static symbol to accelerate, do not invoke this method for dynamic structure like rnn
     # # net.hybridize()
-    # logger.info("start training")
+    # mod.logger.info("start training")
     # mod.fit(
     #     net=net, begin_epoch=begin_epoch, end_epoch=end_epoch, batch_size=batch_size,
     #     train_data=train_data,
@@ -96,7 +96,7 @@ def train_module_name(**kwargs):
     #     ctx=ctx,
     #     informer=informer, epoch_timer=timer, evaluator=evaluator,
     #     prefix=mod.prefix,
-    #     save_epoch = params.save_epoch,
+    #     save_epoch=params.save_epoch,
     # )
     # # net.export(mod.prefix)  # 需要在这之前调用 hybridize 方法,并至少forward一次
 
