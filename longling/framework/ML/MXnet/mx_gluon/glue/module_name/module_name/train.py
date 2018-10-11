@@ -33,7 +33,7 @@ def train_module_name(**kwargs):
     # mod.logger.info("generating symbol")
     # net = mod.sym_gen()
     # 2.2 装载已有模型
-    # net = mod.load(epoch)
+    # net = mod.load(begin_epoch)
     # net = GluonModule.load_net(filename)
 
     # 3 可视化检查网络

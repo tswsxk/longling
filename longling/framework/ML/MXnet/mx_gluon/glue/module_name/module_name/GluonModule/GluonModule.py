@@ -395,7 +395,7 @@ class GluonModule(object):
         return decorator
 
     @staticmethod
-    def eval(net, test_data, evaluater=None, ctx=mx.cpu()):
+    def eval(net, test_data, ctx=mx.cpu(), evaluater=None):
         """
         在这里定义数据评估方法
 
