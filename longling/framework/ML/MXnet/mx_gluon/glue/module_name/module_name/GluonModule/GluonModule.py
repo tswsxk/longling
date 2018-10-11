@@ -3,7 +3,9 @@
 
 from __future__ import absolute_import
 
+import datetime
 import os
+import shutil
 
 import mxnet as mx
 from mxnet import gluon, autograd, nd
@@ -127,8 +129,29 @@ class GluonModule(object):
         The initialized net
         """
         # 根据起始轮次装载已有的网络参数
-        filename = self.prefix + "-%04d.parmas" % epoch
+        filename = self.epoch_params_filename(epoch)
         return self.load_net(filename, net, ctx, allow_missing=allow_missing, ignore_extra=ignore_extra)
+
+    def save(self, suffix=".v{}".format(datetime.datetime.now().strftime("%Y%m%d%H%M%S%f")), model_loop=True):
+        old_files = os.listdir(self.params.model_dir)
+        for old_file in old_files:
+            if ".v" in old_file:
+                continue
+            if model_loop and old_file == self.epoch_params_filename(self.params.end_epoch):
+                shutil.copy(
+                    os.path.join(self.params.model_dir, old_file),
+                    os.path.join(
+                        self.params.model_dir,
+                        self.epoch_params_filename(self.params.begin_epoch)
+                    )
+                )
+            os.rename(
+                os.path.join(self.params.model_dir, old_file),
+                os.path.join(self.params.model_dir, old_file) + suffix,
+            )
+
+    def epoch_params_filename(self, epoch):
+        return self.prefix + "-%04d.parmas" % epoch
 
     @staticmethod
     def get_data_iter():
