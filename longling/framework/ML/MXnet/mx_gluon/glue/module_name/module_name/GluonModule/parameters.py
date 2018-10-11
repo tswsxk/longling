@@ -67,12 +67,12 @@ class Parameters(object):
         if 'data_dir' not in params:
             self.data_dir = os.path.abspath(os.path.join(self.root, "data")) + os.sep
         if 'model_dir' not in params:
-            self.model_dir = os.path.abspath(os.path.join(self.data_dir, self.model_name)) + os.sep
+            if hasattr(self, 'time_stamp') and self.time_stamp and hasattr(self, 'model_dir'):
+                time_stamp = "_%s" % datetime.datetime.now().strftime("%Y%m%d%H%M%S%f")
+                self.model_dir = os.path.abspath(os.path.join(self.data_dir, self.model_name)) + time_stamp + os.sep
+            else:
+                self.model_dir = os.path.abspath(os.path.join(self.data_dir, self.model_name)) + os.sep
         self.validation_result_file = os.path.abspath(os.path.join(self.model_dir, "result.json"))
-
-        if hasattr(self, 'time_stamp') and self.time_stamp and hasattr(self, 'model_dir'):
-            time_stamp = "_%s" % datetime.datetime.now().strftime("%Y%m%d%H%M%S%f")
-            self.model_dir = os.path.abspath(os.path.join(self.data_dir, self.model_name)) + time_stamp + os.sep
 
     def items(self):
         return {k: v for k, v in vars(self).items() if k not in {'logger'}}
