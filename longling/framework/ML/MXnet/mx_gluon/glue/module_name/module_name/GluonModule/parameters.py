@@ -19,15 +19,16 @@ from mxnet import cpu, gpu
 
 
 class Parameters(object):
+    # default path
     root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")) + os.sep
     model_name = os.path.basename(os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
     # Can also specify the model_name using explicit string
     # model_name = "module_name"
-    time_stamp = False
-    logger = config_logging(logger=model_name, console_log_level=LogLevel.INFO)
-
     data_dir = os.path.abspath(os.path.join(root, "data")) + os.sep
     model_dir = os.path.abspath(os.path.join(data_dir, model_name)) + os.sep
+
+    logger = config_logging(logger=model_name, console_log_level=LogLevel.INFO)
+    time_stamp = False
 
     optimizer = 'adam'
     optimizer_params = {
@@ -55,13 +56,20 @@ class Parameters(object):
 
     def __init__(self, params_yaml=None, **kwargs):
         params = self.class_var
-        self.validation_result_file = os.path.abspath(os.path.join(self.model_dir, "result.json"))
-
         if params_yaml:
             params.update(self.load(params_yaml=params_yaml))
         params.update(**kwargs)
+
         for param, value in params.items():
             setattr(self, "%s" % param, value)
+
+        # rebuild relevant directory or file path according to the kwargs
+        if 'data_dir' not in params:
+            self.data_dir = os.path.abspath(os.path.join(self.root, "data")) + os.sep
+        if 'model_dir' not in params:
+            self.model_dir = os.path.abspath(os.path.join(self.data_dir, self.model_name)) + os.sep
+        self.validation_result_file = os.path.abspath(os.path.join(self.model_dir, "result.json"))
+
         if hasattr(self, 'time_stamp') and self.time_stamp and hasattr(self, 'model_dir'):
             time_stamp = "_%s" % datetime.datetime.now().strftime("%Y%m%d%H%M%S%f")
             self.model_dir = os.path.abspath(os.path.join(self.data_dir, self.model_name)) + time_stamp + os.sep
