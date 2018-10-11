@@ -395,8 +395,9 @@ class GluonModule(object):
         return decorator
 
     @staticmethod
-    def eval(net, test_data, ctx):
+    def eval(net, test_data, evaluater=None, ctx=mx.cpu()):
         """
+        在这里定义数据评估方法
 
         Parameters
         ----------
@@ -409,17 +410,20 @@ class GluonModule(object):
         metrics: dict
 
         """
-        # 在这里定义数据评估方法
-        ctx_data = split_and_load(
-            ctx, *test_data,
-            even_split=False
-        )
-        evalue = 0
+        # from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+
+        evalue = []
         evalue_func = lambda p, y: 1 / 2 * (y - p) ** 2
-        for (data, label) in tqdm(ctx_data, "evaluating"):
-            output = net(data)
-            evalue = evalue_func(output, label)
-        return {"evaluation_name": evalue}
+
+        for batch_data in tqdm(test_data, "evaluating"):
+            ctx_data = split_and_load(
+                ctx, *batch_data,
+                even_split=False
+            )
+            for (data, label) in ctx_data:
+                output = net(data)
+                evalue.extend(evalue_func(output, label).asnumpy().tolist())
+        return {"evaluation_name": sum(evalue) / len(evalue)}
 
     @staticmethod
     def _fit_f(net, batch_size, batch_data,
