@@ -396,14 +396,30 @@ class GluonModule(object):
 
     @staticmethod
     def eval(net, test_data, ctx):
+        """
+
+        Parameters
+        ----------
+        net
+        test_data
+        ctx
+
+        Returns
+        -------
+        metrics: dict
+
+        """
         # 在这里定义数据评估方法
         ctx_data = split_and_load(
             ctx, *test_data,
             even_split=False
         )
+        evalue = 0
+        evalue_func = lambda p, y: 1 / 2 * (y - p) ** 2
         for (data, label) in tqdm(ctx_data, "evaluating"):
-            pass
-        return
+            output = net(data)
+            evalue = evalue_func(output, label)
+        return {"evaluation_name": evalue}
 
     @staticmethod
     def _fit_f(net, batch_size, batch_data,
