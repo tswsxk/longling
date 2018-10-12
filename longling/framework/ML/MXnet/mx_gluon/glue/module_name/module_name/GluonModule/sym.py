@@ -55,6 +55,9 @@ def net_viz(net, params, **kwargs):
 def get_data_iter(params):
     import random
     random.seed(10)
+
+    batch_size = params.batch_size
+
     pass
 
 
@@ -81,7 +84,7 @@ if __name__ == '__main__':
     # net_viz(net, params)
     #
     # # numerical check
-    # datas = get_data_iter()
+    # datas = get_data_iter(params)
     # from tqdm import tqdm
     #
     # bp_loss_f = lambda x, y: (x, y)
