@@ -53,6 +53,8 @@ def net_viz(net, params, **kwargs):
 
 
 def get_data_iter(params):
+    # 在这里定义测试用伪数据流
+
     import random
     random.seed(10)
 
