@@ -71,21 +71,21 @@ class Parameters(object):
             setattr(self, "%s" % param, value)
 
         # rebuild relevant directory or file path according to the kwargs
-        if 'root_data_dir' not in params:
+        if 'root_data_dir' not in kwargs:
             if self.dataset:
                 self.root_data_dir = os.path.abspath(os.path.join(self.root, "data")) + os.sep
             else:
                 self.root_data_dir = os.path.abspath(
                     os.path.join(self.root, "data" + os.sep + "{}".format(self.dataset))) + os.sep
-        if 'data_dir' not in params:
+        if 'data_dir' not in kwargs:
             self.data_dir = os.path.abspath(os.path.join(self.root_data_dir, "data")) + os.sep
-        if 'model_dir' not in params:
+        if 'model_dir' not in kwargs:
             if hasattr(self, 'time_stamp') and self.time_stamp and hasattr(self, 'model_dir'):
                 time_stamp = "_%s" % datetime.datetime.now().strftime("%Y%m%d%H%M%S%f")
                 self.model_dir = os.path.abspath(
                     os.path.join(self.root_data_dir, self.model_name)) + time_stamp + os.sep
             else:
-                self.model_dir = os.path.abspath(os.path.join(self.data_dir, self.model_name)) + os.sep
+                self.model_dir = os.path.abspath(os.path.join(self.root_data_dir, self.model_name)) + os.sep
         self.validation_result_file = os.path.abspath(os.path.join(self.model_dir, "result.json"))
 
     def items(self):
