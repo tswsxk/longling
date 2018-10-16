@@ -37,6 +37,9 @@ CREATE DATABASE wikidb WITH OWNER wikiuser;
 ```sh
 mysql -u root -h 172.16.46.203 -p
 ```
+```passwd
+SELECT * FROM users;
+```
 创建数据库
 ```sql
 CREATE DATABASE wikidb;
