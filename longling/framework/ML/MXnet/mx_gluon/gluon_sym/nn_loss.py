@@ -3,6 +3,7 @@
 """
 This file contains some loss function
 """
+import mxnet as mx
 from mxnet import gluon
 from mxnet.gluon.loss import *
 
@@ -17,4 +18,29 @@ class PairwiseLoss(gluon.loss.Loss):
         loss = F.add(loss, self.margin)
         sym = F.relu(loss)
         loss = F.MakeLoss(sym)
+        return loss
+
+
+# class TimeSeriesLoss(gluon.HybridBlock):
+#     def hybrid_forward(self, F, pred, label, mask, *args, **kwargs):
+#         F.stack()
+
+
+class TimeSeriesPickLoss(gluon.HybridBlock):
+    """
+    Loss from Deep Knowledge Tracing
+
+    Notes
+    -----
+    The loss has been average, so when call the step method of trainer, batch_size should be 1
+    """
+
+    def hybrid_forward(self, F, pred, pick_index, label, label_mask, *args, **kwargs):
+        pred = F.slice(pred, (None, None), (None, -1))
+        pred = F.pick(pred, pick_index)
+        loss = F.LogisticRegressionOutput(pred, label)
+        loss = F.sum(mx.nd.squeeze(
+            F.SequenceMask(F.expand_dims(loss, 0), sequence_length=label_mask,
+                           use_sequence_length=True)), axis=-1)
+        loss = F.mean(loss)
         return loss
