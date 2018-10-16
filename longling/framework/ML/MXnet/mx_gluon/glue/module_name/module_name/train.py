@@ -9,7 +9,7 @@ from longling.framework.ML.MXnet.mx_gluon.gluon_sym import PairwiseLoss, Softmax
 
 try:
     from .GluonModule import *
-except SystemError or ModuleNotFoundError:
+except (SystemError, ModuleNotFoundError):
     from GluonModule import *
 
 

@@ -3,7 +3,7 @@
 
 try:
     from .GluonModule import Parameters, GluonModule
-except SystemError or ModuleNotFoundError:
+except (SystemError, ModuleNotFoundError):
     from GluonModule import Parameters, GluonModule
 
 
