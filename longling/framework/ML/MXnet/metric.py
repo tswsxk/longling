@@ -1,12 +1,23 @@
 # coding: utf-8
 # created by tongshiwei on 18-1-24
 import numpy
+
+import mxnet as mx
 from mxnet.metric import EvalMetric, check_label_shapes
 
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, roc_auc_score
 from sklearn.metrics import precision_score, recall_score, f1_score
 from sklearn.metrics import precision_recall_fscore_support
 from sklearn.metrics import log_loss
+
+
+def _asnumpy(array):
+    if isinstance(array, mx.nd.NDArray):
+        return array.asnumpy()
+    elif isinstance(array, (list, tuple)):
+        return numpy.array(array)
+    else:
+        return array
 
 
 class NoLabelMetric(EvalMetric):
@@ -24,7 +35,7 @@ class NoLabelMetric(EvalMetric):
 
     def update(self, labels, preds):
         for pred in preds:
-            pred = pred.asnumpy()
+            pred = _asnumpy(pred)
             self.num_inst += len(pred)
             self.sum_metric += float(self.feval(pred))
 
@@ -152,7 +163,7 @@ class LabelBuffMetric(EvalMetric):
         '''
         check_label_shapes(labels, preds)
         for label, pred in zip(labels, preds):
-            pred = pred.asnumpy()
+            pred = _asnumpy(pred)
             if self.argmax:
                 try:
                     y_pred = numpy.argmax(pred, axis=1)
@@ -160,7 +171,7 @@ class LabelBuffMetric(EvalMetric):
                     y_pred = numpy.argmax(pred)
             else:
                 y_pred = pred
-            y_true = label.asnumpy().astype('int32')
+            y_true = _asnumpy(label).astype('int32')
             self.y_pred += y_pred.tolist()
             self.y_true += y_true.tolist()
 
@@ -242,8 +253,8 @@ class CrossEntropy(LabelBuffMetric):
     def update(self, labels, preds):
         check_label_shapes(labels, preds)
         for label, pred in zip(labels, preds):
-            y_pred = pred.asnumpy().astype('float32')
-            y_true = label.asnumpy().astype('int32')
+            y_pred = _asnumpy(pred).astype('float32')
+            y_true = _asnumpy(label).astype('int32')
             self.y_pred += y_pred.tolist()
             self.y_true += y_true.tolist()
 
