@@ -1,5 +1,7 @@
 # coding: utf-8
 # created by tongshiwei on 18-1-24
+# todo 优化注释结构
+
 import numpy
 
 import mxnet as mx
@@ -55,24 +57,27 @@ class PairwiseMetric(NoLabelMetric):
 
 
 class LabelBuffMetric(EvalMetric):
-    '''
+    """
     带缓冲区的评测器
     由于mxnet自带的评价器会对测试集分批次评估，然后使用update进行简单的加权求和，所以部分指标是不准确的
     例如：precision，recall和f1，precision([1..i]) + precision([i+1,..n]) / 2 != precision([1..n])
     此抽象类定义了两个缓冲区来存储
     和mxnet里的函数不同，计算过程会延迟到需要输出结果的时候，因此要避免相同值的重新计算，因此引入了哈希值
-    '''
+    """
 
     def __init__(self, name, output_names=None, label_names=None, pred_buff=[], true_buff=[], argmax=True):
-        '''
+        """
         self.argmax 表示是否对pred要取max，适合pred数据为概率值或分数的情况
-        :param name:
-        :param output_names:
-        :param label_names:
-        :param pred_buff:
-        :param true_buff:
-        :param argmax:
-        '''
+
+        Parameters
+        ----------
+        name
+        output_names
+        label_names
+        pred_buff
+        true_buff
+        argmax
+        """
         self.y_pred = pred_buff
         self.y_true = true_buff
         self.hash_code = None
@@ -82,10 +87,9 @@ class LabelBuffMetric(EvalMetric):
 
     @property
     def refresh_tag(self):
-        '''
+        """
         根据前后哈希值决定是否对结果进行更新
-        :return:
-        '''
+        """
         if self.hash_code == self.hash_buff:
             return False
         else:
@@ -93,10 +97,10 @@ class LabelBuffMetric(EvalMetric):
 
     @property
     def hash_buff(self):
-        '''
+        """
         缓冲区哈希值
-        :return:
-        '''
+        """
+
         extra_hash = hash(str(self.y_pred[0])) + hash(str(self.y_pred[-1])) + hash(
             str(self.y_true[0])) + hash(str(self.y_true[-1])) if self.y_pred and self.y_true else 0
         return hash(len(self.y_pred) + len(self.y_true) + extra_hash)
@@ -272,8 +276,15 @@ class LabelMultiMetric(LabelBuffMetric):
         self.name = name if isinstance(name, list) else [name]
 
     def get_config(self):
-        """Save configurations of metric. Can be recreated
-        from configs with metric.create(**config)
+        """
+    Save
+    configurations
+    of
+    metric.Can
+    be
+    recreated
+    from configs
+    with metric.create(**config)
         """
         config = self._kwargs.copy()
         config.update({

@@ -102,6 +102,13 @@ class ClassEvaluator(Evaluator):
 
             del name_value['accuracy']
 
+        if 'auc' in name_value:
+            accuracy = name_value['auc']
+            msg += "\tValidation Auc: %f" % name_value['auc']
+            data['auc'] = accuracy
+
+            del name_value['auc']
+        # todo 优化解析结构
         prf = {}
         eval_ids = set()
         for name, value in name_value.items():
