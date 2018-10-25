@@ -77,18 +77,37 @@ if __name__ == '__main__':
     # # set batch size
     # batch_size = 128
     # params = Parameters(batch_size=batch_size)
-    #
-    # # generate sym
-    # net = NetName()
-    #
+
+    # generate sym
+    net = NetName()
+
     # visualiztion check
     # params.view_tag = True
     # net_viz(net, params)
     #
+    # net.initialize()
+    #
     # # numerical check
     # datas = get_data_iter(params)
-    # from tqdm import tqdm
-    #
-    # bp_loss_f = lambda x, y: (x, y)
+
+    from tqdm import tqdm
+    bp_loss_f = lambda x, y: x - y
+
+    # forward check
     # for data, label in tqdm(get_data_iter(params)):
     #     loss = bp_loss_f(net(data), label)
+
+    # # train check
+    # from mxnet import autograd
+    # trainer = gluon.Trainer(net.collect_params(), 'adam', {'learning_rate': 0.01})
+    # for epoch in range(0, 100):
+    #     epoch_loss = 0
+    #     for data, label, in get_data_iter(params):
+    #         with autograd.record():
+    #             pred_rs, _ = net(data)
+    #             loss = bp_loss_f(pred_rs, label)
+    #             epoch_loss += loss.asscalar()
+    #             # epoch_loss += np.mean(loss.asnumpy())
+    #         loss.backward()
+    #         trainer.step(1)
+    #     print(epoch_loss)

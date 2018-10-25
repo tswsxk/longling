@@ -61,6 +61,8 @@ class Parameters(object):
     train_select = '^(?!.*embedding)'
     save_select = train_select
 
+    # 用户变量
+
     def __init__(self, params_yaml=None, **kwargs):
         params = self.class_var
         if params_yaml:
