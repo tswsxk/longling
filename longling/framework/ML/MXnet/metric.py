@@ -7,7 +7,7 @@ import numpy
 import mxnet as mx
 from mxnet.metric import EvalMetric, check_label_shapes
 
-from sklearn.metrics import accuracy_score, roc_auc_score
+from sklearn.metrics import accuracy_score, roc_auc_score, r2_score
 from sklearn.metrics import precision_score, recall_score, f1_score
 from sklearn.metrics import precision_recall_fscore_support
 from sklearn.metrics import log_loss
@@ -22,10 +22,10 @@ def _asnumpy(array):
         return array
 
 
-class NoLabelMetric(EvalMetric):
+class NoBufferMetric(EvalMetric):
     def __init__(self, name='NoLabelMetric', output_names=None,
                  label_names=None, **kwargs):
-        super(NoLabelMetric, self).__init__(
+        super(NoBufferMetric, self).__init__(
             name=name,
             output_names=output_names,
             label_names=label_names,
@@ -42,10 +42,10 @@ class NoLabelMetric(EvalMetric):
             self.sum_metric += float(self.feval(pred))
 
 
-class PairwiseMetric(NoLabelMetric):
+class PairwiseMetric(NoBufferMetric):
     def __init__(self, name='pairwise', output_names=None,
                  label_names=None, **kwargs):
-        super(NoLabelMetric, self).__init__(
+        super(NoBufferMetric, self).__init__(
             name=name,
             output_names=output_names,
             label_names=label_names,
@@ -56,7 +56,7 @@ class PairwiseMetric(NoLabelMetric):
         return self.sum_metric + sum(preds)
 
 
-class LabelBuffMetric(EvalMetric):
+class BufferMetric(EvalMetric):
     """
     带缓冲区的评测器
     由于mxnet自带的评价器会对测试集分批次评估，然后使用update进行简单的加权求和，所以部分指标是不准确的
@@ -65,7 +65,7 @@ class LabelBuffMetric(EvalMetric):
     和mxnet里的函数不同，计算过程会延迟到需要输出结果的时候，因此要避免相同值的重新计算，因此引入了哈希值
     """
 
-    def __init__(self, name, output_names=None, label_names=None, pred_buff=[], true_buff=[], argmax=True):
+    def __init__(self, name, output_names=None, label_names=None, pred_buff=None, true_buff=None, argmax=True):
         """
         self.argmax 表示是否对pred要取max，适合pred数据为概率值或分数的情况
 
@@ -78,12 +78,12 @@ class LabelBuffMetric(EvalMetric):
         true_buff
         argmax
         """
-        self.y_pred = pred_buff
-        self.y_true = true_buff
+        self.y_pred = pred_buff if pred_buff is not None else []
+        self.y_true = true_buff if true_buff is not None else []
         self.hash_code = None
         self.answer = None
         self.argmax = argmax
-        super(LabelBuffMetric, self).__init__(name, output_names=output_names, label_names=label_names)
+        super(BufferMetric, self).__init__(name, output_names=output_names, label_names=label_names)
 
     @property
     def refresh_tag(self):
@@ -180,8 +180,9 @@ class LabelBuffMetric(EvalMetric):
             self.y_true += y_true.tolist()
 
 
-class Precision(LabelBuffMetric):
-    def __init__(self, name="precision", output_names=None, label_names=None, pred_buff=[], true_buff=[], argmax=True):
+class Precision(BufferMetric):
+    def __init__(self, name="Precision", output_names=None, label_names=None, pred_buff=None, true_buff=None,
+                 argmax=True):
         super(Precision, self).__init__(
             name,
             output_names=output_names,
@@ -195,8 +196,8 @@ class Precision(LabelBuffMetric):
         return precision_score(self.y_true, self.y_pred)
 
 
-class Recall(LabelBuffMetric):
-    def __init__(self, name="recall", output_names=None, label_names=None, pred_buff=[], true_buff=[], argmax=True):
+class Recall(BufferMetric):
+    def __init__(self, name="Recall", output_names=None, label_names=None, pred_buff=None, true_buff=None, argmax=True):
         super(Recall, self).__init__(
             name,
             output_names=output_names,
@@ -210,8 +211,8 @@ class Recall(LabelBuffMetric):
         return recall_score(self.y_true, self.y_pred)
 
 
-class F1(LabelBuffMetric):
-    def __init__(self, name="f1", output_names=None, label_names=None, pred_buff=[], true_buff=[], argmax=True):
+class F1(BufferMetric):
+    def __init__(self, name="F1", output_names=None, label_names=None, pred_buff=None, true_buff=None, argmax=True):
         super(F1, self).__init__(
             name,
             output_names=output_names,
@@ -225,8 +226,9 @@ class F1(LabelBuffMetric):
         return f1_score(self.y_true, self.y_pred)
 
 
-class Accuracy(LabelBuffMetric):
-    def __init__(self, name="accuracy", output_names=None, label_names=None, pred_buff=[], true_buff=[], argmax=True):
+class Accuracy(BufferMetric):
+    def __init__(self, name="Accuracy", output_names=None, label_names=None, pred_buff=None, true_buff=None,
+                 argmax=True):
         super(Accuracy, self).__init__(
             name,
             output_names=output_names,
@@ -240,8 +242,40 @@ class Accuracy(LabelBuffMetric):
         return accuracy_score(self.y_true, self.y_pred)
 
 
-class CrossEntropy(LabelBuffMetric):
-    def __init__(self, name="cross-entropy", output_names=None, label_names=None, pred_buff=[], true_buff=[], **kwargs):
+class AUC(BufferMetric):
+    def __init__(self, name="auc", output_names=None, label_names=None, pred_buff=None, true_buff=None,
+                 argmax=True):
+        super(AUC, self).__init__(
+            name,
+            output_names=output_names,
+            label_names=label_names,
+            pred_buff=pred_buff,
+            true_buff=true_buff,
+            argmax=argmax,
+        )
+
+    def feval(self):
+        return roc_auc_score(self.y_true, self.y_pred)
+
+
+class R2Square(BufferMetric):
+    def __init__(self, name="R2Square", output_names=None, label_names=None, pred_buff=None, true_buff=None,
+                 argmax=True):
+        super(R2Square, self).__init__(
+            name,
+            output_names=output_names,
+            label_names=label_names,
+            pred_buff=pred_buff,
+            true_buff=true_buff,
+            argmax=argmax,
+        )
+
+    def feval(self):
+        return r2_score(self.y_true, self.y_pred)
+
+
+class CrossEntropy(BufferMetric):
+    def __init__(self, name="CrossEntropy", output_names=None, label_names=None, pred_buff=None, true_buff=None):
         super(CrossEntropy, self).__init__(
             name,
             output_names=output_names,
@@ -263,8 +297,8 @@ class CrossEntropy(LabelBuffMetric):
             self.y_true += y_true.tolist()
 
 
-class LabelMultiMetric(LabelBuffMetric):
-    def __init__(self, name, output_names=None, label_names=None, pred_buff=[], true_buff=[], argmax=True):
+class LabelMultiMetric(BufferMetric):
+    def __init__(self, name, output_names=None, label_names=None, pred_buff=None, true_buff=None, argmax=True):
         super(LabelMultiMetric, self).__init__(
             'multiMetric',
             output_names=output_names,
@@ -277,14 +311,7 @@ class LabelMultiMetric(LabelBuffMetric):
 
     def get_config(self):
         """
-    Save
-    configurations
-    of
-    metric.Can
-    be
-    recreated
-    from configs
-    with metric.create(**config)
+        Save configurations of metric.Can be recreated from configs with metric.create(**config)
         """
         config = self._kwargs.copy()
         config.update({
@@ -303,8 +330,10 @@ class LabelMultiMetric(LabelBuffMetric):
 
 
 class PRF(LabelMultiMetric):
-    def __init__(self, name=['precision', 'recall', 'f1'], output_names=None, label_names=None, pred_buff=[],
-                 true_buff=[], argmax=True):
+    def __init__(self, name=None, output_names=None, label_names=None, pred_buff=None,
+                 true_buff=None, argmax=True):
+        name = ['precision', 'recall', 'f1'] if name is None else name
+
         super(PRF, self).__init__(
             name,
             output_names=output_names,
