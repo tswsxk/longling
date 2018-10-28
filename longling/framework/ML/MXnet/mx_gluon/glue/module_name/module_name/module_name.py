@@ -119,10 +119,10 @@ class module_name(object):
 
         return train_data, test_data
 
-    def model_init(self, load_epoch=None, force_init=False):
+    def model_init(self, load_epoch=None, force_init=False, params=None):
         mod = self.mod
         net = self.net
-        params = mod.params
+        params = mod.params if params is None else params
         begin_epoch = params.begin_epoch
 
         if self.initialized and not force_init:
