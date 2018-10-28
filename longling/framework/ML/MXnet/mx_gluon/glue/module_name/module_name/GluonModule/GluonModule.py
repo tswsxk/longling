@@ -334,7 +334,7 @@ class GluonModule(object):
                 train_time = epoch_timer.end(wall=True) if epoch_timer else None
 
                 # todo 定义每一轮结束后的模型评估方法
-                # test_eval_res = GluonModule.eval(net, test_data, ctx)
+                # test_eval_res = GluonModule.eval(net, test_data, evaluator=evaluator, ctx=ctx)
                 # print(evaluator.format_eval_res(epoch, test_eval_res, loss_values, train_time,
                 #                                 logger=evaluator.logger, log_f=evaluator.log_f)[0])
 
@@ -418,7 +418,7 @@ class GluonModule(object):
         return decorator
 
     @staticmethod
-    def eval(net, test_data, ctx=mx.cpu(), evaluater=None):
+    def eval(net, test_data, evaluater=None, ctx=mx.cpu()):
         """
         在这里定义数据评估方法
 
