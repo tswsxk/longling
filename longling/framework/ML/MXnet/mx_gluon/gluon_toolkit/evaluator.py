@@ -49,7 +49,7 @@ class Evaluator(object):
         prf = {}
         eval_ids = set()
 
-        for name, value in name_value.items():
+        for name, value in sorted(name_value.items()):
             if multi_class_pattern.match(name) is not None:
                 try:
                     eval_id, class_id = name.split("_")
