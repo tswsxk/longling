@@ -108,13 +108,14 @@ class module_name(object):
         self.timer = timer
         self.evaluator = evaluator
 
-    def load_data(self):
+    def load_data(self, params=None):
         mod = self.mod
+        params = mod.params if params is None else params
 
         # 4.2 todo 定义数据加载
         mod.logger.info("loading data")
-        train_data = GluonModule.get_data_iter()
-        test_data = GluonModule.get_data_iter()
+        train_data = GluonModule.get_data_iter(params=params)
+        test_data = GluonModule.get_data_iter(params=params)
 
         return train_data, test_data
 

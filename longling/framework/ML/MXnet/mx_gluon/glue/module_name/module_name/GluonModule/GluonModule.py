@@ -154,7 +154,7 @@ class GluonModule(object):
         return self.prefix + "-%04d.parmas" % epoch
 
     @staticmethod
-    def get_data_iter():
+    def get_data_iter(params=None):
         # 在这里定义数据加载方法
         return
 
