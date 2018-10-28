@@ -480,7 +480,7 @@ class GluonModule(object):
 
         """
         # 此函数定义训练过程
-        ctx_data = split_and_load(
+        ctx_data = GluonModule.split_and_load(
             ctx, *batch_data,
             even_split=False
         )
@@ -503,3 +503,7 @@ class GluonModule(object):
         assert bp_loss is not None
         bp_loss.backward()
         trainer.step(batch_size)
+
+    @staticmethod
+    def split_and_load(ctx, *args, **kwargs):
+        return split_and_load(ctx, *args, **kwargs)

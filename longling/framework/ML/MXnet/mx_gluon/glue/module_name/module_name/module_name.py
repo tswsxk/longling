@@ -67,6 +67,7 @@ class module_name(object):
         from longling.lib.utilog import config_logging
         from longling.framework.ML.MXnet.mx_gluon.gluon_toolkit import TrainBatchInformer, Evaluator, MovingLosses
         from longling.framework.ML.MXnet.mx_gluon.gluon_sym import PairwiseLoss, SoftmaxCrossEntropyLoss
+        from mxnet import gluon
 
         mod = self.mod
         params = self.mod.params
@@ -95,7 +96,6 @@ class module_name(object):
         from longling.framework.ML.MXnet.metric import PRF, Accuracy
         evaluator = Evaluator(
             # metrics=[PRF(argmax=False), Accuracy(argmax=False)],
-            # model_ctx=ctx,
             logger=validation_logger,
             log_f=mod.params.validation_result_file
         )
@@ -155,7 +155,7 @@ class module_name(object):
         end_epoch = mod.params.end_epoch
         ctx = mod.params.ctx
 
-        assert bp_loss_f and loss_function and losses_monitor and informer and timer and evaluator, \
+        assert all([bp_loss_f, loss_function, losses_monitor, informer, timer, evaluator]), \
             "make sure these variable have been initialized, " \
             "check init method and make sure init method has been called"
 
@@ -180,10 +180,40 @@ class module_name(object):
         # # net.export(mod.prefix)
 
     def __call__(self, *args, **kwargs):
-        pass
+        raise NotImplementedError
 
-    def batch_call(self):
-        pass
+    def call(self, x, ctx=None):
+        # call forward for single data
+
+        # optional
+        # pre process x
+
+        # convert the data to ndarray
+        ctx = self.mod.params.ctx if ctx is None else ctx
+        x = mx.nd.array([x], dtype='float32', ctx=ctx)
+
+        # forward
+        outputs = self.net(x).asnumpy().tolist()[0]
+
+        raise NotImplementedError
+
+    def batch_call(self, x, ctx=None):
+        # call forward for batch data
+        # notice: do not use too big batch size
+
+        # optional
+        # pre process x
+
+        # convert the data to ndarray
+        x = mx.nd.array(x, dtype='float32', ctx=self.mod.params.ctx)
+
+        # forward
+        outputs = self.net(x).asnumpy().tolist()
+
+        raise NotImplementedError
+
+    def pre_process(self, data):
+        raise NotImplementedError
 
 
 if __name__ == '__main__':
