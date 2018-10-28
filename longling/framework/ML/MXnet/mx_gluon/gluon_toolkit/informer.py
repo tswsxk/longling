@@ -5,13 +5,15 @@ from longling.lib.stream import flush_print
 
 try:
     from math import nan
+
     NAN = nan
 except ImportError:
     NAN = float('nan')
 
 
 class TrainBatchInformer(object):
-    def __init__(self, loss_index=None, eval_index=None, batch_num=NAN, end_epoch=NAN, output=True, silent=False):
+    def __init__(self, loss_index=None, eval_index=None, batch_num=NAN, end_epoch=NAN, output=True, silent=False,
+                 **kwargs):
         assert loss_index
         assert eval_index
 

@@ -16,7 +16,7 @@ from longling.lib.stream import wf_open
 
 
 class Evaluator(object):
-    def __init__(self, metrics=None, logger=logging, log_f=None):
+    def __init__(self, metrics=None, logger=logging, log_f=None, **kwargs):
         if not isinstance(metrics, mx.metric.EvalMetric):
             self.metrics = mx.metric.create(metrics) if metrics is not None else None
         self.logger = logger
