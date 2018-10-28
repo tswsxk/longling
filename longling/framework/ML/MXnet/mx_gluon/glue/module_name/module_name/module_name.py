@@ -86,7 +86,8 @@ class module_name(object):
 
         # 4.1 todo 初始化一些训练过程中的交互信息
         timer = Clock()
-        informer = TrainBatchInformer(loss_index=[name for name in loss_function], end_epoch=params.end_epoch - 1)
+        informer = TrainBatchInformer(loss_index=[name for name in loss_function], end_epoch=params.end_epoch - 1,
+                                      silent=False)
         validation_logger = config_logging(
             filename=params.model_dir + "result.log",
             logger="%s-validation" % params.model_name,
