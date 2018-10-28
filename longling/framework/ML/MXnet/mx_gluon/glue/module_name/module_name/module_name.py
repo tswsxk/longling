@@ -121,6 +121,9 @@ class module_name(object):
 
     def model_init(self, load_epoch=None, force_init=False):
         mod = self.mod
+        net = self.net
+        params = mod.params
+        begin_epoch = params.begin_epoch
 
         if self.initialized and not force_init:
             mod.logger.warning("model has been initialized, skip model_init")
@@ -133,7 +136,7 @@ class module_name(object):
         #     mod.logger.info("load params from existing model file %s" % mod.prefix + "-%04d.parmas" % begin_epoch)
         # except FileExistsError:
         #     mod.logger.info("model doesn't exist, initializing")
-        #     module_nameModule.net_initialize(net, ctx)
+        #     module_nameModule.net_initialize(net, params.ctx)
         # self.initialized = True
 
         # # optional
