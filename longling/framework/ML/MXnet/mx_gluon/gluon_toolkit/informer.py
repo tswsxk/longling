@@ -1,9 +1,6 @@
 # coding: utf-8
 # created by tongshiwei on 18-2-5
 
-import math
-import pickle
-
 from longling.lib.stream import flush_print
 
 try:
@@ -14,7 +11,10 @@ except ImportError:
 
 
 class TrainBatchInformer(object):
-    def __init__(self, loss_index=[], eval_index=[], batch_num=NAN, end_epoch=NAN, output=True):
+    def __init__(self, loss_index=None, eval_index=None, batch_num=NAN, end_epoch=NAN, output=True, silent=False):
+        assert loss_index
+        assert eval_index
+
         self.batch_num = batch_num
         self.end_epoch = end_epoch
 
@@ -32,14 +32,18 @@ class TrainBatchInformer(object):
                                                          *arguments)
 
         self.epoch = NAN
+        self.silent = silent
 
-    def batch_report(self, batch_no, loss_value=[], eval_value=[]):
+    def batch_report(self, batch_no, loss_value=None, eval_value=None):
+        loss_value = [] if loss_value is None else loss_value
+        eval_value = [] if eval_value is None else eval_value
+
         arguments = list(loss_value) + list(eval_value)
         res_str = self.output_formatter.format(self.epoch, self.end_epoch,
                                                batch_no, self.batch_num,
                                                *arguments)
 
-        if self.output:
+        if self.output and not self.silent:
             flush_print(res_str)
 
         return res_str
@@ -48,7 +52,7 @@ class TrainBatchInformer(object):
         res_str = self.index_prefix
         self.epoch = epoch
 
-        if self.output:
+        if self.output and not self.silent:
             print(res_str)
 
         return res_str
