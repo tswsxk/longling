@@ -42,6 +42,7 @@ class module_name(object):
         # net = GluonModule.load_net(filename)
 
         self.net = net
+        self.initialized = False
 
         if load_epoch is not None:
             self.model_init(load_epoch)
@@ -52,8 +53,6 @@ class module_name(object):
         self.informer = None
         self.timer = None
         self.evaluator = None
-
-        self.initialized = False
 
     def viz(self):
         mod = self.mod
