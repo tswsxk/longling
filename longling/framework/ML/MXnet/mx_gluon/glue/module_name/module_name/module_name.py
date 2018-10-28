@@ -72,10 +72,10 @@ class module_name(object):
         params = self.mod.params
 
         # 4.1 todo 定义损失函数
-        # bp_loss_f 定义了用来进行 back propagation 的损失函数，命名中不能出现 下划线
+        # bp_loss_f 定义了用来进行 back propagation 的损失函数，只能有一个，命名中不能为 *_\d+ 型
         bp_loss_f = {
             "pairwise-loss": PairwiseLoss(None, -1, margin=1),
-            "cross-entropy": gluon.loss.SoftmaxCrossEntropyLoss(),
+            "cross-entropy": gluon.loss.SoftmaxCrossEntropyLoss(from_logits=True),
         }
         loss_function = {
 
