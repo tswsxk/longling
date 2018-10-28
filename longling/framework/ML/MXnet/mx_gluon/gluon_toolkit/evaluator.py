@@ -1,6 +1,7 @@
 # coding: utf-8
 # created by tongshiwei on 18-2-5
 
+import re
 import codecs
 import json
 import logging
@@ -15,10 +16,9 @@ from longling.lib.stream import wf_open
 
 
 class Evaluator(object):
-    def __init__(self, metrics=None, model_ctx=mx.cpu(), logger=logging, log_f=None):
+    def __init__(self, metrics=None, logger=logging, log_f=None):
         if not isinstance(metrics, mx.metric.EvalMetric):
             self.metrics = mx.metric.create(metrics) if metrics is not None else None
-        self.model_ctx = model_ctx
         self.logger = logger
         if log_f is not None and isinstance(log_f, string_types):
             # clean file
@@ -44,82 +44,24 @@ class Evaluator(object):
                 msg += "%s: %f" % (n, v)
 
         name_value = dict(eval_name_value)
-        for name, value in name_value.items():
-            msg += "\tValidation %s: %f" % (name, value)
-            data[name] = value
+        multi_class_pattern = re.compile(".+_\d+")
 
-        if output:
-            logger = kwargs.get('logger', logging)
-            logger.info(msg)
-            if kwargs.get('log_f', None) is not None:
-                log_f = kwargs['log_f']
-                try:
-                    if log_f is not None and isinstance(log_f, string_types):
-                        log_f = codecs.open(log_f, "a", encoding="utf-8")
-                        print(json.dumps(data, ensure_ascii=False), file=log_f)
-                        log_f.close()
-                    else:
-                        print(json.dumps(data, ensure_ascii=False), file=log_f)
-                except Exception as e:
-                    logger.warning(e)
-        return msg, data
-
-
-class ClassEvaluator(Evaluator):
-    def __init__(self, metrics=[], model_ctx=mx.cpu(), logger=logging, log_f=None):
-        super(ClassEvaluator, self).__init__(metrics=metrics, model_ctx=model_ctx, logger=logger,
-                                             log_f=log_f)
-
-    def evaluate(self, data_iterator, net, stage=""):
-        model_ctx = self.model_ctx
-        for i, (data, label) in enumerate(tqdm(data_iterator, desc="%s evaluating" % stage)):
-            data = data.as_in_context(model_ctx)
-            label = label.as_in_context(model_ctx)
-            output = net(data)
-            predictions = mx.nd.argmax(output, axis=1)
-            self.metrics.update(preds=predictions, labels=label)
-        return self.metrics.get_name_value()
-
-    @staticmethod
-    def format_eval_res(epoch, eval_name_value, loss_name_value=None, train_time=None, output=True, *args, **kwargs):
-        data = {}
-        msg = 'Epoch [%d]:' % epoch
-        data['iteration'] = epoch
-        if train_time is not None:
-            msg += "\tTrain Time-%.3fs" % train_time
-            data['train_time'] = train_time
-
-        if loss_name_value is not None:
-            msg += "\tLoss - "
-            for n, v in loss_name_value:
-                msg += "%s: %f" % (n, v)
-
-        name_value = dict(eval_name_value)
-        if 'accuracy' in name_value:
-            accuracy = name_value['accuracy']
-            msg += "\tValidation Accuracy: %f" % name_value['accuracy']
-            data['accuracy'] = accuracy
-
-            del name_value['accuracy']
-
-        if 'auc' in name_value:
-            accuracy = name_value['auc']
-            msg += "\tValidation Auc: %f" % name_value['auc']
-            data['auc'] = accuracy
-
-            del name_value['auc']
-        # todo 优化解析结构
         prf = {}
         eval_ids = set()
+
         for name, value in name_value.items():
-            try:
-                eval_id, class_id = name.split("_")
-            except ValueError:
-                continue
-            if class_id not in prf:
-                prf[class_id] = {}
-            prf[class_id][eval_id] = value
-            eval_ids.add(eval_id)
+            if multi_class_pattern.match(name) is not None:
+                try:
+                    eval_id, class_id = name.split("_")
+                except ValueError:
+                    continue
+                if class_id not in prf:
+                    prf[class_id] = {}
+                prf[class_id][eval_id] = value
+                eval_ids.add(eval_id)
+            else:
+                msg += "\tValidation %s: %f" % (name, value)
+                data[name] = value
 
         if prf:
             avg = {eval_id: [] for eval_id in eval_ids}
@@ -153,3 +95,15 @@ class ClassEvaluator(Evaluator):
                 except Exception as e:
                     logger.warning(e)
         return msg, data
+
+
+class ClassEvaluator(Evaluator):
+    def evaluate(self, data_iterator, net, stage="", model_ctx=mx.cpu()):
+        # deprecated
+        for i, (data, label) in enumerate(tqdm(data_iterator, desc="%s evaluating" % stage)):
+            data = data.as_in_context(model_ctx)
+            label = label.as_in_context(model_ctx)
+            output = net(data)
+            predictions = mx.nd.argmax(output, axis=1)
+            self.metrics.update(preds=predictions, labels=label)
+        return self.metrics.get_name_value()
