@@ -118,7 +118,7 @@ class module_name(object):
 
         return train_data, test_data
 
-    def model_init(self, load_epoch=None, force_init=False, params=None):
+    def model_init(self, load_epoch=None, force_init=False, params=None, **kwargs):
         mod = self.mod
         net = self.net
         params = mod.params if params is None else params
