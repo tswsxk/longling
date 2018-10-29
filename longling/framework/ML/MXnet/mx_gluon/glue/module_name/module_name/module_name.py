@@ -21,7 +21,7 @@ def train_module_name(**kwargs):
 
 
 class module_name(object):
-    def __init__(self, load_epoch=None, params=None, **kwargs):
+    def __init__(self, load_epoch=None, params=None, package_init=False, **kwargs):
         # 1 配置参数初始化
         # todo 到Parameters定义处定义相关参数
         params = Parameters(
@@ -53,6 +53,9 @@ class module_name(object):
         self.informer = None
         self.timer = None
         self.evaluator = None
+
+        if package_init:
+            self.package_init()
 
     def viz(self):
         mod = self.mod
