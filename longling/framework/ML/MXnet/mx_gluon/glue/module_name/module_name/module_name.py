@@ -21,12 +21,12 @@ def train_module_name(**kwargs):
 
 
 class module_name(object):
-    def __init__(self, load_epoch=None, **kwargs):
+    def __init__(self, load_epoch=None, params=None, **kwargs):
         # 1 配置参数初始化
         # todo 到Parameters定义处定义相关参数
         params = Parameters(
             **kwargs
-        )
+        ) if params is None else params
 
         mod = GluonModule(params)
         mod.logger.info(str(mod))
@@ -161,7 +161,7 @@ class module_name(object):
 
         assert all([bp_loss_f, loss_function, losses_monitor, informer, timer, evaluator]), \
             "make sure these variable have been initialized, " \
-            "check init method and make sure init method has been called"
+            "check init method and make sure package_init method has been called"
 
         # 6 todo 训练
         trainer = GluonModule.get_trainer(net, optimizer=params.optimizer, optimizer_params=params.optimizer_params)
