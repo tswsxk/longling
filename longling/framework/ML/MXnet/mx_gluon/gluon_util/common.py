@@ -11,3 +11,12 @@ def getF(input):
         return symbol
     elif isinstance(input, ndarray.NDArray):
         return ndarray
+
+
+def copy_net(src_net, target_net, select=None):
+    src_params = src_net.collect_params(select=select)
+    target_params = target_net.collect_params(select=select)
+
+    for name, value in src_params._params.items():
+        value = value.data()
+        target_params._params[name.replace(src_params.prefix, target_params.prefix)].set_data(value)
