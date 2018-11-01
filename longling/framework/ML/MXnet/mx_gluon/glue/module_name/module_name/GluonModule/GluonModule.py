@@ -500,8 +500,8 @@ class GluonModule(object):
                     if losses_monitor:
                         losses_monitor.update(name, loss_value)
 
-        assert bp_loss is not None
-        bp_loss.backward()
+            assert bp_loss is not None
+            bp_loss.backward()
         trainer.step(batch_size)
 
     @staticmethod
