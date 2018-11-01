@@ -91,6 +91,7 @@ if __name__ == '__main__':
     # datas = get_data_iter(params)
 
     from tqdm import tqdm
+
     bp_loss_f = lambda x, y: x - y
 
     # forward check
@@ -108,6 +109,6 @@ if __name__ == '__main__':
     #             loss = bp_loss_f(pred_rs, label)
     #             epoch_loss += loss.asscalar()
     #             # epoch_loss += np.mean(loss.asnumpy())
-    #         loss.backward()
+    #             loss.backward()
     #         trainer.step(1)
     #     print(epoch_loss)
