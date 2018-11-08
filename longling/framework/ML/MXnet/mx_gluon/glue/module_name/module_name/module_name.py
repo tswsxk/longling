@@ -202,7 +202,7 @@ class module_name(object):
         batch_size = mod.params.batch_size
         ctx = mod.params.ctx
 
-        return mod.fit_f(
+        mod.fit_f(
             net=net, batch_size=batch_size, batch_data=batch_data, trainer=trainer,
             bp_loss_f=bp_loss_f, loss_function=loss_function, losses_monitor=losses_monitor,
             ctx=ctx,
