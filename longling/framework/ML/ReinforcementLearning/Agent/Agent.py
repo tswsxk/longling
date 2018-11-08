@@ -15,6 +15,15 @@ class Agent(object):
     def end_episode(self):
         raise NotImplementedError
 
+    def learning(self):
+        raise NotImplementedError
+
+    def pi(self):
+        raise NotImplementedError
+
+    def state_transform(self):
+        raise NotImplementedError
+
 
 class ValueAgent(Agent):
     pass
