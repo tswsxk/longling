@@ -1,9 +1,6 @@
 # coding:utf-8
 # created by tongshiwei on 2018/11/8
 
-# coding:utf-8
-# created by tongshiwei on 2018/11/8
-
 
 class Agent(object):
     def __init__(self, *args, **kwargs):
