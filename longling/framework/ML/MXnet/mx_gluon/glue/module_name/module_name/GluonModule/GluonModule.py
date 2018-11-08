@@ -238,7 +238,7 @@ class GluonModule(object):
 
         """
         # 此方法可以直接使用
-        return self.epoch_loop(self.batch_loop(self._fit_f))(
+        return self.epoch_loop(self.batch_loop(self.fit_f))(
             net=net, begin_epoch=begin_epoch, end_epoch=end_epoch, batch_size=batch_size,
             train_data=train_data,
             trainer=trainer, bp_loss_f=bp_loss_f,
@@ -454,10 +454,10 @@ class GluonModule(object):
         return {"evaluation_name": sum(evalue) / len(evalue)}
 
     @staticmethod
-    def _fit_f(net, batch_size, batch_data,
-               trainer, bp_loss_f, loss_function, losses_monitor=None,
-               ctx=mx.cpu()
-               ):
+    def fit_f(net, batch_size, batch_data,
+              trainer, bp_loss_f, loss_function, losses_monitor=None,
+              ctx=mx.cpu()
+              ):
         """
         Defined how each step of batch train goes
 

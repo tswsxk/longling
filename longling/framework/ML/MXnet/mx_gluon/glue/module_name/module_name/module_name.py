@@ -190,6 +190,23 @@ class module_name(object):
         # 需要在这之前调用 hybridize 方法,并至少forward一次
         # # net.export(mod.prefix)
 
+    def step_fit(self, batch_data, trainer):
+        mod = self.mod
+        net = self.net
+
+        bp_loss_f = self.bp_loss_f
+        loss_function = self.loss_function
+        losses_monitor = self.losses_monitor
+
+        batch_size = mod.params.batch_size
+        ctx = mod.params.ctx
+
+        return mod.fit_f(
+            net=net, batch_size=batch_size, batch_data=batch_data, trainer=trainer,
+            bp_loss_f=bp_loss_f, loss_function=loss_function, losses_monitor=losses_monitor,
+            ctx=ctx,
+        )
+
     def __call__(self, *args, **kwargs):
         raise NotImplementedError
 
