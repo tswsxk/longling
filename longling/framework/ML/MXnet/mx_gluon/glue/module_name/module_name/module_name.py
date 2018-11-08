@@ -148,7 +148,7 @@ class module_name(object):
         # # todo whether to use static symbol to accelerate, do not invoke this method for dynamic structure like rnn
         # net.hybridize()
 
-    def train(self, train_data, test_data):
+    def train(self, train_data, test_data, trainer=None):
         mod = self.mod
         params = self.mod.params
         net = self.net
@@ -170,7 +170,8 @@ class module_name(object):
             "check init method and make sure package_init method has been called"
 
         # 6 todo 训练
-        trainer = GluonModule.get_trainer(net, optimizer=params.optimizer, optimizer_params=params.optimizer_params)
+        trainer = GluonModule.get_trainer(net, optimizer=params.optimizer,
+                                          optimizer_params=params.optimizer_params) if trainer is None else trainer
         mod.logger.info("start training")
         mod.fit(
             net=net, begin_epoch=begin_epoch, end_epoch=end_epoch, batch_size=batch_size,
