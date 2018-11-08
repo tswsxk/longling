@@ -43,6 +43,7 @@ class Parameters(object):
         # 'wd': 0.5,
         # 'momentum': 0.01,
         # 'clip_gradient': 5,
+        'epsilon': 0.01,
     }
 
     begin_epoch = 0
