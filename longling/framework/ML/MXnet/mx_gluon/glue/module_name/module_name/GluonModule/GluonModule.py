@@ -150,6 +150,11 @@ class GluonModule(object):
                 os.path.join(self.params.model_dir, old_file) + suffix,
             )
 
+    def dump_parameters(self, filename=None):
+        filename = filename if filename is not None else self.prefix + "-params.yaml"
+        self.params.dump(filename, override=True)
+        return filename
+
     def epoch_params_filename(self, epoch):
         return self.prefix + "-%04d.parmas" % epoch
 

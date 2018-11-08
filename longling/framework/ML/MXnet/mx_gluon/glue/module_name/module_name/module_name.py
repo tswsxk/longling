@@ -31,6 +31,9 @@ class module_name(object):
         mod = GluonModule(params)
         mod.logger.info(str(mod))
 
+        filename = mod.dump_parameters()
+        mod.logger.info("parameters saved to %s" % filename)
+
         self.mod = mod
 
         # 2 todo 定义网络结构
