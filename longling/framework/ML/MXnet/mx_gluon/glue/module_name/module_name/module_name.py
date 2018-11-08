@@ -1,5 +1,6 @@
 # coding: utf-8
 # Copyright @tongshiwei
+import mxnet as mx
 
 try:
     from .GluonModule import *
