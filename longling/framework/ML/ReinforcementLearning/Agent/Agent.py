@@ -34,6 +34,8 @@ class Agent(object):
     def state_transform(self):
         raise NotImplementedError
 
+    def get_candidates_actions(self):
+        pass
 
 class ValueAgent(Agent):
     pass
