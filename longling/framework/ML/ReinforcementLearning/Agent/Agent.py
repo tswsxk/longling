@@ -1,9 +1,9 @@
 # coding:utf-8
 # created by tongshiwei on 2018/11/8
-
+import random
 
 class Agent(object):
-    def __init__(self, *args, **kwargs):
+    def __init__(self,  *args, **kwargs):
         pass
 
     def begin_episode(self):
@@ -18,7 +18,17 @@ class Agent(object):
     def learning(self):
         raise NotImplementedError
 
-    def pi(self):
+    def exploitation(self):
+        raise NotImplementedError
+
+    def exploration(self):
+        raise NotImplementedError
+
+    def pi(self, epsilon=0):
+        if random.random() < 1 - epsilon:
+            self.exploitation()
+        else:
+            self.exploration()
         raise NotImplementedError
 
     def state_transform(self):
