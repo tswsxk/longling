@@ -48,3 +48,13 @@ class Manager(object):
 
     def end_episode(self):
         raise NotImplementedError
+
+    def epoch_loop(self, steps_per_epoch):
+        raise NotImplementedError
+
+    def episode_loop(self):
+        raise NotImplementedError
+
+    def train(self, epoch_num, steps_per_epoch, *args, **kwargs):
+        for e in epoch_num:
+            self.epoch_loop(steps_per_epoch)
