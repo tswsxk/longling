@@ -57,6 +57,7 @@ class module_name(object):
         self.informer = None
         self.timer = None
         self.evaluator = None
+        self.trainer = None
 
         if package_init:
             self.package_init()
@@ -149,6 +150,9 @@ class module_name(object):
         # # todo whether to use static symbol to accelerate, do not invoke this method for dynamic structure like rnn
         # net.hybridize()
 
+        trainer = GluonModule.get_trainer(net, optimizer=params.optimizer,
+                                          optimizer_params=params.optimizer_params)
+
     def train(self, train_data, test_data, trainer=None):
         mod = self.mod
         params = self.mod.params
@@ -171,8 +175,7 @@ class module_name(object):
             "check init method and make sure package_init method has been called"
 
         # 6 todo 训练
-        trainer = GluonModule.get_trainer(net, optimizer=params.optimizer,
-                                          optimizer_params=params.optimizer_params) if trainer is None else trainer
+        trainer = self.trainer if trainer is None else trainer
         mod.logger.info("start training")
         mod.fit(
             net=net, begin_epoch=begin_epoch, end_epoch=end_epoch, batch_size=batch_size,
@@ -191,7 +194,7 @@ class module_name(object):
         # 需要在这之前调用 hybridize 方法,并至少forward一次
         # # net.export(mod.prefix)
 
-    def step_fit(self, batch_data, trainer):
+    def step_fit(self, batch_data, trainer=None):
         mod = self.mod
         net = self.net
 
@@ -202,6 +205,7 @@ class module_name(object):
         batch_size = mod.params.batch_size
         ctx = mod.params.ctx
 
+        trainer = self.trainer if trainer is None else trainer
         mod.fit_f(
             net=net, batch_size=batch_size, batch_data=batch_data, trainer=trainer,
             bp_loss_f=bp_loss_f, loss_function=loss_function, losses_monitor=losses_monitor,
