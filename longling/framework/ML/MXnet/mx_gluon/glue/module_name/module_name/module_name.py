@@ -51,10 +51,11 @@ class module_name(object):
 
     def viz(self):
         mod = self.mod
+        net = self.net
 
         # optional 3 可视化检查网络
         mod.logger.info("visualizing symbol")
-        # net_viz(net, mod.params)
+        net_viz(net, mod.params)
 
     def package_init(self):
         from longling.lib.clock import Clock
