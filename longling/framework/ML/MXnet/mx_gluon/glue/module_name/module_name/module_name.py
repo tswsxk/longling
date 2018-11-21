@@ -136,6 +136,7 @@ class module_name(object):
 
         # # optional
         # # todo whether to use static symbol to accelerate, do not invoke this method for dynamic structure like rnn
+        # # suggest annotate this until your process worked
         # net.hybridize()
 
         self.trainer = GluonModule.get_trainer(net, optimizer=params.optimizer,
