@@ -8,19 +8,6 @@ except (SystemError, ModuleNotFoundError):
     from GluonModule import *
 
 
-def train_module_name(**kwargs):
-    module = module_name(**kwargs)
-
-    module.viz()
-
-    module.package_init()
-
-    train_data, test_data = module.load_data()
-
-    module.model_init(**kwargs)
-    module.train(train_data, test_data)
-
-
 class module_name(object):
     def __init__(self, load_epoch=None, params=None, package_init=False, **kwargs):
         # 1 配置参数初始化
@@ -247,6 +234,19 @@ class module_name(object):
 
     def pre_process(self, data):
         raise NotImplementedError
+
+
+def train_module_name(**kwargs):
+    module = module_name(**kwargs)
+
+    module.viz()
+
+    module.package_init()
+
+    train_data, test_data = module.load_data()
+
+    module.model_init(**kwargs)
+    module.train(train_data, test_data)
 
 
 if __name__ == '__main__':
