@@ -14,8 +14,8 @@ except ImportError:
 class TrainBatchInformer(object):
     def __init__(self, loss_index=None, eval_index=None, batch_num=NAN, end_epoch=NAN, output=True, silent=False,
                  **kwargs):
-        assert loss_index
-        assert eval_index
+        loss_index = [] if loss_index is None else loss_index
+        eval_index = [] if eval_index is None else eval_index
 
         self.batch_num = batch_num
         self.end_epoch = end_epoch
