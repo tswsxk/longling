@@ -24,7 +24,7 @@ class Module(object):
 
     # 1
     修改 __init__ 和 params 方法
-    GluonModule(....) 初始化一些通用的参数，比如模型的存储路径等
+    Module(....) 初始化一些通用的参数，比如模型的存储路径等
 
     # 2
     定义网络部分，命名为
@@ -339,14 +339,14 @@ class Module(object):
                 train_time = epoch_timer.end(wall=True) if epoch_timer else None
 
                 # todo 定义每一轮结束后的模型评估方法
-                # test_eval_res = GluonModule.eval(net, test_data, evaluator=evaluator, ctx=ctx)
+                # test_eval_res = Module.eval(net, test_data, evaluator=evaluator, ctx=ctx)
                 # print(evaluator.format_eval_res(epoch, test_eval_res, loss_values, train_time,
                 #                                 logger=evaluator.logger, log_f=evaluator.log_f)[0])
 
                 # todo 定义模型保存方案
                 if kwargs.get('prefix') and (epoch % kwargs.get('save_epoch', 1) == 0
                                              or end_epoch - 10 <= epoch <= end_epoch - 1):
-                    GluonModule.save_params(kwargs['prefix'] + "-%04d.parmas" % (epoch + 1), net)
+                    Module.save_params(kwargs['prefix'] + "-%04d.parmas" % (epoch + 1), net)
 
         return decorator
 
@@ -486,7 +486,7 @@ class Module(object):
 
         """
         # 此函数定义训练过程
-        ctx_data = GluonModule.split_and_load(
+        ctx_data = Module.split_and_load(
             ctx, *batch_data,
             even_split=False
         )
