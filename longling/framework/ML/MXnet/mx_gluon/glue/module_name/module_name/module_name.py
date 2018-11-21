@@ -3,9 +3,9 @@
 import mxnet as mx
 
 try:
-    from .GluonModule import *
+    from .Module import *
 except (SystemError, ModuleNotFoundError):
-    from GluonModule import *
+    from Module import *
 
 
 class module_name(object):
