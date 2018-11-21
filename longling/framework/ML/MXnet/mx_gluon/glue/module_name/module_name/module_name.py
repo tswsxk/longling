@@ -16,7 +16,7 @@ class module_name(object):
             **kwargs
         ) if params is None else params
 
-        mod = GluonModule(params)
+        mod = Module(params)
         mod.logger.info(str(mod))
 
         filename = mod.dump_parameters()

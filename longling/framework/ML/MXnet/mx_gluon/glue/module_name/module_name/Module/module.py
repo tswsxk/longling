@@ -17,7 +17,7 @@ from .parameters import Parameters
 from .sym import NetName
 
 
-class GluonModule(object):
+class Module(object):
     """
     模块模板
     train 修改流程
