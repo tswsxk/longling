@@ -109,8 +109,8 @@ class module_name(object):
 
         # 4.2 todo 定义数据加载
         mod.logger.info("loading data")
-        train_data = GluonModule.get_data_iter(params=params)
-        test_data = GluonModule.get_data_iter(params=params)
+        train_data = Module.get_data_iter(params=params)
+        test_data = Module.get_data_iter(params=params)
 
         return train_data, test_data
 
@@ -139,7 +139,7 @@ class module_name(object):
         # # suggest annotate this until your process worked
         # net.hybridize()
 
-        self.trainer = GluonModule.get_trainer(net, optimizer=params.optimizer,
+        self.trainer = Module.get_trainer(net, optimizer=params.optimizer,
                                                optimizer_params=params.optimizer_params)
 
     def train(self, train_data, test_data, trainer=None):
