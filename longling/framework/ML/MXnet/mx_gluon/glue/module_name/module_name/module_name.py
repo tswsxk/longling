@@ -123,12 +123,12 @@ class module_name(object):
         if self.initialized and not force_init:
             mod.logger.warning("model has been initialized, skip model_init")
 
-        load_epoch = load_epoch if load_epoch is not None else self.mod.params.begin_epoch
+        load_epoch = load_epoch if load_epoch is not None else begin_epoch
 
         # 5 todo 初始化模型
         # try:
-        #     net = mod.load(net, begin_epoch, params.ctx)
-        #     mod.logger.info("load params from existing model file %s" % mod.prefix + "-%04d.parmas" % begin_epoch)
+        #     net = mod.load(net, load_epoch, params.ctx)
+        #     mod.logger.info("load params from existing model file %s" % mod.prefix + "-%04d.parmas" % load_epoch)
         # except FileExistsError:
         #     mod.logger.info("model doesn't exist, initializing")
         #     module_nameModule.net_initialize(net, params.ctx)
