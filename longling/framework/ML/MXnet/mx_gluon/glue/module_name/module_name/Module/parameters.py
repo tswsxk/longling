@@ -19,24 +19,31 @@ from mxnet import cpu, gpu
 
 
 class Parameters(object):
-    # default path
-    root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")) + os.sep
+    # 模型名和数据集设置
     model_name = os.path.basename(os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
     # Can also specify the model_name using explicit string
     # model_name = "module_name"
     dataset = ""
 
+    # 项目根目录
+    root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")) + os.sep
+
+    # 数据根目录（存储数据集数据及以该数据集为训练样本训练的模型存储位置）
     if dataset:
         root_data_dir = os.path.abspath(os.path.join(root, "data")) + os.sep
     else:
         root_data_dir = os.path.abspath(os.path.join(root, "data" + os.sep + "{}".format(dataset))) + os.sep
 
+    # 数据目录
     data_dir = os.path.abspath(os.path.join(root_data_dir, "data")) + os.sep
-    model_dir = os.path.abspath(os.path.join(root_data_dir, model_name)) + os.sep
+
+    # 模型目录
+    model_dir = os.path.abspath(os.path.join(root_data_dir, "model/" + model_name)) + os.sep
 
     logger = config_logging(logger=model_name, console_log_level=LogLevel.INFO)
     time_stamp = False
 
+    # 优化器设置
     optimizer = 'adam'
     optimizer_params = {
         'learning_rate': 0.01,
@@ -46,25 +53,52 @@ class Parameters(object):
         'epsilon': 0.01,
     }
 
+    # 训练参数设置
     begin_epoch = 0
     end_epoch = 100
     batch_size = 32
 
+    # 运行设备
     ctx = cpu()
-
-    # 参数保存频率
-    save_epoch = 1
 
     # 是否显示网络图
     view_tag = False
 
     # 更新保存参数，一般需要保持一致
+    save_epoch = 1
     train_select = '^(?!.*embedding)'
     save_select = train_select
 
     # 用户变量
 
     def __init__(self, params_yaml=None, **kwargs):
+        """
+        Configuration File, including categories:
+
+        * directory setting, by default:
+            项目根目录($project_name/ --> $root)
+            +---数据根目录 ($root/data/ or $root/data/$dataset --> $root_data_dir)
+                  +---数据目录 ($root_data_dir/data/ --> $data_dir)
+                       +---训练及测试数据 (train & test)
+                   +---模型根目录 ($root_data_dir/model/ --- model_root_dir)
+                       +--- 模型目录($root_data_dir/model/$model_name --> $model_dir)
+                          +--- 模型配置文件(.yaml)
+                          +--- 模型日志文件(.log)
+                          +--- 模型参数文件(.parmas)
+        * optimizer setting
+        * training parameters
+        * equipment
+        * visualization setting
+        * parameters saving setting
+        * user parameters
+
+        Parameters
+        ----------
+        params_yaml: str
+            The path to configuration file which is in yaml format
+        kwargs: dict
+            Parameters to be reset.
+        """
         params = self.class_var
         if params_yaml:
             params.update(self.load(params_yaml=params_yaml))
@@ -79,7 +113,8 @@ class Parameters(object):
                 self.root_data_dir = os.path.abspath(os.path.join(self.root, "data")) + os.sep
             else:
                 self.root_data_dir = os.path.abspath(
-                    os.path.join(self.root, "data" + os.sep + "{}".format(self.dataset))) + os.sep
+                    os.path.join(self.root, "data" + os.sep + "{}".format(self.dataset))
+                ) + os.sep
         if 'data_dir' not in kwargs:
             self.data_dir = os.path.abspath(os.path.join(self.root_data_dir, "data")) + os.sep
         if 'model_dir' not in kwargs:
@@ -120,28 +155,52 @@ class Parameters(object):
 
     @property
     def class_var(self):
+        """
+        获取所有设定的参数
+
+        Returns
+        -------
+        parameters: dict
+            all variables used as parameters
+        """
         variables = {k: v for k, v in vars(type(self)).items() if
                      not inspect.isroutine(v) and k not in self.excluded_names()}
         return variables
 
     @property
     def parsable_var(self):
+        """
+        获取可以进行命令行设定的参数
+
+        Returns
+        -------
+        store_vars: dict
+            可以进行命令行设定的参数
+        """
         store_vars = {k: v for k, v in vars(self).items() if k not in {'logger'}}
         if 'ctx' in store_vars:
             store_vars['ctx'] = MXCtx.dump(store_vars['ctx'])
         return store_vars
 
     @staticmethod
+    def directory_check():
+        print("root", Parameters.root)
+        print("root_data_dir", Parameters.root_data_dir)
+        print("data_dir", Parameters.data_dir)
+        print("model_dir", Parameters.model_dir)
+
+    @staticmethod
     def excluded_names():
         """
         获取非参变量集
+
         Returns
         -------
         exclude names set: set
             所有非参变量
         """
         return {'__doc__', '__module__', '__dict__', '__weakref__',
-                'class_var', 'parsable_var'}
+                'class_var', 'parsable_var', 'directory_check'}
 
 
 class ParameterParser(argparse.ArgumentParser):
@@ -171,22 +230,29 @@ class ParameterParser(argparse.ArgumentParser):
 
 
 if __name__ == '__main__':
-    default_yaml_file = os.path.join(Parameters.model_dir, "parameters.yaml")
+    # Advise: firstly checkout whether the directory is correctly (step 1) and
+    # then generate the paramters configuation file to check the details (step 2)
 
-    # 命令行参数配置
-    parser = ParameterParser()
-    kwargs = parser.parse_args()
-    kwargs = parser.parse(kwargs)
+    # step 1
+    Parameters.directory_check()
 
-    data_dir = os.path.join(Parameters.root, "data")
-    parameters = Parameters(
-        **kwargs
-    )
-    parameters.dump(default_yaml_file, override=True)
-    try:
-        logger = parameters.logger
-        parameters.load(default_yaml_file, logger=logger)
-        parameters.logger.info('format check done')
-    except Exception as e:
-        print("parameters format error, may contain illegal data type")
-        raise e
+    # # step 2
+    # default_yaml_file = os.path.join(Parameters.model_dir, "parameters.yaml")
+    #
+    # # 命令行参数配置
+    # parser = ParameterParser()
+    # kwargs = parser.parse_args()
+    # kwargs = parser.parse(kwargs)
+    #
+    # data_dir = os.path.join(Parameters.root, "data")
+    # parameters = Parameters(
+    #     **kwargs
+    # )
+    # parameters.dump(default_yaml_file, override=True)
+    # try:
+    #     logger = parameters.logger
+    #     parameters.load(default_yaml_file, logger=logger)
+    #     parameters.logger.info('format check done')
+    # except Exception as e:
+    #     print("parameters format error, may contain illegal data type")
+    #     raise e

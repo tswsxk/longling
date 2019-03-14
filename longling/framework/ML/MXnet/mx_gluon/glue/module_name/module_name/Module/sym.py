@@ -1,6 +1,8 @@
 # coding: utf-8
 # Copyright @tongshiwei
-
+"""
+This file define the networks structure and provide a simplest training and testing example.
+"""
 import logging
 import os
 
@@ -22,6 +24,7 @@ class NetName(gluon.HybridBlock):
 
 
 def net_viz(net, params, **kwargs):
+    """visualization check, only support pure static network"""
     batch_size = params.batch_size
     model_dir = params.model_dir
     logger = kwargs.get('logger', params.logger if hasattr(params, 'logger') else logging)
@@ -52,11 +55,19 @@ def net_viz(net, params, **kwargs):
         logger.error(e)
 
 
-def get_data_iter(params):
+def pesudo_data_generation():
     # 在这里定义测试用伪数据流
-
     import random
     random.seed(10)
+
+    raw_data = []
+
+    return raw_data
+
+
+def get_data_iter(raw_data, params):
+    # 定义数据转换接口
+    # raw_data --> batch_data
 
     batch_size = params.batch_size
 

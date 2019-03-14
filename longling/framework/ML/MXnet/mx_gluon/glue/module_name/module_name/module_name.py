@@ -57,7 +57,7 @@ class module_name(object):
         mod.logger.info("visualizing symbol")
         net_viz(net, mod.params)
 
-    def package_init(self):
+    def package_init(self, evaluator_parameters=None, validation_logger_mode="w", informer_silent=False):
         from longling.lib.clock import Clock
         from longling.lib.utilog import config_logging
         from longling.framework.ML.MXnet.mx_gluon.gluon_toolkit import TrainBatchInformer, Evaluator, MovingLosses
@@ -70,9 +70,12 @@ class module_name(object):
         # 4.1 todo 定义损失函数
         # bp_loss_f 定义了用来进行 back propagation 的损失函数，只能有一个，命名中不能为 *_\d+ 型
         bp_loss_f = {
-            "pairwise-loss": PairwiseLoss(None, -1, margin=1),
-            "cross-entropy": gluon.loss.SoftmaxCrossEntropyLoss(from_logits=True),
+            # "pairwise-loss": PairwiseLoss(None, -1, margin=1),
+            # "cross-entropy": gluon.loss.SoftmaxCrossEntropyLoss(from_logits=True),
         }
+
+        assert bp_loss_f is not None and len(bp_loss_f) == 1
+
         loss_function = {
 
         }
@@ -81,19 +84,26 @@ class module_name(object):
 
         # 4.1 todo 初始化一些训练过程中的交互信息
         timer = Clock()
-        informer = TrainBatchInformer(loss_index=[name for name in loss_function], end_epoch=params.end_epoch - 1,
-                                      silent=False)
+        informer = TrainBatchInformer(
+            loss_index=[name for name in loss_function],
+            end_epoch=params.end_epoch - 1,
+            silent=informer_silent
+        )
+
         validation_logger = config_logging(
             filename=params.model_dir + "result.log",
             logger="%s-validation" % params.model_name,
-            mode="w",
+            mode=validation_logger_mode,
             log_format="%(message)s",
         )
         from longling.framework.ML.MXnet.metric import PRF, Accuracy
+
+        evaluator_parameters = {} if evaluator_parameters is None else evaluator_parameters
         evaluator = Evaluator(
             # metrics=[PRF(argmax=False), Accuracy(argmax=False)],
             logger=validation_logger,
-            log_f=mod.params.validation_result_file
+            log_f=mod.params.validation_result_file,
+            **evaluator_parameters
         )
 
         self.bp_loss_f = bp_loss_f
@@ -140,7 +150,7 @@ class module_name(object):
         # net.hybridize()
 
         self.trainer = Module.get_trainer(net, optimizer=params.optimizer,
-                                               optimizer_params=params.optimizer_params)
+                                          optimizer_params=params.optimizer_params)
 
     def train(self, train_data, test_data, trainer=None):
         mod = self.mod
