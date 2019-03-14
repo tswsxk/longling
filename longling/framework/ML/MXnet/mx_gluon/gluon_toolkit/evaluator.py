@@ -53,7 +53,17 @@ class BaseEvaluator(object):
 
 
 class Evaluator(BaseEvaluator):
+    """An Evaluator evaluate the model by using the specified metrics"""
     def __init__(self, metrics=None, logger=logging, log_f=None, **kwargs):
+        """
+
+        Parameters
+        ----------
+        metrics: mx.metric.EvalMetric
+        logger
+        log_f
+        kwargs
+        """
         if not isinstance(metrics, mx.metric.EvalMetric):
             self.metrics = mx.metric.create(metrics) if metrics is not None else None
 

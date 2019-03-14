@@ -3,8 +3,6 @@
 
 from mxnet import symbol, ndarray
 
-from mxnet.gluon.parameter import tensor_types
-
 
 def getF(input):
     if isinstance(input, symbol.Symbol):
@@ -14,6 +12,19 @@ def getF(input):
 
 
 def copy_net(src_net, target_net, select=None):
+    """
+    复制网络
+
+    Parameters
+    ----------
+    src_net
+    target_net
+    select
+
+    Returns
+    -------
+
+    """
     src_params = src_net.collect_params(select=select)
     target_params = target_net.collect_params(select=select)
 

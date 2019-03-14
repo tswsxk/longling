@@ -8,6 +8,20 @@ from longling.lib.candylib import as_list
 
 
 def format_sequence(length, inputs, layout, merge, in_layout=None):
+    """
+
+    Parameters
+    ----------
+    length
+    inputs
+    layout
+    merge
+    in_layout
+
+    Returns
+    -------
+
+    """
     assert inputs is not None, \
         "unroll(inputs=None) has been deprecated. " \
         "Please create input variables outside unroll."
@@ -50,6 +64,21 @@ def format_sequence(length, inputs, layout, merge, in_layout=None):
 
 
 def mask_sequence_variable_length(F, data, length, valid_length, time_axis, merge):
+    """
+
+    Parameters
+    ----------
+    F
+    data
+    length
+    valid_length
+    time_axis
+    merge
+
+    Returns
+    -------
+
+    """
     assert valid_length is not None
     if not isinstance(data, tensor_types):
         data = F.stack(*data, axis=time_axis)
