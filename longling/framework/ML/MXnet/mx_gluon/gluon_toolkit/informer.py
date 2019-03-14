@@ -62,7 +62,7 @@ class TrainBatchInformer(object):
     def batch_end(self, batch_num=None):
         if batch_num is not None:
             self.batch_num = batch_num
-        if self.output:
+        if self.output and not self.silent:
             print("")
 
         return ""

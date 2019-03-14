@@ -1,6 +1,7 @@
 # coding: utf-8
 # created by tongshiwei on 18-2-5
 
+import warnings
 import re
 import codecs
 import json
@@ -15,17 +16,51 @@ from longling.base import string_types
 from longling.lib.stream import wf_open
 
 
-class Evaluator(object):
-    def __init__(self, metrics=None, logger=logging, log_f=None, **kwargs):
-        if not isinstance(metrics, mx.metric.EvalMetric):
-            self.metrics = mx.metric.create(metrics) if metrics is not None else None
+class BaseEvaluator(object):
+    def __init__(self, logger=logging, log_f=None, **kwargs):
         self.logger = logger
         if log_f is not None and isinstance(log_f, string_types):
             # clean file
-            wf_open(log_f).close()
+            wf_open(log_f, **kwargs).close()
         self.log_f = log_f
 
+    @staticmethod
+    def format_eval_res(epoch, eval_name_value, output=True, *args, **kwargs):
+        assert isinstance(eval_name_value, dict), "input should be a dict"
+
+        data = {}
+        msg = 'Epoch [%d]:' % epoch
+        data['iteration'] = epoch
+
+        data.update(eval_name_value)
+        msg += str(eval_name_value)
+
+        if output:
+            logger = kwargs.get('logger', logging)
+            logger.info(msg)
+            if kwargs.get('log_f', None) is not None:
+                log_f = kwargs['log_f']
+                try:
+                    if log_f is not None and isinstance(log_f, string_types):
+                        log_f = codecs.open(log_f, "a", encoding="utf-8")
+                        print(json.dumps(data, ensure_ascii=False), file=log_f)
+                        log_f.close()
+                    else:
+                        print(json.dumps(data, ensure_ascii=False), file=log_f)
+                except Exception as e:
+                    logger.warning(e)
+        return msg, data
+
+
+class Evaluator(BaseEvaluator):
+    def __init__(self, metrics=None, logger=logging, log_f=None, **kwargs):
+        if not isinstance(metrics, mx.metric.EvalMetric):
+            self.metrics = mx.metric.create(metrics) if metrics is not None else None
+
+        super(Evaluator, self).__init__(logger, log_f, **kwargs)
+
     def evaluate(self, data_iterator, net, stage=""):
+        warnings.warn("depracated")
         raise NotImplementedError
 
     @staticmethod
@@ -98,8 +133,12 @@ class Evaluator(object):
 
 
 class ClassEvaluator(Evaluator):
+    """
+    @deprecated
+    """
     def evaluate(self, data_iterator, net, stage="", model_ctx=mx.cpu()):
         # deprecated
+        warnings.warn("this method will be aborted in a near point")
         for i, (data, label) in enumerate(tqdm(data_iterator, desc="%s evaluating" % stage)):
             data = data.as_in_context(model_ctx)
             label = label.as_in_context(model_ctx)
