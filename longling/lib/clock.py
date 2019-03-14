@@ -1,6 +1,7 @@
 # coding: utf-8
 from __future__ import absolute_import
 
+from contextlib import contextmanager
 import time
 
 import logging
@@ -8,7 +9,31 @@ from longling.lib.utilog import config_logging
 
 logger = config_logging(logger="clock", console_log_level=logging.INFO)
 
-__all__ = ["Clock"]
+__all__ = ["Clock", "print_time"]
+
+
+@contextmanager
+def print_time(task, logger=logging):
+    """
+
+    Parameters
+    ----------
+    task: str
+    logger: logging.logger
+
+    Examples
+    --------
+    >>> with print_time("task_name"):
+    ...     a = 1 + 1
+
+    """
+    start_time = time.time()
+    logger.info('Starting to %s', task)
+    yield
+    logger.info('Finished to {} in {:.6f} seconds'.format(
+        task,
+        time.time() - start_time)
+    )
 
 
 class Clock(object):
@@ -26,6 +51,7 @@ class Clock(object):
     >>> with Clock():
     ...     print("hello world")
     """
+
     def __init__(self, store_dict=None, logger=logger, tips=''):
         assert store_dict is None or type(store_dict) is dict
         self.process_st = 0
