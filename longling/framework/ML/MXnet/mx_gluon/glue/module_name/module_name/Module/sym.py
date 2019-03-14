@@ -99,7 +99,8 @@ if __name__ == '__main__':
     # net.initialize()
     #
     # # numerical check
-    # datas = get_data_iter(params)
+    # raw_data = pesudo_data_generation()
+    # datas = get_data_iter(raw_data, params)
 
     from tqdm import tqdm
 
@@ -114,7 +115,7 @@ if __name__ == '__main__':
     # trainer = gluon.Trainer(net.collect_params(), 'adam', {'learning_rate': 0.01})
     # for epoch in range(0, 100):
     #     epoch_loss = 0
-    #     for data, label, in get_data_iter(params):
+    #     for data, label, in get_data_iter(raw_data, params):
     #         with autograd.record():
     #             pred_rs, _ = net(data)
     #             loss = bp_loss_f(pred_rs, label)
