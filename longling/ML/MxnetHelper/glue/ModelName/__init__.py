@@ -3,4 +3,4 @@
 
 from __future__ import absolute_import
 
-from .module_name import module_name
+from .ModelName import module_name

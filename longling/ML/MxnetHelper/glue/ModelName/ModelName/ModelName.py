@@ -8,8 +8,10 @@ except (SystemError, ModuleNotFoundError):
     from Module import *
 
 
-class module_name(object):
-    def __init__(self, load_epoch=None, params=None, package_init=False, **kwargs):
+class ModelName(object):
+    def __init__(
+            self, load_epoch=None, params=None, package_init=False, **kwargs
+    ):
         # 1 配置参数初始化
         # todo 到Parameters定义处定义相关参数
         params = Parameters(
@@ -57,21 +59,23 @@ class module_name(object):
         mod.logger.info("visualizing symbol")
         net_viz(net, mod.params)
 
-    def package_init(self, evaluator_parameters=None, validation_logger_mode="w", informer_silent=False):
+    def package_init(self, evaluation_formatter_parameters=None,
+                     validation_logger_mode="w", informer_silent=False):
+
         from longling.lib.clock import Clock
         from longling.lib.utilog import config_logging
-        from longling.ML.MxnetHelper.mx_gluon import TrainBatchInformer, Evaluator, MovingLosses
-        from longling.ML.MxnetHelper.mx_gluon import PairwiseLoss, SoftmaxCrossEntropyLoss
-        from mxnet import gluon
+        from longling.ML.toolkit.formatter import EvalFormatter
+        from longling.ML.toolkit.monitor import MovingLoss, \
+            ConsoleProgressMonitor
 
         mod = self.mod
         params = self.mod.params
 
         # 4.1 todo 定义损失函数
-        # bp_loss_f 定义了用来进行 back propagation 的损失函数，只能有一个，命名中不能为 *_\d+ 型
+        # bp_loss_f 定义了用来进行 back propagation 的损失函数，
+        # 有且只能有一个，命名中不能为 *_\d+ 型
         bp_loss_f = {
-            # "pairwise-loss": PairwiseLoss(None, -1, margin=1),
-            # "cross-entropy": gluon.loss.SoftmaxCrossEntropyLoss(from_logits=True),
+
         }
 
         assert bp_loss_f is not None and len(bp_loss_f) == 1
@@ -80,11 +84,11 @@ class module_name(object):
 
         }
         loss_function.update(bp_loss_f)
-        losses_monitor = MovingLosses(loss_function)
+        losses_monitor = MovingLoss(loss_function)
 
         # 4.1 todo 初始化一些训练过程中的交互信息
         timer = Clock()
-        informer = TrainBatchInformer(
+        informer = ConsoleProgressMonitor(
             loss_index=[name for name in loss_function],
             end_epoch=params.end_epoch - 1,
             silent=informer_silent
@@ -96,14 +100,16 @@ class module_name(object):
             mode=validation_logger_mode,
             log_format="%(message)s",
         )
-        from longling.framework.ML.MXnet.metric import PRF, Accuracy
 
-        evaluator_parameters = {} if evaluator_parameters is None else evaluator_parameters
-        evaluator = Evaluator(
-            # metrics=[PRF(argmax=False), Accuracy(argmax=False)],
+        # set evaluation formatter
+        evaluation_formatter_parameters = {} \
+            if evaluation_formatter_parameters is None \
+            else evaluation_formatter_parameters
+
+        evaluation_formatter = EvalFormatter(
             logger=validation_logger,
             log_f=mod.params.validation_result_file,
-            **evaluator_parameters
+            **evaluation_formatter_parameters
         )
 
         self.bp_loss_f = bp_loss_f
@@ -111,7 +117,7 @@ class module_name(object):
         self.losses_monitor = losses_monitor
         self.informer = informer
         self.timer = timer
-        self.evaluator = evaluator
+        self.evaluator = evaluation_formatter
 
     def load_data(self, params=None):
         mod = self.mod
@@ -124,7 +130,8 @@ class module_name(object):
 
         return train_data, test_data
 
-    def model_init(self, load_epoch=None, force_init=False, params=None, **kwargs):
+    def model_init(self, load_epoch=None, force_init=False, params=None,
+                   **kwargs):
         mod = self.mod
         net = self.net
         params = mod.params if params is None else params
@@ -169,7 +176,8 @@ class module_name(object):
         end_epoch = mod.params.end_epoch
         ctx = mod.params.ctx
 
-        assert all([bp_loss_f, loss_function, losses_monitor, informer, timer, evaluator]), \
+        assert all([bp_loss_f, loss_function, losses_monitor, informer, timer,
+                    evaluator]), \
             "make sure these variable have been initialized, " \
             "check init method and make sure package_init method has been called"
 
@@ -177,7 +185,8 @@ class module_name(object):
         trainer = self.trainer if trainer is None else trainer
         mod.logger.info("start training")
         mod.fit(
-            net=net, begin_epoch=begin_epoch, end_epoch=end_epoch, batch_size=batch_size,
+            net=net, begin_epoch=begin_epoch, end_epoch=end_epoch,
+            batch_size=batch_size,
             train_data=train_data,
             trainer=trainer, bp_loss_f=bp_loss_f,
             loss_function=loss_function, losses_monitor=losses_monitor,
@@ -206,8 +215,10 @@ class module_name(object):
 
         trainer = self.trainer if trainer is None else trainer
         mod.fit_f(
-            net=net, batch_size=batch_size, batch_data=batch_data, trainer=trainer,
-            bp_loss_f=bp_loss_f, loss_function=loss_function, losses_monitor=losses_monitor,
+            net=net, batch_size=batch_size, batch_data=batch_data,
+            trainer=trainer,
+            bp_loss_f=bp_loss_f, loss_function=loss_function,
+            losses_monitor=losses_monitor,
             ctx=ctx,
         )
 
@@ -249,7 +260,7 @@ class module_name(object):
 
 
 def train_module_name(**kwargs):
-    module = module_name(**kwargs)
+    module = ModelName(**kwargs)
 
     module.viz()
 
