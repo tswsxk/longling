@@ -6,6 +6,8 @@ from mxnet.gluon.parameter import tensor_types
 
 from longling.lib.candylib import as_list
 
+__all__ = ["format_sequence", "mask_sequence_variable_length"]
+
 
 def format_sequence(length, inputs, layout, merge, in_layout=None):
     """
@@ -34,8 +36,10 @@ def format_sequence(length, inputs, layout, merge, in_layout=None):
         F = symbol
         if merge is False:
             assert len(inputs.list_outputs()) == 1, \
-                "unroll doesn't allow grouped symbol as input. Please convert " \
-                "to list with list(inputs) first or let unroll handle splitting."
+                "unroll doesn't allow grouped symbol as input. " \
+                "Please convert " \
+                "to list with list(inputs) first or " \
+                "let unroll handle splitting."
             inputs = list(symbol.split(inputs, axis=in_axis, num_outputs=length,
                                        squeeze_axis=1))
     elif isinstance(inputs, ndarray.NDArray):
@@ -63,7 +67,8 @@ def format_sequence(length, inputs, layout, merge, in_layout=None):
     return inputs, axis, F, batch_size
 
 
-def mask_sequence_variable_length(F, data, length, valid_length, time_axis, merge):
+def mask_sequence_variable_length(F, data, length, valid_length, time_axis,
+                                  merge):
     """
 
     Parameters
@@ -82,9 +87,15 @@ def mask_sequence_variable_length(F, data, length, valid_length, time_axis, merg
     assert valid_length is not None
     if not isinstance(data, tensor_types):
         data = F.stack(*data, axis=time_axis)
-    outputs = F.SequenceMask(data, sequence_length=valid_length, use_sequence_length=True,
-                             axis=time_axis)
+    outputs = F.SequenceMask(
+        data, sequence_length=valid_length,
+        use_sequence_length=True,
+        axis=time_axis
+    )
     if not merge:
-        outputs = as_list(F.split(outputs, num_outputs=length, axis=time_axis,
-                                  squeeze_axis=True))
+        outputs = as_list(
+            F.split(
+                outputs, num_outputs=length, axis=time_axis, squeeze_axis=True
+            )
+        )
     return outputs
