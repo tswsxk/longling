@@ -8,7 +8,7 @@ import json
 
 from tqdm import tqdm
 
-from ..dataIterator import CSVIterator
+from trash.dataIterator import CSVIterator
 
 from longling.lib.stream import wf_open, wf_close
 
