@@ -8,6 +8,8 @@ try:
 except (AttributeError, ImportError):
     NAN = float('nan')
 
+__all__ = ["MovingLoss"]
+
 
 class LossMonitor(object):
     def __init__(self, loss_function_names, *args, **kwargs):

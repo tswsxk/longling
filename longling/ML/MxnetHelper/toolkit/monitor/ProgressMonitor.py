@@ -10,6 +10,8 @@ try:
 except (AttributeError, ImportError):
     NAN = float('nan')
 
+__all__ = ["ConsoleProgressMonitor"]
+
 
 class ConsoleProgressMonitor(object):
     def __init__(self, loss_index=None, eval_index=None, batch_num=NAN,

@@ -9,6 +9,8 @@ import re
 from longling.base import string_types
 from longling.lib.stream import wf_open
 
+__all__ = ["EvalFormatter", "MultiClassEvalFormatter"]
+
 
 def _to_dict(name_value):
     return dict(name_value) if isinstance(name_value, tuple) else name_value

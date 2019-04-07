@@ -4,4 +4,3 @@
 from __future__ import absolute_import
 
 from .iterator import DictJsonIter, MulIter, SimpleBucketIter
-from .text_lib import VecDict, pad_sentences
