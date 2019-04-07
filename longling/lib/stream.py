@@ -5,13 +5,14 @@
 
 from __future__ import print_function
 
-import sys
 import codecs
 import os
+import sys
 
 from longling.base import string_types
 
-__all__ = ['rf_open', 'wf_open', 'wf_close', 'flush_print', 'json_load', 'pickle_load']
+__all__ = ['rf_open', 'wf_open', 'wf_close', 'flush_print', 'json_load',
+           'pickle_load']
 
 
 class StreamError(Exception):
@@ -92,7 +93,8 @@ def wf_open(stream_name='', mode="w", encoding="utf-8"):
     r"""
     Simple wrapper to codecs for writing.
 
-    stream_name为空时 mode - w 返回标准错误输出 stderr; 否则，返回标准输出 stdout
+    stream_name为空时 mode - w 返回标准错误输出 stderr;
+    否则，返回标准输出 stdout
 
     stream_name不为空时，返回文件流
 

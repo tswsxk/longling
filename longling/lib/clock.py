@@ -1,10 +1,10 @@
 # coding: utf-8
 from __future__ import absolute_import
 
-from contextlib import contextmanager
-import time
-
 import logging
+import time
+from contextlib import contextmanager
+
 from longling.lib.utilog import config_logging
 
 logger = config_logging(logger="clock", console_log_level=logging.INFO)
@@ -120,7 +120,8 @@ class Clock(object):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.logger.info('%ss' % self.end() if not self.tips else '%s %ss' % (self.tips, self.end()))
+        self.logger.info('%ss' % self.end() if not self.tips else '%s %ss' % (
+        self.tips, self.end()))
         if self.store_dict is not None:
             self.store_dict['wall_time'] = self.wall_time
             self.store_dict['process_time'] = self.process_time

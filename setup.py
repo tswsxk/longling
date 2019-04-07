@@ -6,7 +6,7 @@ import os
 # import sys
 from distutils.core import setup
 from setuptools import find_packages
-from longling.framework.ML.MXnet.mx_gluon.glue import glue
+from longling.ML.MxnetHelper import glue
 
 
 # CURRENT_DIR = os.path.dirname(__file__)
