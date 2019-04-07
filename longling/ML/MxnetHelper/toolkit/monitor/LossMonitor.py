@@ -4,14 +4,12 @@
 import math
 
 try:
-    from math import nan
-
-    NAN = nan
-except ImportError:
+    NAN = math.nan
+except (AttributeError, ImportError):
     NAN = float('nan')
 
 
-class LossesMonitor(object):
+class LossMonitor(object):
     def __init__(self, loss_function_names, *args, **kwargs):
         self.losses = {name: NAN for name in loss_function_names}
 
@@ -35,12 +33,14 @@ class LossesMonitor(object):
         raise self.losses.keys()
 
 
-class MovingLosses(LossesMonitor):
+class MovingLoss(LossMonitor):
     def __init__(self, loss_function_names, smoothing_constant=0.01):
-        super(MovingLosses, self).__init__(loss_function_names)
+        super(MovingLoss, self).__init__(loss_function_names)
         self.smoothing_constant = smoothing_constant
 
     def update(self, name, loss_value):
-        self.losses[name] = (loss_value if math.isnan(self.losses[name])
-                             else (1 - self.smoothing_constant) * self.losses[
-            name] + self.smoothing_constant * loss_value)
+        self.losses[name] = (
+            loss_value if math.isnan(self.losses[name])
+            else (1 - self.smoothing_constant) * self.losses[
+                name] + self.smoothing_constant * loss_value
+        )
