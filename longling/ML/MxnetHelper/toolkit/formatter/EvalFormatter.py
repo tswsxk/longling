@@ -118,7 +118,7 @@ class EvalFormatter(object):
 
 class MultiClassEvalFormatter(EvalFormatter):
     def eval_format(self, eval_name_value):
-        msg = ""
+        msg = []
         data = {}
 
         multi_class_pattern = re.compile(".+_\d+")
@@ -137,8 +137,10 @@ class MultiClassEvalFormatter(EvalFormatter):
                 prf[class_id][eval_id] = value
                 eval_ids.add(eval_id)
             else:
-                msg += self._eval_format(name, value)
+                msg.append(self._eval_format(name, value))
                 data[name] = value
+
+        msg = "\t".join(msg)
 
         if prf:
             avg = {eval_id: [] for eval_id in eval_ids}
