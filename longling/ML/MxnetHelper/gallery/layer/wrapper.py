@@ -1,6 +1,8 @@
 # coding:utf-8
 # created by tongshiwei on 2018/7/31
-
+"""
+我忘记这个是写来干嘛用的了……先留着吧
+"""
 from mxnet import ndarray, symbol
 
 

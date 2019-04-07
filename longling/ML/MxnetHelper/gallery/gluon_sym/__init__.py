@@ -4,9 +4,6 @@
 from __future__ import absolute_import
 
 from .nn_loss import *
-from .nn_cell import TextCNN, TransE, HighwayCell
-from .nn_sym import *
-
-from mxnet.gluon.rnn.rnn_cell import ResidualCell
+from longling.ML.MxnetHelper.gallery.nn_sym import *
 
 # todo TextCNN3D, ATN_RNN
