@@ -961,7 +961,7 @@ class RLSTMModule(object):
                 )
                 if batch_informer:
                     loss_values = [loss for loss in losses_monitor.values()]
-                    batch_informer.batch_report(i, loss_value=loss_values)
+                    batch_informer.__call__(i, loss_value=loss_values)
             loss_values = {name: loss for name, loss in losses_monitor.items()}.items()
             return loss_values, i
 

@@ -15,7 +15,7 @@ from longling.framework.ML.MXnet.callback import tqdm_speedometer, \
     TqdmEpochReset
 from longling.framework.ML.MXnet.metric import PRF, Accuracy, CrossEntropy
 from longling.framework.ML.MXnet.viz import plot_network
-from longling.ML.MxnetHelper.io_lib import VecDict, SimpleBucketIter
+from trash.io import VecDict, SimpleBucketIter
 from longling.framework.ML.MXnet.monitor import TimeMonitor
 
 from longling.lib.utilog import config_logging

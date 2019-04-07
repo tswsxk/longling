@@ -9,7 +9,7 @@ import mxnet as mx
 from mxnet import nd, autograd, gluon
 from tqdm import tqdm
 
-from longling.ML.MxnetHelper.io_lib import VecDict
+from trash.io import VecDict
 from longling.framework.ML.MXnet.metric import PRF, Accuracy
 from longling.ML.MxnetHelper.mx_gluon import TextCNN
 from longling.ML.MxnetHelper.mx_gluon import ClassEvaluator
@@ -150,7 +150,7 @@ def text_cnn():
 
             if i % 1 == 0:
                 loss_values = [loss for loss in moving_losses.values()]
-                batch_infoer.batch_report(i, loss_value=loss_values)
+                batch_infoer.__call__(i, loss_value=loss_values)
 
         if 'num_inst' not in locals().keys() or num_inst is None:
             num_inst = (i + 1) * batch_size

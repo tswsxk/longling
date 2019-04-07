@@ -12,7 +12,7 @@ from longling.framework.ML.MXnet.callback import tqdm_speedometer, \
     ClassificationLogValidationMetricsCallback, Speedometer, \
     TqdmEpochReset
 from longling.framework.ML.MXnet.metric import PRF, Accuracy, CrossEntropy
-from longling.ML.MxnetHelper.io_lib import DictJsonIter
+from trash.io import DictJsonIter
 from longling.framework.ML.MXnet.monitor import TimeMonitor
 from longling.framework.ML.MXnet.util import get_fine_tune_model
 

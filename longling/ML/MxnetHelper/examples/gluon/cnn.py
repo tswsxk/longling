@@ -137,7 +137,7 @@ def cnn():
 
             if i % 1 == 0:
                 loss_values = [loss for loss in moving_losses.values()]
-                batch_infoer.batch_report(i, loss_value=loss_values)
+                batch_infoer.__call__(i, loss_value=loss_values)
 
         if 'num_inst' not in locals().keys() or num_inst is None:
             num_inst = (i + 1) * batch_size
