@@ -3,6 +3,8 @@
 
 from mxnet import gluon
 
+__all__ = ["HighwayCell"]
+
 
 class HighwayCell(gluon.HybridBlock):
     def __init__(self, dim, highway_layer_activation='relu',

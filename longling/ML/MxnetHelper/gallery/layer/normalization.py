@@ -4,6 +4,8 @@
 import mxnet as mx
 from mxnet import gluon
 
+__all__ = ["get_l2_embedding_weight"]
+
 
 def get_l2_embedding_weight(F, embedding_size, batch_size=None):
     entries = list(range(embedding_size))
