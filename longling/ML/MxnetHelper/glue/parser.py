@@ -1,9 +1,17 @@
 # coding:utf-8
 # created by tongshiwei on 2018/8/8
-from mxnet import Context
-from mxnet import cpu, gpu
+
+__all__ = [
+    "MXCtx", "Parameters",
+    "var2exp", "path_append", "ParameterParser",
+    "cpu", "gpu"
+]
+
+from mxnet import Context, cpu, gpu
 
 from longling.lib.candylib import as_list
+from longling.lib.parser import get_parsable_var, load_parameters_json, \
+    var2exp, path_append, Parameters as Params, ParameterParser
 
 
 class MXCtx(object):
@@ -33,3 +41,30 @@ class MXCtx(object):
             else:
                 ctx_vars[device_type] = device_ids[0]
         return ctx_vars
+
+
+class Parameters(Params):
+    @property
+    def parsable_var(self):
+        """
+        获取可以进行命令行设定的参数
+
+        Returns
+        -------
+        store_vars: dict
+            可以进行命令行设定的参数
+        """
+        return get_parsable_var(
+            self,
+            exclude_names={'logger'},
+            dump_parse_functions={'ctx': MXCtx.dump}
+        )
+
+    @staticmethod
+    def load(params_json):
+        with open(params_json) as f:
+            params = load_parameters_json(
+                f, load_parse_function={"ctx": MXCtx.load}
+            )
+
+        return params
