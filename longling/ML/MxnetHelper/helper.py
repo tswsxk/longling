@@ -4,7 +4,7 @@
 import mxnet as mx
 from mxnet import symbol, ndarray
 
-__all__ = ["getF", "copy_net", "get_fine_tune_model"]
+__all__ = ["getF", "copy_net"]
 
 
 def getF(input):
