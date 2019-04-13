@@ -11,7 +11,7 @@ from mxnet import cpu
 
 import longling.ML.MxnetHelper.glue.parser as parser
 from longling.ML.MxnetHelper.glue.parser import path_append, var2exp
-from longling.ML.MxnetHelper.toolkit.optimizer_cfg import get_optimizer_cfg
+from longling.ML.MxnetHelper.toolkit.optimizer_cfg import get_optimizer_cfg, get_update_steps
 from longling.lib.utilog import config_logging, LogLevel
 
 
@@ -36,11 +36,14 @@ class Parameters(parser.Parameters):
     root_data_dir = str(root_data_dir)
 
     # 优化器设置
-    optimizer, optimizer_params = get_optimizer_cfg(
-        name="base",
-        lr_step=1000,
-        lr_total_step=10000,
-    )
+    optimizer, optimizer_params = get_optimizer_cfg(name="base")
+    lr_params = {
+        "step": 100,
+        "max_update_steps": get_update_steps(
+            update_epoch=10,
+            batches_per_epoch=1000,
+        ),
+    }
 
     # 训练参数设置
     begin_epoch = 0
@@ -55,6 +58,8 @@ class Parameters(parser.Parameters):
     ctx = cpu()
 
     # 用户变量
+    # 超参数
+    hyper_params = {}
 
     def __init__(self, params_json=None, **kwargs):
         """
@@ -102,9 +107,9 @@ class Parameters(parser.Parameters):
         )
 
 
-def directory_check(obj):
-    print("data_dir", obj.data_dir)
-    print("model_dir", obj.model_dir)
+def directory_check(class_obj):
+    print("data_dir", class_obj.data_dir)
+    print("model_dir", class_obj.model_dir)
 
 
 if __name__ == '__main__':

@@ -82,9 +82,13 @@ class Module(module.Module):
     # 部分定义训练相关的方法
     @staticmethod
     def get_trainer(
-            net, optimizer='sgd', optimizer_params=None,
+            net, optimizer='sgd', optimizer_params=None, lr_params=None,
             select=Parameters.train_select
     ):
+        if lr_params is not None:
+            from longling.ML.MxnetHelper.toolkit.optimizer_cfg import \
+                get_lr_scheduler
+            optimizer_params["lr_scheduler"] = get_lr_scheduler(**lr_params)
         module.Module.get_trainer(net, optimizer, optimizer_params, select)
 
     @staticmethod
