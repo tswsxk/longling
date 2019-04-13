@@ -46,9 +46,9 @@ class EvalFormatter(object):
         data = eval_name_value
         return msg, data
 
-    def __call__(self, epoch=None, train_time=None,
+    def __call__(self,
+                 epoch=None, train_time=None, loss_name_value=None,
                  eval_name_value=None,
-                 loss_name_value=None,
                  extra_info=None,
                  dump=True,
                  *args, **kwargs
