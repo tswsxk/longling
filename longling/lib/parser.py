@@ -138,6 +138,9 @@ class Parameters(object):
     def __str__(self):
         return str(self.parsable_var)
 
+    def __getitem__(self, item):
+        return getattr(self, item)
+
     def items(self):
         return {k: v for k, v in self.parsable_var}
 
