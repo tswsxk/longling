@@ -46,7 +46,7 @@ class EvalFormatter(object):
         data = eval_name_value
         return msg, data
 
-    def __call__(self,
+    def __call__(self, tips=None,
                  epoch=None, train_time=None, loss_name_value=None,
                  eval_name_value=None,
                  extra_info=None,
@@ -56,6 +56,9 @@ class EvalFormatter(object):
 
         msg = []
         data = {}
+
+        if tips is not None:
+            msg.append("%s" % tips)
 
         if epoch is not None:
             msg.append("Epoch [%d]:" % epoch)
