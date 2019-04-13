@@ -1,9 +1,8 @@
 # coding: utf-8
 # create by tongshiwei on 2019/4/12
 
-__all__ = ["get_optimizer_cfg"]
+__all__ = ["get_optimizer_cfg", "get_lr_scheduler", "get_update_steps"]
 
-import warnings
 from copy import deepcopy
 
 import mxnet as mx
@@ -37,26 +36,25 @@ optimizers = {
 }
 
 
-def get_optimizer_cfg(name, lr_scheduler=None, lr_step=None, lr_total_step=None):
+def get_update_steps(update_epoch, batches_per_epoch):
+    return update_epoch * batches_per_epoch
+
+
+def get_lr_scheduler(learning_rate, step=None, max_update_steps=None):
+    discount = 0.01
+    factor = pow(discount, step / max_update_steps)
+    return mx.lr_scheduler.FactorScheduler(
+        step, factor,
+        stop_factor_lr=learning_rate * discount
+    )
+
+
+def get_optimizer_cfg(name):
     try:
         optimizer, optimizer_params = optimizers[name]
     except KeyError:
         raise KeyError("the name should be in: %s" % ", ".join(optimizers))
     optimizer_params = deepcopy(optimizer_params)
-    discount = 0.01
-    if lr_scheduler is not None:
-        optimizer_params["lr_scheduler"] = lr_scheduler
-        if all([lr_step, lr_total_step]):
-            warnings.warn(
-                "step and factor are invalid due to lr_scheduler is not None"
-            )
-    elif all([lr_step, lr_total_step]):
-        factor = pow(discount, lr_step / lr_total_step)
-        lr_scheduler = mx.lr_scheduler.FactorScheduler(
-            lr_step, factor,
-            stop_factor_lr=optimizer_params["learning_rate"] * discount
-        )
-        optimizer_params["lr_scheduler"] = lr_scheduler
 
     return optimizer, optimizer_params
 
