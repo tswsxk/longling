@@ -29,7 +29,7 @@ class ModelName(object):
         # 2 todo 定义网络结构
         # 2.1 重新生成
         mod.logger.info("generating symbol")
-        net = mod.sym_gen()
+        net = mod.sym_gen(params.hyper_params)
         # 2.2 装载已有模型, export 出来的文件
         # net = mod.load(begin_epoch)
         # net = GluonModule.load_net(filename)
