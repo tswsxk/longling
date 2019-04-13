@@ -1,15 +1,28 @@
 # coding: utf-8
 # Copyright @tongshiwei
 """
-This file define the networks structure and provide a simplest training and testing example.
+This file define the networks structure and
+provide a simplest training and testing example.
 """
+__all__ = ["NetName", "net_viz", "fit_f"]
+
 import logging
 import os
 
 import mxnet as mx
-from mxnet import gluon
+from mxnet import gluon, nd, autograd
 
-from longling.framework.ML.MXnet.viz import plot_network, VizError
+from longling.ML.MxnetHelper.toolkit.viz import plot_network, VizError
+
+# set parameters
+try:
+    # for python module
+    from .data import transform
+    from .parameters import Parameters
+except (ImportError, SystemError):
+    # for python script
+    from data import transform
+    from parameters import Parameters
 
 
 class NetName(gluon.HybridBlock):
@@ -23,16 +36,14 @@ class NetName(gluon.HybridBlock):
         pass
 
 
-def net_viz(net, params, **kwargs):
+def net_viz(net, params, view_tag=False, **kwargs):
     """visualization check, only support pure static network"""
     batch_size = params.batch_size
     model_dir = params.model_dir
-    logger = kwargs.get('logger', params.logger if hasattr(params, 'logger') else logging)
-
-    try:
-        view_tag = params.view_tag
-    except AttributeError:
-        view_tag = True
+    logger = kwargs.get(
+        'logger',
+        params.logger if hasattr(params, 'logger') else logging
+    )
 
     try:
         viz_dir = os.path.abspath(model_dir + "plot/network")
@@ -55,72 +66,74 @@ def net_viz(net, params, **kwargs):
         logger.error(e)
 
 
-def pesudo_data_generation():
-    # 在这里定义测试用伪数据流
-    import random
-    random.seed(10)
+def get_data_iter(params):
+    def pesudo_data_generation():
+        # 在这里定义测试用伪数据流
+        import random
+        random.seed(10)
 
-    raw_data = []
+        raw_data = [
+            [random.random() for _ in range(5)]
+            for _ in range(1000)
+        ]
 
-    return raw_data
+        return raw_data
+
+    return transform(pesudo_data_generation(), params)
 
 
-def get_data_iter(raw_data, params):
-    # 定义数据转换接口
-    # raw_data --> batch_data
+def fit_f(_data, bp_loss_f, loss_function, loss_monitor):
+    data, label = _data
+    # todo modify the input to net
+    output = net(data)
+    bp_loss = None
+    for name, func in loss_function.items():
+        # todo modify the input to func
+        loss = func(output, label)
+        if name in bp_loss_f:
+            bp_loss = loss
+        loss_value = nd.mean(loss).asscalar()
+        if loss_monitor:
+            loss_monitor.update(name, loss_value)
+    return bp_loss
 
-    batch_size = params.batch_size
 
-    pass
+def numerical_check(net, params):
+    net.initialize()
+
+    datas = get_data_iter(params)
+
+    bp_loss_f = {"L2Loss": gluon.loss.L2Loss}
+    loss_function = {}
+    loss_function.update(bp_loss_f)
+    from longling.ML.toolkit.monitor import MovingLoss
+    from longling.ML.MxnetHelper.glue import module
+
+    loss_monitor = MovingLoss(loss_function)
+
+    # train check
+    trainer = module.Module.get_trainer(
+        net, optimizer=params.optimizer,
+        optimizer_params=params.optimizer_params,
+        select=params.train_select
+    )
+
+    for epoch in range(0, 100):
+        epoch_loss = 0
+        for _data in datas:
+            with autograd.record():
+                fit_f(_data, bp_loss_f, loss_function, loss_monitor)
+            trainer.step(params.batch_size)
+        print(epoch_loss)
 
 
 if __name__ == '__main__':
-    # # set parameters
-    try:
-        # for python module
-        from .parameters import Parameters
-    except (ImportError, SystemError):
-        # for python script
-        from parameters import Parameters
-
     params = Parameters()
-
-    # # set batch size
-    # batch_size = 128
-    # params = Parameters(batch_size=batch_size)
 
     # generate sym
     net = NetName()
 
-    # visualiztion check
-    # params.view_tag = True
-    # net_viz(net, params)
-    #
-    # net.initialize()
-    #
-    # # numerical check
-    # raw_data = pesudo_data_generation()
-    # datas = get_data_iter(raw_data, params)
+    # # visualiztion check
+    # net_viz(net, params, False)
 
-    from tqdm import tqdm
-
-    bp_loss_f = lambda x, y: x - y
-
-    # forward check
-    # for data, label in tqdm(get_data_iter(params)):
-    #     loss = bp_loss_f(net(data), label)
-
-    # # train check
-    # from mxnet import autograd
-    # trainer = gluon.Trainer(net.collect_params(), 'adam', {'learning_rate': 0.01})
-    # for epoch in range(0, 100):
-    #     epoch_loss = 0
-    #     for data, label, in get_data_iter(raw_data, params):
-    #         with autograd.record():
-    #             pred_rs, _ = net(data)
-    #             loss = bp_loss_f(pred_rs, label)
-    #             epoch_loss += loss.asscalar()
-    #             # epoch_loss += np.mean(loss.asnumpy())
-    #             loss.backward()
-    #         trainer.step(1)
-    #     print(epoch_loss)
+    numerical_check(net, params)
