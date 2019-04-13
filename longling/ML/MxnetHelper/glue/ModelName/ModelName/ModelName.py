@@ -38,7 +38,7 @@ class ModelName(object):
         self.initialized = False
 
         if load_epoch is not None:
-            self.model_init(load_epoch)
+            self.model_init(load_epoch, allow_reinit=False)
 
         self.bp_loss_f = None
         self.loss_function = None
@@ -58,7 +58,6 @@ class ModelName(object):
 
     def toolbox_init(self, evaluation_formatter_parameters=None,
                      validation_logger_mode="w", informer_silent=False,
-                     **kwargs
                      ):
 
         from longling.lib.clock import Clock
@@ -114,7 +113,7 @@ class ModelName(object):
 
         evaluation_formatter = EvalFormatter(
             logger=validation_logger,
-            log_f=mod.params.validation_result_file,
+            dump_file=mod.params.validation_result_file,
             **evaluation_formatter_parameters
         )
 
@@ -132,13 +131,12 @@ class ModelName(object):
 
         # 4.2 todo 定义数据加载
         mod.logger.info("loading data")
-        train_data = get_data_iter(params=params)
-        eval_data = get_data_iter(params=params)
+        data = get_data_iter(params=params)
 
-        return train_data, eval_data
+        return data
 
     def model_init(self, load_epoch=None, force_init=False, params=None,
-                   **kwargs):
+                   allow_reinit=True, **kwargs):
         mod = self.mod
         net = self.net
         params = mod.params if params is None else params
@@ -150,16 +148,25 @@ class ModelName(object):
         load_epoch = load_epoch if load_epoch is not None else begin_epoch
 
         # 5 todo 初始化模型
-        # try:
-        #     net = mod.load(net, load_epoch, params.ctx)
-        #     mod.logger.info(
-        #         "load params from existing model file %s" % mod.prefix
-        #         + "-%04d.parmas" % load_epoch
-        #     )
-        # except FileExistsError:
-        #     mod.logger.info("model doesn't exist, initializing")
-        #     Module.net_initialize(net, params.ctx)
-        # self.initialized = True
+        model_file = kwargs.get(
+            mod.epoch_params_filename(load_epoch), "init_model_file"
+        )
+        try:
+            net = mod.load(net, load_epoch, params.ctx)
+            mod.logger.info(
+                "load params from existing model file "
+                "%s" % model_file
+            )
+        except FileExistsError:
+            if allow_reinit:
+                mod.logger.info("model doesn't exist, initializing")
+                Module.net_initialize(net, params.ctx)
+            else:
+                mod.logger.info(
+                    "model doesn't exist, target file: %s" % model_file
+                )
+
+        self.initialized = True
 
         # # optional
         # # todo: whether to use static symbol to accelerate
@@ -275,18 +282,45 @@ class ModelName(object):
         return transform(data, self.mod.params)
 
 
-def train_module_name(**kwargs):
+def train(reinforcement=False, **kwargs):
     module = ModelName(**kwargs)
+    # module.viz()
 
-    module.viz()
+    if not reinforcement:
+        module.toolbox_init()
+        module.model_init(**kwargs)
+    else:
+        # 增量学习，从某一轮或某个参数配置继续训练
+        assert "init_model_file" in kwargs or "load_epoch" in kwargs
+        module = ModelName(**kwargs)
+        module.toolbox_init(validation_logger_mode="a")
 
-    module.toolbox_init()
-
-    train_data, valid_data = module.load_data()
-
-    module.model_init(**kwargs)
+    train_data = module.load_data()
+    valid_data = module.load_data()
     module.train(train_data, valid_data)
 
 
+def load(load_epoch=None, **kwargs):
+    module = ModelName(**kwargs)
+    load_epoch = module.mod.params.end_epoch if load_epoch is None \
+        else load_epoch
+    module.model_init(load_epoch, **kwargs)
+    return module
+
+
+def test(test_epoch, dump_file=None, **kwargs):
+    from longling.ML.toolkit.formatter import EvalFormatter
+    formatter = EvalFormatter(dump_file=dump_file)
+    module = load(test_epoch, **kwargs)
+
+    test_data = module.load_data()
+    eval_result = module.mod.eval(module.net, test_data)
+    formatter(
+        tips="test",
+        eval_name_value=eval_result
+    )
+    return eval_result
+
+
 if __name__ == '__main__':
-    train_module_name()
+    train()
