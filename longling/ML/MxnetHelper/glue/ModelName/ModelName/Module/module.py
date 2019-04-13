@@ -1,23 +1,22 @@
 # coding: utf-8
 # Copyright @tongshiwei
-
 from __future__ import absolute_import
 
-import datetime
+__all__ = ["Module"]
+
 import os
-import shutil
 
 import mxnet as mx
-from mxnet import gluon, autograd, nd
+from mxnet import autograd
 from tqdm import tqdm
 
-from longling.framework.ML.MXnet.util import split_and_load
-
+from longling.ML.MxnetHelper.toolkit.ctx import split_and_load
+from longling.ML.MxnetHelper.glue import module
 from .parameters import Parameters
-from .sym import NetName, get_data_iter
+from .sym import NetName, fit_f
 
 
-class Module(object):
+class Module(module.Module):
     """
     模块模板
     train 修改流程
@@ -64,137 +63,43 @@ class Module(object):
         """
         # 初始化一些通用的参数
         self.params = parameters
-        self.prefix = os.path.join(self.params.model_dir, self.params.model_name)
+        self.prefix = os.path.join(
+            self.params.model_dir, self.params.model_name
+        )
         self.logger = parameters.logger
 
         self.sym_gen = NetName
 
-    def __str__(self):
-        """
-        显示模块参数
-        Display the necessary params of this Module
-
-        Returns
-        -------
-
-        """
-        string = ["Params"]
-        for k, v in vars(self.params).items():
-            string.append("%s: %s" % (k, v))
-        return "\n".join(string)
-
-    @staticmethod
-    def load_net(filename, net, ctx=mx.cpu(), allow_missing=False, ignore_extra=False):
-        """
-        Load the existing net parameters
-
-        Parameters
-        ----------
-        filename: str
-            The model file
-        net: HybridBlock
-            The network which has been initialized or loaded from the existed model
-        ctx: Context or list of Context
-                Defaults to ``mx.cpu()``.
-        allow_missing: bool
-        ignore_extra: bool
-
-        Returns
-        -------
-        The initialized net
-        """
-        # 根据文件名装载已有的网络参数
-        if not os.path.isfile(filename):
-            raise FileExistsError
-        net.load_parameters(filename, ctx, allow_missing=allow_missing, ignore_extra=ignore_extra)
-        return net
-
-    def load(self, net, epoch, ctx=mx.cpu(), allow_missing=False, ignore_extra=False):
-        """"
-        Load the existing net parameters
-
-        Parameters
-        ----------
-        net: HybridBlock
-            The network which has been initialized or loaded from the existed model
-        epoch: str or int
-            The epoch which specify the model
-        ctx: Context or list of Context
-                Defaults to ``mx.cpu()``.
-        allow_missing: bool
-        ignore_extra: bool
-
-        Returns
-        -------
-        The initialized net
-        """
-        # 根据起始轮次装载已有的网络参数
-        filename = self.epoch_params_filename(epoch)
-        return self.load_net(filename, net, ctx, allow_missing=allow_missing, ignore_extra=ignore_extra)
-
-    def save(self, suffix=".v{}".format(datetime.datetime.now().strftime("%Y%m%d%H%M%S%f")), model_loop=True):
-        old_files = os.listdir(self.params.model_dir)
-        for old_file in old_files:
-            if ".v" in old_file:
-                continue
-            if model_loop and old_file == self.epoch_params_filename(self.params.end_epoch):
-                shutil.copy(
-                    os.path.join(self.params.model_dir, old_file),
-                    os.path.join(
-                        self.params.model_dir,
-                        self.epoch_params_filename(self.params.begin_epoch)
-                    )
-                )
-            os.rename(
-                os.path.join(self.params.model_dir, old_file),
-                os.path.join(self.params.model_dir, old_file) + suffix,
-            )
-
     def dump_parameters(self, filename=None):
-        filename = filename if filename is not None else self.prefix + "-params.yaml"
+        filename = filename if filename is not None \
+            else self.prefix + "-params.json"
         self.params.dump(filename, override=True)
         return filename
 
     def epoch_params_filename(self, epoch):
         return self.prefix + "-%04d.parmas" % epoch
 
+    # 部分定义训练相关的方法
     @staticmethod
-    def get_data_iter(params=None):
-        # 在这里定义数据加载方法
-        return get_data_iter(None, params)
-
-    # 以下部分定义训练相关的方法
-    @staticmethod
-    def net_initialize(net, model_ctx, initializer=mx.init.Normal(sigma=.1)):
-        """初始化网络参数"""
-        net.collect_params().initialize(initializer, ctx=model_ctx)
-
-    @staticmethod
-    def get_trainer(net, optimizer='sgd', optimizer_params=None, select=Parameters.train_select):
-        """把优化器安装到网络上"""
-        trainer = gluon.Trainer(net.collect_params(select), optimizer, optimizer_params)
-        return trainer
+    def get_trainer(
+            net, optimizer='sgd', optimizer_params=None,
+            select=Parameters.train_select
+    ):
+        module.Module.get_trainer(net, optimizer, optimizer_params, select)
 
     @staticmethod
     def save_params(filename, net, select=Parameters.save_select):
-        import re
-        from mxnet import ndarray
-        params = net._collect_params_with_prefix()
-        if select:
-            pattern = re.compile(select)
-            params = {name: value for name, value in params.items() if pattern.match(name)}
-        arg_dict = {key: val._reduce() for key, val in params.items()}
-        ndarray.save(filename, arg_dict)
+        module.Module.save_params(filename, net, select)
 
     def fit(
             self,
             net, begin_epoch, end_epoch, batch_size,
             train_data,
             trainer, bp_loss_f,
-            loss_function, losses_monitor=None,
-            test_data=None,
+            loss_function,
+            eval_data=None,
             ctx=mx.cpu(),
-            informer=None, epoch_timer=None, evaluator=None,
+            toolbox=None,
             **kwargs
     ):
         """
@@ -203,7 +108,8 @@ class Module(object):
         Parameters
         ----------
         net: HybridBlock
-            The network which has been initialized or loaded from the existed model
+            The network which has been initialized or loaded from
+            the existed model
         begin_epoch: int
             The begin epoch of this train procession
         end_epoch: int
@@ -211,25 +117,22 @@ class Module(object):
         batch_size: int
                 The size of each batch
         train_data: Iterable
-            The data used for this train procession, NOTICE: should have been divided to batches
+            The data used for this train procession,
+            NOTICE: should have been divided to batches
         trainer:
             The trainer used to update the parameters of the net
         bp_loss_f: dict with only one value and one key
-            The function to compute the loss for the procession of back propagation
+            The function to compute the loss for the procession
+            of back propagation
         loss_function: dict of function
             Some other measurement in addition to bp_loss_f
-        losses_monitor: LossesMonitor
-            Default to ``None``
-        test_data: Iterable
-            The data used for the evaluation at the end of each epoch, NOTICE: should have been divided to batches
+        eval_data: Iterable
+            The data used for the evaluation at the end of each epoch,
+            NOTICE: should have been divided to batches
             Default to ``None``
         ctx: Context or list of Context
             Defaults to ``mx.cpu()``.
-        informer: TrainBatchInformer
-            Default to ``None``
-        epoch_timer: Clock
-            Default to ``None``
-        evaluator: Evaluator
+        toolbox: dict or None
             Default to ``None``
         kwargs
 
@@ -239,13 +142,14 @@ class Module(object):
         """
         # 此方法可以直接使用
         return self.epoch_loop(
-            net=net, begin_epoch=begin_epoch, end_epoch=end_epoch, batch_size=batch_size,
+            net=net, begin_epoch=begin_epoch, end_epoch=end_epoch,
+            batch_size=batch_size,
             train_data=train_data,
             trainer=trainer, bp_loss_f=bp_loss_f,
-            loss_function=loss_function, losses_monitor=losses_monitor,
-            test_data=test_data,
+            loss_function=loss_function,
+            test_data=eval_data,
             ctx=ctx,
-            informer=informer, epoch_timer=epoch_timer, evaluator=evaluator,
+            toolbox=toolbox,
             **kwargs
         )
 
@@ -253,11 +157,11 @@ class Module(object):
             self,
             net, begin_epoch, end_epoch, batch_size,
             train_data,
-            trainer, bp_loss_f,
-            loss_function, losses_monitor=None,
+            trainer,
+            bp_loss_f, loss_function,
             test_data=None,
             ctx=mx.cpu(),
-            informer=None, epoch_timer=None, evaluator=None,
+            toolbox=None,
             **kwargs
     ):
         """
@@ -266,7 +170,8 @@ class Module(object):
         Parameters
         ----------
         net: HybridBlock
-            The network which has been initialized or loaded from the existed model
+            The network which has been initialized or loaded from
+            the existed model
         begin_epoch: int
             The begin epoch of this train procession
         end_epoch: int
@@ -274,69 +179,84 @@ class Module(object):
         batch_size: int
             The size of each batch
         train_data: Iterable
-            The data used for this train procession, NOTICE: should have been divided to batches
+            The data used for this train procession,
+            NOTICE: should have been divided to batches
         trainer:
             The trainer used to update the parameters of the net
         bp_loss_f: dict with only one value and one key
-            The function to compute the loss for the procession of back propagation
+            The function to compute the loss for the procession
+            of back propagation
         loss_function: dict of function
             Some other measurement in addition to bp_loss_f
-        losses_monitor: LossesMonitor
-            Default to ``None``
         test_data: Iterable
-            The data used for the evaluation at the end of each epoch, NOTICE: should have been divided to batches
+            The data used for the evaluation at the end of each epoch,
+            NOTICE: should have been divided to batches
             Default to ``None``
         ctx: Context or list of Context
             Defaults to ``mx.cpu()``.
-        informer: TrainBatchInformer
-            Default to ``None``
-        epoch_timer: Clock
-            Default to ``None``
-        evaluator: Evaluator
+        toolbox: Toolbox
             Default to ``None``
         kwargs
         """
         # 参数修改时需要同步修改 fit 函数中的参数
         # 定义轮次训练过程
+        if toolbox is not None:
+            epoch_timer = toolbox.get('timer')
+            formatter = toolbox.get('formatter')
+        else:
+            epoch_timer = None
+            formatter = None
+
         for epoch in range(begin_epoch, end_epoch):
-            # initial
-            if losses_monitor:
-                losses_monitor.reset()
-            if informer:
-                informer.batch_start(epoch)
             if epoch_timer:
                 epoch_timer.start()
-            loss_values, batch_num = self.batch_loop(
-                net=net, batch_size=batch_size,
+
+            loss_values = self.batch_loop(
+                net=net, epoch=epoch, batch_size=batch_size,
                 train_data=train_data,
                 trainer=trainer, bp_loss_f=bp_loss_f,
-                loss_function=loss_function, losses_monitor=losses_monitor,
+                loss_function=loss_function,
                 ctx=ctx,
-                batch_informer=informer,
+                toolbox=toolbox,
             )
-            if informer:
-                informer.batch_end(batch_num)
 
             train_time = epoch_timer.end(wall=True) if epoch_timer else None
 
-            # todo 定义每一轮结束后的模型评估方法
-            # test_eval_res = Module.eval(net, test_data, evaluator=evaluator, ctx=ctx)
-            # print(evaluator.format_eval_res(epoch, test_eval_res, loss_values, train_time,
-            #                                 logger=evaluator.logger, log_f=evaluator.log_f)[0])
+            # # todo 定义每一轮结束后的模型评估方法
+            evaluation_result = Module.eval(
+                net, test_data, ctx=ctx
+            )
+            if formatter:
+                evaluation_formatter = formatter.get('evaluation')
+                if evaluation_formatter:
+                    print(
+                        evaluation_formatter(
+                            epoch=epoch,
+                            train_time=train_time,
+                            loss_name_value=loss_values,
+                            eval_name_value=evaluation_result,
+                            extra_info=None,
+                            dump=True,
+                        )[0]
+                    )
 
             # todo 定义模型保存方案
-            if kwargs.get('prefix') and (epoch % kwargs.get('save_epoch', 1) == 0
-                                         or end_epoch - 10 <= epoch <= end_epoch - 1):
-                Module.save_params(kwargs['prefix'] + "-%04d.parmas" % (epoch + 1), net)
+            if kwargs.get('prefix') and (
+                    epoch % kwargs.get('save_epoch', 1) == 0
+                    or end_epoch - 10 <= epoch <= end_epoch - 1
+            ):
+                Module.save_params(
+                    kwargs['prefix'] + "-%04d.parmas" % (epoch + 1), net
+                )
 
     def batch_loop(
             self,
-            net, batch_size,
+            net, epoch, batch_size,
             train_data,
             trainer, bp_loss_f,
-            loss_function, losses_monitor=None,
+            loss_function,
             ctx=mx.cpu(),
-            batch_informer=None
+            toolbox=None,
     ):
         """
         The true body of batch loop
@@ -344,46 +264,63 @@ class Module(object):
         Parameters
         ----------
         net: HybridBlock
-            The network which has been initialized or loaded from the existed model
+            The network which has been initialized
+            or loaded from the existed model
+        epoch: int
+            Current Epoch
         batch_size: int
             The size of each batch
         train_data: Iterable
-            The data used for this train procession, NOTICE: should have been divided to batches
+            The data used for this train procession,
+            NOTICE: should have been divided to batches
         trainer:
             The trainer used to update the parameters of the net
         bp_loss_f: dict with only one value and one key
-            The function to compute the loss for the procession of back propagation
+            The function to compute the loss for the procession
+            of back propagation
         loss_function: dict of function
             Some other measurement in addition to bp_loss_f
-        losses_monitor: LossesMonitor
-            Default to ``None``
         ctx: Context or list of Context
             Defaults to ``mx.cpu()``.
-        batch_informer: TrainBatchInformer
+        toolbox: dict
             Default to ``None``
 
         Returns
         -------
         loss_values: dict
             Recorded the loss values computed by the loss_function
-        i: int
-            The total batch num of this epoch
         """
+        loss_monitor = None
+        progress_monitor = None
+
+        if toolbox is not None:
+            monitor = toolbox.get("monitor")
+            if monitor is not None:
+                loss_monitor = monitor.get("loss")
+                progress_monitor = monitor.get("progress")
+
+        if progress_monitor is not None:
+            progress_monitor.batch_start(epoch)
+
         for i, batch_data in enumerate(train_data):
             self.fit_f(
                 net=net, batch_size=batch_size, batch_data=batch_data,
-                trainer=trainer, bp_loss_f=bp_loss_f, loss_function=loss_function,
-                losses_monitor=losses_monitor,
+                trainer=trainer, bp_loss_f=bp_loss_f,
+                loss_function=loss_function,
+                loss_monitor=loss_monitor,
                 ctx=ctx,
             )
-            if batch_informer:
-                loss_values = [loss for loss in losses_monitor.values()]
-                batch_informer.__call__(i, loss_value=loss_values)
-        loss_values = {name: loss for name, loss in losses_monitor.items()}.items()
-        return loss_values, i
+            if progress_monitor is not None:
+                loss_values = [loss for loss in loss_monitor.values()]
+                progress_monitor(i, loss_value=loss_values)
+        progress_monitor.batch_end()
+        loss_values = {
+            name: loss for name, loss in loss_monitor.items()
+        }.items()
+        return loss_values
 
     @staticmethod
-    def eval(net, test_data, evaluator=None, ctx=mx.cpu()):
+    def eval(net, test_data, ctx=mx.cpu()):
         """
         在这里定义数据评估方法
 
@@ -391,7 +328,6 @@ class Module(object):
         ----------
         net
         test_data
-        evaluator
         ctx
 
         Returns
@@ -399,10 +335,12 @@ class Module(object):
         metrics: dict
 
         """
-        # from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+        # from sklearn.metrics import accuracy_score
 
-        evalue = []
-        evalue_func = lambda p, y: 1 / 2 * (y - p) ** 2
+        evaluation_value = []
+
+        def evaluation_function(y_pred, y_true):
+            return 1 / 2 * (y_true - y_pred) ** 2
 
         for batch_data in tqdm(test_data, "evaluating"):
             ctx_data = split_and_load(
@@ -411,12 +349,16 @@ class Module(object):
             )
             for (data, label) in ctx_data:
                 output = net(data)
-                evalue.extend(evalue_func(output, label).asnumpy().tolist())
-        return {"evaluation_name": sum(evalue) / len(evalue)}
+                evaluation_value.extend(
+                    evaluation_function(output, label).asnumpy().tolist()
+                )
+        return {
+            "evaluation_name": sum(evaluation_value) / len(evaluation_value)
+        }
 
     @staticmethod
     def fit_f(net, batch_size, batch_data,
-              trainer, bp_loss_f, loss_function, losses_monitor=None,
+              trainer, bp_loss_f, loss_function, loss_monitor=None,
               ctx=mx.cpu()
               ):
         """
@@ -425,7 +367,8 @@ class Module(object):
         Parameters
         ----------
         net: HybridBlock
-            The network which has been initialized or loaded from the existed model
+            The network which has been initialized
+            or loaded from the existed model
         batch_size: int
                 The size of each batch
         batch_data: Iterable
@@ -433,10 +376,11 @@ class Module(object):
         trainer:
             The trainer used to update the parameters of the net
         bp_loss_f: dict with only one value and one key
-            The function to compute the loss for the procession of back propagation
+            The function to compute the loss for the procession
+            of back propagation
         loss_function: dict of function
             Some other measurement in addition to bp_loss_f
-        losses_monitor: LossesMonitor
+        loss_monitor: LossMonitor
             Default to ``None``
         ctx: Context or list of Context
             Defaults to ``mx.cpu()``.
@@ -454,18 +398,8 @@ class Module(object):
         bp_loss = None
         with autograd.record():
             # todo modify the component extracted from ctx_data
-            for (data, label) in ctx_data:
-                # todo modify the input to net
-                output = net(data)
-                for name, func in loss_function.items():
-                    # todo modify the input to func
-                    loss = func(output, label)
-                    if name in bp_loss_f:
-                        bp_loss = loss
-                    loss_value = nd.mean(loss).asscalar()
-                    if losses_monitor:
-                        losses_monitor.update(name, loss_value)
-
+            for _data in ctx_data:
+                bp_loss = fit_f(_data, bp_loss_f, loss_function, loss_monitor)
             assert bp_loss is not None
             bp_loss.backward()
         trainer.step(batch_size)
