@@ -36,7 +36,7 @@ class EvalFormatter(object):
 
     @staticmethod
     def _eval_format(name, value):
-        return "Validation %s: %s" % (name, value)
+        return "Evaluation %s: %s" % (name, value)
 
     def eval_format(self, eval_name_value):
         msg = []
