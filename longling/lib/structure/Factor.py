@@ -18,7 +18,8 @@ class Factor(object):
         if self._sign == 0:
             return self._value
         else:
-            if self.cnt >= self.warmup_steps and self._sign * (self._value - self._end_value) > 0:
+            if self.cnt >= self.warmup_steps and self._sign * (
+                    self._value - self._end_value) > 0:
                 self._value += self._change_rate
             else:
                 self.cnt += 1
