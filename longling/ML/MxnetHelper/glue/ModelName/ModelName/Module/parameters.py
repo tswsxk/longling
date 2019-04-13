@@ -22,19 +22,21 @@ class Parameters(parser.Parameters):
 
     root = pathlib.Path(__file__).parents[2]
     dataset = ""
-    time_stamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     workspace = ""
 
     root_data_dir = path_append(root / "data", dataset)
     data_dir = path_append(
         root_data_dir, "data", to_str=True
     )
+    root_model_dir = root_data_dir / "model" / model_name
     model_dir = path_append(
-        root_data_dir / "model" / model_name, workspace, to_str=True
+        root_model_dir, workspace, to_str=True
     )
 
     root = str(root)
     root_data_dir = str(root_data_dir)
+    root_model_dir = str(root_model_dir)
 
     # 优化器设置
     optimizer, optimizer_params = get_optimizer_cfg(name="base")
@@ -96,12 +98,23 @@ class Parameters(parser.Parameters):
         for param, value in params.items():
             setattr(self, "%s" % param, value)
 
+        # set workspace
+        if kwargs.get("workspace"):
+            kwargs["model_dir"] = path_append(
+                "$root_model_dir", "$workspace", to_str=True
+            )
+
         # rebuild relevant directory or file path according to the kwargs
-        _dirs = ["root_data_dir", "data_dir", "model_dir"]
+        _dirs = [
+            "workspace", "root_data_dir", "data_dir", "root_model_dir",
+            "model_dir"
+        ]
         for _dir in _dirs:
-            setattr(self, _dir, eval(var2exp(
-                kwargs.get(_dir, getattr(self, _dir))
-            )))
+            exp = var2exp(
+                kwargs.get(_dir, getattr(self, _dir)),
+                env_wrap=lambda x: "self.%s" % x
+            )
+            setattr(self, _dir, eval(exp))
 
         self.validation_result_file = path_append(
             self.model_dir, "result.json", to_str=True
@@ -125,18 +138,18 @@ if __name__ == '__main__':
     # step 1
     directory_check(Parameters)
 
-    # # step 2
-    default_parameters_file = path_append(
-        Parameters.model_dir, "parameters.json", to_str=True
-    )
-
     # 命令行参数配置
-    params_parser = ParameterParser(Parameters)
-    kwargs = params_parser.parse_args()
-    kwargs = params_parser.parse(kwargs)
+    kwargs = ParameterParser.get_cli_params(Parameters)
 
     parameters = Parameters(
         **kwargs
+    )
+    print(kwargs)
+    print(parameters)
+
+    # # step 2
+    default_parameters_file = path_append(
+        parameters.model_dir, "parameters.json", to_str=True
     )
     parameters.dump(default_parameters_file, override=True)
     try:

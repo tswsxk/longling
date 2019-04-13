@@ -18,18 +18,20 @@ from pathlib import PurePath
 
 from longling import wf_open
 
-CLASS_EXCLUDE_NAMES = {'__doc__', '__module__', '__dict__', '__weakref__'}
+CLASS_EXCLUDE_NAMES = set(vars(object).keys()) | {
+    '__module__', '__main__', '__dict__', '__weakref__',
+}
 
 
-def get_class_var(class_obj, exclude_names=None):
+def get_class_var(class_type, exclude_names=None):
     default_excluded_names = CLASS_EXCLUDE_NAMES if exclude_names is None \
         else exclude_names
     excluded_names = default_excluded_names if not hasattr(
-        class_obj, "excluded_names"
-    ) else class_obj.excluded_names()
+        class_type, "excluded_names"
+    ) else class_type.excluded_names() | default_excluded_names
 
     variables = {
-        k: v for k, v in vars(type(class_obj)).items() if
+        k: v for k, v in vars(class_type).items() if
         not inspect.isroutine(v) and k not in excluded_names
     }
     return variables
@@ -43,8 +45,8 @@ def parse_params(params, parse_functions=None):
     return params
 
 
-def get_parsable_var(class_obj, exclude_names=None, dump_parse_functions=None):
-    params = get_class_var(class_obj, exclude_names)
+def get_parsable_var(class_obj, parse_exclude=None, dump_parse_functions=None):
+    params = get_class_var(class_obj, exclude_names=parse_exclude)
     return parse_params(params, dump_parse_functions)
 
 
@@ -53,7 +55,7 @@ def load_parameters_json(fp, load_parse_function=None):
     return parse_params(params, load_parse_function)
 
 
-def var2exp(var_str):
+def var2exp(var_str, env_wrap=lambda x: x):
     var_str = str(var_str)
 
     pattern = re.compile("\$(\w+)")
@@ -61,7 +63,9 @@ def var2exp(var_str):
     env_vars = pattern.findall(var_str)
 
     exp = """str("%s").format(%s)""" % (
-        re.sub("\$\w+", "{}", var_str), ",".join(env_vars)
+        re.sub("\$\w+", "{}", var_str), ",".join(
+            [env_wrap(env_var) for env_var in env_vars]
+        )
     )
     return exp
 
@@ -114,7 +118,7 @@ class Parameters(object):
         """
         return get_parsable_var(
             self,
-            exclude_names=None,
+            parse_exclude=None,
             dump_parse_functions=None,
         )
 
@@ -159,6 +163,25 @@ class Parameters(object):
         }
 
 
+def value_parse(value):
+    if re.findall(r"(int|float|dict|set|tuple)\(.*\)", value):
+        value = eval(value)
+    return value
+
+
+def parse_dict_string(string):
+    if not string:
+        return None
+    else:
+        name_value_items = [
+            item.strip().split("=") for item in string.strip().split(",")
+        ]
+        return {
+            name_value[0]: value_parse(name_value[1])
+            for name_value in name_value_items
+        }
+
+
 class ParameterParser(argparse.ArgumentParser):
     def __init__(self, class_obj, excluded_names=None, *args, **kwargs):
         excluded_names = {
@@ -170,12 +193,27 @@ class ParameterParser(argparse.ArgumentParser):
         for param, value in params.items():
             if param in excluded_names:
                 continue
-            self.add_argument('--%s' % param,
-                              help='set %s, default is %s' % (param, value),
-                              default=value)
+            if isinstance(value, dict):
+                format_tips = ", dict variables, " \
+                              "use format: <key>=<value>(,<key>=<value>)"
+                self.add_argument(
+                    '--%s' % param,
+                    help='set %s, default is %s%s' % (
+                        param, value, format_tips
+                    ), default=value,
+                    type=parse_dict_string,
+                )
+            else:
+                self.add_argument(
+                    '--%s' % param,
+                    help='set %s, default is %s' % (param, value),
+                    default=value,
+                    type=value_parse,
+                )
         self.add_argument(
             '--kwargs', required=False,
-            help=r"add extra argument here, use format: <key>=<value>"
+            help=r"add extra argument here, "
+                 r"use format: <key>=<value>(,<key>=<value>)"
         )
 
     @staticmethod
@@ -183,6 +221,22 @@ class ParameterParser(argparse.ArgumentParser):
         arguments = vars(arguments)
         args_dict = dict()
         for k, v in arguments.items():
+            if k == "kwargs" and v:
+                kwargs = parse_dict_string(v)
+                if kwargs:
+                    args_dict.update(kwargs)
+                continue
             args_dict[k] = v
-
         return args_dict
+
+    @staticmethod
+    def get_cli_params(params_class):
+        params_parser = ParameterParser(params_class)
+        kwargs = params_parser.parse_args()
+        kwargs = params_parser.parse(kwargs)
+        return kwargs
+
+
+if __name__ == '__main__':
+    kwargs = ParameterParser.get_cli_params(Parameters)
+    print(kwargs)

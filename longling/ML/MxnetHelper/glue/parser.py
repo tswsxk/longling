@@ -56,7 +56,7 @@ class Parameters(Params):
         """
         return get_parsable_var(
             self,
-            exclude_names={'logger'},
+            parse_exclude={'logger'},
             dump_parse_functions={'ctx': MXCtx.dump}
         )
 
