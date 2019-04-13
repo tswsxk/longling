@@ -180,7 +180,7 @@ class ModelName(object):
             select=params.train_select
         )
 
-    def train(self, train_data, eval_data, trainer=None):
+    def train_net(self, train_data, eval_data, trainer=None):
         mod = self.mod
         params = self.mod.params
         net = self.net
@@ -281,45 +281,45 @@ class ModelName(object):
     def transform(self, data):
         return transform(data, self.mod.params)
 
-
-def train(reinforcement=False, **kwargs):
-    module = ModelName(**kwargs)
-    # module.viz()
-
-    if not reinforcement:
-        module.toolbox_init()
-        module.model_init(**kwargs)
-    else:
-        # 增量学习，从某一轮或某个参数配置继续训练
-        assert "init_model_file" in kwargs or "load_epoch" in kwargs
+    @staticmethod
+    def train(reinforcement=False, **kwargs):
         module = ModelName(**kwargs)
-        module.toolbox_init(validation_logger_mode="a")
+        # module.viz()
 
-    train_data = module.load_data()
-    valid_data = module.load_data()
-    module.train(train_data, valid_data)
+        if not reinforcement:
+            module.toolbox_init()
+            module.model_init(**kwargs)
+        else:
+            # 增量学习，从某一轮或某个参数配置继续训练
+            assert "init_model_file" in kwargs or "load_epoch" in kwargs
+            module = ModelName(**kwargs)
+            module.toolbox_init(validation_logger_mode="a")
 
+        train_data = module.load_data()
+        valid_data = module.load_data()
+        module.train_net(train_data, valid_data)
 
-def load(load_epoch=None, **kwargs):
-    module = ModelName(**kwargs)
-    load_epoch = module.mod.params.end_epoch if load_epoch is None \
-        else load_epoch
-    module.model_init(load_epoch, **kwargs)
-    return module
+    @staticmethod
+    def load(load_epoch=None, **kwargs):
+        module = ModelName(**kwargs)
+        load_epoch = module.mod.params.end_epoch if load_epoch is None \
+            else load_epoch
+        module.model_init(load_epoch, **kwargs)
+        return module
 
+    @staticmethod
+    def test(test_epoch, dump_file=None, **kwargs):
+        from longling.ML.toolkit.formatter import EvalFormatter
+        formatter = EvalFormatter(dump_file=dump_file)
+        module = ModelName.load(test_epoch, **kwargs)
 
-def test(test_epoch, dump_file=None, **kwargs):
-    from longling.ML.toolkit.formatter import EvalFormatter
-    formatter = EvalFormatter(dump_file=dump_file)
-    module = load(test_epoch, **kwargs)
-
-    test_data = module.load_data()
-    eval_result = module.mod.eval(module.net, test_data)
-    formatter(
-        tips="test",
-        eval_name_value=eval_result
-    )
-    return eval_result
+        test_data = module.load_data()
+        eval_result = module.mod.eval(module.net, test_data)
+        formatter(
+            tips="test",
+            eval_name_value=eval_result
+        )
+        return eval_result
 
 
 if __name__ == '__main__':
