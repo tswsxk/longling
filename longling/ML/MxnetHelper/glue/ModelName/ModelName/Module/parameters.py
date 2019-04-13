@@ -11,7 +11,8 @@ from mxnet import cpu
 
 import longling.ML.MxnetHelper.glue.parser as parser
 from longling.ML.MxnetHelper.glue.parser import path_append, var2exp
-from longling.ML.MxnetHelper.toolkit.optimizer_cfg import get_optimizer_cfg, get_update_steps
+from longling.ML.MxnetHelper.toolkit.optimizer_cfg import get_optimizer_cfg, \
+    get_update_steps
 from longling.lib.utilog import config_logging, LogLevel
 
 
@@ -107,6 +108,10 @@ class Parameters(parser.Parameters):
         )
 
 
+class ParameterParser(parser.ParameterParser):
+    pass
+
+
 def directory_check(class_obj):
     print("data_dir", class_obj.data_dir)
     print("model_dir", class_obj.model_dir)
@@ -126,9 +131,9 @@ if __name__ == '__main__':
     )
 
     # 命令行参数配置
-    parser = parser.ParameterParser(Parameters)
-    kwargs = parser.parse_args()
-    kwargs = parser.parse(kwargs)
+    params_parser = ParameterParser(Parameters)
+    kwargs = params_parser.parse_args()
+    kwargs = params_parser.parse(kwargs)
 
     parameters = Parameters(
         **kwargs
