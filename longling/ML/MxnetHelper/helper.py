@@ -41,10 +41,25 @@ def copy_net(src_net, target_net, select=None):
 def get_fine_tune_model(symbol, label, arg_params, num_classes,
                         layer_name='flatten0'):
     """
-    symbol: the pretrained network symbol
-    arg_params: the argument parameters of the pretrained model
-    num_classes: the number of classes for the fine-tune datasets
-    layer_name: the layer name before the last fully-connected layer
+    Only for static newwotk
+
+    Do not use
+
+    Parameters
+    ----------
+    symbol:
+        the pretrained network symbol
+    label:
+
+    arg_params:
+        the argument parameters of the pretrained model
+    num_classes: int
+        the number of classes for the fine-tune datasets
+    layer_name: str
+        the layer name before the last fully-connected layer
+    Returns
+    -------
+
     """
     all_layers = symbol.get_internals()
     net = all_layers[layer_name + '_output']
