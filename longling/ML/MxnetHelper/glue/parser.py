@@ -11,7 +11,7 @@ from mxnet import Context, cpu, gpu
 
 from longling.lib.candylib import as_list
 from longling.lib.parser import get_parsable_var, load_parameters_json, \
-    var2exp, path_append, Parameters as Params, ConfigurationParser
+    var2exp, path_append, Configuration as Params, ConfigurationParser
 
 
 class MXCtx(object):
@@ -61,8 +61,8 @@ class Configuration(Params):
         )
 
     @staticmethod
-    def load(params_json):
-        with open(params_json) as f:
+    def load(cfg_path):
+        with open(cfg_path) as f:
             params = load_parameters_json(
                 f, load_parse_function={"ctx": MXCtx.load}
             )

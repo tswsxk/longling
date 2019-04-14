@@ -33,6 +33,9 @@ class Configuration(parser.Configuration):
     model_dir = path_append(
         root_model_dir, workspace, to_str=True
     )
+    cfg_path = path_append(
+        model_dir, "configuration.json", to_str=True
+    )
 
     root = str(root)
     root_data_dir = str(root_data_dir)
@@ -92,7 +95,7 @@ class Configuration(parser.Configuration):
 
         params = self.class_var
         if params_json:
-            params.update(self.load(params_json=params_json))
+            params.update(self.load(cfg_path=params_json))
         params.update(**kwargs)
 
         for param, value in params.items():
@@ -119,6 +122,18 @@ class Configuration(parser.Configuration):
         self.validation_result_file = path_append(
             self.model_dir, "result.json", to_str=True
         )
+        self.cfg_path = path_append(
+            self.model_dir, "configuration.json", to_str=True
+        )
+
+    def dump(self, cfg_path=None, override=False):
+        cfg_path = self.cfg_path if cfg_path is None else cfg_path
+        super(Configuration, self).dump(cfg_path, override)
+
+    @staticmethod
+    def load(cfg_path=None):
+        cfg_path = Configuration.cfg_path if cfg_path is None else cfg_path
+        return parser.Configuration.load(cfg_path)
 
 
 class ConfigurationParser(parser.ConfigurationParser):
@@ -139,7 +154,7 @@ if __name__ == '__main__':
     directory_check(Configuration)
 
     # 命令行参数配置
-    kwargs = ConfigurationParser.get_cli_params(Configuration)
+    kwargs = ConfigurationParser.get_cli_cfg(Configuration)
 
     cfg = Configuration(
         **kwargs
@@ -148,13 +163,10 @@ if __name__ == '__main__':
     print(cfg)
 
     # # step 2
-    default_parameters_file = path_append(
-        cfg.model_dir, "configuration.json", to_str=True
-    )
-    cfg.dump(default_parameters_file, override=True)
+    cfg.dump(override=True)
     try:
         logger = cfg.logger
-        cfg.load(default_parameters_file)
+        cfg.load()
         cfg.logger = logger
         cfg.logger.info('format check done')
     except Exception as e:

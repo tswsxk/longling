@@ -13,23 +13,13 @@ class ModelName(object):
             self, load_epoch=None, cfg=None, toolbox_init=False, **kwargs
     ):
         # 1 配置参数初始化
-        # todo 到Parameters定义处定义相关参数
-        cfg = Configuration(
-            **kwargs
-        ) if cfg is None else cfg
-
-        mod = Module(cfg)
-        mod.logger.info(str(mod))
-
-        filename = mod.dump_configuration()
-        mod.logger.info("parameters saved to %s" % filename)
-
-        self.mod = mod
+        cfg = self.config(cfg, **kwargs)
+        self.mod = self.get_module(cfg)
 
         # 2 todo 定义网络结构
         # 2.1 重新生成
-        mod.logger.info("generating symbol")
-        net = mod.sym_gen(cfg.hyper_params)
+        self.mod.logger.info("generating symbol")
+        net = self.mod.sym_gen(cfg.hyper_params)
         # 2.2 装载已有模型, export 出来的文件
         # net = mod.load(begin_epoch)
         # net = GluonModule.load_net(filename)
@@ -48,6 +38,25 @@ class ModelName(object):
         if toolbox_init:
             self.toolbox_init()
 
+    @staticmethod
+    def config(cfg=None, **kwargs):
+        cfg = Configuration(
+            **kwargs
+        ) if cfg is None else cfg
+        if not isinstance(cfg, Configuration):
+            cfg = Configuration.load(cfg)
+        cfg.dump(override=True)
+        return cfg
+
+    @staticmethod
+    def get_module(cfg):
+        # todo 到Parameters定义处定义相关参数
+        mod = Module(cfg)
+        mod.logger.info(str(mod))
+        filename = mod.dump_configuration()
+        mod.logger.info("parameters saved to %s" % filename)
+        return mod
+
     def viz(self):
         mod = self.mod
         net = self.net
@@ -56,9 +65,26 @@ class ModelName(object):
         mod.logger.info("visualizing symbol")
         net_viz(net, mod.cfg)
 
-    def toolbox_init(self, evaluation_formatter_parameters=None,
-                     validation_logger_mode="w", informer_silent=False,
-                     ):
+    def set_loss(self, bp_loss_f=None, loss_function=None):
+        bp_loss_f = {
+
+        } if bp_loss_f is None else bp_loss_f
+
+        assert bp_loss_f is not None and len(bp_loss_f) == 1
+
+        loss_function = {
+
+        } if loss_function is None else loss_function
+        loss_function.update(bp_loss_f)
+
+        self.bp_loss_f = bp_loss_f
+        self.loss_function = loss_function
+
+    def toolbox_init(
+            self,
+            evaluation_formatter_parameters=None,
+            validation_logger_mode="w", informer_silent=False,
+    ):
 
         from longling.lib.clock import Clock
         from longling.lib.utilog import config_logging
@@ -78,23 +104,16 @@ class ModelName(object):
         # 4.1 todo 定义损失函数
         # bp_loss_f 定义了用来进行 back propagation 的损失函数，
         # 有且只能有一个，命名中不能为 *_\d+ 型
-        bp_loss_f = {
 
-        }
+        assert self.loss_function is not None
 
-        assert bp_loss_f is not None and len(bp_loss_f) == 1
-
-        loss_function = {
-
-        }
-        loss_function.update(bp_loss_f)
-        loss_monitor = MovingLoss(loss_function)
+        loss_monitor = MovingLoss(self.loss_function)
 
         # 4.1 todo 初始化一些训练过程中的交互信息
         timer = Clock()
 
         console_progress_monitor = ConsoleProgressMonitor(
-            loss_index=[name for name in loss_function],
+            loss_index=[name for name in self.loss_function],
             end_epoch=params.end_epoch - 1,
             silent=informer_silent
         )
@@ -117,9 +136,6 @@ class ModelName(object):
             **evaluation_formatter_parameters
         )
 
-        self.bp_loss_f = bp_loss_f
-        self.loss_function = loss_function
-
         self.toolbox["monitor"]["loss"] = loss_monitor
         self.toolbox["monitor"]["progress"] = console_progress_monitor
         self.toolbox["timer"] = timer
@@ -135,8 +151,12 @@ class ModelName(object):
 
         return data
 
-    def model_init(self, load_epoch=None, force_init=False, params=None,
-                   allow_reinit=True, **kwargs):
+    def model_init(
+            self,
+            load_epoch=None, force_init=False, params=None,
+            allow_reinit=True, trainer=None,
+            **kwargs
+    ):
         mod = self.mod
         net = self.net
         params = mod.cfg if params is None else params
@@ -178,7 +198,7 @@ class ModelName(object):
             net, optimizer=params.optimizer,
             optimizer_params=params.optimizer_params,
             select=params.train_select
-        )
+        ) if trainer is None else trainer
 
     def train_net(self, train_data, eval_data, trainer=None):
         mod = self.mod
@@ -284,6 +304,7 @@ class ModelName(object):
     @staticmethod
     def train(reinforcement=False, **kwargs):
         module = ModelName(**kwargs)
+        module.set_loss()
         # module.viz()
 
         if not reinforcement:
@@ -298,6 +319,10 @@ class ModelName(object):
         train_data = module.load_data()
         valid_data = module.load_data()
         module.train_net(train_data, valid_data)
+
+    @staticmethod
+    def dump_configuration(**kwargs):
+        ModelName.get_module(**kwargs)
 
     @staticmethod
     def load(load_epoch=None, **kwargs):
@@ -321,6 +346,22 @@ class ModelName(object):
         )
         return eval_result
 
+    @staticmethod
+    def run(default_entry="train"):
+        cfg_parser = ConfigurationParser(Configuration)
+        cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.config))
+        cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.train))
+        cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.test))
+        cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.load))
+        cfg_kwargs = cfg_parser(["config"])
+
+        if "subcommand" in cfg_kwargs:
+            subcommand = cfg_kwargs["subcommand"]
+            del cfg_kwargs["subcommand"]
+        else:
+            subcommand = default_entry
+        eval("ModelName.%s" % subcommand)(**cfg_kwargs)
+
 
 if __name__ == '__main__':
-    train()
+    ModelName.run()

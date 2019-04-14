@@ -5,7 +5,7 @@ __all__ = [
     "CLASS_EXCLUDE_NAMES", "get_class_var",
     "get_parsable_var", "load_parameters_json",
     "var2exp", "path_append",
-    "Parameters", "ConfigurationParser"
+    "Configuration", "ConfigurationParser"
 ]
 
 import argparse
@@ -90,7 +90,7 @@ def path_append(path, addition=None, to_str=False):
     return new_path
 
 
-class Parameters(object):
+class Configuration(object):
     def __init__(self, logger=logging):
         self.logger = logger
 
@@ -131,12 +131,12 @@ class Parameters(object):
 
         return params
 
-    def dump(self, param_json, override=False):
-        if os.path.isfile(param_json) and not override:
-            self.logger.warning("file %s existed, dump aborted" % param_json)
+    def dump(self, cfg_json, override=False):
+        if os.path.isfile(cfg_json) and not override:
+            self.logger.warning("file %s existed, dump aborted" % cfg_json)
             return
-        self.logger.info("writing parameters to %s" % param_json)
-        with wf_open(param_json) as wf:
+        self.logger.info("writing parameters to %s" % cfg_json)
+        with wf_open(cfg_json) as wf:
             json.dump(self.parsable_var, wf, indent=4)
 
     def __str__(self):
@@ -182,6 +182,22 @@ def parse_dict_string(string):
         }
 
 
+def args_zips(args=None, defaults=None):
+    args = [] if args is None else args
+    defaults = [] if defaults is None else defaults
+    assert len(args) >= len(defaults)
+    zipped_args = []
+    zipped_args.extend([
+        {"name": arg} for arg in args[:len(args) - len(defaults)]
+    ])
+    zipped_args.extend([
+        {"name": arg, "default": default} for arg, default in zip(
+            args[len(args) - len(defaults):], defaults
+        )
+    ])
+    return zipped_args
+
+
 class ConfigurationParser(argparse.ArgumentParser):
     def __init__(self, class_obj, excluded_names=None, *args, **kwargs):
         excluded_names = {
@@ -215,6 +231,7 @@ class ConfigurationParser(argparse.ArgumentParser):
             help=r"add extra argument here, "
                  r"use format: <key>=<value>(,<key>=<value>)"
         )
+        self.sub_command_parsers = None
 
     @staticmethod
     def parse(arguments):
@@ -230,13 +247,54 @@ class ConfigurationParser(argparse.ArgumentParser):
         return args_dict
 
     @staticmethod
-    def get_cli_params(params_class):
+    def get_cli_cfg(params_class):
         params_parser = ConfigurationParser(params_class)
         kwargs = params_parser.parse_args()
         kwargs = params_parser.parse(kwargs)
         return kwargs
 
+    def __call__(self, args=None):
+        kwargs = self.parse_args(args)
+        kwargs = self.parse(kwargs)
+        return kwargs
 
-if __name__ == '__main__':
-    kwargs = ConfigurationParser.get_cli_params(Parameters)
-    print(kwargs)
+    def add_subcommand(self, command_parameters):
+        if self.sub_command_parsers is None:
+            self.sub_command_parsers = self.add_subparsers(
+                parser_class=argparse.ArgumentParser,
+                help='help for sub-command'
+            )
+        subparsers = self.sub_command_parsers
+        subcommand, parameters = command_parameters
+        subparser = subparsers.add_parser(
+            subcommand, help="%s help" % subcommand
+        )
+        subparser.set_defaults(subcommand=subcommand)
+        for parameter in parameters:
+            if "default" in parameter:
+                subparser.add_argument(
+                    "--%s" % parameter["name"],
+                    default=parameter["default"],
+                    required=False,
+                    type=value_parse,
+                    help="set %s, default is %s" % (
+                        parameter["name"], parameter["default"]
+                    )
+                )
+            else:
+                subparser.add_argument(
+                    parameter["name"],
+                    type=value_parse,
+                    help="set %s" % parameter["name"]
+                )
+
+    @staticmethod
+    def func_spec(f):
+        argspec = inspect.getfullargspec(f)
+        return f.__name__, args_zips(
+            argspec.args, argspec.defaults
+        ) + args_zips(
+            argspec.kwonlyargs,
+            argspec.kwonlydefaults.values() if argspec.kwonlydefaults else []
+        )
+

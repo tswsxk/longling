@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 from longling.ML.MxnetHelper.toolkit.ctx import split_and_load
 from longling.ML.MxnetHelper.glue import module
-from .parameters import Parameters
+from .configuration import Configuration
 from .sym import NetName, fit_f
 
 
@@ -58,7 +58,7 @@ class Module(module.Module):
 
         Parameters
         ----------
-        configuration: Parameters
+        configuration: Configuration
 
         """
         # 初始化一些通用的参数
@@ -72,7 +72,7 @@ class Module(module.Module):
 
     def dump_configuration(self, filename=None):
         filename = filename if filename is not None \
-            else "configuration.json"
+            else os.path.join(self.cfg.cfg_path)
         self.cfg.dump(filename, override=True)
         return filename
 
@@ -83,7 +83,7 @@ class Module(module.Module):
     @staticmethod
     def get_trainer(
             net, optimizer='sgd', optimizer_params=None, lr_params=None,
-            select=Parameters.train_select
+            select=Configuration.train_select
     ):
         if lr_params is not None:
             from longling.ML.MxnetHelper.toolkit.optimizer_cfg import \
@@ -91,9 +91,8 @@ class Module(module.Module):
             optimizer_params["lr_scheduler"] = get_lr_scheduler(**lr_params)
         module.Module.get_trainer(net, optimizer, optimizer_params, select)
 
-    @staticmethod
-    def save_params(filename, net, select=Parameters.save_select):
-        module.Module.save_params(filename, net, select)
+    def save_params(self, filename, net):
+        module.Module.save_params(filename, net, select=self.cfg.save_select)
 
     def fit(
             self,
@@ -249,7 +248,7 @@ class Module(module.Module):
                     epoch % kwargs.get('save_epoch', 1) == 0
                     or end_epoch - 10 <= epoch <= end_epoch - 1
             ):
-                Module.save_params(
+                self.save_params(
                     kwargs['prefix'] + "-%04d.parmas" % (epoch + 1), net
                 )
 

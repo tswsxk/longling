@@ -18,11 +18,11 @@ from longling.ML.MxnetHelper.toolkit.viz import plot_network, VizError
 try:
     # for python module
     from .data import transform
-    from .parameters import Parameters
+    from .configuration import Configuration
 except (ImportError, SystemError):
     # for python script
     from data import transform
-    from parameters import Parameters
+    from configuration import Configuration
 
 
 class NetName(gluon.HybridBlock):
@@ -36,13 +36,13 @@ class NetName(gluon.HybridBlock):
         pass
 
 
-def net_viz(net, params, view_tag=False, **kwargs):
+def net_viz(net, cfg, view_tag=False, **kwargs):
     """visualization check, only support pure static network"""
-    batch_size = params.batch_size
-    model_dir = params.model_dir
+    batch_size = cfg.batch_size
+    model_dir = cfg.model_dir
     logger = kwargs.get(
         'logger',
-        params.logger if hasattr(params, 'logger') else logging
+        cfg.logger if hasattr(cfg, 'logger') else logging
     )
 
     try:
@@ -66,7 +66,7 @@ def net_viz(net, params, view_tag=False, **kwargs):
         logger.error(e)
 
 
-def get_data_iter(params):
+def get_data_iter(cfg):
     def pesudo_data_generation():
         # 在这里定义测试用伪数据流
         import random
@@ -79,7 +79,7 @@ def get_data_iter(params):
 
         return raw_data
 
-    return transform(pesudo_data_generation(), params)
+    return transform(pesudo_data_generation(), cfg)
 
 
 def fit_f(_data, bp_loss_f, loss_function, loss_monitor):
@@ -98,10 +98,10 @@ def fit_f(_data, bp_loss_f, loss_function, loss_monitor):
     return bp_loss
 
 
-def numerical_check(net, params):
+def numerical_check(net, cfg):
     net.initialize()
 
-    datas = get_data_iter(params)
+    datas = get_data_iter(cfg)
 
     bp_loss_f = {"L2Loss": gluon.loss.L2Loss}
     loss_function = {}
@@ -113,9 +113,9 @@ def numerical_check(net, params):
 
     # train check
     trainer = module.Module.get_trainer(
-        net, optimizer=params.optimizer,
-        optimizer_params=params.optimizer_params,
-        select=params.train_select
+        net, optimizer=cfg.optimizer,
+        optimizer_params=cfg.optimizer_params,
+        select=cfg.train_select
     )
 
     for epoch in range(0, 100):
@@ -123,12 +123,12 @@ def numerical_check(net, params):
         for _data in datas:
             with autograd.record():
                 fit_f(_data, bp_loss_f, loss_function, loss_monitor)
-            trainer.step(params.batch_size)
+            trainer.step(cfg.batch_size)
         print(epoch_loss)
 
 
 if __name__ == '__main__':
-    params = Parameters()
+    cfg = Configuration()
 
     # generate sym
     net = NetName()
@@ -136,4 +136,4 @@ if __name__ == '__main__':
     # # visualiztion check
     # net_viz(net, params, False)
 
-    numerical_check(net, params)
+    numerical_check(net, cfg)
