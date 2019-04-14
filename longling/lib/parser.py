@@ -5,7 +5,7 @@ __all__ = [
     "CLASS_EXCLUDE_NAMES", "get_class_var",
     "get_parsable_var", "load_parameters_json",
     "var2exp", "path_append",
-    "Parameters", "ParameterParser"
+    "Parameters", "ConfigurationParser"
 ]
 
 import argparse
@@ -182,13 +182,13 @@ def parse_dict_string(string):
         }
 
 
-class ParameterParser(argparse.ArgumentParser):
+class ConfigurationParser(argparse.ArgumentParser):
     def __init__(self, class_obj, excluded_names=None, *args, **kwargs):
         excluded_names = {
             'logger'
         } if excluded_names is None else excluded_names
 
-        super(ParameterParser, self).__init__(*args, **kwargs)
+        super(ConfigurationParser, self).__init__(*args, **kwargs)
         params = {k: v for k, v in get_class_var(class_obj).items()}
         for param, value in params.items():
             if param in excluded_names:
@@ -231,12 +231,12 @@ class ParameterParser(argparse.ArgumentParser):
 
     @staticmethod
     def get_cli_params(params_class):
-        params_parser = ParameterParser(params_class)
+        params_parser = ConfigurationParser(params_class)
         kwargs = params_parser.parse_args()
         kwargs = params_parser.parse(kwargs)
         return kwargs
 
 
 if __name__ == '__main__':
-    kwargs = ParameterParser.get_cli_params(Parameters)
+    kwargs = ConfigurationParser.get_cli_params(Parameters)
     print(kwargs)

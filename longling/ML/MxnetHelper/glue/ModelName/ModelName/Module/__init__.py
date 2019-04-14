@@ -2,9 +2,9 @@
 # Copyright @tongshiwei
 from __future__ import absolute_import
 
-__all__ = ["Module", "Parameters", "net_viz", "get_data_iter", "transform"]
+__all__ = ["Module", "Configuration", "net_viz", "get_data_iter", "transform"]
 
 from .module import Module
-from .parameters import Parameters
+from .configuration import Configuration
 from .sym import net_viz
 from .data import get_data_iter, transform

@@ -10,7 +10,7 @@ from mxnet import gluon, nd
 
 class Module(object):
     def __init__(self, parameters):
-        self.params = parameters
+        self.cfg = parameters
 
     def __str__(self):
         """
@@ -22,7 +22,7 @@ class Module(object):
 
         """
         string = ["Params"]
-        for k, v in vars(self.params).items():
+        for k, v in vars(self.cfg).items():
             string.append("%s: %s" % (k, v))
         return "\n".join(string)
 

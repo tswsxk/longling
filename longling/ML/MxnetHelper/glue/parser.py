@@ -2,8 +2,8 @@
 # created by tongshiwei on 2018/8/8
 
 __all__ = [
-    "MXCtx", "Parameters",
-    "var2exp", "path_append", "ParameterParser",
+    "MXCtx", "Configuration",
+    "var2exp", "path_append", "ConfigurationParser",
     "cpu", "gpu"
 ]
 
@@ -11,7 +11,7 @@ from mxnet import Context, cpu, gpu
 
 from longling.lib.candylib import as_list
 from longling.lib.parser import get_parsable_var, load_parameters_json, \
-    var2exp, path_append, Parameters as Params, ParameterParser
+    var2exp, path_append, Parameters as Params, ConfigurationParser
 
 
 class MXCtx(object):
@@ -43,7 +43,7 @@ class MXCtx(object):
         return ctx_vars
 
 
-class Parameters(Params):
+class Configuration(Params):
     @property
     def parsable_var(self):
         """

@@ -10,18 +10,18 @@ except (SystemError, ModuleNotFoundError):
 
 class ModelName(object):
     def __init__(
-            self, load_epoch=None, params=None, toolbox_init=False, **kwargs
+            self, load_epoch=None, cfg=None, toolbox_init=False, **kwargs
     ):
         # 1 配置参数初始化
         # todo 到Parameters定义处定义相关参数
-        params = Parameters(
+        cfg = Configuration(
             **kwargs
-        ) if params is None else params
+        ) if cfg is None else cfg
 
-        mod = Module(params)
+        mod = Module(cfg)
         mod.logger.info(str(mod))
 
-        filename = mod.dump_parameters()
+        filename = mod.dump_configuration()
         mod.logger.info("parameters saved to %s" % filename)
 
         self.mod = mod
@@ -29,7 +29,7 @@ class ModelName(object):
         # 2 todo 定义网络结构
         # 2.1 重新生成
         mod.logger.info("generating symbol")
-        net = mod.sym_gen(params.hyper_params)
+        net = mod.sym_gen(cfg.hyper_params)
         # 2.2 装载已有模型, export 出来的文件
         # net = mod.load(begin_epoch)
         # net = GluonModule.load_net(filename)
@@ -54,7 +54,7 @@ class ModelName(object):
 
         # optional 3 可视化检查网络
         mod.logger.info("visualizing symbol")
-        net_viz(net, mod.params)
+        net_viz(net, mod.cfg)
 
     def toolbox_init(self, evaluation_formatter_parameters=None,
                      validation_logger_mode="w", informer_silent=False,
@@ -73,7 +73,7 @@ class ModelName(object):
         }
 
         mod = self.mod
-        params = self.mod.params
+        params = self.mod.cfg
 
         # 4.1 todo 定义损失函数
         # bp_loss_f 定义了用来进行 back propagation 的损失函数，
@@ -113,7 +113,7 @@ class ModelName(object):
 
         evaluation_formatter = EvalFormatter(
             logger=validation_logger,
-            dump_file=mod.params.validation_result_file,
+            dump_file=mod.cfg.validation_result_file,
             **evaluation_formatter_parameters
         )
 
@@ -127,7 +127,7 @@ class ModelName(object):
 
     def load_data(self, params=None):
         mod = self.mod
-        params = mod.params if params is None else params
+        params = mod.cfg if params is None else params
 
         # 4.2 todo 定义数据加载
         mod.logger.info("loading data")
@@ -139,7 +139,7 @@ class ModelName(object):
                    allow_reinit=True, **kwargs):
         mod = self.mod
         net = self.net
-        params = mod.params if params is None else params
+        params = mod.cfg if params is None else params
         begin_epoch = params.begin_epoch
 
         if self.initialized and not force_init:
@@ -182,17 +182,17 @@ class ModelName(object):
 
     def train_net(self, train_data, eval_data, trainer=None):
         mod = self.mod
-        params = self.mod.params
+        params = self.mod.cfg
         net = self.net
 
         bp_loss_f = self.bp_loss_f
         loss_function = self.loss_function
         toolbox = self.toolbox
 
-        batch_size = mod.params.batch_size
-        begin_epoch = mod.params.begin_epoch
-        end_epoch = mod.params.end_epoch
-        ctx = mod.params.ctx
+        batch_size = mod.cfg.batch_size
+        begin_epoch = mod.cfg.begin_epoch
+        end_epoch = mod.cfg.end_epoch
+        ctx = mod.cfg.ctx
 
         assert all([bp_loss_f, loss_function]), \
             "make sure these variable have been initialized, " \
@@ -233,8 +233,8 @@ class ModelName(object):
             monitor = toolbox.get("monitor")
             loss_monitor = monitor.get("loss") if monitor else None
 
-        batch_size = mod.params.batch_size
-        ctx = mod.params.ctx
+        batch_size = mod.cfg.batch_size
+        ctx = mod.cfg.ctx
 
         trainer = self.trainer if trainer is None else trainer
         mod.fit_f(
@@ -255,7 +255,7 @@ class ModelName(object):
         # pre process x
 
         # convert the data to ndarray
-        ctx = self.mod.params.ctx if ctx is None else ctx
+        ctx = self.mod.cfg.ctx if ctx is None else ctx
         x = mx.nd.array([x], dtype='float32', ctx=ctx)
 
         # forward
@@ -271,7 +271,7 @@ class ModelName(object):
         # pre process x
 
         # convert the data to ndarray
-        x = mx.nd.array(x, dtype='float32', ctx=self.mod.params.ctx)
+        x = mx.nd.array(x, dtype='float32', ctx=self.mod.cfg.ctx)
 
         # forward
         outputs = self.net(x).asnumpy().tolist()
@@ -279,7 +279,7 @@ class ModelName(object):
         return outputs
 
     def transform(self, data):
-        return transform(data, self.mod.params)
+        return transform(data, self.mod.cfg)
 
     @staticmethod
     def train(reinforcement=False, **kwargs):
@@ -302,7 +302,7 @@ class ModelName(object):
     @staticmethod
     def load(load_epoch=None, **kwargs):
         module = ModelName(**kwargs)
-        load_epoch = module.mod.params.end_epoch if load_epoch is None \
+        load_epoch = module.mod.cfg.end_epoch if load_epoch is None \
             else load_epoch
         module.model_init(load_epoch, **kwargs)
         return module

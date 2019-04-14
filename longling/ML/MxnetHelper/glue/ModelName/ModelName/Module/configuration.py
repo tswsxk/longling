@@ -16,7 +16,7 @@ from longling.ML.MxnetHelper.toolkit.optimizer_cfg import get_optimizer_cfg, \
 from longling.lib.utilog import config_logging, LogLevel
 
 
-class Parameters(parser.Parameters):
+class Configuration(parser.Configuration):
     # 目录配置
     model_name = str(pathlib.Path(__file__).parents[1].name)
 
@@ -83,7 +83,7 @@ class Parameters(parser.Parameters):
         kwargs: dict
             Parameters to be reset.
         """
-        super(Parameters, self).__init__(
+        super(Configuration, self).__init__(
             logger=config_logging(
                 logger=self.model_name,
                 console_log_level=LogLevel.INFO
@@ -121,7 +121,7 @@ class Parameters(parser.Parameters):
         )
 
 
-class ParameterParser(parser.ParameterParser):
+class ConfigurationParser(parser.ConfigurationParser):
     pass
 
 
@@ -136,27 +136,27 @@ if __name__ == '__main__':
     # to check the details (step 2)
 
     # step 1
-    directory_check(Parameters)
+    directory_check(Configuration)
 
     # 命令行参数配置
-    kwargs = ParameterParser.get_cli_params(Parameters)
+    kwargs = ConfigurationParser.get_cli_params(Configuration)
 
-    parameters = Parameters(
+    cfg = Configuration(
         **kwargs
     )
     print(kwargs)
-    print(parameters)
+    print(cfg)
 
     # # step 2
     default_parameters_file = path_append(
-        parameters.model_dir, "parameters.json", to_str=True
+        cfg.model_dir, "configuration.json", to_str=True
     )
-    parameters.dump(default_parameters_file, override=True)
+    cfg.dump(default_parameters_file, override=True)
     try:
-        logger = parameters.logger
-        parameters.load(default_parameters_file)
-        parameters.logger = logger
-        parameters.logger.info('format check done')
+        logger = cfg.logger
+        cfg.load(default_parameters_file)
+        cfg.logger = logger
+        cfg.logger.info('format check done')
     except Exception as e:
         print("parameters format error, may contain illegal data type")
         raise e

@@ -53,27 +53,27 @@ class Module(module.Module):
     定义 load 加载模型方法
     """
 
-    def __init__(self, parameters):
+    def __init__(self, configuration):
         """
 
         Parameters
         ----------
-        parameters: Parameters
+        configuration: Parameters
 
         """
         # 初始化一些通用的参数
-        self.params = parameters
+        self.cfg = configuration
         self.prefix = os.path.join(
-            self.params.model_dir, self.params.model_name
+            self.cfg.model_dir, self.cfg.model_name
         )
-        self.logger = parameters.logger
+        self.logger = configuration.logger
 
         self.sym_gen = NetName
 
-    def dump_parameters(self, filename=None):
+    def dump_configuration(self, filename=None):
         filename = filename if filename is not None \
-            else self.prefix + "-params.json"
-        self.params.dump(filename, override=True)
+            else "configuration.json"
+        self.cfg.dump(filename, override=True)
         return filename
 
     def epoch_params_filename(self, epoch):
