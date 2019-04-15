@@ -12,7 +12,7 @@ from longling.lib.parser import path_append
 from longling.lib.stream import wf_open
 from longling.lib.utilog import config_logging, LogLevel
 
-__all__ = ["new_model"]
+__all__ = ["new_model", "cli"]
 
 GLUM_DIR = path_append(
     os.path.dirname(longling.__file__),
@@ -83,7 +83,7 @@ def new_model(model_name, directory=None, skip_top=True):
     return True
 
 
-def cli(model_name=None):
+def cli(model_name="longling"):
     parser = argparse.ArgumentParser()
     if model_name:
         parser.add_argument(
@@ -119,5 +119,4 @@ def cli(model_name=None):
 
 
 if __name__ == '__main__':
-    model_name = "longling"
-    cli(model_name)
+    cli()

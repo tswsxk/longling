@@ -3,4 +3,4 @@
 
 from __future__ import absolute_import
 
-from .glue import new_model
+from .glue import new_model, cli
