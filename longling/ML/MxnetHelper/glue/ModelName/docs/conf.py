@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.abspath('../'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'module_name'
+project = 'ModelName'
 copyright = '2018, tongshiwei'
 author = 'tongshiwei'
 
