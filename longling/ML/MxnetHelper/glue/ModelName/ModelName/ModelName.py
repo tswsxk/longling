@@ -361,7 +361,7 @@ class ModelName(object):
         cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.train))
         cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.test))
         cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.load))
-        cfg_kwargs = cfg_parser(["config"])
+        cfg_kwargs = cfg_parser()
 
         if "subcommand" in cfg_kwargs:
             subcommand = cfg_kwargs["subcommand"]
