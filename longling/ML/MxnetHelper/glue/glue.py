@@ -8,26 +8,40 @@ import argparse
 import os
 
 import longling
+from longling.lib.parser import path_append
 from longling.lib.stream import wf_open
 from longling.lib.utilog import config_logging, LogLevel
 
 __all__ = ["new_model"]
 
-glum_directory = os.path.abspath(
-    os.path.join(
-        os.path.dirname(longling.__file__),
-        "framework.ML.MXnet.mx_gluon.glue.module_name".replace(".", os.sep)
-    )
+GLUM_DIR = path_append(
+    os.path.dirname(longling.__file__),
+    "ML.MxnetHelper.glue.ModelName".replace(".", os.sep),
+    to_str=True
 )
-logger = config_logging(logger="glue", level=LogLevel.DEBUG,
-                        console_log_level=LogLevel.DEBUG)
+
+logger = config_logging(
+    logger="glue", level=LogLevel.DEBUG, console_log_level=LogLevel.DEBUG
+)
 
 
-def new_model(model_name, directory=None):
-    target_dir = os.path.join(directory,
-                              model_name) if directory else model_name
+def new_model(model_name, directory=None, skip_top=True):
+    target_dir = os.path.join(
+        directory, model_name
+    ) if directory is not None else model_name
+
     target_dir = os.path.abspath(target_dir)
-    logger.info(glum_directory + " -> " + target_dir)
+    glue_dir = GLUM_DIR if skip_top is False else path_append(
+        GLUM_DIR, "ModelName", to_str=True
+    )
+    if not os.path.exists(glue_dir):
+        logger.error(
+            "template files does not exist, process aborted, "
+            "check the path %s" % glue_dir
+        )
+        exit(-1)
+
+    logger.info(glue_dir + " -> " + target_dir)
     if os.path.isdir(target_dir):
         logger.error(
             "directory already existed, will not override, generation abort"
@@ -41,8 +55,7 @@ def new_model(model_name, directory=None):
             "ModelName", model_name
         ).replace("GluonModule", big_module_name)
 
-    print(glum_directory)
-    for root, dirs, files in os.walk(glum_directory):
+    for root, dirs, files in os.walk(glue_dir):
         if 'data' + os.sep in root or '_build' in root or os.path.join(
                 'docs',
                 'source'
@@ -54,7 +67,7 @@ def new_model(model_name, directory=None):
                 logger.debug("skip %s-%s" % (root, filename))
                 continue
             dirname = os.path.abspath(target_dir + os.sep + name_replace(
-                root.replace(glum_directory, "")))
+                root.replace(glue_dir, "")))
             source_file = os.path.abspath(os.path.join(root, filename))
             target_file = os.path.abspath(
                 os.path.join(dirname, name_replace(filename)))
@@ -88,10 +101,18 @@ def cli(model_name=None):
         "--directory", default=None,
         help="set the directory, default is None"
     )
+    parser.add_argument(
+        "--skip_top",
+        help="whether to skip the top files, like docs",
+        action='store_false',
+    )
 
     args = parser.parse_args()
 
-    if new_model(model_name=args.model_name, directory=args.directory):
+    if new_model(
+            model_name=args.model_name, directory=args.directory,
+            skip_top=args.skip_top
+    ):
         logger.info("success")
     else:
         logger.error("error")
