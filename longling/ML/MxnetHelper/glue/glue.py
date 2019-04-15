@@ -4,6 +4,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+import argparse
 import os
 
 import longling
@@ -69,10 +70,7 @@ def new_model(model_name, directory=None):
     return True
 
 
-if __name__ == '__main__':
-    import argparse
-
-    model_name = "longling"
+def cli(model_name=None):
     parser = argparse.ArgumentParser()
     if model_name:
         parser.add_argument(
@@ -97,3 +95,8 @@ if __name__ == '__main__':
         logger.info("success")
     else:
         logger.error("error")
+
+
+if __name__ == '__main__':
+    model_name = "longling"
+    cli(model_name)
