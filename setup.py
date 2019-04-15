@@ -6,8 +6,6 @@ import os
 # import sys
 from distutils.core import setup
 from setuptools import find_packages
-from longling.ML.MxnetHelper.glue import glue
-
 
 # CURRENT_DIR = os.path.dirname(__file__)
 # sys.path.insert(0, CURRENT_DIR)
@@ -40,19 +38,20 @@ setup(
         include=[
             "longling",
             "*.lib", "*.lib.*",
-            "*.framework",
-            "*.framework.ML",
-            "*.framework.ML.MXnet*",
-            "*.framework.ML.universe*"
+            "*.ML",
+            "*.ML.MxnetHelper*",
+            "*.ML.toolkit*"
         ],
         exclude=[
             "*.mx_example", "*.gluon_example*", "*.gluon_exp*",
             "*.mxnet_old*",
         ]
     ),
-    scripts=[
-        glue.__file__,
-    ],
+    entry_points={
+        "console_scripts": [
+            "glue = longling.ML.MxnetHelper.glue.glue:cli",
+        ],
+    },
     url='https://gitlab.com/tswsxk/longling.git',
     license='LICENSE.txt',
     description='handy wrapper for many libs',
