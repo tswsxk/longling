@@ -76,8 +76,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     if model_name:
         parser.add_argument(
-            "--module_name", default="%s" % model_name,
-            help="set the module name, default is %s" % model_name
+            "--model_name", default="%s" % model_name,
+            help="set the model name, default is %s" % model_name
         )
     else:
         parser.add_argument(
