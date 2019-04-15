@@ -12,6 +12,7 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+import datetime
 import os
 import sys
 
@@ -22,7 +23,7 @@ sys.path.insert(0, os.path.abspath('../'))
 # -- Project information -----------------------------------------------------
 
 project = 'ModelName'
-copyright = '2018, tongshiwei'
+copyright = '%s, tongshiwei' % datetime.datetime.now().strftime("%Y%m%d")
 author = 'tongshiwei'
 
 # The short X.Y version
