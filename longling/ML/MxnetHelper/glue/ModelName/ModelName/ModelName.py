@@ -53,7 +53,7 @@ class ModelName(object):
         # todo 到Parameters定义处定义相关参数
         mod = Module(cfg)
         mod.logger.info(str(mod))
-        filename = mod.dump_configuration()
+        filename = mod.cfg.cfg_path
         mod.logger.info("parameters saved to %s" % filename)
         return mod
 
@@ -83,7 +83,8 @@ class ModelName(object):
     def toolbox_init(
             self,
             evaluation_formatter_parameters=None,
-            validation_logger_mode="w", informer_silent=False,
+            validation_logger_mode="w",
+            informer_silent=False,
     ):
 
         from longling.lib.clock import Clock
@@ -112,7 +113,7 @@ class ModelName(object):
         # 4.1 todo 初始化一些训练过程中的交互信息
         timer = Clock()
 
-        console_progress_monitor = ConsoleProgressMonitor(
+        progress_monitor = ConsoleProgressMonitor(
             loss_index=[name for name in self.loss_function],
             end_epoch=params.end_epoch - 1,
             silent=informer_silent
@@ -137,7 +138,7 @@ class ModelName(object):
         )
 
         self.toolbox["monitor"]["loss"] = loss_monitor
-        self.toolbox["monitor"]["progress"] = console_progress_monitor
+        self.toolbox["monitor"]["progress"] = progress_monitor
         self.toolbox["timer"] = timer
         self.toolbox["formatter"]["evaluation"] = evaluation_formatter
 
@@ -169,7 +170,7 @@ class ModelName(object):
 
         # 5 todo 初始化模型
         model_file = kwargs.get(
-            mod.epoch_params_filename(load_epoch), "init_model_file"
+            "init_model_file", mod.epoch_params_filename(load_epoch)
         )
         try:
             net = mod.load(net, load_epoch, params.ctx)
@@ -301,24 +302,30 @@ class ModelName(object):
     def transform(self, data):
         return transform(data, self.mod.cfg)
 
+    def _train(self):
+        train_data = self.load_data()
+        valid_data = self.load_data()
+        self.train_net(train_data, valid_data)
+
     @staticmethod
-    def train(reinforcement=False, **kwargs):
+    def inc_train(init_model_file, validation_logger_mode="w", **kwargs):
+        # 增量学习，从某一轮参数继续训练
+        module = ModelName(**kwargs)
+        module.toolbox_init(validation_logger_mode=validation_logger_mode)
+        module.model_init(init_model_file=init_model_file)
+
+        module._train()
+
+    @staticmethod
+    def train(**kwargs):
         module = ModelName(**kwargs)
         module.set_loss()
         # module.viz()
 
-        if not reinforcement:
-            module.toolbox_init()
-            module.model_init(**kwargs)
-        else:
-            # 增量学习，从某一轮或某个参数配置继续训练
-            assert "init_model_file" in kwargs or "load_epoch" in kwargs
-            module = ModelName(**kwargs)
-            module.toolbox_init(validation_logger_mode="a")
+        module.toolbox_init()
+        module.model_init(**kwargs)
 
-        train_data = module.load_data()
-        valid_data = module.load_data()
-        module.train_net(train_data, valid_data)
+        module._train()
 
     @staticmethod
     def dump_configuration(**kwargs):
@@ -350,6 +357,7 @@ class ModelName(object):
     def run(default_entry="train"):
         cfg_parser = ConfigurationParser(Configuration)
         cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.config))
+        cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.inc_train))
         cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.train))
         cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.test))
         cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.load))
