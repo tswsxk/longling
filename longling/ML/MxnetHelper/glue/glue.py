@@ -104,7 +104,7 @@ def cli(model_name=None):
     parser.add_argument(
         "--skip_top",
         help="whether to skip the top files, like docs",
-        action='store_false',
+        action='store_true',
     )
 
     args = parser.parse_args()
