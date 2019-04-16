@@ -1,11 +1,13 @@
 # coding: utf-8
 # created by tongshiwei on 17-12-17
 import io
-import re
 import os
+import re
 # import sys
 from distutils.core import setup
+
 from setuptools import find_packages
+
 
 # CURRENT_DIR = os.path.dirname(__file__)
 # sys.path.insert(0, CURRENT_DIR)
