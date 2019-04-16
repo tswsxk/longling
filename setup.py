@@ -8,9 +8,21 @@ from distutils.core import setup
 
 from setuptools import find_packages
 
+test_deps = [
+    'pytest>=4',
+    'pytest-cov>=2.6.0',
+    'pytest-pep8>=1',
+]
+doc_deps = [
+    'sphinx',
+    'sphinx-rtd-theme',
+    'recommonmark'
+]
+dev_deps = test_deps + doc_deps + [
+    'setuptools>=40',
+    'wheel'
+]
 
-# CURRENT_DIR = os.path.dirname(__file__)
-# sys.path.insert(0, CURRENT_DIR)
 
 def read(*names, **kwargs):
     with io.open(
@@ -61,6 +73,11 @@ setup(
     install_requires=[
         "pip"
     ],
+    extras_require={
+        'test': test_deps,
+        'doc': doc_deps,
+        'dev': dev_deps
+    },
     classifiers=[
         "Programming Language :: Python :: 3",
         "Development Status :: 4 - Beta",
