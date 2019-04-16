@@ -15,4 +15,8 @@
         Class Clock()
     Add:
         type_check:
-            typeassert function for class function and py2, py3 support direct check in code writing
+            typeassert function for class function and py2, py3 support direct
+            check in code writing
+0.0.14
+    Change the organization of framework, add new module ML, and rename MXnet
+    to MxnetHelper. The MxnetHelper has been completely refactored.
