@@ -1,0 +1,17 @@
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+    - .cache/pip
+    - venv/
+
+before_script:
+  - python3.6 -m pip install --user virtualenv
+  - python3.6 -m virtualenv venv
+  - source venv/bin/activate
+
+test:
+  script:
+    - pip install -e .[test]
+    - pytest
