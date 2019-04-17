@@ -10,6 +10,8 @@ from collections import defaultdict
 
 import matplotlib.pyplot as plt
 
+__all__ = ["ResultAnalyser"]
+
 
 class ResultAnalyser(object):
     """

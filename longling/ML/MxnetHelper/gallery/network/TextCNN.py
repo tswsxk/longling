@@ -3,6 +3,8 @@
 
 from mxnet import gluon
 
+__all__ = ["TextCNN"]
+
 
 class TextCNN(gluon.HybridBlock):
     def __init__(self, sentence_size, vec_size, channel_size=None,

@@ -8,6 +8,8 @@ from tqdm import tqdm
 
 from longling.lib.stream import wf_open
 
+__all__ = ["train_test_split"]
+
 
 def train_test_split(filename, test_ratio=0.5, root_dir=None,
                      train_filename=None, test_filename=None,

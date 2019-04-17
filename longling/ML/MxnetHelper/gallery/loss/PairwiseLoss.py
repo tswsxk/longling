@@ -3,6 +3,8 @@
 
 from mxnet import gluon
 
+__all__ = ["PairwiseLoss"]
+
 
 class PairwiseLoss(gluon.loss.Loss):
     def __init__(self, weight=None, batch_axis=-1, margin=0, **kwargs):

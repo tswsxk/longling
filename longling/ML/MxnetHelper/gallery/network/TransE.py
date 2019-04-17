@@ -5,6 +5,8 @@ import math
 import mxnet as mx
 from mxnet import gluon
 
+__all__ = ["TransE"]
+
 
 class TransE(gluon.HybridBlock):
     def __init__(self,

@@ -4,6 +4,8 @@
 import functools
 from longling import ML
 
+__all__ = ["part_dependency", "__dependency__"]
+
 part_dependency = {
     "ML": ML.__dependency__,
 }

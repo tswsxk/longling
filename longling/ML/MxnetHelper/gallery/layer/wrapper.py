@@ -5,6 +5,8 @@
 """
 from mxnet import ndarray, symbol
 
+__all__ = ["PVWeight"]
+
 
 class PVWeight(object):
     def __init__(self, params, var):
