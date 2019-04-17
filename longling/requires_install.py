@@ -6,11 +6,17 @@ from longling.base import string_types
 from longling.lib.stream import wf_open
 from longling.lib.utilog import config_logging, LogLevel
 
+__all__ = ["requirements2list"]
+
 logger = config_logging(
     logger="requires_install", console_log_level=LogLevel.INFO
 )
 
 REQUIRES_FILE = "requires.txt"
+
+
+def requirements2list(requirements_file):
+    return open(requirements_file).read().split("\n")
 
 
 def __find_file(root, name):
@@ -33,15 +39,26 @@ def __sperator_replace(input_str: string_types):
 
 def run(module_names=None, default_confirm=True, user_mode=True, source=None,
         rfile_path="requires.txt"):
-    '''
-    依赖包检查安装
-    :param module_names: root module names, can be string or list, when not specified, that is None, use "longling"
-    :param default_confirm: tag to indicating whether or not to confirm every requires.txt installed
-    :param user_mode: whether to use "--user" parameter in pip cmd
-    :param source: can be http://pypi.mirrors.ustc.edu.cn/simple
-    :param rfile_path: when specified, output the result to the file. default "requires.txt"
-    :return:
-    '''
+    """
+
+    Parameters
+    ----------
+    module_names
+        root module names, can be string or list,
+        when not specified, that is None, use "longling"
+    default_confirm
+        tag to indicating whether or not to confirm every requires.txt installed
+    user_mode
+        whether to use "--user" parameter in pip cmd
+    source
+        can be http://pypi.mirrors.ustc.edu.cn/simple
+    rfile_path
+        when specified, output the result to the file. default "requires.txt"
+
+    Returns
+    -------
+
+    """
     assert module_names is None or type(module_names) is list or type(
         module_names) in string_types
     if module_names is None:
@@ -69,10 +86,10 @@ def run(module_names=None, default_confirm=True, user_mode=True, source=None,
             if new_file not in files_path:
                 if default_confirm or input(
                         "install all package in %s?(Y/N)\n" % new_file) in (
-                'Y', 'y', ''):
+                        'Y', 'y', ''):
                     files_path.add(new_file)
     logger.info("%s requires files have been found:\n\t%s" % (
-    len(files_path), "\n\t".join(files_path)))
+        len(files_path), "\n\t".join(files_path)))
     for file_name in files_path:
         try:
             with open(file_name) as re_file:
@@ -82,7 +99,7 @@ def run(module_names=None, default_confirm=True, user_mode=True, source=None,
         except Exception as e:
             logger.error(e)
     logger.info("%s packages will be installed:\n\t%s" % (
-    len(package_set), "\n\t".join(package_set)))
+        len(package_set), "\n\t".join(package_set)))
     if not rfile_path and (package_set and (
             default_confirm or input("installed? (Y/N)\n") in ('Y', 'y', ''))):
         logger.info("installing")
@@ -103,4 +120,4 @@ def run(module_names=None, default_confirm=True, user_mode=True, source=None,
 
 
 if __name__ == '__main__':
-    run()
+    print(requirements2list("doc/requirements"))

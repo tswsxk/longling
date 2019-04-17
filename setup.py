@@ -3,10 +3,11 @@
 import io
 import os
 import re
-# import sys
 from distutils.core import setup
 
 from setuptools import find_packages
+
+from longling.dependency import part_dependency
 
 test_deps = [
     'pytest>=4',
@@ -72,7 +73,7 @@ setup(
     long_description=open('README.md').read(),
     install_requires=[
         "pip"
-    ],
+    ] + part_dependency["ML"],
     extras_require={
         'test': test_deps,
         'doc': doc_deps,

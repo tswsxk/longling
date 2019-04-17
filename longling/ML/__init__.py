@@ -4,3 +4,7 @@
 from __future__ import absolute_import
 
 from . import MxnetHelper
+
+__dependency__ = list(set(MxnetHelper.__dependency__))
+
+__all__ = ["MxnetHelper", "__dependency__"]
