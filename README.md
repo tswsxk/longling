@@ -1,15 +1,13 @@
 [![pipeline status](https://gitlab.com/tswsxk/longling/badges/master/pipeline.svg)](https://gitlab.com/tswsxk/longling/commits/master)
 [![coverage report](https://gitlab.com/tswsxk/longling/badges/master/coverage.svg)](https://gitlab.com/tswsxk/longling/commits/master)
 
+This project aims to provide some handy toolkit functions to help construct the
+architecture.
 
-# coding
-    rf_open() for reading stream, with using unistr() can handle all problems
-    wf_open(), wf_close() for writing stream, can handle all problems with coding
+The project contains several modules for different purposes:
+*  [lib](./lib/README.md) serves as the basic toolkit that 
+can be used in any place without extra dependencies.
 
-# lib module
-    class Clocker() for evaluating time cost, for process and wall
-
-
-# NOPY2LISTS:
-    <the module listed here does not support py2>
+* [ML](./ML/README.md) provides many interfaces to quickly 
+build machine learning tools.
 
