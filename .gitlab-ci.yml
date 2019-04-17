@@ -1,4 +1,4 @@
-image: python:stable
+image: quay.io/python-devs/ci-image
 test:
   script:
     - pip install -e .[test]
