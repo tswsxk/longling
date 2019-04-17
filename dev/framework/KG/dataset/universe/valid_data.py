@@ -9,9 +9,9 @@ from tqdm import tqdm
 
 from longling.lib.stream import wf_open, wf_close
 from longling.lib.candylib import as_list
-from longling.framework.KG.io_lib import load_plain, load_plains, rdf2sro, rdf2ors
+from dev.framework.KG.io_lib import load_plain, load_plains, rdf2sro, rdf2ors
 
-from longling.framework.KG.dataset.universe import get_unite, get_er, get_sro
+from dev.framework.KG.dataset.universe import get_unite, get_er, get_sro
 
 
 def full_jsonxz(source, loc_jsonxz, sources=None, negative_ratio=None, set_getter=get_er,

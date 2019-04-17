@@ -2,8 +2,8 @@
 # create by tongshiwei on 2018/7/18
 
 
-from longling.framework.KG.dataset.universe import mapper_transform
-from longling.framework.KG.io_lib import UniteMapper
+from dev.framework.KG.dataset.universe import mapper_transform
+from dev.framework.KG.io_lib import UniteMapper
 
 
 def unite_transform(sources, targets, unite_map_filename):

@@ -13,7 +13,7 @@ from framework.keyScene.common.get_scenecut_frame import get_scenecut_frame
 from framework.keyScene.common.image_mosaic import get_offline_mosaic_client
 from pyutil.program.fmtutil import fmt_exception
 
-from longling.ML.CV import ensure_dir_exists, remove_dir
+from dev.ML.CV import ensure_dir_exists, remove_dir
 
 conf = get_conf()
 

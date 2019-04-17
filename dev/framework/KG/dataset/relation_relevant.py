@@ -10,8 +10,8 @@ from tqdm import tqdm
 from longling.lib.candylib import as_list
 from longling.lib.stream import wf_open
 
-from longling.framework.KG.base import logger
-from longling.framework.KG.io_lib import load_plain, load_plains, rdf2rso, rdf2ros
+from dev.framework.KG.base import logger
+from dev.framework.KG.io_lib import load_plain, load_plains, rdf2rso, rdf2ros
 
 
 class KGRelationError(Exception):

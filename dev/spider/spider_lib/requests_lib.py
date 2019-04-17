@@ -11,7 +11,7 @@ import requests
 
 from longling.lib.utilog import config_logging
 from longling.lib.stream import check_file, wf_open, wf_close
-from longling.spider import conf
+from dev.spider import conf
 
 logger = config_logging(logger="spider", console_log_level=logging.INFO, propagate=False)
 

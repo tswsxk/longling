@@ -1,7 +1,7 @@
 # coding: utf-8
 # create by tongshiwei on 2018/7/18
-from longling.framework.KG.dataset.universe import mapper_transform
-from longling.framework.KG.io_lib import ERMapper
+from dev.framework.KG.dataset.universe import mapper_transform
+from dev.framework.KG.io_lib import ERMapper
 
 
 def er_transform(sources, targets, entities_map_filename, relations_map_filename):

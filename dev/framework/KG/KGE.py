@@ -7,9 +7,8 @@
 import json
 from multiprocessing import Pool
 
-from longling.framework.KG.base import logger
-from longling.framework.KG.io_lib import ERMapper, UniteMapper, SROMapper
-from longling.framework.KG.dataset import *
+from dev.framework.KG.base import logger
+from dev.framework.KG.io_lib import ERMapper, UniteMapper, SROMapper
 
 
 def FB15(map_type='er', test_num=100, big_test_num=5000, full_tag=True, verify_tag=True, link_class=True,

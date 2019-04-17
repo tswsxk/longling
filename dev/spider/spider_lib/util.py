@@ -12,7 +12,7 @@ from collections import OrderedDict
 
 from bs4 import BeautifulSoup
 
-from longling.spider.spider_lib import url_download
+from dev.spider import url_download
 
 from longling.lib.stream import build_dir, check_file, wf_open, wf_close
 

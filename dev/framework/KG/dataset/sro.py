@@ -1,9 +1,8 @@
 # coding: utf-8
 # create by tongshiwei on 2018/7/18
-from tqdm import tqdm
 
-from longling.framework.KG.dataset.universe import mapper_transform
-from longling.framework.KG.io_lib import SROMapper
+from dev.framework.KG.dataset.universe import mapper_transform
+from dev.framework.KG.io_lib import SROMapper
 
 
 def sro_transform(sources, targets, subjects_map_filename, relations_map_filename, objects_map_filename):

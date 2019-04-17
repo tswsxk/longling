@@ -3,7 +3,7 @@
 from tqdm import tqdm
 
 from longling.lib.candylib import as_list
-from longling.framework.KG.io_lib import UniteMapper, ERMapper, SROMapper
+from dev.framework.KG.io_lib import UniteMapper, ERMapper, SROMapper
 
 
 def build_dict(base_filename, mapper_type, mapper_args):
