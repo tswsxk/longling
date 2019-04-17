@@ -13,7 +13,7 @@ import longling.ML.MxnetHelper.glue.parser as parser
 from longling.ML.MxnetHelper.glue.parser import path_append, var2exp
 from longling.ML.MxnetHelper.toolkit.optimizer_cfg import get_optimizer_cfg, \
     get_update_steps
-from longling.ML.MxnetHelper.toolkit.select_regex_exp import all_params
+from longling.ML.MxnetHelper.toolkit.select_exp import all_params
 from longling.lib.utilog import config_logging, LogLevel
 
 
