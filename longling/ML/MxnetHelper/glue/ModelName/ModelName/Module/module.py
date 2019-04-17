@@ -2,18 +2,18 @@
 # Copyright @tongshiwei
 from __future__ import absolute_import
 
-__all__ = ["Module"]
-
 import os
 
 import mxnet as mx
 from mxnet import autograd
 from tqdm import tqdm
 
-from longling.ML.MxnetHelper.toolkit.ctx import split_and_load
 from longling.ML.MxnetHelper.glue import module
+from longling.ML.MxnetHelper.toolkit.ctx import split_and_load
 from .configuration import Configuration
 from .sym import NetName, fit_f
+
+__all__ = ["Module"]
 
 
 class Module(module.Module):
@@ -245,8 +245,8 @@ class Module(module.Module):
 
             # todo 定义模型保存方案
             if kwargs.get('prefix') and (
-                    epoch % kwargs.get('save_epoch', 1) == 0
-                    or end_epoch - 10 <= epoch <= end_epoch - 1
+                    epoch % kwargs.get('save_epoch', 1) == 0 or
+                    end_epoch - 10 <= epoch <= end_epoch - 1
             ):
                 self.save_params(
                     kwargs['prefix'] + "-%04d.parmas" % (epoch + 1), net

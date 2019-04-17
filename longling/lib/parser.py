@@ -1,13 +1,6 @@
 # coding: utf-8
 # create by tongshiwei on 2019/4/11
 
-__all__ = [
-    "CLASS_EXCLUDE_NAMES", "get_class_var",
-    "get_parsable_var", "load_parameters_json",
-    "var2exp", "path_append",
-    "Configuration", "ConfigurationParser"
-]
-
 import argparse
 import inspect
 import json
@@ -17,6 +10,13 @@ import re
 from pathlib import PurePath
 
 from longling import wf_open
+
+__all__ = [
+    "CLASS_EXCLUDE_NAMES", "get_class_var",
+    "get_parsable_var", "load_parameters_json",
+    "var2exp", "path_append",
+    "Configuration", "ConfigurationParser"
+]
 
 CLASS_EXCLUDE_NAMES = set(vars(object).keys()) | {
     '__module__', '__main__', '__dict__', '__weakref__',
@@ -58,12 +58,12 @@ def load_parameters_json(fp, load_parse_function=None):
 def var2exp(var_str, env_wrap=lambda x: x):
     var_str = str(var_str)
 
-    pattern = re.compile("\$(\w+)")
+    pattern = re.compile(r"\$(\w+)")
 
     env_vars = pattern.findall(var_str)
 
     exp = """str("%s").format(%s)""" % (
-        re.sub("\$\w+", "{}", var_str), ",".join(
+        re.sub(r"\$\w+", "{}", var_str), ",".join(
             [env_wrap(env_var) for env_var in env_vars]
         )
     )
@@ -297,4 +297,3 @@ class ConfigurationParser(argparse.ArgumentParser):
             argspec.kwonlyargs,
             argspec.kwonlydefaults.values() if argspec.kwonlydefaults else []
         )
-

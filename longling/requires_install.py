@@ -47,7 +47,8 @@ def run(module_names=None, default_confirm=True, user_mode=True, source=None,
         root module names, can be string or list,
         when not specified, that is None, use "longling"
     default_confirm
-        tag to indicating whether or not to confirm every requires.txt installed
+        tag to indicating whether or not to
+        confirm every requires.txt installed
     user_mode
         whether to use "--user" parameter in pip cmd
     source

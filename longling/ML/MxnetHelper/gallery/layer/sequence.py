@@ -40,8 +40,9 @@ def format_sequence(length, inputs, layout, merge, in_layout=None):
                 "Please convert " \
                 "to list with list(inputs) first or " \
                 "let unroll handle splitting."
-            inputs = list(symbol.split(inputs, axis=in_axis, num_outputs=length,
-                                       squeeze_axis=1))
+            inputs = list(symbol.split(
+                inputs, axis=in_axis, num_outputs=length, squeeze_axis=1
+            ))
     elif isinstance(inputs, ndarray.NDArray):
         F = ndarray
         batch_size = inputs.shape[batch_axis]

@@ -1,17 +1,16 @@
 # coding:utf-8
 # created by tongshiwei on 2018/8/8
+from mxnet import Context, cpu, gpu
+
+from longling.lib.candylib import as_list
+from longling.lib.parser import get_parsable_var, load_parameters_json, \
+    var2exp, path_append, Configuration as Params, ConfigurationParser
 
 __all__ = [
     "MXCtx", "Configuration",
     "var2exp", "path_append", "ConfigurationParser",
     "cpu", "gpu"
 ]
-
-from mxnet import Context, cpu, gpu
-
-from longling.lib.candylib import as_list
-from longling.lib.parser import get_parsable_var, load_parameters_json, \
-    var2exp, path_append, Configuration as Params, ConfigurationParser
 
 
 class MXCtx(object):

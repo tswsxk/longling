@@ -63,7 +63,9 @@ def get_fine_tune_model(symbol, label, arg_params, num_classes,
     """
     all_layers = symbol.get_internals()
     net = all_layers[layer_name + '_output']
-    net = mx.symbol.FullyConnected(data=net, num_hidden=num_classes, name='fc1')
+    net = mx.symbol.FullyConnected(
+        data=net, num_hidden=num_classes, name='fc1'
+    )
     net = mx.symbol.SoftmaxOutput(data=net, label=label, name='softmax')
     new_args = dict({k: arg_params[k] for k in arg_params if 'fc1' not in k})
     return net, new_args

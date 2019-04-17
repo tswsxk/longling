@@ -2,12 +2,15 @@
 # created by tongshiwei on 2018/10/9
 
 import os
-from longling.lib.stream import wf_open
-from tqdm import tqdm
 import random
 
+from tqdm import tqdm
 
-def train_test_split(filename, test_ratio=0.5, root_dir=None, train_filename=None, test_filename=None,
+from longling.lib.stream import wf_open
+
+
+def train_test_split(filename, test_ratio=0.5, root_dir=None,
+                     train_filename=None, test_filename=None,
                      progress_viz=True):
     if train_filename or test_filename:
         assert train_filename and test_filename
@@ -21,7 +24,8 @@ def train_test_split(filename, test_ratio=0.5, root_dir=None, train_filename=Non
 
     train_cnt = 0
     test_cnt = 0
-    with open(filename) as f, wf_open(train_filename) as train_wf, wf_open(test_filename) as test_wf:
+    with open(filename) as f, wf_open(train_filename) as train_wf, wf_open(
+            test_filename) as test_wf:
         for line in tqdm(f, disable=not progress_viz):
             if random.random() < test_ratio:
                 wf = test_wf

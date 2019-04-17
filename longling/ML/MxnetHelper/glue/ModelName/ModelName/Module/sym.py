@@ -4,7 +4,6 @@
 This file define the networks structure and
 provide a simplest training and testing example.
 """
-__all__ = ["NetName", "net_viz", "fit_f"]
 
 import logging
 import os
@@ -23,6 +22,8 @@ except (ImportError, SystemError):
     # for python script
     from data import transform
     from configuration import Configuration
+
+__all__ = ["NetName", "net_viz", "fit_f"]
 
 
 class NetName(gluon.HybridBlock):

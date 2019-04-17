@@ -1,11 +1,10 @@
 # coding: utf-8
 # create by tongshiwei on 2019/4/12
-
-__all__ = ["get_optimizer_cfg", "get_lr_scheduler", "get_update_steps"]
-
 from copy import deepcopy
 
 import mxnet as mx
+
+__all__ = ["get_optimizer_cfg", "get_lr_scheduler", "get_update_steps"]
 
 optimizers = {
     "base": (

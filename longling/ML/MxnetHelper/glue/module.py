@@ -1,11 +1,12 @@
 # coding: utf-8
 # create by tongshiwei on 2019/4/12
-__all__ = ["Module"]
-import re
 import os
+import re
 
 import mxnet as mx
 from mxnet import gluon, nd
+
+__all__ = ["Module"]
 
 
 class Module(object):

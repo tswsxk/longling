@@ -5,9 +5,10 @@
 开发测试中，非稳定版本
 """
 import math
-import matplotlib.pyplot as plt
 import re
 from collections import defaultdict
+
+import matplotlib.pyplot as plt
 
 
 class ResultAnalyser(object):
@@ -39,9 +40,12 @@ class ResultAnalyser(object):
         """
         for key, value in dict_data.items():
             if isinstance(value, dict):
-                self.add_record(value, prefix=prefix + '_' + str(key) if prefix else str(key))
+                self.add_record(value, prefix=prefix + '_' + str(
+                    key) if prefix else str(key))
             else:
-                self.records[prefix + '_' + str(key) if prefix else str(key)].append(value)
+                self.records[
+                    prefix + '_' + str(key) if prefix else str(key)].append(
+                    value)
 
     def __iter__(self):
         return iter(self.records)
@@ -72,7 +76,8 @@ class ResultAnalyser(object):
                     data[i].append((key, value))
         return data
 
-    def visual_selects(self, x_select='iteration', y_selects=('accuracy|prf_avg_.*', 'prf_\d+_f1')):
+    def visual_selects(self, x_select='iteration',
+                       y_selects=('accuracy|prf_avg_.*', 'prf_\d+_f1')):
         """
         按 x，y 格式选取数据，x_select 和 y_selects 都是正则匹配式，采用 re.match 方式匹配
 
@@ -102,7 +107,11 @@ class ResultAnalyser(object):
         ys = [[] for _ in y_patterns]
         for key, value in self.items():
             if x_pattern.match(key):
-                assert x is None, "x has been set, duplicated x, %s [stored] vs %s [store]" % (x_key, key)
+                assert x is None, \
+                    "x has been set, duplicated x, " \
+                    "%s [stored] vs %s [store]" % (
+                        x_key, key
+                    )
                 x_key = key
                 x = value
             else:
@@ -112,7 +121,8 @@ class ResultAnalyser(object):
 
         return (x_key, x), ys
 
-    def visual_select(self, x_select='iteration', y_select='accuracy|prf_avg_.*'):
+    def visual_select(self, x_select='iteration',
+                      y_select='accuracy|prf_avg_.*'):
         """
         按 x，y 格式选取数据，x_select 和 y_select 都是正则匹配式，采用 re.match 方式匹配
 
@@ -142,7 +152,10 @@ class ResultAnalyser(object):
         ys = []
         for key, value in self.items():
             if x_pattern.match(key):
-                assert x is None, "x has been set, duplicated x, %s [stored] vs %s [store]" % (x_key, key)
+                assert x is None, "x has been set, duplicated x, " \
+                                  "%s [stored] vs %s [store]" % (
+                                      x_key, key
+                                  )
                 x_key = key
                 x = value
             else:
@@ -152,7 +165,8 @@ class ResultAnalyser(object):
         return (x_key, x), ys
 
 
-def method_compare(method_args, x_select='iteration', y_select='accuracy|prf_avg_.*|.*loss.*', last_only=True):
+def method_compare(method_args, x_select='iteration',
+                   y_select='accuracy|prf_avg_.*|.*loss.*', last_only=True):
     """
     @ Dev
 
@@ -285,15 +299,19 @@ def prf(result, class_num, figure_max_class=8, class_key_map=None):
         else:
             return str(key)
 
-    (x_key, x), yss = result.visual_selects(y_selects=[r'prf_%s_.*' % class_id for class_id in range(class_num)])
+    (x_key, x), yss = result.visual_selects(
+        y_selects=[r'prf_%s_.*' % class_id for class_id in range(class_num)])
     figure_max_class = class_num if not figure_max_class else figure_max_class
     row, col = bd(figure_max_class)
-    figures = [plt.figure(i) for i in range(int(math.floor(class_num / figure_max_class)))]
-    subplots = [figures[i].subplots(row, col, sharex='all', squeeze=False).flat for i in range(len(figures))]
+    figures = [plt.figure(i) for i in
+               range(int(math.floor(class_num / figure_max_class)))]
+    subplots = [figures[i].subplots(row, col, sharex='all', squeeze=False).flat
+                for i in range(len(figures))]
     for ys in yss:
         for y_key, y in ys:
             class_id = int(ys[0][0].split('_')[1])
-            sp = subplots[class_id // figure_max_class][class_id % figure_max_class]
+            sp = subplots[class_id // figure_max_class][
+                class_id % figure_max_class]
             sp.set_title('class_' + key_name(class_id))
             sp.plot(x, y, label=y_key.split('_')[-1])
             plt.xlabel(x_key)
@@ -373,16 +391,21 @@ def f1_group(result):
 
 def pandas_api(result):
     # todo use pandas axes to form the graph
-    """try to plot the a1 and a2 on the same figure, but now will have three figure, and target figure empty"""
+    """try to plot the a1 and a2 on the same figure,
+    but now will have three figure, and target figure empty"""
     import pandas
     import numpy as np
     (x_key, x), yss = result.visual_select()
     column, datas = zip(*yss)
     f = plt.figure()
-    a1 = pandas.DataFrame.from_records(np.asarray(list(datas)).T, columns=column)
+    a1 = pandas.DataFrame.from_records(
+        np.asarray(list(datas)).T, columns=column
+    )
     b = a1.plot()
     f.axes.append(b)
-    a2 = pandas.DataFrame.from_records(np.asarray(list(datas)).T, columns=column)
+    a2 = pandas.DataFrame.from_records(
+        np.asarray(list(datas)).T, columns=column
+    )
     b = a2.plot()
     f.axes.append(b)
     f.canvas.draw()

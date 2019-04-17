@@ -1,9 +1,10 @@
 # coding: utf-8
 # create by tongshiwei on 2019/4/12
-__all__ = ["load_data", "transform", "get_data_iter"]
 
 from mxnet import gluon
 from tqdm import tqdm
+
+__all__ = ["load_data", "transform", "get_data_iter"]
 
 
 def load_data(data_src):

@@ -117,7 +117,7 @@ class PatternHitter(object):
         for name, (ps1, ps2) in self.pps.items():
             t1 = regex(ps1, line)
             t2 = regex(ps2, line)
-            if (len(ps1) == 0 or t1 != True) and t2 == True:
+            if (len(ps1) == 0 or t1 is not True) and t2 is True:
                 # 不满足1的同时满足2才行
                 t += 1
         return t

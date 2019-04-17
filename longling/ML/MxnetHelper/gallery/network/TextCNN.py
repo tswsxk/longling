@@ -5,8 +5,8 @@ from mxnet import gluon
 
 
 class TextCNN(gluon.HybridBlock):
-    def __init__(self, sentence_size, vec_size, channel_size=None, num_output=2,
-                 filter_list=(1, 2, 3, 4), num_filters=60,
+    def __init__(self, sentence_size, vec_size, channel_size=None,
+                 num_output=2, filter_list=(1, 2, 3, 4), num_filters=60,
                  dropout=0.0, batch_norm=True, activation="tanh",
                  pool_type='max',
                  **kwargs):

@@ -4,7 +4,9 @@ import numpy as np
 
 
 class Factor(object):
-    def __init__(self, initial_value, end_value, change_rate=0, warmup_steps=0):
+    def __init__(
+            self, initial_value, end_value, change_rate=0, warmup_steps=0
+    ):
         self.cnt = 0
         self._initial_value = initial_value
         self._end_value = end_value
@@ -31,4 +33,6 @@ class Factor(object):
 
 def linearly_decay(initial_rate, min_rate, period, warmup=0):
     assert initial_rate > min_rate
-    return initial_rate, min_rate, (initial_rate - min_rate) / (period - warmup)
+    return initial_rate, min_rate, (initial_rate - min_rate) / (
+            period - warmup
+    )

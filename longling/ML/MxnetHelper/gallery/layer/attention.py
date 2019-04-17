@@ -6,17 +6,18 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+import math
+
+import mxnet as mx
+from mxnet.gluon import nn
+from mxnet.gluon.block import HybridBlock
+
 __all__ = [
     'AttentionCell',
     'MultiHeadAttentionCell',
     'MLPAttentionCell',
     'DotProductAttentionCell'
 ]
-
-import math
-import mxnet as mx
-from mxnet.gluon.block import HybridBlock
-from mxnet.gluon import nn
 
 
 def _masked_softmax(F, att_score, mask):
@@ -194,8 +195,8 @@ class MultiHeadAttentionCell(AttentionCell):
 
     def __init__(self, base_cell, query_units, key_units, value_units,
                  num_heads, use_bias=True,
-                 weight_initializer=None, bias_initializer='zeros', prefix=None,
-                 params=None):
+                 weight_initializer=None, bias_initializer='zeros',
+                 prefix=None, params=None):
         super(MultiHeadAttentionCell, self).__init__(prefix=prefix,
                                                      params=params)
         self._base_cell = base_cell
@@ -208,21 +209,26 @@ class MultiHeadAttentionCell(AttentionCell):
             raise ValueError(
                 'In MultiHeadAttetion, the query_units '
                 'should be divided exactly'
-                ' by the number of heads. Received query_units={}, num_heads={}'
-                    .format(key_units, num_heads))
+                ' by the number of heads. '
+                'Received query_units={}, num_heads={}'.format(
+                    key_units, num_heads)
+            )
 
         if self._key_units % self._num_heads != 0:
             raise ValueError(
                 'In MultiHeadAttetion, the key_units should be divided exactly'
-                ' by the number of heads. Received key_units={}, num_heads={}'
-                    .format(key_units, num_heads))
+                ' by the number of heads. '
+                'Received key_units={}, num_heads={}'.format(
+                    key_units, num_heads
+                ))
 
         if self._value_units % self._num_heads != 0:
             raise ValueError(
                 'In MultiHeadAttetion, the value_units '
                 'should be divided exactly'
-                ' by the number of heads. Received value_units={}, num_heads={}'
-                    .format(value_units, num_heads))
+                ' by the number of heads. Received value_units={}, '
+                'num_heads={}'.format(value_units, num_heads)
+            )
 
         with self.name_scope():
             self.proj_query = nn.Dense(units=self._query_units,
@@ -254,7 +260,8 @@ class MultiHeadAttentionCell(AttentionCell):
         key : Symbol or NDArray
             Key of the memory. Shape (batch_size, memory_length, key_dim)
         value : Symbol or NDArray or None, default None
-            Value of the memory. If set to None, the value will be set as the key.
+            Value of the memory. If set to None,
+            the value will be set as the key.
             Shape (batch_size, memory_length, value_dim)
         mask : Symbol or NDArray or None, default None
             Mask of the memory slots.
@@ -349,8 +356,8 @@ class MLPAttentionCell(AttentionCell):
 
     def __init__(self, units, act=nn.Activation('tanh'), normalized=False,
                  dropout=0.0,
-                 weight_initializer=None, bias_initializer='zeros', prefix=None,
-                 params=None):
+                 weight_initializer=None, bias_initializer='zeros',
+                 prefix=None, params=None):
         # Define a temporary class to implement the normalized version
         # TODO(sxjscience) Find a better solution
         class _NormalizedScoreProj(HybridBlock):
@@ -482,8 +489,8 @@ class DotProductAttentionCell(AttentionCell):
 
     def __init__(self, units=None, luong_style=False, scaled=True,
                  normalized=False, use_bias=True,
-                 dropout=0.0, weight_initializer=None, bias_initializer='zeros',
-                 prefix=None, params=None):
+                 dropout=0.0, weight_initializer=None,
+                 bias_initializer='zeros', prefix=None, params=None):
         super(DotProductAttentionCell, self).__init__(prefix=prefix,
                                                       params=params)
         self._units = units
