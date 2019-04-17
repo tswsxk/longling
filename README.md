@@ -5,9 +5,9 @@ This project aims to provide some handy toolkit functions to help construct the
 architecture.
 
 The project contains several modules for different purposes:
-*  [lib](./lib/README.md) serves as the basic toolkit that 
+*  [lib](./longling/lib/README.md) serves as the basic toolkit that 
 can be used in any place without extra dependencies.
 
-* [ML](./ML/README.md) provides many interfaces to quickly 
+* [ML](./longling/ML/README.md) provides many interfaces to quickly 
 build machine learning tools.
 
