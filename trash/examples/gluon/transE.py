@@ -454,7 +454,7 @@ class TransEModule(object):
         if sro and ors and entities:
             pass
         else:
-            from longling.framework.KG.io_lib import rdf2sro, rdf2ors, load_plain
+            from dev.framework.KG.io_lib import rdf2sro, rdf2ors, load_plain
             sro, entities, _ = rdf2sro(load_plain(filename))
             ors, _, _ = rdf2ors(load_plain(filename))
 

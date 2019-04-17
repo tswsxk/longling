@@ -1,7 +1,7 @@
 # coding:utf-8
 # created by tongshiwei on 2018/6/29
 
-from longling.lib.structure.graph.graph import DirectedGraph,gen_viz_graph, plot_graph
+from dev.lib.graph.graph import DirectedGraph
 
 
 class RDFGraph(DirectedGraph):
@@ -30,7 +30,7 @@ class RDFGraph(DirectedGraph):
 
 
 if __name__ == '__main__':
-    from longling.lib.structure.graph.graph_node import DirectedGraphNode
+    from dev.lib.graph.graph_node import DirectedGraphNode
 
     rdf_triples = [
         (0, 'parent', 1),

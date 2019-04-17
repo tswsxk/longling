@@ -17,7 +17,7 @@ from longling.framework.ML.MXnet.monitor import TimeMonitor
 from longling.framework.ML.MXnet.util import get_fine_tune_model
 
 from longling.lib.utilog import config_logging
-from longling.spider import url_download
+from dev.spider import url_download
 
 
 def vgg16():
