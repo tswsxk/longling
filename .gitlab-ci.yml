@@ -7,8 +7,8 @@ cache:
     - venv/
 
 before_script:
-  - python3.6 -m pip install --user virtualenv
-  - python3.6 -m virtualenv venv
+  - python3 -m pip install --user virtualenv
+  - python3 -m virtualenv venv
   - source venv/bin/activate
 
 test:
