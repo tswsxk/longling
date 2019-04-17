@@ -49,7 +49,7 @@ class Clock(object):
     Examples
     --------
     >>> with Clock():
-    ...     print("hello world")
+    ...     a = 1 + 1
     """
 
     def __init__(self, store_dict=None, logger=logger, tips=''):

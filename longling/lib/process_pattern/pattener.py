@@ -2,13 +2,11 @@ from __future__ import absolute_import
 
 import re
 
-from longling.lib.candylib import type_assert
 from .process_pattern_base import *
 
 mode_dict = {}
 
 
-@type_assert(number=int)
 def register(number):
     def _register(func):
         if number in mode_dict:

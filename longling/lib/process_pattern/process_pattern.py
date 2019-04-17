@@ -17,7 +17,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from longling.base import *
-from longling.lib.candylib import type_assert
 from longling.lib.process_pattern.pattener import line_init_patterns, \
     init_patterns
 from longling.lib.process_pattern.process_pattern_base import \
@@ -55,7 +54,6 @@ class PatternHitter(object):
     False
     """
 
-    @type_assert(mode=int)
     def __init__(self, location, mode=0):
         """
 
