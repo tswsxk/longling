@@ -13,11 +13,8 @@ def unistr(x):
 def tostr(x):
     return str(x)
 
-
 # py2 aborted
 # string_types = basestring,
 # integer_types = (int, long)
 # unistr = lambda x: x.decode('utf-8')
 # tostr = lambda x: unicode(x)
-
-LONGLING_TYPE_CHECK = True
