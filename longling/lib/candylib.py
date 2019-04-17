@@ -1,5 +1,5 @@
-from inspect import signature
 from functools import wraps
+from inspect import signature
 
 from longling.base import LONGLING_TYPE_CHECK
 
@@ -7,7 +7,8 @@ __all__ = ['as_list', 'type_assert']
 
 
 def as_list(obj):
-    r"""A utility function that converts the argument to a list if it is not already.
+    r"""A utility function that converts the argument to a list
+    if it is not already.
 
     Parameters
     ----------
@@ -17,7 +18,8 @@ def as_list(obj):
     Returns
     -------
     list_obj: list
-        If `obj` is a list or tuple, return it. Otherwise, return `[obj]` as a single-element list.
+        If `obj` is a list or tuple, return it. Otherwise,
+        return `[obj]` as a single-element list.
 
     Examples
     --------
@@ -74,7 +76,9 @@ def _type_assert(check_tag=True, *ty_args, **ty_kwargs):
                     if name in bound_types:
                         if not isinstance(value, bound_types[name]):
                             raise TypeError(
-                                'Argument {} must be {}'.format(name, bound_types[name])
+                                'Argument {} must be {}'.format(
+                                    name, bound_types[name]
+                                )
                             )
             return func(*args, **kwargs)
 

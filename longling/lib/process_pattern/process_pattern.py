@@ -7,7 +7,8 @@
 不可命中规则1 不可命中规则2: 命中规则1 命中规则2
 
 规则之间由空格分割，不可命中可以有也可以没有，不可命中和可命中规则均可有多个
-在 分号: 前的规则有一个被命中视为与该正则规则不符， 分号: 后的规则有一个被命中，视为符合
+在 分号: 前的规则有一个被命中视为与该正则规则不符，
+分号: 后的规则有一个被命中，视为符合
 
 规则实例文件见example/process_pattern_regex.exp
 """
@@ -17,8 +18,10 @@ from __future__ import unicode_literals
 
 from longling.base import *
 from longling.lib.candylib import type_assert
-from longling.lib.process_pattern.pattener import line_init_patterns, init_patterns
-from longling.lib.process_pattern.process_pattern_base import ProcessPatternEncodedError
+from longling.lib.process_pattern.pattener import line_init_patterns, \
+    init_patterns
+from longling.lib.process_pattern.process_pattern_base import \
+    ProcessPatternEncodedError
 
 
 def regex(ps, line):
@@ -51,6 +54,7 @@ class PatternHitter(object):
     >>> print(p.is_in(u"世界和平"))
     False
     """
+
     @type_assert(mode=int)
     def __init__(self, location, mode=0):
         """
@@ -86,7 +90,8 @@ class PatternHitter(object):
         for name, (ps1, ps2) in self.pps.items():
             t1 = regex(ps1, line)
             t2 = regex(ps2, line)
-            if (len(ps1) == 0 or t1 is not True) and t2 is True:  # 不满足1的同时满足2才行
+            if (len(ps1) == 0 or t1 is not True) and t2 is True:
+                # 不满足1的同时满足2才行
                 # print line.encode('utf-8'),name.encode('utf-8')
                 return True
         return False
@@ -112,7 +117,8 @@ class PatternHitter(object):
         for name, (ps1, ps2) in self.pps.items():
             t1 = regex(ps1, line)
             t2 = regex(ps2, line)
-            if (len(ps1) == 0 or t1 != True) and t2 == True:  # 不满足1的同时满足2才行
+            if (len(ps1) == 0 or t1 != True) and t2 == True:
+                # 不满足1的同时满足2才行
                 t += 1
         return t
 
@@ -121,7 +127,8 @@ class PatternHitter(object):
         for name, (ps1, ps2) in self.pps.items():
             t1 = regex(ps1, line)
             t2 = regex(ps2, line)
-            if (len(ps1) == 0 or t1 is not True) and t2 is True:  # 不满足1的同时满足2才行
+            if (len(ps1) == 0 or t1 is not True) and t2 is True:
+                # 不满足1的同时满足2才行
                 hit_group.append(name)
         return hit_group
 

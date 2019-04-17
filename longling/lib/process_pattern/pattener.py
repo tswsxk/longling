@@ -3,7 +3,6 @@ from __future__ import absolute_import
 import re
 
 from longling.lib.candylib import type_assert
-
 from .process_pattern_base import *
 
 mode_dict = {}
@@ -13,7 +12,10 @@ mode_dict = {}
 def register(number):
     def _register(func):
         if number in mode_dict:
-            logger.warning("mode-%s %s existed, overriding by %s" % (number, mode_dict[number].__name__, func.__name__))
+            logger.warning(
+                "mode-%s %s existed, overriding by %s"
+                % (number, mode_dict[number].__name__, func.__name__)
+            )
         else:
             logger.info("register mode-%s %s" % (number, func.__name__))
         mode_dict[number] = func
@@ -136,5 +138,7 @@ def line_init_patterns(line, mode, pps=None):
 
     """
     if mode not in mode_dict:
-        raise ProcessPatternNotExistedPatternError("available mode is %s" % list(mode_dict.keys()))
+        raise ProcessPatternNotExistedPatternError(
+            "available mode is %s" % list(mode_dict.keys())
+        )
     return mode_dict[mode](line, pps)

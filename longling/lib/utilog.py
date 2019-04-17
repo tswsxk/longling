@@ -18,10 +18,12 @@ class LogLevel(object):
     CRITICAL = logging.CRITICAL
 
 
-def config_logging(filename=None, log_format='%(name)s, %(levelname)s %(message)s',
-                    level=logging.INFO,
-                    logger=None, console_log_level=None, propagate=False, mode='a',
-                    file_format=None):
+def config_logging(filename=None,
+                   log_format='%(name)s, %(levelname)s %(message)s',
+                   level=logging.INFO,
+                   logger=None, console_log_level=None, propagate=False,
+                   mode='a',
+                   file_format=None):
     """
     主日志设定文件
 
@@ -34,7 +36,8 @@ def config_logging(filename=None, log_format='%(name)s, %(levelname)s %(message)
     level: int
         默认日志等级
     logger: str or logging.logger
-        日志logger名，可以为空（使用root logger），字符串类型（创建对应名logger），logger
+        日志logger名，可以为空（使用root logger），
+        字符串类型（创建对应名logger），logger
     console_log_level: int or None
         屏幕日志等级，不为空时，使能屏幕日志输出
     propagate: bool
@@ -49,8 +52,10 @@ def config_logging(filename=None, log_format='%(name)s, %(levelname)s %(message)
         logger = logging.getLogger()
     elif isinstance(logger, string_types):
         logger = logging.getLogger(logger)
-    # need a clean state, for some module may have called logging functions already (i.e. logging.info)
-    # in that case, a default handler would been appended, causing undesired output to stderr
+    # need a clean state, for some module may
+    # have called logging functions already (i.e. logging.info)
+    # in that case, a default handler would been appended,
+    # causing undesired output to stderr
     for handler in logger.handlers:
         logger.removeHandler(handler)
     formatter = logging.Formatter(log_format)

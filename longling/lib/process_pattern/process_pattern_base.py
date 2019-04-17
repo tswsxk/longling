@@ -1,7 +1,8 @@
-import logging
-from longling.lib.utilog import config_logging
+from longling.lib.utilog import config_logging, LogLevel
 
-logger = config_logging(logger='process_pattern', console_log_level=logging.WARN)
+logger = config_logging(
+    logger='process_pattern', console_log_level=LogLevel.WARN
+)
 
 
 class ProcessPatternNotExistedPatternError(Exception):
