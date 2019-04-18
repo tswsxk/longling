@@ -8,6 +8,6 @@ Quick Reference
    :glob:
    :maxdepth: 2
 
-   submodule/ML/toolkit
-   submodule/ML/MxnetHelper
+   toolkit
+   MxnetHelper
 
