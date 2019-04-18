@@ -31,6 +31,10 @@ version = longling.__version__
 # The full version, including alpha/beta/rc tags
 release = 'alpha'
 
+with longling.wf_open('tutorial.md', 'w') as wf:
+    content = open('../../README.md').read()
+    wf.write(content[content.index('##'):])
+
 # -- General configuration ---------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
