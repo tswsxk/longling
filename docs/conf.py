@@ -32,7 +32,7 @@ version = longling.__version__
 release = 'alpha'
 
 with longling.wf_open('tutorial.md', 'w') as wf:
-    content = open('../../README.md').read()
+    content = open('../README.md').read()
     wf.write(content[content.index('##'):])
 
 # -- General configuration ---------------------------------------------------
