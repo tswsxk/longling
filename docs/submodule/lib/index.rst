@@ -1,5 +1,9 @@
 lib: General Library
 ====================
+.. toctree::
+   :glob:
+
+   self
 
 candylib
 -------------
