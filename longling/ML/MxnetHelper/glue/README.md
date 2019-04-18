@@ -1,6 +1,7 @@
 ## Introduction
 Glue (Gluon Example) aims to generate a neural network model template of 
-Mxnet-Gluon which can be quickly developed into a mature model.
+Mxnet-Gluon which can be quickly developed into a mature model. The source code
+is [here](https://github.com/tswsxk/longling/tree/master/longling/ML/MxnetHelper/glue)
 
 ## Installation
 It is automatically installed when you installing longling package. 
