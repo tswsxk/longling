@@ -1,3 +1,4 @@
 sphinx
 nbsphinx
 IPython
+m2r
