@@ -14,3 +14,6 @@ __dependency__ = list(set(functools.reduce(
     lambda x, y: x + y,
     part_dependency.values()
 )))
+
+if __name__ == '__main__':
+    print("\n".join(__dependency__))
