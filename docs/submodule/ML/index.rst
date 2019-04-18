@@ -3,7 +3,7 @@ Machine Learning
 
 toolkit
 ---------------
-.. mdinclude:: ../../../longling/ML/MxnetHelper/README.md
+.. mdinclude:: ../../../longling/ML/toolkit/README.md
 
 .. toctree::
    :glob:
