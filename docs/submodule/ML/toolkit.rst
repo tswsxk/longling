@@ -24,9 +24,3 @@ monitor
 .. automodule:: longling.ML.toolkit.monitor
    :members:
    :imported-members:
-
-test
--------------
-.. automodule:: longling.lib.candylib
-   :members:
-   :imported-members:
