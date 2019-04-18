@@ -3,6 +3,8 @@ Machine Learning
 
 toolkit
 ---------------
+.. mdinclude:: ../../../longling/ML/MxnetHelper/README.md
+
 .. toctree::
    :glob:
    :maxdepth: 2
@@ -17,7 +19,7 @@ API reference
 ^^^^^^^^^^^^^
 .. toctree::
    :glob:
-   :maxdepth: 2
+   :maxdepth: 3
 
    MxnetHelper/toolkit
    MxnetHelper/glue

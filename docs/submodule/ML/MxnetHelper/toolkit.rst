@@ -1,9 +1,5 @@
-General Library
-============
-
-Quick Reference
----------------
-.. currentmodule:: longling.ML.MxnetHelper.toolkit
+General Toolkit
+================
 
 ctx
 ---
