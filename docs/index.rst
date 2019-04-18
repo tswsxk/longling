@@ -1,6 +1,6 @@
 .. mdinclude:: ../README.md
 
-API Documents
+Modules Index
 -------------
 
 .. toctree::
