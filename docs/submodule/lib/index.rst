@@ -1,5 +1,5 @@
-General Library
-===============
+lib: General Library
+====================
 
 candylib
 -------------
