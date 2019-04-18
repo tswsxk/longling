@@ -13,11 +13,8 @@ API Documents
    :glob:
    :maxdepth: 2
 
-   self
    submodule/lib/index
+   submodule/ML/index
 
-Indices and tables
-==================
 
-* :ref:`genindex`
-* :ref:`modindex`
+
