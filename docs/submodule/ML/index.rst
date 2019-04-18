@@ -13,6 +13,8 @@ MxnetHelper
 -----------
 .. mdinclude:: ../../../longling/ML/MxnetHelper/README.md
 
+API reference
+^^^^^^^^^^^^^
 .. toctree::
    :glob:
    :maxdepth: 2
