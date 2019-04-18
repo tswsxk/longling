@@ -11,6 +11,8 @@ toolkit
 
 MxnetHelper
 -----------
+.. mdinclude:: ../../../longling/ML/MxnetHelper/README.md
+
 .. toctree::
    :glob:
    :maxdepth: 2
