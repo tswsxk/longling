@@ -3,7 +3,7 @@ General Toolkit
 
 analyser
 --------
-.. automodule:: longling.ML.toolkit.analyser
+.. automodule:: longling.ML.toolkit.analyser.analyser
    :members:
    :imported-members:
 
