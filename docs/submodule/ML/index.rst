@@ -5,6 +5,8 @@ toolkit
 ---------------
 .. mdinclude:: ../../../longling/ML/toolkit/README.md
 
+API reference
+^^^^^^^^^^^^^
 .. toctree::
    :glob:
    :maxdepth: 2
