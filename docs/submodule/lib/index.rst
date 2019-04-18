@@ -5,24 +5,21 @@ Quick Reference
 ---------------
 .. currentmodule:: longling.lib
 
-.. autosummary::
-    :nosignatures:
-
-    candylib.as_list
-    clock.Clock
-    stream.wf_open
-    process_pattern.PatternHitter
-
-
 candylib
 -------------
-.. automodule:: longling.lib
+.. automodule:: longling.lib.candylib
    :members:
    :imported-members:
 
 clock
 -------------
 .. automodule:: longling.lib.clock
+   :members:
+   :imported-members:
+
+parser
+-------------
+.. automodule:: longling.lib.parser
    :members:
    :imported-members:
 
