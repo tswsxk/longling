@@ -1,4 +1,4 @@
-.. include:: ../../../longling/lib/README.md
+.. mdinclude:: ../../../longling/lib/README.md
 
 candylib
 -------------
