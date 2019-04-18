@@ -1,3 +1,3 @@
 Glue: Gluon Example
 ===================
-.. include:: ../../../../longling/ML/glue/README.md
+.. include:: ../../../../longling/ML/MxnetHelper/glue/README.md
