@@ -1,16 +1,12 @@
 # coding: utf-8
 # create by tongshiwei on 2019/4/7
 
-from .attention import AttentionCell, MultiHeadAttentionCell, \
-    MLPAttentionCell, DotProductAttentionCell
-from .highway import HighwayCell
-from .normalization import get_l2_embedding_weight
-from .sequence import format_sequence, mask_sequence_variable_length
+from . import attention, highway, normalization, sequence
 
-__all__ = [
-    "AttentionCell", "MultiHeadAttentionCell", "MLPAttentionCell",
-    "DotProductAttentionCell",
-    "HighwayCell",
-    "get_l2_embedding_weight",
-    "format_sequence", "mask_sequence_variable_length",
-]
+from .attention import *
+from .highway import *
+from .normalization import *
+from .sequence import *
+
+__all__ = attention.__all__ + highway.__all__ \
+          + normalization.__all__ + sequence.__all__
