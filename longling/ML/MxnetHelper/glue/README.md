@@ -4,7 +4,8 @@ Mxnet-Gluon which can be quickly developed into a mature model.
 
 ## Installation
 It is automatically installed when you installing longling package. 
-The tutorial of installing can be found here.
+The tutorial of installing can be found 
+[here](https://longling.readthedocs.io/zh/latest/tutorial.html#installation).
 
 ## Tutorial
 Run the following commands to use glue:
