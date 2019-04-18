@@ -1,9 +1,4 @@
-General Library
-============
-
-Quick Reference
----------------
-.. currentmodule:: longling.lib
+.. include:: ../../../longling/lib/README.md
 
 candylib
 -------------
