@@ -31,7 +31,7 @@ version = longling.__version__
 # The full version, including alpha/beta/rc tags
 release = 'alpha'
 
-with longling.wf_open('tutorial.md', 'w') as wf:
+with longling.wf_open('tutorial.md') as wf:
     content = open('../README.md').read()
     wf.write(content[content.index('##'):])
 
