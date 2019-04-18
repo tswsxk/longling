@@ -11,8 +11,6 @@ toolkit
 
 MxnetHelper
 -----------
-.. currentmodule:: longling.ML.MxnetHelper
-
 .. toctree::
    :glob:
    :maxdepth: 2
