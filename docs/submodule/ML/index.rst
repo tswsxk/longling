@@ -3,16 +3,11 @@ Machine Learning
 
 Quick Reference
 ---------------
-.. currentmodule:: longling.ML
 
-toolkit
---------
-.. automodule:: longling.ML.toolkit
-   :members:
-   :imported-members:
+.. toctree::
+   :glob:
+   :maxdepth: 2
 
-MxnetHelper
--------------
-.. automodule:: longling.ML.MxnetHelper
-   :members:
-   :imported-members:
+   submodule/ML/toolkit
+   submodule/ML/MxnetHelper
+
