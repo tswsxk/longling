@@ -28,3 +28,12 @@ extra dependencies.
 * [ML](https://longling.readthedocs.io/zh/latest/submodule/ML/index.html) 
 provides many interfaces to quickly build machine learning tools.
 
+## Quick scripts
+The project provide several cli scripts to help construct different 
+architecture.
+
+### Neural Network
+
+* [glue](https://longling.readthedocs.io/zh/latest/submodule/ML/MxnetHelper/glue.html) 
+for mxnet-gluon
+
