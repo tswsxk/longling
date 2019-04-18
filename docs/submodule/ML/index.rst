@@ -21,7 +21,7 @@ API reference
 ^^^^^^^^^^^^^
 .. toctree::
    :glob:
-   :maxdepth: 4
+   :maxdepth: 2
 
    MxnetHelper/helper
    MxnetHelper/toolkit
