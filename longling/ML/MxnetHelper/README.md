@@ -1,4 +1,7 @@
-总共包含三个模块
+总共包含四个模块
+
+### helper
+一些Mxnet常用的辅助函数，如判断混合编程模式下传入参数是Symbol还是NDArray的getF
 
 ### gallery
 模型、网络层集合
