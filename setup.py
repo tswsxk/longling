@@ -49,6 +49,7 @@ setup(
     version=VERSION,
     author='Sherlock, Shiwei Tong',
     author_email='tongsw@mail.ustc.edu.cn',
+    include_package_data=True,
     packages=find_packages(
         include=[
             "longling",
