@@ -1,4 +1,5 @@
-.. mdinclude:: ../../../longling/lib/README.md
+General Library
+===============
 
 candylib
 -------------
