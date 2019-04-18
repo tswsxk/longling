@@ -1,9 +1,5 @@
 General Toolkit
 ================
-.. toctree::
-   :glob:
-
-   self
 
 ctx
 ---

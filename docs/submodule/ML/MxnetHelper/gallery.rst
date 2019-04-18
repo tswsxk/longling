@@ -1,9 +1,5 @@
 Gallery
 =======
-.. toctree::
-   :glob:
-
-   self
 
 layer
 -----
