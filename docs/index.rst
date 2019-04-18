@@ -3,16 +3,7 @@ sphinx-quickstart on Tue Aug  7 14:08:44 2018.
 You can adapt this file completely to your liking, but it should at least
 contain the root `toctree` directive.
 
-longling's documentation
-========================
-
-Introduction
-------------
-.. toctree::
-   :glob:
-   :maxdepth: 2
-
-   tutorial
+.. mdinclude:: ../README.md
 
 API Documents
 -------------
