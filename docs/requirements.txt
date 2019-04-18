@@ -6,8 +6,9 @@ Image
 recommonmark
 ipython
 m2r
-mxnet
-sklearn
-numpy
-tqdm
 scipy
+sklearn
+matplotlib
+tqdm
+mxnet
+numpy
