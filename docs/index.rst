@@ -2,6 +2,10 @@
 
 Module Index
 -------------
+.. toctree::
+   :hidden:
+
+   self
 
 .. toctree::
    :glob:
