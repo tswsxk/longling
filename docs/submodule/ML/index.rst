@@ -14,6 +14,7 @@ MxnetHelper
 .. toctree::
    :glob:
    :maxdepth: 2
+
    MxnetHelper/toolkit
    MxnetHelper/glue
    MxnetHelper/gallery
