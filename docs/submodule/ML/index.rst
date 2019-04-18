@@ -23,6 +23,7 @@ API reference
    :glob:
    :maxdepth: 3
 
+   MxnetHelper/helper
    MxnetHelper/toolkit
    MxnetHelper/glue
    MxnetHelper/gallery
