@@ -1,13 +1,22 @@
 Machine Learning
 ================
 
-Quick Reference
+toolkit
 ---------------
-
 .. toctree::
    :glob:
    :maxdepth: 2
 
    toolkit
-   MxnetHelper
+
+MxnetHelper
+-----------
+.. currentmodule:: longling.ML.MxnetHelper
+
+.. toctree::
+   :glob:
+   :maxdepth: 2
+   MxnetHelper/toolkit
+   MxnetHelper/glue
+   MxnetHelper/gallery
 
