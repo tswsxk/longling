@@ -21,10 +21,9 @@ API reference
 ^^^^^^^^^^^^^
 .. toctree::
    :glob:
-   :maxdepth: 2
+   :maxdepth: 3
 
    MxnetHelper/helper
    MxnetHelper/toolkit
    MxnetHelper/glue
    MxnetHelper/gallery
-

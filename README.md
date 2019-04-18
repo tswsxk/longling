@@ -1,7 +1,5 @@
 # longling
 
-[![pipeline status](https://gitlab.com/tswsxk/longling/badges/master/pipeline.svg)](https://gitlab.com/tswsxk/longling/commits/master)
-[![coverage report](https://gitlab.com/tswsxk/longling/badges/master/coverage.svg)](https://gitlab.com/tswsxk/longling/commits/master)
 [![Documentation Status](https://readthedocs.org/projects/longling/badge/?version=latest)](https://longling.readthedocs.io/zh/latest/index.html)
 [![PyPI](https://img.shields.io/pypi/v/longling.svg)](https://pypi.python.org/pypi/longling)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/longling.svg)](https://pypi.python.org/pypi/longling)

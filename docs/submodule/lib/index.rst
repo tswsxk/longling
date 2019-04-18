@@ -1,10 +1,5 @@
 lib: General Library
 ====================
-.. toctree::
-   :glob:
-
-   candylib
-   clock
 
 candylib
 -------------
