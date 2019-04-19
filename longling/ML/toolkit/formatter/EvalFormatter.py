@@ -113,8 +113,8 @@ class EvalFormatter(object):
         if dump:
             logger = kwargs.get('logger', self.logger)
             logger.info(msg)
-            if kwargs.get('log_f', self.log_f) is not None:
-                log_f = kwargs['log_f']
+            log_f = kwargs.get('log_f', self.log_f)
+            if log_f is not None:
                 try:
                     if log_f is not None and isinstance(log_f, string_types):
                         log_f = codecs.open(log_f, "a", encoding="utf-8")
