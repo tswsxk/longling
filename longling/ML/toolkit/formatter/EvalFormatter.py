@@ -17,7 +17,7 @@ def _to_dict(name_value):
 
 
 class EvalFormatter(object):
-    def __init__(self, logger=logging, dump_file=None, **kwargs):
+    def __init__(self, logger=logging.getLogger(), dump_file=None, **kwargs):
         self.logger = logger
         if dump_file is not None and isinstance(dump_file, string_types):
             # clean file
@@ -41,7 +41,7 @@ class EvalFormatter(object):
     def eval_format(self, eval_name_value):
         msg = []
         for name, value in eval_name_value.items():
-            msg += self._eval_format(name, value)
+            msg.append(self._eval_format(name, value))
         msg = "\t".join(msg)
         data = eval_name_value
         return msg, data
@@ -176,3 +176,11 @@ class MultiClassEvalFormatter(EvalFormatter):
             data['prf'] = prf
 
         return msg, data
+
+
+if __name__ == '__main__':
+    logging.getLogger().setLevel(logging.INFO)
+    formatter = EvalFormatter()
+    print(formatter(
+        eval_name_value={"precision_1": 10, "precision_0": 20}
+    )[0])
