@@ -10,15 +10,28 @@ Full documentation [here](https://longling.readthedocs.io/zh/latest/index.html).
 
 ## Installation
 
+### pip
 ```bash
 pip install longling
 ```
-From source: clone the repository and then run: `python setup.py install`.
+### source
+clone the repository and then run `python setup.py install`:
+```bash
+git clone https://github.com/tswsxk/longling.git
+python setup.py install
+```
 
 ### Notation
 Due to the possible multi version of deep learning frameworks like 
 mxnet(for cpu) and mxnet-cu90(for gpu, with cuda version 9.0), 
-it is good to install such frameworks in advance.
+it is good to install such frameworks in advance. 
+For swift installation, use `--no-dependencies` option as follows:
+```bash
+# pip
+pip install longling --no-dependencies
+# source
+python setup.py install --no-dependencies
+```
 
 ## Overview
 The project contains several modules for different purposes:
