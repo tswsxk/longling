@@ -19,7 +19,7 @@ def print_time(task, logger=_logger):
     Parameters
     ----------
     task: str
-    logger: logging.logger
+    logger: logging.Logger
 
     Examples
     --------
