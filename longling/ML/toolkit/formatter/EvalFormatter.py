@@ -70,8 +70,10 @@ class EvalFormatter(object):
 
         if loss_name_value is not None:
             loss_name_value = _to_dict(loss_name_value)
-            assert isinstance(loss_name_value,
-                              dict), "eval_name_value should be dict"
+            assert isinstance(
+                loss_name_value, dict
+            ), "loss_name_value should be None, dict or tuple, " \
+               "now is %s" % type(loss_name_value)
             _msg, _data = self.loss_format(loss_name_value)
 
             msg.append(
@@ -83,8 +85,10 @@ class EvalFormatter(object):
 
         if extra_info is not None:
             extra_info = _to_dict(extra_info)
-            assert isinstance(extra_info,
-                              dict), "extra_info should be None or dict"
+            assert isinstance(
+                extra_info, dict
+            ), "extra_info should be None, dict or tuple, " \
+               "now is %s" % type(extra_info)
             msg.append(extra_info.items())
             data.update(extra_info)
 
@@ -92,8 +96,10 @@ class EvalFormatter(object):
 
         if eval_name_value is not None:
             eval_name_value = _to_dict(eval_name_value)
-            assert isinstance(eval_name_value,
-                              dict), "eval_name_value should be dict"
+            assert isinstance(
+                eval_name_value, dict
+            ), "eval_name_value should be None, dict or tuple, " \
+               "now is %s" % type(eval_name_value)
             _msg, _data = self.eval_format(eval_name_value)
             msg.append(
                 _msg
