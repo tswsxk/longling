@@ -31,6 +31,14 @@ optimizers = {
             "clip_gradient": 1,
             "momentum": 0.9,
         }
+    ),
+    "word_embedding": (
+        "adagrad",
+        {
+            "learning_rate": 10e-2,
+            "wd": 10e-4,
+            "clip_gradient": 1,
+        }
     )
 }
 
@@ -67,8 +75,3 @@ def plot_schedule(schedule_fn, iterations=1500):
     plt.xlabel("Iteration")
     plt.ylabel("Learning Rate")
     plt.show()
-
-
-if __name__ == '__main__':
-    _, params = get_optimizer_cfg("base", lr_step=10, lr_total_step=1000)
-    plot_schedule(params["lr_scheduler"])
