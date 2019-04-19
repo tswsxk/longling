@@ -13,7 +13,7 @@ import longling.ML.MxnetHelper.glue.parser as parser
 from longling.ML.MxnetHelper.glue.parser import path_append, var2exp
 from longling.ML.MxnetHelper.toolkit.optimizer_cfg import get_optimizer_cfg, \
     get_update_steps
-from longling.ML.MxnetHelper.toolkit.select_exp import all_params
+from longling.ML.MxnetHelper.toolkit.select_exp import all_params as _select
 from longling.lib.utilog import config_logging, LogLevel
 
 
@@ -58,7 +58,7 @@ class Configuration(parser.Configuration):
     batch_size = 32
     save_epoch = 1
     # 更新保存参数，一般需要保持一致
-    train_select = all_params
+    train_select = _select
     save_select = train_select
 
     # 运行设备
