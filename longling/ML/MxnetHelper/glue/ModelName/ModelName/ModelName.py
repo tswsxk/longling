@@ -371,7 +371,7 @@ class ModelName(object):
             del cfg_kwargs["subcommand"]
         else:
             subcommand = default_entry
-        eval("ModelName.%s" % subcommand)(**cfg_kwargs)
+        eval("%s.%s" % (ModelName.__name__, subcommand))(**cfg_kwargs)
 
 
 if __name__ == '__main__':
