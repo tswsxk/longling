@@ -97,6 +97,7 @@ def find_dependency(module_names=None):
                 package_set.add(req)
         except Exception as e:
             logger.error(e)
+    package_set -= {"longling"}
     logger.info(
         "%s dependency packages have be founded:\n\t%s" % (
             len(package_set), ",".join(package_set)
@@ -107,4 +108,5 @@ def find_dependency(module_names=None):
 
 
 if __name__ == '__main__':
-    cli()
+    logger.setLevel(LogLevel.WARN)
+    print("\n".join(find_dependency()))
