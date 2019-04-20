@@ -13,7 +13,7 @@ from longling import wf_open
 
 __all__ = [
     "CLASS_EXCLUDE_NAMES", "get_class_var",
-    "get_parsable_var", "load_parameters_json",
+    "get_parsable_var", "load_configuration_json",
     "var2exp", "path_append",
     "Configuration", "ConfigurationParser"
 ]
@@ -50,7 +50,7 @@ def get_parsable_var(class_obj, parse_exclude=None, dump_parse_functions=None):
     return parse_params(params, dump_parse_functions)
 
 
-def load_parameters_json(fp, load_parse_function=None):
+def load_configuration_json(fp, load_parse_function=None):
     params = json.load(fp)
     return parse_params(params, load_parse_function)
 
@@ -125,7 +125,7 @@ class Configuration(object):
     @staticmethod
     def load(params_json):
         with open(params_json) as f:
-            params = load_parameters_json(
+            params = load_configuration_json(
                 f, load_parse_function=None
             )
 
