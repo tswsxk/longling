@@ -135,7 +135,7 @@ class Configuration(object):
         if os.path.isfile(cfg_json) and not override:
             self.logger.warning("file %s existed, dump aborted" % cfg_json)
             return
-        self.logger.info("writing parameters to %s" % cfg_json)
+        self.logger.info("writing configuration parameters to %s" % cfg_json)
         with wf_open(cfg_json) as wf:
             json.dump(self.parsable_var, wf, indent=4)
 
