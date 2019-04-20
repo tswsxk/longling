@@ -10,7 +10,7 @@ import pathlib
 from mxnet import cpu
 
 import longling.ML.MxnetHelper.glue.parser as parser
-from longling.ML.MxnetHelper.glue.parser import path_append, var2exp
+from longling.ML.MxnetHelper.glue.parser import path_append, var2exp, eval_var
 from longling.ML.MxnetHelper.toolkit.optimizer_cfg import get_optimizer_cfg, \
     get_update_steps
 from longling.ML.MxnetHelper.toolkit.select_exp import all_params as _select
@@ -42,6 +42,12 @@ class Configuration(parser.Configuration):
     root_data_dir = str(root_data_dir)
     root_model_dir = str(root_model_dir)
 
+    # 训练参数设置
+    begin_epoch = 0
+    end_epoch = 100
+    batch_size = 32
+    save_epoch = 1
+
     # 优化器设置
     optimizer, optimizer_params = get_optimizer_cfg(name="base")
     lr_params = {
@@ -52,11 +58,6 @@ class Configuration(parser.Configuration):
         ),
     }
 
-    # 训练参数设置
-    begin_epoch = 0
-    end_epoch = 100
-    batch_size = 32
-    save_epoch = 1
     # 更新保存参数，一般需要保持一致
     train_select = _select
     save_select = train_select
@@ -67,6 +68,9 @@ class Configuration(parser.Configuration):
     # 用户变量
     # 超参数
     hyper_params = {}
+
+    # 说明
+    caption = ""
 
     def __init__(self, params_json=None, **kwargs):
         """
@@ -119,6 +123,16 @@ class Configuration(parser.Configuration):
                 env_wrap=lambda x: "self.%s" % x
             )
             setattr(self, _dir, eval(exp))
+
+        _vars = [
+            "ctx"
+        ]
+        for _var in _vars:
+            if _var in kwargs:
+                try:
+                    setattr(self, _var, eval_var(kwargs[_var]))
+                except TypeError:
+                    pass
 
         self.validation_result_file = path_append(
             self.model_dir, "result.json", to_str=True
