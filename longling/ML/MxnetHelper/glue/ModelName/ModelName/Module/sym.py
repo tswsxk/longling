@@ -148,7 +148,7 @@ def numerical_check(_net, cfg):
     )
 
     for epoch in range(0, 100):
-        for _data in datas:
+        for _data in tqdm(datas):
             with autograd.record():
                 bp_loss = fit_f(
                     _net, _data, bp_loss_f, loss_function, loss_monitor
