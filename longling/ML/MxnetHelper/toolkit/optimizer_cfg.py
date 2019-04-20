@@ -47,8 +47,8 @@ def get_update_steps(update_epoch, batches_per_epoch):
     return update_epoch * batches_per_epoch
 
 
-def get_lr_scheduler(learning_rate, step=None, max_update_steps=None):
-    discount = 0.01
+def get_lr_scheduler(learning_rate, step=None, max_update_steps=None,
+                     discount=0.01):
     factor = pow(discount, step / max_update_steps)
     return mx.lr_scheduler.FactorScheduler(
         step, factor,
