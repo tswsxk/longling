@@ -152,7 +152,8 @@ class MultiClassEvalFormatter(EvalFormatter):
                 data[name] = value
 
         msg = "\t".join([m for m in msg if m])
-
+        if msg:
+            msg += '\n'
         if prf:
             avg = {eval_id: [] for eval_id in eval_ids}
             for class_id in [str(k) for k in
@@ -181,6 +182,7 @@ if __name__ == '__main__':
     formatter = MultiClassEvalFormatter()
     print(formatter(
         eval_name_value={
+            "Acuuracy": 0.5,
             "precision_1": 10, "precision_0": 20,
             "recall_0": 1, "recall_1": 2
         }
