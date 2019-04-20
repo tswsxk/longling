@@ -334,8 +334,8 @@ class ModelName(object):
         module._train()
 
     @staticmethod
-    def train(**kwargs):
-        module = ModelName(**kwargs)
+    def train(cfg=None, **kwargs):
+        module = ModelName(cfg=cfg, **kwargs)
         module.set_loss()
         # module.viz()
 
