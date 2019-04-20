@@ -4,10 +4,10 @@
 from mxnet import gluon
 from tqdm import tqdm
 
-__all__ = ["load_data", "transform", "get_data_iter"]
+__all__ = ["extract", "transform", "etl"]
 
 
-def load_data(data_src):
+def extract(data_src):
     raise NotImplementedError
 
 
@@ -20,12 +20,12 @@ def transform(raw_data, params):
     return gluon.data.DataLoader(gluon.data.ArrayDataset(raw_data), batch_size)
 
 
-def get_data_iter(*args, **kwargs):
-    raw_data = load_data(*args)
+def etl(*args, **kwargs):
+    raw_data = extract(*args)
     transform(raw_data, **kwargs)
     raise NotImplementedError
 
 
 if __name__ == '__main__':
-    for data in tqdm(get_data_iter()):
+    for data in tqdm(extract("")):
         pass
