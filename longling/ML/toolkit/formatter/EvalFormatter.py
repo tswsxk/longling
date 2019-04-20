@@ -42,7 +42,7 @@ class EvalFormatter(object):
         msg = []
         for name, value in eval_name_value.items():
             msg.append(self._eval_format(name, value))
-        msg = "\t".join(msg)
+        msg = "\t".join([m for m in msg if m])
         data = eval_name_value
         return msg, data
 
@@ -92,7 +92,7 @@ class EvalFormatter(object):
             msg.append(extra_info.items())
             data.update(extra_info)
 
-        msg = ["\t".join(msg)]
+        msg = ["\t".join([m for m in msg if m])]
 
         if eval_name_value is not None:
             eval_name_value = _to_dict(eval_name_value)
@@ -108,7 +108,7 @@ class EvalFormatter(object):
                 _data
             )
 
-        msg = "\n".join(msg)
+        msg = "\n".join([m for m in msg if m])
 
         if dump:
             logger = kwargs.get('logger', self.logger)
@@ -151,7 +151,7 @@ class MultiClassEvalFormatter(EvalFormatter):
                 msg.append(self._eval_format(name, value))
                 data[name] = value
 
-        msg = "\t".join(msg)
+        msg = "\t".join([m for m in msg if m])
 
         if prf:
             avg = {eval_id: [] for eval_id in eval_ids}
@@ -159,16 +159,14 @@ class MultiClassEvalFormatter(EvalFormatter):
                              sorted([int(k) for k in prf.keys()])]:
                 for eval_id, values in avg.items():
                     values.append(prf[class_id][eval_id])
-                msg += "\n"
                 msg += "--- Category %s" % class_id
                 msg_res = sorted(prf[class_id].items(), reverse=True)
                 msg += ("\t{}={:.10f}" * len(prf[class_id])).format(
-                    *sum(msg_res, ()))
+                    *sum(msg_res, ())) + "\n"
             avg = {
                 eval_id: sum(values) / len(values)
                 for eval_id, values in avg.items()
             }
-            msg += "\n"
             msg += "--- Category_Avg "
             msg_res = sorted(avg.items(), reverse=True)
             msg += ("\t{}={:.10f}" * len(avg)).format(*sum(msg_res, ()))
@@ -180,7 +178,10 @@ class MultiClassEvalFormatter(EvalFormatter):
 
 if __name__ == '__main__':
     logging.getLogger().setLevel(logging.INFO)
-    formatter = EvalFormatter()
+    formatter = MultiClassEvalFormatter()
     print(formatter(
-        eval_name_value={"precision_1": 10, "precision_0": 20}
+        eval_name_value={
+            "precision_1": 10, "precision_0": 20,
+            "recall_0": 1, "recall_1": 2
+        }
     )[0])
