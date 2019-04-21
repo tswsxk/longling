@@ -28,7 +28,7 @@ class Configuration(parser.Configuration):
 
     root_data_dir = "$root/data/$dataset" if dataset else "$root/data"
     data_dir = "$root_data_dir/data"
-    root_model_dir = "root_data_dir/model/$model_name"
+    root_model_dir = "$root_data_dir/model/$model_name"
     model_dir = "$root_model_dir/$workspace" if workspace else root_model_dir
     cfg_path = "$model_dir/configuration.json"
 
