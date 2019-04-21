@@ -26,17 +26,11 @@ class Configuration(parser.Configuration):
     timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     workspace = ""
 
-    root_data_dir = path_append(root / "data", dataset)
-    data_dir = path_append(
-        root_data_dir, "data", to_str=True
-    )
-    root_model_dir = root_data_dir / "model" / model_name
-    model_dir = path_append(
-        root_model_dir, workspace, to_str=True
-    )
-    cfg_path = path_append(
-        model_dir, "configuration.json", to_str=True
-    )
+    root_data_dir = "$root/data/$dataset" if dataset else "$root/data"
+    data_dir = "$root_data_dir/data"
+    root_model_dir = "root_data_dir/model/$model_name"
+    model_dir = "$root_model_dir/$workspace" if workspace else root_model_dir
+    cfg_path = "$model_dir/configuration.json"
 
     root = str(root)
     root_data_dir = str(root_data_dir)
