@@ -106,11 +106,12 @@ class Configuration(parser.Configuration):
         for param, value in params.items():
             setattr(self, "%s" % param, value)
 
+        # set dataset
+        if kwargs.get("dataset"):
+            kwargs["root_data_dir"] = "$root/data/$dataset"
         # set workspace
         if kwargs.get("workspace"):
-            kwargs["model_dir"] = path_append(
-                "$root_model_dir", "$workspace", to_str=True
-            )
+            kwargs["model_dir"] = "$root_model_dir/$workspace"
 
         # rebuild relevant directory or file path according to the kwargs
         _dirs = [
@@ -146,8 +147,7 @@ class Configuration(parser.Configuration):
         super(Configuration, self).dump(cfg_path, override)
 
     @staticmethod
-    def load(cfg_path=None):
-        cfg_path = Configuration.cfg_path if cfg_path is None else cfg_path
+    def load(cfg_path):
         return parser.Configuration.load(cfg_path)
 
 
@@ -181,7 +181,7 @@ if __name__ == '__main__':
     cfg.dump(override=True)
     try:
         logger = cfg.logger
-        cfg.load()
+        cfg.load(cfg.cfg_path)
         cfg.logger = logger
         cfg.logger.info('format check done')
     except Exception as e:
