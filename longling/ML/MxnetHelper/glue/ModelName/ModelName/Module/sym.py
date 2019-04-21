@@ -39,13 +39,13 @@ class NetName(gluon.HybridBlock):
         pass
 
 
-def net_viz(net, cfg, view_tag=False, **kwargs):
+def net_viz(_net, _cfg, view_tag=False, **kwargs):
     """visualization check, only support pure static network"""
-    batch_size = cfg.batch_size
-    model_dir = cfg.model_dir
+    batch_size = _cfg.batch_size
+    model_dir = _cfg.model_dir
     logger = kwargs.get(
         'logger',
-        cfg.logger if hasattr(cfg, 'logger') else logging
+        _cfg.logger if hasattr(_cfg, 'logger') else logging
     )
 
     try:
@@ -53,7 +53,7 @@ def net_viz(net, cfg, view_tag=False, **kwargs):
         logger.info("visualization: file in %s" % viz_dir)
         from copy import deepcopy
 
-        viz_net = deepcopy(net)
+        viz_net = deepcopy(_net)
         viz_shape = {'data': (batch_size,) + (1,)}
         x = mx.sym.var("data")
         sym = viz_net(x)
@@ -69,7 +69,7 @@ def net_viz(net, cfg, view_tag=False, **kwargs):
         logger.error(e)
 
 
-def get_data_iter(cfg):
+def get_data_iter(_cfg):
     def pseudo_data_generation():
         # 在这里定义测试用伪数据流
         import random
@@ -82,7 +82,7 @@ def get_data_iter(cfg):
 
         return raw_data
 
-    return transform(pseudo_data_generation(), cfg)
+    return transform(pseudo_data_generation(), _cfg)
 
 
 def fit_f(_net, _data, bp_loss_f, loss_function, loss_monitor):
@@ -127,10 +127,10 @@ def eval_f(_net, test_data, ctx=mx.cpu()):
 BP_LOSS_F = {"L2Loss": gluon.loss.L2Loss}
 
 
-def numerical_check(_net, cfg):
+def numerical_check(_net, _cfg):
     net.initialize()
 
-    datas = get_data_iter(cfg)
+    datas = get_data_iter(_cfg)
 
     bp_loss_f = BP_LOSS_F
     loss_function = {}
@@ -142,9 +142,9 @@ def numerical_check(_net, cfg):
 
     # train check
     trainer = module.Module.get_trainer(
-        _net, optimizer=cfg.optimizer,
-        optimizer_params=cfg.optimizer_params,
-        select=cfg.train_select
+        _net, optimizer=_cfg.optimizer,
+        optimizer_params=_cfg.optimizer_params,
+        select=_cfg.train_select
     )
 
     for epoch in range(0, 100):
@@ -155,7 +155,7 @@ def numerical_check(_net, cfg):
                 )
             assert bp_loss is not None
             bp_loss.backward()
-            trainer.step(cfg.batch_size)
+            trainer.step(_cfg.batch_size)
         print("epoch-%d: %s" % (epoch, list(loss_monitor.items())))
 
 
