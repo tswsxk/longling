@@ -49,7 +49,7 @@ class ModelName(object):
             **kwargs
         ) if cfg is None else cfg
         if not isinstance(cfg, Configuration):
-            cfg = Configuration.load(cfg)
+            cfg = Configuration.load_cfg(cfg, **kwargs)
         cfg.dump(override=True)
         return cfg
 

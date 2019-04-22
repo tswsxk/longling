@@ -138,13 +138,17 @@ class Configuration(object):
         )
 
     @staticmethod
-    def load(params_json):
+    def load_cfg(params_json, **kwargs):
         with open(params_json) as f:
             params = load_configuration_json(
                 f, load_parse_function=None
             )
-
+        params.update(kwargs)
         return params
+
+    @staticmethod
+    def load(cfg_path, **kwargs):
+        Configuration(Configuration.load_cfg(cfg_path, **kwargs))
 
     def dump(self, cfg_json, override=False):
         if os.path.isfile(cfg_json) and not override:

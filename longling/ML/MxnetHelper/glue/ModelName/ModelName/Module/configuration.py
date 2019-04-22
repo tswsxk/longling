@@ -94,7 +94,7 @@ class Configuration(parser.Configuration):
 
         params = self.class_var
         if params_json:
-            params.update(self.load(cfg_path=params_json))
+            params.update(self.load_cfg(cfg_path=params_json))
         params.update(**kwargs)
 
         for param, value in params.items():
@@ -141,8 +141,8 @@ class Configuration(parser.Configuration):
         super(Configuration, self).dump(cfg_path, override)
 
     @staticmethod
-    def load(cfg_path):
-        return parser.Configuration.load(cfg_path)
+    def load(cfg_path, **kwargs):
+        return Configuration(Configuration.load_cfg(cfg_path, **kwargs))
 
 
 class ConfigurationParser(parser.ConfigurationParser):
@@ -163,19 +163,19 @@ if __name__ == '__main__':
     directory_check(Configuration)
 
     # 命令行参数配置
-    kwargs = ConfigurationParser.get_cli_cfg(Configuration)
+    _kwargs = ConfigurationParser.get_cli_cfg(Configuration)
 
     cfg = Configuration(
-        **kwargs
+        **_kwargs
     )
-    print(kwargs)
+    print(_kwargs)
     print(cfg)
 
     # # step 2
     cfg.dump(override=True)
     try:
         logger = cfg.logger
-        cfg.load(cfg.cfg_path)
+        cfg.load_cfg(cfg.cfg_path)
         cfg.logger = logger
         cfg.logger.info('format check done')
     except Exception as e:
