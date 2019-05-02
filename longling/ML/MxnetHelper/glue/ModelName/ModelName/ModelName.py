@@ -14,6 +14,21 @@ class ModelName(object):
     def __init__(
             self, load_epoch=None, cfg=None, toolbox_init=False, **kwargs
     ):
+        """
+        模型初始化
+
+        Parameters
+        ----------
+        load_epoch: int or None
+            默认为 None，不为None时，将装载指定轮数的模型参数作为初始化模型参数
+        cfg: Configuration, str or None
+            默认为 None，不为None时，将使用cfg指定的参数配置
+            或路径指定的参数配置作为模型参数
+        toolbox_init: bool
+            默认为 False，是否初始化工具包
+        kwargs
+            参数配置可选参数
+        """
         # 1 配置参数初始化
         # todo 到Configuration处定义相关参数
         cfg = self.config(cfg, **kwargs)
@@ -45,6 +60,17 @@ class ModelName(object):
 
     @staticmethod
     def config(cfg=None, **kwargs):
+        """
+        配置初始化
+
+        Parameters
+        ----------
+        cfg: Configuration, str or None
+            默认为 None，不为None时，将使用cfg指定的参数配置
+            或路径指定的参数配置作为模型参数
+        kwargs
+            参数配置可选参数
+        """
         cfg = Configuration(
             **kwargs
         ) if cfg is None else cfg
@@ -55,6 +81,18 @@ class ModelName(object):
 
     @staticmethod
     def get_module(cfg):
+        """
+        根据配置，生成模型模块
+
+        Parameters
+        ----------
+        cfg: Configuration
+            模型配置参数
+        Returns
+        -------
+        mod: Module
+            模型模块
+        """
         mod = Module(cfg)
         mod.logger.info(str(mod))
         filename = mod.cfg.cfg_path
@@ -62,6 +100,7 @@ class ModelName(object):
         return mod
 
     def viz(self):
+        """可视化网络"""
         mod = self.mod
         net = self.net
 
