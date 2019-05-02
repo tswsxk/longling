@@ -70,11 +70,10 @@ class Configuration(parser.Configuration):
         """
         Configuration File, including categories:
 
-        * directory setting, by default:
+        * directory setting
         * optimizer setting
         * training parameters
         * equipment
-        * visualization setting
         * parameters saving setting
         * user parameters
 

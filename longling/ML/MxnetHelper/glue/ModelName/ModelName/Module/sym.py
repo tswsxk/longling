@@ -28,6 +28,7 @@ except (ImportError, SystemError):
 __all__ = ["NetName", "net_viz", "fit_f", "BP_LOSS_F", "eval_f"]
 
 
+# todo: define your network symbol here
 class NetName(gluon.HybridBlock):
     def __init__(self, **kwargs):
         super(NetName, self).__init__(**kwargs)
@@ -39,6 +40,7 @@ class NetName(gluon.HybridBlock):
         pass
 
 
+# todo: optional, visualize the network
 def net_viz(_net, _cfg, view_tag=False, **kwargs):
     """visualization check, only support pure static network"""
     batch_size = _cfg.batch_size
@@ -69,6 +71,7 @@ def net_viz(_net, _cfg, view_tag=False, **kwargs):
         logger.error(e)
 
 
+# todo:
 def get_data_iter(_cfg):
     def pseudo_data_generation():
         # 在这里定义测试用伪数据流
