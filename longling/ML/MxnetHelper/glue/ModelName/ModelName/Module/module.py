@@ -6,12 +6,11 @@ import os
 
 import mxnet as mx
 from mxnet import autograd
-from tqdm import tqdm
 
 from longling.ML.MxnetHelper.glue import module
 from longling.ML.MxnetHelper.toolkit.ctx import split_and_load
 from .configuration import Configuration
-from .sym import NetName, fit_f
+from .sym import NetName, fit_f, eval_f
 
 __all__ = ["Module"]
 
@@ -89,7 +88,9 @@ class Module(module.Module):
             from longling.ML.MxnetHelper.toolkit.optimizer_cfg import \
                 get_lr_scheduler
             optimizer_params["lr_scheduler"] = get_lr_scheduler(**lr_params)
-        module.Module.get_trainer(net, optimizer, optimizer_params, select)
+        return module.Module.get_trainer(
+            net, optimizer, optimizer_params, select
+        )
 
     def save_params(self, filename, net):
         module.Module.save_params(filename, net, select=self.cfg.save_select)
@@ -319,7 +320,7 @@ class Module(module.Module):
         progress_monitor.batch_end()
         loss_values = {
             name: loss for name, loss in loss_monitor.items()
-        }.items()
+        }
         return loss_values
 
     @staticmethod
@@ -338,26 +339,7 @@ class Module(module.Module):
         metrics: dict
 
         """
-        # from sklearn.metrics import accuracy_score
-
-        evaluation_value = []
-
-        def evaluation_function(y_pred, y_true):
-            return 1 / 2 * (y_true - y_pred) ** 2
-
-        for batch_data in tqdm(test_data, "evaluating"):
-            ctx_data = split_and_load(
-                ctx, *batch_data,
-                even_split=False
-            )
-            for (data, label) in ctx_data:
-                output = net(data)
-                evaluation_value.extend(
-                    evaluation_function(output, label).asnumpy().tolist()
-                )
-        return {
-            "evaluation_name": sum(evaluation_value) / len(evaluation_value)
-        }
+        return eval_f(net, test_data, ctx)
 
     @staticmethod
     def fit_f(net, batch_size, batch_data,
@@ -402,7 +384,9 @@ class Module(module.Module):
         with autograd.record():
             # todo modify the component extracted from ctx_data
             for _data in ctx_data:
-                bp_loss = fit_f(_data, bp_loss_f, loss_function, loss_monitor)
+                bp_loss = fit_f(
+                    net, _data, bp_loss_f, loss_function, loss_monitor
+                )
             assert bp_loss is not None
             bp_loss.backward()
         trainer.step(batch_size)

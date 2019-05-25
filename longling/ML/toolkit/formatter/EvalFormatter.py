@@ -17,7 +17,7 @@ def _to_dict(name_value):
 
 
 class EvalFormatter(object):
-    def __init__(self, logger=logging, dump_file=None, **kwargs):
+    def __init__(self, logger=logging.getLogger(), dump_file=None, **kwargs):
         self.logger = logger
         if dump_file is not None and isinstance(dump_file, string_types):
             # clean file
@@ -41,8 +41,8 @@ class EvalFormatter(object):
     def eval_format(self, eval_name_value):
         msg = []
         for name, value in eval_name_value.items():
-            msg += self._eval_format(name, value)
-        msg = "\t".join(msg)
+            msg.append(self._eval_format(name, value))
+        msg = "\t".join([m for m in msg if m])
         data = eval_name_value
         return msg, data
 
@@ -70,8 +70,10 @@ class EvalFormatter(object):
 
         if loss_name_value is not None:
             loss_name_value = _to_dict(loss_name_value)
-            assert isinstance(loss_name_value,
-                              dict), "eval_name_value should be dict"
+            assert isinstance(
+                loss_name_value, dict
+            ), "loss_name_value should be None, dict or tuple, " \
+               "now is %s" % type(loss_name_value)
             _msg, _data = self.loss_format(loss_name_value)
 
             msg.append(
@@ -83,17 +85,21 @@ class EvalFormatter(object):
 
         if extra_info is not None:
             extra_info = _to_dict(extra_info)
-            assert isinstance(extra_info,
-                              dict), "extra_info should be None or dict"
+            assert isinstance(
+                extra_info, dict
+            ), "extra_info should be None, dict or tuple, " \
+               "now is %s" % type(extra_info)
             msg.append(extra_info.items())
             data.update(extra_info)
 
-        msg = ["\t".join(msg)]
+        msg = ["\t".join([m for m in msg if m])]
 
         if eval_name_value is not None:
             eval_name_value = _to_dict(eval_name_value)
-            assert isinstance(eval_name_value,
-                              dict), "eval_name_value should be dict"
+            assert isinstance(
+                eval_name_value, dict
+            ), "eval_name_value should be None, dict or tuple, " \
+               "now is %s" % type(eval_name_value)
             _msg, _data = self.eval_format(eval_name_value)
             msg.append(
                 _msg
@@ -102,13 +108,13 @@ class EvalFormatter(object):
                 _data
             )
 
-        msg = "\n".join(msg)
+        msg = "\n".join([m for m in msg if m])
 
         if dump:
             logger = kwargs.get('logger', self.logger)
             logger.info(msg)
-            if kwargs.get('log_f', self.log_f) is not None:
-                log_f = kwargs['log_f']
+            log_f = kwargs.get('log_f', self.log_f)
+            if log_f is not None:
                 try:
                     if log_f is not None and isinstance(log_f, string_types):
                         log_f = codecs.open(log_f, "a", encoding="utf-8")
@@ -145,24 +151,23 @@ class MultiClassEvalFormatter(EvalFormatter):
                 msg.append(self._eval_format(name, value))
                 data[name] = value
 
-        msg = "\t".join(msg)
-
+        msg = "\t".join([m for m in msg if m])
+        if msg:
+            msg += '\n'
         if prf:
             avg = {eval_id: [] for eval_id in eval_ids}
             for class_id in [str(k) for k in
                              sorted([int(k) for k in prf.keys()])]:
                 for eval_id, values in avg.items():
                     values.append(prf[class_id][eval_id])
-                msg += "\n"
                 msg += "--- Category %s" % class_id
                 msg_res = sorted(prf[class_id].items(), reverse=True)
                 msg += ("\t{}={:.10f}" * len(prf[class_id])).format(
-                    *sum(msg_res, ()))
+                    *sum(msg_res, ())) + "\n"
             avg = {
                 eval_id: sum(values) / len(values)
                 for eval_id, values in avg.items()
             }
-            msg += "\n"
             msg += "--- Category_Avg "
             msg_res = sorted(avg.items(), reverse=True)
             msg += ("\t{}={:.10f}" * len(avg)).format(*sum(msg_res, ()))
@@ -170,3 +175,15 @@ class MultiClassEvalFormatter(EvalFormatter):
             data['prf'] = prf
 
         return msg, data
+
+
+if __name__ == '__main__':
+    logging.getLogger().setLevel(logging.INFO)
+    formatter = MultiClassEvalFormatter()
+    print(formatter(
+        eval_name_value={
+            "Acuuracy": 0.5,
+            "precision_1": 10, "precision_0": 20,
+            "recall_0": 1, "recall_1": 2
+        }
+    )[0])

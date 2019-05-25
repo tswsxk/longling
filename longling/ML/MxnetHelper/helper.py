@@ -8,10 +8,26 @@ __all__ = ["getF", "copy_net"]
 
 
 def getF(input):
+    r"""
+    判断输入参数类型
+
+    Parameters
+    ----------
+    input
+
+    Returns
+    -------
+
+    """
     if isinstance(input, symbol.Symbol):
         return symbol
     elif isinstance(input, ndarray.NDArray):
         return ndarray
+    else:
+        raise TypeError(
+            "the type of input should be either Symbol or NDArray, now is %s"
+            % type(input)
+        )
 
 
 def copy_net(src_net, target_net, select=None):

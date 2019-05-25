@@ -4,6 +4,8 @@
 from mxnet.gluon.nn import Embedding
 from mxnet.ndarray import NDArray
 
+__all__ = ["set_embedding_weight"]
+
 
 def set_embedding_weight(embedding_layer, weight):
     """
