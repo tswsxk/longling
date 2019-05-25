@@ -21,18 +21,31 @@ https://www.zhihu.com/question/28641663
 
 http://www.cnblogs.com/jasonfreak/p/5448462.html
 
+### usful packages
+https://zhuanlan.zhihu.com/p/42715527
+
 
 ### Steps of Data Mining
 1. 数据采集
-2. 数据分析
-    * 分析特征所属类型
-    * 数据类型包括
-        * 定性特征：类别型，可以是 text 或者 id
-        * 定量特征：数值型，可以是 整型 或者 浮点型
-        * 时间特征
-3. 数据清洗
-4. 采样
-5. 特征提取
+2. 数据预处理 DataPreProcess
+    * 采样 DataSample
+        * 针对大规模数据，抽取一小部分数据集用来跑测试
+    * 数据分析
+        * 特征分析 FeatureAnalysis
+            * 分析特征所属类型
+            * 数据类型包括
+                * 定性特征
+                    * 文本型，text，一般是长句子
+                    * 类别型，可以是 text 或者 id
+                * 定量特征：数值型，可以是 整型 或者 浮点型
+                * 时间特征
+    * 数据清洗 DataClean
+        * 根据某些字段去掉某些数据
+        * 修正某些数据错误
+            * 多出的符号
+    * 特征提取 FeatureExtract
+        * 人工选取需要的特征 MankindFeature
+        * 字段合并
 7. 特征编码
     * 无量纲化
     * 定性特征：One-hot编码 OneHotEncoder
@@ -44,6 +57,7 @@ http://www.cnblogs.com/jasonfreak/p/5448462.html
 8. 特征预处理
     * 缺失值计算 Imputer
     * 数据变换 PolynomialFeatures FunctionTransformer
+    * 噪声清洗 
 9. 特征选择 VarianceThreshold SelectKBest SelectKBest+Chi2 SelectFromModel
 10. 降维 PCA LDA
 11. 训练
