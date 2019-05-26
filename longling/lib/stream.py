@@ -12,7 +12,7 @@ import sys
 from longling.base import string_types
 
 __all__ = ['rf_open', 'wf_open', 'wf_close', 'flush_print', 'json_load',
-           'pickle_load']
+           'pickle_load', 'AddPrinter']
 
 
 class StreamError(Exception):
@@ -131,3 +131,13 @@ def wf_close(stream):
             stream.close()
         except Exception:
             raise StreamError('wf_close: %s' % stream)
+
+
+class AddPrinter(object):
+    def __init__(self, fp, values_wrapper, **kwargs):
+        self.fp = fp
+        self.value_wrapper = values_wrapper
+        self.kwargs = kwargs
+
+    def add(self, value):
+        print(self.value_wrapper(value), file=self.fp, **self.kwargs)

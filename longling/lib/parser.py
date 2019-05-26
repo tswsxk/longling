@@ -13,7 +13,7 @@ from longling import wf_open
 
 __all__ = [
     "CLASS_EXCLUDE_NAMES", "get_class_var",
-    "get_parsable_var", "load_parameters_json",
+    "get_parsable_var", "load_configuration_json",
     "var2exp", "path_append",
     "Configuration", "ConfigurationParser"
 ]
@@ -50,12 +50,27 @@ def get_parsable_var(class_obj, parse_exclude=None, dump_parse_functions=None):
     return parse_params(params, dump_parse_functions)
 
 
-def load_parameters_json(fp, load_parse_function=None):
+def load_configuration_json(fp, load_parse_function=None):
     params = json.load(fp)
     return parse_params(params, load_parse_function)
 
 
 def var2exp(var_str, env_wrap=lambda x: x):
+    """
+    将含有 $ 标识的变量转换为表达式
+
+    Parameters
+    ----------
+    var_str
+    env_wrap
+
+    Examples
+    --------
+    >>> root = "dir"
+    >>> dataset = "d1"
+    >>> eval(var2exp("$root/data/$dataset"))
+    'dir/data/d1'
+    """
     var_str = str(var_str)
 
     pattern = re.compile(r"\$(\w+)")
@@ -123,19 +138,23 @@ class Configuration(object):
         )
 
     @staticmethod
-    def load(params_json):
+    def load_cfg(params_json, **kwargs):
         with open(params_json) as f:
-            params = load_parameters_json(
+            params = load_configuration_json(
                 f, load_parse_function=None
             )
-
+        params.update(kwargs)
         return params
+
+    @staticmethod
+    def load(cfg_path, **kwargs):
+        Configuration(Configuration.load_cfg(cfg_path, **kwargs))
 
     def dump(self, cfg_json, override=False):
         if os.path.isfile(cfg_json) and not override:
             self.logger.warning("file %s existed, dump aborted" % cfg_json)
             return
-        self.logger.info("writing parameters to %s" % cfg_json)
+        self.logger.info("writing configuration parameters to %s" % cfg_json)
         with wf_open(cfg_json) as wf:
             json.dump(self.parsable_var, wf, indent=4)
 
@@ -164,7 +183,33 @@ class Configuration(object):
 
 
 def value_parse(value):
-    if re.findall(r"(int|float|dict|set|tuple)\(.*\)", value):
+    r"""
+    将含有关键字的字符串转换为关键字指定的类型
+    支持的关键字类型为python的基础数据类型:
+    int, float, dict, list, set, tuple, None
+
+    Parameters
+    ----------
+    value: str
+        字符串值
+    Examples
+    --------
+    >>> value_parse("int(1.0)")
+    1
+    >>> value_parse("float(1.0)")
+    1.0
+    >>> value_parse("dict(a=1, b=2.0, c='d')")
+    {'a': 1, 'b': 2.0, 'c': 'd'}
+    >>> value_parse("list([1, 2, 3, 4])")
+    [1, 2, 3, 4]
+    >>> value_parse("set([1, 1, 2, 3])")
+    {1, 2, 3}
+    >>> value_parse("tuple([1, 2, 3])")
+    (1, 2, 3)
+    >>> value_parse("None") is None
+    True
+    """
+    if re.findall(r"(int|float|dict|list|set|tuple)\(.*\)|None", value):
         value = eval(value)
     return value
 
@@ -297,3 +342,9 @@ class ConfigurationParser(argparse.ArgumentParser):
             argspec.kwonlyargs,
             argspec.kwonlydefaults.values() if argspec.kwonlydefaults else []
         )
+
+
+if __name__ == '__main__':
+    import doctest
+
+    doctest.testmod()

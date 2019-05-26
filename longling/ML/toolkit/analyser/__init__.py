@@ -4,4 +4,5 @@
 from __future__ import absolute_import
 
 from .analyser import ResultAnalyser
-from .analyser import method_compare, universe
+
+__all__ = ["ResultAnalyser"]

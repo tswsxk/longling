@@ -10,22 +10,25 @@ import os
 
 import mxnet as mx
 from mxnet import gluon, nd, autograd
+from tqdm import tqdm
 
+from longling.ML.MxnetHelper.toolkit.ctx import split_and_load
 from longling.ML.MxnetHelper.toolkit.viz import plot_network, VizError
 
 # set parameters
 try:
     # for python module
-    from .data import transform
+    from .etl import transform
     from .configuration import Configuration
 except (ImportError, SystemError):
     # for python script
-    from data import transform
+    from etl import transform
     from configuration import Configuration
 
-__all__ = ["NetName", "net_viz", "fit_f"]
+__all__ = ["NetName", "net_viz", "fit_f", "BP_LOSS_F", "eval_f"]
 
 
+# todo: define your network symbol here
 class NetName(gluon.HybridBlock):
     def __init__(self, **kwargs):
         super(NetName, self).__init__(**kwargs)
@@ -37,21 +40,22 @@ class NetName(gluon.HybridBlock):
         pass
 
 
-def net_viz(net, cfg, view_tag=False, **kwargs):
+# todo: optional, visualize the network
+def net_viz(_net, _cfg, view_tag=False, **kwargs):
     """visualization check, only support pure static network"""
-    batch_size = cfg.batch_size
-    model_dir = cfg.model_dir
+    batch_size = _cfg.batch_size
+    model_dir = _cfg.model_dir
     logger = kwargs.get(
         'logger',
-        cfg.logger if hasattr(cfg, 'logger') else logging
+        _cfg.logger if hasattr(_cfg, 'logger') else logging
     )
 
     try:
-        viz_dir = os.path.abspath(model_dir + "plot/network")
+        viz_dir = os.path.join(model_dir, "plot/network")
         logger.info("visualization: file in %s" % viz_dir)
         from copy import deepcopy
 
-        viz_net = deepcopy(net)
+        viz_net = deepcopy(_net)
         viz_shape = {'data': (batch_size,) + (1,)}
         x = mx.sym.var("data")
         sym = viz_net(x)
@@ -67,8 +71,9 @@ def net_viz(net, cfg, view_tag=False, **kwargs):
         logger.error(e)
 
 
-def get_data_iter(cfg):
-    def pesudo_data_generation():
+# todo:
+def get_data_iter(_cfg):
+    def pseudo_data_generation():
         # 在这里定义测试用伪数据流
         import random
         random.seed(10)
@@ -80,13 +85,13 @@ def get_data_iter(cfg):
 
         return raw_data
 
-    return transform(pesudo_data_generation(), cfg)
+    return transform(pseudo_data_generation(), _cfg)
 
 
-def fit_f(_data, bp_loss_f, loss_function, loss_monitor):
+def fit_f(_net, _data, bp_loss_f, loss_function, loss_monitor):
     data, label = _data
     # todo modify the input to net
-    output = net(data)
+    output = _net(data)
     bp_loss = None
     for name, func in loss_function.items():
         # todo modify the input to func
@@ -99,12 +104,38 @@ def fit_f(_data, bp_loss_f, loss_function, loss_monitor):
     return bp_loss
 
 
-def numerical_check(net, cfg):
+def eval_f(_net, test_data, ctx=mx.cpu()):
+    ground_truth = []
+    prediction = []
+
+    def evaluation_function(y_true, y_pred):
+        return 0
+
+    for batch_data in tqdm(test_data, "evaluating"):
+        ctx_data = split_and_load(
+            ctx, *batch_data,
+            even_split=False
+        )
+        for (data, label) in ctx_data:
+            output = _net(data)
+            pred = output
+            ground_truth.extend(label.asnumpy().tolist())
+            prediction.extend(pred.asnumpy().tolist())
+
+    return {
+        "evaluation_name": evaluation_function(ground_truth, prediction)
+    }
+
+
+BP_LOSS_F = {"L2Loss": gluon.loss.L2Loss}
+
+
+def numerical_check(_net, _cfg):
     net.initialize()
 
-    datas = get_data_iter(cfg)
+    datas = get_data_iter(_cfg)
 
-    bp_loss_f = {"L2Loss": gluon.loss.L2Loss}
+    bp_loss_f = BP_LOSS_F
     loss_function = {}
     loss_function.update(bp_loss_f)
     from longling.ML.toolkit.monitor import MovingLoss
@@ -114,18 +145,21 @@ def numerical_check(net, cfg):
 
     # train check
     trainer = module.Module.get_trainer(
-        net, optimizer=cfg.optimizer,
-        optimizer_params=cfg.optimizer_params,
-        select=cfg.train_select
+        _net, optimizer=_cfg.optimizer,
+        optimizer_params=_cfg.optimizer_params,
+        select=_cfg.train_select
     )
 
     for epoch in range(0, 100):
-        epoch_loss = 0
-        for _data in datas:
+        for _data in tqdm(datas):
             with autograd.record():
-                fit_f(_data, bp_loss_f, loss_function, loss_monitor)
-            trainer.step(cfg.batch_size)
-        print(epoch_loss)
+                bp_loss = fit_f(
+                    _net, _data, bp_loss_f, loss_function, loss_monitor
+                )
+            assert bp_loss is not None
+            bp_loss.backward()
+            trainer.step(_cfg.batch_size)
+        print("epoch-%d: %s" % (epoch, list(loss_monitor.items())))
 
 
 if __name__ == '__main__':
@@ -135,6 +169,7 @@ if __name__ == '__main__':
     net = NetName()
 
     # # visualiztion check
-    # net_viz(net, params, False)
+    # net_viz(net, cfg, False)
 
-    numerical_check(net, cfg)
+    # # numerical check
+    # numerical_check(net, cfg)

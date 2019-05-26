@@ -1,23 +1,18 @@
-.. longling documentation master file, created by
-   sphinx-quickstart on Tue Aug  7 14:08:44 2018.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. mdinclude:: ../README.md
 
-longling's documentation
-========================
-
-API Documents
+Module Index
 -------------
+.. toctree::
+   :hidden:
+
+   self
 
 .. toctree::
    :glob:
-   :maxdepth: 2
+   :maxdepth: 3
 
-   self
    submodule/lib/index
+   submodule/ML/index
 
-Indices and tables
-==================
 
-* :ref:`genindex`
-* :ref:`modindex`
+

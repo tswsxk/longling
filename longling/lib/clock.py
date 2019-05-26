@@ -7,19 +7,19 @@ from contextlib import contextmanager
 
 from longling.lib.utilog import config_logging
 
-logger = config_logging(logger="clock", console_log_level=logging.INFO)
+_logger = config_logging(logger="clock", console_log_level=logging.INFO)
 
 __all__ = ["Clock", "print_time"]
 
 
 @contextmanager
-def print_time(task, logger=logging):
+def print_time(task, logger=_logger):
     """
 
     Parameters
     ----------
     task: str
-    logger: logging.logger
+    logger: logging.Logger
 
     Examples
     --------
@@ -52,7 +52,7 @@ class Clock(object):
     ...     a = 1 + 1
     """
 
-    def __init__(self, store_dict=None, logger=logger, tips=''):
+    def __init__(self, store_dict=None, logger=_logger, tips=''):
         assert store_dict is None or type(store_dict) is dict
         self.process_st = 0
         self.process_et = 0
