@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 from longling.lib.stream import wf_open, AddPrinter
 
-__all__ = ["train_test_split"]
+__all__ = ["DatasetSplitter", "file_dataset_split"]
 
 
 class DatasetSplitter(object):
