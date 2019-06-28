@@ -13,4 +13,4 @@ from longling.lib import stream
 from longling.lib import utilog
 from longling.lib import candylib
 
-__version__ = '0.0.14'
+__version__ = '0.1.0'
