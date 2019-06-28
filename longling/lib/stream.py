@@ -133,7 +133,12 @@ def wf_close(stream):
             raise StreamError('wf_close: %s' % stream)
 
 
-class AddPrinter(object):
+class AddObject(object):
+    def add(self, *args, **kwargs):
+        raise NotImplementedError
+
+
+class AddPrinter(AddObject):
     def __init__(self, fp, values_wrapper=lambda x: x, **kwargs):
         self.fp = fp
         self.value_wrapper = values_wrapper

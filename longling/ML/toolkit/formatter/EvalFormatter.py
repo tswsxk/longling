@@ -132,7 +132,7 @@ class MultiClassEvalFormatter(EvalFormatter):
         msg = []
         data = {}
 
-        multi_class_pattern = re.compile(".+_\d+")
+        multi_class_pattern = re.compile(r".+_\d+")
 
         prf = {}
         eval_ids = set()
