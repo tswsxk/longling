@@ -12,9 +12,10 @@ __all__ = ["DatasetSplitter", "file_dataset_split"]
 
 
 class DatasetSplitter(object):
-    def __call__(self, iterable,
-                 valid_ratio=0.0, test_ratio=0.2,
-                 train_buffer=None, valid_buffer=None, test_buffer=None, silent=True):
+    @staticmethod
+    def split(iterable,
+              valid_ratio=0.0, test_ratio=0.2,
+              train_buffer=None, valid_buffer=None, test_buffer=None, silent=True):
         counter = {
             "train": 0,
             "valid": 0,
@@ -32,11 +33,19 @@ class DatasetSplitter(object):
 
         return counter
 
+    def __call__(self, iterable,
+                 valid_ratio=0.0, test_ratio=0.2,
+                 train_buffer=None, valid_buffer=None, test_buffer=None, silent=True):
+        DatasetSplitter.split(
+            iterable, valid_ratio, test_ratio,
+            train_buffer, valid_buffer, test_buffer,
+            silent
+        )
+
 
 def file_dataset_split(filename, valid_ratio=0.0, test_ratio=0.5, root_dir=None,
-                     train_filename=None, valid_filename=None, test_filename=None,
-                     silent=True):
-
+                       train_filename=None, valid_filename=None, test_filename=None,
+                       silent=True):
     if train_filename or test_filename or valid_filename:
         assert train_filename and valid_filename and test_filename
     else:
