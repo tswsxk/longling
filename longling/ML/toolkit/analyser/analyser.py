@@ -4,6 +4,7 @@
 此模块用来针对result.json中的数据进行数据分析
 开发测试中，非稳定版本
 """
+import warnings
 import math
 import re
 from collections import defaultdict
@@ -12,6 +13,7 @@ import matplotlib.pyplot as plt
 
 __all__ = ["ResultAnalyser"]
 
+warnings.warn("do not use this package, unstable")
 
 class ResultAnalyser(object):
     """

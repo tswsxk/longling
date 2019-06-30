@@ -12,6 +12,13 @@ __all__ = ["MovingLoss"]
 
 
 class LossMonitor(object):
+    """
+    记录损失函数并显示
+
+    几个重要的函数：
+    * update: 定义损失函数的如何累加更新
+
+    """
     def __init__(self, loss_function_names, *args, **kwargs):
         self.losses = {name: NAN for name in loss_function_names}
 
@@ -41,6 +48,10 @@ class MovingLoss(LossMonitor):
         self.smoothing_constant = smoothing_constant
 
     def update(self, name, loss_value):
+        """
+        ..math:
+        losses[name] = 1 - c \times loss_value + c \times loss_value
+        """
         self.losses[name] = (
             loss_value if math.isnan(self.losses[name])
             else (1 - self.smoothing_constant) * self.losses[

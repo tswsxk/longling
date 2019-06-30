@@ -134,7 +134,7 @@ def wf_close(stream):
 
 
 class AddPrinter(object):
-    def __init__(self, fp, values_wrapper, **kwargs):
+    def __init__(self, fp, values_wrapper=lambda x: x, **kwargs):
         self.fp = fp
         self.value_wrapper = values_wrapper
         self.kwargs = kwargs
