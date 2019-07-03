@@ -69,8 +69,8 @@ setup(
     },
     url='https://gitlab.com/tswsxk/longling.git',
     license='LICENSE.txt',
-    description='handy wrapper for many libs',
-    long_description=open('README.md').read(),
+    description='This project aims to provide some handy toolkit functions to help construct the architecture.',
+    long_description=open('README.txt', encoding="utf-8").read(),
     install_requires=[
         "pip"
     ],

@@ -8,5 +8,4 @@ from .highway import *
 from .normalization import *
 from .sequence import *
 
-__all__ = attention.__all__ + highway.__all__ \
-          + normalization.__all__ + sequence.__all__
+__all__ = attention.__all__ + highway.__all__ + normalization.__all__ + sequence.__all__
