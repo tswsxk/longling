@@ -73,8 +73,7 @@ class TextCNN(gluon.HybridBlock):
                         num_filter,
                         kernel_size=(
                             filter_size, self.vec_size, self.channel_size
-                        ),
-                        activation=activation
+                        ), activation=activation
                     )
                 setattr(self, "conv%s" % i, conv)
 

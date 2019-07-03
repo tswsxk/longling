@@ -7,9 +7,9 @@ import json
 import logging
 import os
 import re
-from pathlib import PurePath
 
 from longling import wf_open
+from longling.lib.path import path_append
 
 __all__ = [
     "CLASS_EXCLUDE_NAMES", "get_class_var",
@@ -83,26 +83,6 @@ def var2exp(var_str, env_wrap=lambda x: x):
         )
     )
     return exp
-
-
-def path_append(path, addition=None, to_str=False):
-    """
-
-    Parameters
-    ----------
-    path: str or PurePath
-    addition: str or PurePath
-    to_str: bool
-        Convert the new path to str
-    Returns
-    -------
-
-    """
-    path = PurePath(path)
-    new_path = path / addition if addition else path
-    if to_str:
-        return str(new_path)
-    return new_path
 
 
 class Configuration(object):
