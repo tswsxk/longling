@@ -11,7 +11,7 @@ import sys
 
 from longling.base import string_types
 
-__all__ = ['rf_open', 'wf_open', 'wf_close', 'flush_print', 'json_load',
+__all__ = ['rf_open', 'wf_open', 'wf_close', 'flush_print', 'build_dir', 'json_load',
            'pickle_load', 'AddPrinter']
 
 
