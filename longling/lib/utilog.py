@@ -68,7 +68,7 @@ def config_logging(filename=None,
     if isinstance(level, str):
         level = LogLevelDict[level]
     if isinstance(console_log_level, str):
-        console_log_level = LogLevelDict[level]
+        console_log_level = LogLevelDict[console_log_level]
 
     # need a clean state, for some module may
     # have called logging functions already (i.e. logging.info)
