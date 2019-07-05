@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 from longling.lib.stream import wf_open, AddPrinter
 
-__all__ = ["DatasetSplitter", "file_dataset_split"]
+__all__ = ["DatasetSplitter", "train_valid_test"]
 
 
 class DatasetSplitter(object):
@@ -43,9 +43,9 @@ class DatasetSplitter(object):
         )
 
 
-def file_dataset_split(filename, valid_ratio=0.0, test_ratio=0.5, root_dir=None,
-                       train_filename=None, valid_filename=None, test_filename=None,
-                       silent=True):
+def train_valid_test(filename, valid_ratio=0.0, test_ratio=0.5, root_dir=None,
+                     train_filename=None, valid_filename=None, test_filename=None,
+                     silent=True):
     if train_filename or test_filename or valid_filename:
         assert train_filename and valid_filename and test_filename
     else:
