@@ -4,9 +4,8 @@
 import os
 import random
 
-from tqdm import tqdm
-
 from longling.lib.stream import wf_open, AddPrinter
+from tqdm import tqdm
 
 __all__ = ["DatasetSplitter", "train_valid_test"]
 
@@ -36,7 +35,7 @@ class DatasetSplitter(object):
     def __call__(self, iterable,
                  valid_ratio=0.0, test_ratio=0.2,
                  train_buffer=None, valid_buffer=None, test_buffer=None, silent=True):
-        DatasetSplitter.split(
+        return DatasetSplitter.split(
             iterable, valid_ratio, test_ratio,
             train_buffer, valid_buffer, test_buffer,
             silent
@@ -47,7 +46,10 @@ def train_valid_test(filename, valid_ratio=0.0, test_ratio=0.5, root_dir=None,
                      train_filename=None, valid_filename=None, test_filename=None,
                      silent=True):
     if train_filename or test_filename or valid_filename:
-        assert train_filename and valid_filename and test_filename
+        if test_ratio != 0:
+            assert test_filename
+        if valid_ratio != 0:
+            assert valid_filename
     else:
         train_filename = filename + ".train"
         valid_filename = filename + ".valid"
