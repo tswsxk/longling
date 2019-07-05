@@ -24,10 +24,14 @@ class DatasetSplitter(object):
             random_seed = random.random()
             if random_seed < test_ratio:
                 buffer = test_buffer
+                counter_pointer = "test"
             elif random_seed < valid_ratio + test_ratio:
                 buffer = valid_buffer
+                counter_pointer = "valid"
             else:
                 buffer = train_buffer
+                counter_pointer = "train"
+            counter[counter_pointer] += 1
             buffer.add(element)
 
         return counter
