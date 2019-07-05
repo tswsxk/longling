@@ -48,8 +48,12 @@ def train_valid_test(filename, valid_ratio=0.0, test_ratio=0.5, root_dir=None,
     if train_filename or test_filename or valid_filename:
         if test_ratio != 0:
             assert test_filename
+        elif not test_filename:
+            test_filename = filename + ".test"
         if valid_ratio != 0:
             assert valid_filename
+        elif not valid_filename:
+            valid_filename = filename + ".valid"
     else:
         train_filename = filename + ".train"
         valid_filename = filename + ".valid"
