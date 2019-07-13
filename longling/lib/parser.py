@@ -312,6 +312,11 @@ class ConfigurationParser(argparse.ArgumentParser):
                     type=value_parse,
                     help="set %s" % parameter["name"]
                 )
+        subparser.add_argument(
+            '--kwargs', required=False,
+            help=r"add extra argument here, "
+                 r"use format: <key>=<value>(,<key>=<value>)"
+        )
 
     @staticmethod
     def func_spec(f):
