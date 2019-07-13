@@ -229,7 +229,7 @@ class ConfigurationParser(argparse.ArgumentParser):
             'logger'
         } if excluded_names is None else excluded_names
 
-        super(ConfigurationParser, self).__init__(*args, **kwargs)
+        super(ConfigurationParser, self).__init__(add_help=False, *args, **kwargs)
         params = {k: v for k, v in get_class_var(class_obj).items()}
         for param, value in params.items():
             if param in excluded_names:
@@ -312,11 +312,6 @@ class ConfigurationParser(argparse.ArgumentParser):
                     type=value_parse,
                     help="set %s" % parameter["name"]
                 )
-        subparser.add_argument(
-            '--kwargs', required=False,
-            help=r"add extra argument here, "
-                 r"use format: <key>=<value>(;<key>=<value>)"
-        )
 
     @staticmethod
     def func_spec(f):
