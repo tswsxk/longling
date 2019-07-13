@@ -199,7 +199,7 @@ def parse_dict_string(string):
         return None
     else:
         name_value_items = [
-            item.strip().split("=") for item in string.strip().split(",")
+            item.strip().split("=") for item in string.strip().split(";")
         ]
         return {
             name_value[0]: value_parse(name_value[1])
@@ -236,7 +236,7 @@ class ConfigurationParser(argparse.ArgumentParser):
                 continue
             if isinstance(value, dict):
                 format_tips = ", dict variables, " \
-                              "use format: <key>=<value>(,<key>=<value>)"
+                              "use format: <key>=<value>(;<key>=<value>)"
                 self.add_argument(
                     '--%s' % param,
                     help='set %s, default is %s%s' % (
@@ -315,7 +315,7 @@ class ConfigurationParser(argparse.ArgumentParser):
         subparser.add_argument(
             '--kwargs', required=False,
             help=r"add extra argument here, "
-                 r"use format: <key>=<value>(,<key>=<value>)"
+                 r"use format: <key>=<value>(;<key>=<value>)"
         )
 
     @staticmethod
