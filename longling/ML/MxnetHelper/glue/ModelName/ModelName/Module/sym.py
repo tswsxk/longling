@@ -9,11 +9,10 @@ import logging
 import os
 
 import mxnet as mx
-from mxnet import gluon, nd, autograd
-from tqdm import tqdm
-
 from longling.ML.MxnetHelper.toolkit.ctx import split_and_load
 from longling.ML.MxnetHelper.toolkit.viz import plot_network, VizError
+from mxnet import gluon, nd, autograd
+from tqdm import tqdm
 
 # set parameters
 try:
@@ -160,6 +159,9 @@ def numerical_check(_net, _cfg):
             bp_loss.backward()
             trainer.step(_cfg.batch_size)
         print("epoch-%d: %s" % (epoch, list(loss_monitor.items())))
+
+        if epoch % 1 == 0:
+            eval_f(_net, datas)
 
 
 if __name__ == '__main__':
