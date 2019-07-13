@@ -396,20 +396,22 @@ class ModelName(object):
         return module
 
     @staticmethod
-    def run(default_entry="train"):
+    def run(parse_args=None):
         cfg_parser = ConfigurationParser(Configuration)
         cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.config))
         cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.inc_train))
         cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.train))
         cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.test))
         cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.load))
-        cfg_kwargs = cfg_parser()
 
-        if "subcommand" in cfg_kwargs:
-            subcommand = cfg_kwargs["subcommand"]
-            del cfg_kwargs["subcommand"]
+        if parse_args is not None:
+            cfg_kwargs = cfg_parser.parse(cfg_parser.parse_args(parse_args))
         else:
-            subcommand = default_entry
+            cfg_kwargs = cfg_parser()
+        assert "subcommand" in cfg_kwargs
+        subcommand = cfg_kwargs["subcommand"]
+        del cfg_kwargs["subcommand"]
+
         eval("%s.%s" % (ModelName.__name__, subcommand))(**cfg_kwargs)
 
 
