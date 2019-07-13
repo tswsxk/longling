@@ -74,9 +74,9 @@ def train_valid_test(filename, valid_ratio=0.0, test_ratio=0.5, root_dir=None,
             wf_open(valid_filename) as valid_wf, \
             wf_open(test_filename) as test_wf:
 
-        train_buffer = AddPrinter(train_wf)
-        valid_buffer = AddPrinter(valid_wf)
-        test_buffer = AddPrinter(test_wf)
+        train_buffer = AddPrinter(train_wf, end='')
+        valid_buffer = AddPrinter(valid_wf, end='')
+        test_buffer = AddPrinter(test_wf, end='')
 
         counter = splitter(
             f, valid_ratio, test_ratio,
