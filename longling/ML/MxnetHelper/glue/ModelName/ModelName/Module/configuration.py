@@ -81,7 +81,7 @@ class Configuration(parser.Configuration):
         ----------
         params_json: str
             The path to configuration file which is in json format
-        kwargs: dict
+        kwargs:
             Parameters to be reset.
         """
         super(Configuration, self).__init__(
