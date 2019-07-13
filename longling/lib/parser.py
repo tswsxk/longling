@@ -198,13 +198,7 @@ def parse_dict_string(string):
     if not string:
         return None
     else:
-        name_value_items = [
-            item.strip().split("=") for item in string.strip().split(";")
-        ]
-        return {
-            name_value[0]: value_parse(name_value[1])
-            for name_value in name_value_items
-        }
+        return value_parse(string)
 
 
 def args_zips(args=None, defaults=None):
@@ -236,7 +230,7 @@ class ConfigurationParser(argparse.ArgumentParser):
                 continue
             if isinstance(value, dict):
                 format_tips = ", dict variables, " \
-                              "use format: <key>=<value>(;<key>=<value>)"
+                              "use format: dict(key=value)"
                 self.add_argument(
                     '--%s' % param,
                     help='set %s, default is %s%s' % (
@@ -254,7 +248,7 @@ class ConfigurationParser(argparse.ArgumentParser):
         self.add_argument(
             '--kwargs', required=False,
             help=r"add extra argument here, "
-                 r"use format: <key>=<value>(,<key>=<value>)"
+                 r"use format: dict(key=value)"
         )
         self.sub_command_parsers = None
 
