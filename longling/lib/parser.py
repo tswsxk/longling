@@ -292,7 +292,7 @@ class ConfigurationParser(argparse.ArgumentParser):
         subparsers = self.sub_command_parsers
         subcommand, parameters = command_parameters
         subparser = subparsers.add_parser(
-            subcommand, help="%s help" % subcommand
+            subcommand, help="%s help" % subcommand, parents=[self],
         )
         subparser.set_defaults(subcommand=subcommand)
         for parameter in parameters:
