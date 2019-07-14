@@ -350,6 +350,17 @@ class ModelName(object):
         self.train_net(train_data, valid_data)
 
     @staticmethod
+    def train(cfg=None, **kwargs):
+        module = ModelName(cfg=cfg, **kwargs)
+        module.set_loss()
+        # module.viz()
+
+        module.toolbox_init()
+        module.model_init(**kwargs)
+
+        module._train()
+
+    @staticmethod
     def test(test_epoch, dump_file=None, **kwargs):
         from longling.ML.toolkit.formatter import EvalFormatter
         formatter = EvalFormatter(dump_file=dump_file)
@@ -369,17 +380,6 @@ class ModelName(object):
         module = ModelName(**kwargs)
         module.toolbox_init(validation_logger_mode=validation_logger_mode)
         module.model_init(init_model_file=init_model_file)
-
-        module._train()
-
-    @staticmethod
-    def train(cfg=None, **kwargs):
-        module = ModelName(cfg=cfg, **kwargs)
-        module.set_loss()
-        # module.viz()
-
-        module.toolbox_init()
-        module.model_init(**kwargs)
 
         module._train()
 
