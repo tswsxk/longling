@@ -30,7 +30,7 @@ __all__ = ["NetName", "net_viz", "fit_f", "BP_LOSS_F", "eval_f"]
 # todo: define your network symbol here
 class NetName(gluon.HybridBlock):
     def __init__(self, **kwargs):
-        super(NetName, self).__init__(**kwargs)
+        super(NetName, self).__init__(kwargs.get("prefix"), kwargs.get("params"))
 
         with self.name_scope():
             pass
