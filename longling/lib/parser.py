@@ -229,7 +229,8 @@ class ConfigurationParser(argparse.ArgumentParser):
             'logger'
         } if excluded_names is None else excluded_names
 
-        super(ConfigurationParser, self).__init__(add_help=False, *args, **kwargs)
+        self.__proto_type = argparse.ArgumentParser(add_help=False)
+
         params = {k: v for k, v in get_class_var(class_obj).items()}
         for param, value in params.items():
             if param in excluded_names:
@@ -237,7 +238,7 @@ class ConfigurationParser(argparse.ArgumentParser):
             if isinstance(value, dict):
                 format_tips = ", dict variables, " \
                               "use format: <key>=<value>(;<key>=<value>)"
-                self.add_argument(
+                self.__proto_type.add_argument(
                     '--%s' % param,
                     help='set %s, default is %s%s' % (
                         param, value, format_tips
@@ -245,18 +246,19 @@ class ConfigurationParser(argparse.ArgumentParser):
                     type=parse_dict_string,
                 )
             else:
-                self.add_argument(
+                self.__proto_type.add_argument(
                     '--%s' % param,
                     help='set %s, default is %s' % (param, value),
                     default=value,
                     type=value_parse,
                 )
-        self.add_argument(
+        self.__proto_type.add_argument(
             '--kwargs', required=False,
             help=r"add extra argument here, "
                  r"use format: <key>=<value>(;<key>=<value>)"
         )
         self.sub_command_parsers = None
+        super(ConfigurationParser, self).__init__(parents=[self.__proto_type], *args, **kwargs)
 
     @staticmethod
     def parse(arguments):
@@ -292,7 +294,7 @@ class ConfigurationParser(argparse.ArgumentParser):
         subparsers = self.sub_command_parsers
         subcommand, parameters = command_parameters
         subparser = subparsers.add_parser(
-            subcommand, help="%s help" % subcommand, parents=[self],
+            subcommand, help="%s help" % subcommand, parents=[self.__proto_type],
         )
         subparser.set_defaults(subcommand=subcommand)
         for parameter in parameters:
