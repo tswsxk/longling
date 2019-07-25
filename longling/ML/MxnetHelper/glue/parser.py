@@ -14,8 +14,8 @@ __all__ = [
 ]
 
 
-def eval_var(var):
-    return eval(var)
+def eval_var(variable):
+    return eval(variable)
 
 
 class MXCtx(object):
