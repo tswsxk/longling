@@ -26,12 +26,18 @@ def transform(raw_data, params):
     )
 
 
-def etl(*args, **kwargs):
+def etl(*args, params):
     raw_data = extract(*args)
-    transform(raw_data, **kwargs)
+    transform(raw_data, params)
     raise NotImplementedError
 
 
 if __name__ == '__main__':
+    from longling.lib.structure import AttrDict
+
     for data in tqdm(extract("")):
+        pass
+
+    parameters = AttrDict({"batch_size": 128})
+    for data in tqdm(etl("", params=parameters)):
         pass
