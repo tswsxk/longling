@@ -34,10 +34,14 @@ def etl(*args, params):
 
 if __name__ == '__main__':
     from longling.lib.structure import AttrDict
+    import os
 
-    for data in tqdm(extract("")):
+    filename = "../../data/data.json"
+    print(os.path.abspath(filename))
+
+    for data in tqdm(extract(filename)):
         pass
 
     parameters = AttrDict({"batch_size": 128})
-    for data in tqdm(etl("", params=parameters)):
+    for data in tqdm(etl(filename, params=parameters)):
         pass
