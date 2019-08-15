@@ -189,7 +189,7 @@ def value_parse(value):
     >>> value_parse("None") is None
     True
     """
-    if re.findall(r"(int|float|dict|list|set|tuple)\(.*\)|None", value):
+    if re.findall(r"(int|float|dict|list|set|tuple|bool)\(.*\)|None", value):
         value = eval(value)
     return value
 
