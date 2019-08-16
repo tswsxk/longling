@@ -6,7 +6,7 @@ from mxnet.gluon.parameter import tensor_types
 
 from longling.lib.candylib import as_list
 
-__all__ = ["format_sequence", "mask_sequence_variable_length"]
+__all__ = ["format_sequence", "mask_sequence_variable_length", "get_begin_state"]
 
 
 def format_sequence(length, inputs, layout, merge, in_layout=None):
@@ -100,3 +100,14 @@ def mask_sequence_variable_length(F, data, length, valid_length, time_axis,
             )
         )
     return outputs
+
+
+def get_begin_state(cell, F, begin_state, inputs, batch_size):
+    if begin_state is None:
+        if F is ndarray:
+            ctx = inputs.context if isinstance(inputs, tensor_types) else inputs[0].context
+            with ctx:
+                begin_state = cell.begin_state(func=F.zeros, batch_size=batch_size)
+        else:
+            begin_state = cell.begin_state(func=F.zeros, batch_size=batch_size)
+    return begin_state

@@ -189,7 +189,7 @@ def value_parse(value):
     >>> value_parse("None") is None
     True
     """
-    if re.findall(r"(int|float|dict|list|set|tuple)\(.*\)|None", value):
+    if re.findall(r"(int|float|dict|list|set|tuple|bool)\(.*\)|None", value):
         value = eval(value)
     return value
 
@@ -199,7 +199,7 @@ def parse_dict_string(string):
         return None
     else:
         name_value_items = [
-            item.strip().split("=") for item in string.strip().split(",")
+            item.strip().split("=", 1) for item in string.strip().split(";")
         ]
         return {
             name_value[0]: value_parse(name_value[1])
@@ -229,15 +229,16 @@ class ConfigurationParser(argparse.ArgumentParser):
             'logger'
         } if excluded_names is None else excluded_names
 
-        super(ConfigurationParser, self).__init__(*args, **kwargs)
+        self.__proto_type = argparse.ArgumentParser(add_help=False)
+
         params = {k: v for k, v in get_class_var(class_obj).items()}
         for param, value in params.items():
             if param in excluded_names:
                 continue
             if isinstance(value, dict):
                 format_tips = ", dict variables, " \
-                              "use format: <key>=<value>(,<key>=<value>)"
-                self.add_argument(
+                              "use format: <key>=<value>(;<key>=<value>)"
+                self.__proto_type.add_argument(
                     '--%s' % param,
                     help='set %s, default is %s%s' % (
                         param, value, format_tips
@@ -245,18 +246,19 @@ class ConfigurationParser(argparse.ArgumentParser):
                     type=parse_dict_string,
                 )
             else:
-                self.add_argument(
+                self.__proto_type.add_argument(
                     '--%s' % param,
                     help='set %s, default is %s' % (param, value),
                     default=value,
                     type=value_parse,
                 )
-        self.add_argument(
+        self.__proto_type.add_argument(
             '--kwargs', required=False,
             help=r"add extra argument here, "
-                 r"use format: <key>=<value>(,<key>=<value>)"
+                 r"use format: <key>=<value>(;<key>=<value>)"
         )
         self.sub_command_parsers = None
+        super(ConfigurationParser, self).__init__(parents=[self.__proto_type], *args, **kwargs)
 
     @staticmethod
     def parse(arguments):
@@ -292,7 +294,7 @@ class ConfigurationParser(argparse.ArgumentParser):
         subparsers = self.sub_command_parsers
         subcommand, parameters = command_parameters
         subparser = subparsers.add_parser(
-            subcommand, help="%s help" % subcommand
+            subcommand, help="%s help" % subcommand, parents=[self.__proto_type],
         )
         subparser.set_defaults(subcommand=subcommand)
         for parameter in parameters:

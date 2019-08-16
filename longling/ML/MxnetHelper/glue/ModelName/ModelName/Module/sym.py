@@ -30,7 +30,7 @@ __all__ = ["NetName", "net_viz", "fit_f", "BP_LOSS_F", "eval_f"]
 # todo: define your network symbol here
 class NetName(gluon.HybridBlock):
     def __init__(self, **kwargs):
-        super(NetName, self).__init__(**kwargs)
+        super(NetName, self).__init__(kwargs.get("prefix"), kwargs.get("params"))
 
         with self.name_scope():
             pass
@@ -126,7 +126,7 @@ def eval_f(_net, test_data, ctx=mx.cpu()):
     }
 
 
-BP_LOSS_F = {"L2Loss": gluon.loss.L2Loss}
+BP_LOSS_F = {"L2Loss": gluon.loss.L2Loss()}
 
 
 def numerical_check(_net, _cfg):
@@ -161,7 +161,7 @@ def numerical_check(_net, _cfg):
         print("epoch-%d: %s" % (epoch, list(loss_monitor.items())))
 
         if epoch % 1 == 0:
-            eval_f(_net, datas)
+            print(eval_f(_net, datas))
 
 
 if __name__ == '__main__':

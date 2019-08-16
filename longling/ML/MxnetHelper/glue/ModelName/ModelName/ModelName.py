@@ -350,6 +350,17 @@ class ModelName(object):
         self.train_net(train_data, valid_data)
 
     @staticmethod
+    def train(cfg=None, **kwargs):
+        module = ModelName(cfg=cfg, **kwargs)
+        module.set_loss()
+        # module.viz()
+
+        module.toolbox_init()
+        module.model_init(**kwargs)
+
+        module._train()
+
+    @staticmethod
     def test(test_epoch, dump_file=None, **kwargs):
         from longling.ML.toolkit.formatter import EvalFormatter
         formatter = EvalFormatter(dump_file=dump_file)
@@ -373,17 +384,6 @@ class ModelName(object):
         module._train()
 
     @staticmethod
-    def train(cfg=None, **kwargs):
-        module = ModelName(cfg=cfg, **kwargs)
-        module.set_loss()
-        # module.viz()
-
-        module.toolbox_init()
-        module.model_init(**kwargs)
-
-        module._train()
-
-    @staticmethod
     def dump_configuration(**kwargs):
         ModelName.get_module(**kwargs)
 
@@ -396,20 +396,22 @@ class ModelName(object):
         return module
 
     @staticmethod
-    def run(default_entry="train"):
+    def run(parse_args=None):
         cfg_parser = ConfigurationParser(Configuration)
         cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.config))
         cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.inc_train))
         cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.train))
         cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.test))
         cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.load))
-        cfg_kwargs = cfg_parser()
 
-        if "subcommand" in cfg_kwargs:
-            subcommand = cfg_kwargs["subcommand"]
-            del cfg_kwargs["subcommand"]
+        if parse_args is not None:
+            cfg_kwargs = cfg_parser.parse(cfg_parser.parse_args(parse_args))
         else:
-            subcommand = default_entry
+            cfg_kwargs = cfg_parser()
+        assert "subcommand" in cfg_kwargs
+        subcommand = cfg_kwargs["subcommand"]
+        del cfg_kwargs["subcommand"]
+
         eval("%s.%s" % (ModelName.__name__, subcommand))(**cfg_kwargs)
 
 
