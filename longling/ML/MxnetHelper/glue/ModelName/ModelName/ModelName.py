@@ -396,13 +396,18 @@ class ModelName(object):
         return module
 
     @staticmethod
-    def run(parse_args=None):
+    def get_parser():
         cfg_parser = ConfigurationParser(Configuration)
         cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.config))
         cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.inc_train))
         cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.train))
         cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.test))
         cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.load))
+        return cfg_parser
+
+    @staticmethod
+    def run(parse_args=None):
+        cfg_parser = ModelName.get_parser()
 
         if parse_args is not None:
             cfg_kwargs = cfg_parser.parse(cfg_parser.parse_args(parse_args))
