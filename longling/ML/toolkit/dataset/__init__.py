@@ -2,4 +2,7 @@
 # created by tongshiwei on 2018/10/9
 
 
-from .splitter import *
+from .indicesor import Indicesor
+from .splitter.file_splitter import *
+from .splitter.iterable_splitter import *
+from .splitter.splitter import Splitter
