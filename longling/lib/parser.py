@@ -15,7 +15,8 @@ __all__ = [
     "CLASS_EXCLUDE_NAMES", "get_class_var",
     "get_parsable_var", "load_configuration_json",
     "var2exp", "path_append",
-    "Configuration", "ConfigurationParser"
+    "Configuration", "ConfigurationParser",
+    "Formatter"
 ]
 
 CLASS_EXCLUDE_NAMES = set(vars(object).keys()) | {
@@ -324,6 +325,29 @@ class ConfigurationParser(argparse.ArgumentParser):
             argspec.kwonlyargs,
             argspec.kwonlydefaults.values() if argspec.kwonlydefaults else []
         )
+
+
+class Formatter(object):
+    def __init__(self, formatter=None):
+        self.formatter = formatter
+
+    def __call__(self, *format_string):
+        if self.formatter is None:
+            assert len(format_string) == 1, \
+                "formatter is None, the input should be a single value, now is %s, " \
+                "which has %s value" % (format_string, len(format_string))
+            return format_string[0]
+        elif "{}" in self.formatter:
+            return self.formatter.format(*format_string)
+        else:
+            raise TypeError(
+                "can not handle the format_string: %s, with the formatter: %s" % (self.formatter, format_string)
+            )
+
+    @staticmethod
+    def format(*format_string, formatter=None):
+        formatter = Formatter(formatter)
+        return formatter(*format_string)
 
 
 if __name__ == '__main__':
