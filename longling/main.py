@@ -5,5 +5,6 @@ import fire
 
 from longling.ML.toolkit.dataset import train_valid_test, train_test, train_valid, kfold
 
-if __name__ == '__main__':
+
+def cli():
     fire.Fire()

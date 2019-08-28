@@ -64,7 +64,8 @@ setup(
     entry_points={
         "console_scripts": [
             "glue = longling.ML.MxnetHelper.glue.glue:cli",
-            "longling_install = longling.dependency:cli"
+            "longling_install = longling.dependency:cli",
+            "longling = longling.main:cli"
         ],
     },
     url='https://gitlab.com/tswsxk/longling.git',
