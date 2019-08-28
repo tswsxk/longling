@@ -6,6 +6,7 @@ import warnings
 
 import numpy
 from longling.ML.toolkit.dataset.splitter.splitter import Splitter
+from tqdm import tqdm
 
 __all__ = [
     "RatioSplitter", "TTSplitter", "TVSplitter", "TVTSplitter",
@@ -17,8 +18,8 @@ __all__ = [
 class RatioSplitter(Splitter):
     """Splitter for multi ratios, using uniform sampling"""
 
-    def __init__(self, key_iterable, *ratios, shuffle_indices=False):
-        super(RatioSplitter, self).__init__(key_iterable, shuffle_indices=shuffle_indices)
+    def __init__(self, key_iterable, *ratios, shuffle_indices=False, silent=False):
+        super(RatioSplitter, self).__init__(key_iterable, shuffle_indices=shuffle_indices, silent=silent)
 
         ratios = list(ratios)
 
@@ -44,7 +45,7 @@ class RatioSplitter(Splitter):
 
     def _split(self, source, target):
         assert len(target) == len(self.separator_indices)
-        for idx, elem in enumerate(source):
+        for idx, elem in tqdm(enumerate(source), "split %s" % source, disable=self.silent):
             for i, separated_indices in enumerate(self.separator_indices):
                 if idx in separated_indices:
                     target[i].add(elem)
@@ -53,28 +54,33 @@ class RatioSplitter(Splitter):
 class TTSplitter(RatioSplitter):
     """Splitter for train and test, using uniform sampling"""
 
-    def __init__(self, key_iterable, train_ratio=0.8, test_ratio=0.2, shuffle_indices=False):
-        super(TTSplitter, self).__init__(key_iterable, train_ratio, test_ratio, shuffle_indices=shuffle_indices)
+    def __init__(self, key_iterable, train_ratio=0.8, test_ratio=0.2, shuffle_indices=False, **kwargs):
+        super(TTSplitter, self).__init__(
+            key_iterable, train_ratio, test_ratio, shuffle_indices=shuffle_indices, **kwargs
+        )
 
 
 class TVSplitter(RatioSplitter):
     """Splitter for train and valid, using uniform sampling"""
 
-    def __init__(self, key_iterable, train_ratio=0.8, valid_ratio=0.2, shuffle_indices=False):
-        super(TVSplitter, self).__init__(key_iterable, train_ratio, valid_ratio)
+    def __init__(self, key_iterable, train_ratio=0.8, valid_ratio=0.2, shuffle_indices=False, **kwargs):
+        super(TVSplitter, self).__init__(
+            key_iterable, train_ratio, valid_ratio, shuffle_indices=shuffle_indices, **kwargs
+        )
 
 
 class TVTSplitter(RatioSplitter):
     """Splitter for train valid and test, using uniform sampling"""
 
-    def __init__(self, key_iterable, train_ratio=0.6, valid_ratio=0.2, test_ratio=0.2, shuffle_indices=False):
-        super(TVTSplitter, self).__init__(key_iterable, train_ratio, valid_ratio, test_ratio,
-                                          shuffle_indices=shuffle_indices)
+    def __init__(self, key_iterable, train_ratio=0.6, valid_ratio=0.2, test_ratio=0.2, shuffle_indices=False, **kwargs):
+        super(TVTSplitter, self).__init__(
+            key_iterable, train_ratio, valid_ratio, test_ratio, shuffle_indices=shuffle_indices, **kwargs
+        )
 
 
 class KFoldSplitter(Splitter):
-    def __init__(self, key_iterable, n_splits):
-        super(KFoldSplitter, self).__init__(key_iterable, shuffle_indices=False)
+    def __init__(self, key_iterable, n_splits, silent=False):
+        super(KFoldSplitter, self).__init__(key_iterable, shuffle_indices=False, silent=silent)
         sample_num = len(self.indices)
         proportion = sample_num / n_splits
 
@@ -85,7 +91,7 @@ class KFoldSplitter(Splitter):
 
     def _split(self, source, target):
         assert len(target) == len(self.indices_buckets)
-        for idx, elem in enumerate(source):
+        for idx, elem in tqdm(enumerate(source), "split %s" % source, disable=self.silent):
             for i, (start, end) in enumerate(self.indices_buckets):
                 if start <= idx < end:
                     target[i][0].add(elem)

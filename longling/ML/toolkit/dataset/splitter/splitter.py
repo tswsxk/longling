@@ -7,8 +7,9 @@ from ..indicesor import Indicesor
 
 
 class Splitter(object):
-    def __init__(self, key_iterable, shuffle_indices=False, *args, **kwargs):
-        self.indices = Indicesor.get_indices(key_iterable, shuffle=shuffle_indices)
+    def __init__(self, key_iterable, shuffle_indices=False, *args, silent=False, **kwargs):
+        self.indices = Indicesor.get_indices(key_iterable, shuffle=shuffle_indices, silent=silent)
+        self.silent = silent
 
     def _split(self, source, target):
         raise NotImplementedError

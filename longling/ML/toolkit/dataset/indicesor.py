@@ -5,16 +5,17 @@ __all__ = ["Indicesor"]
 
 import random
 from copy import deepcopy
-
+from tqdm import tqdm
 
 class Indicesor(object):
-    def __init__(self, key_iterable=None, shuffle=False, *args, **kwargs):
+    def __init__(self, key_iterable=None, shuffle=False, *args, silent=False, **kwargs):
         if key_iterable is None:
             self.indices = None
         else:
             self.indices = self.initial_indices(key_iterable)
             if shuffle is True:
                 random.shuffle(self.indices)
+        self.silent = silent
 
     def __call__(self, key_iterable=None, *args, **kwargs):
         if key_iterable is None:
@@ -30,7 +31,7 @@ class Indicesor(object):
             indices = range(len(key_iterable))
         else:
             indices = None
-            for idx, _ in enumerate(deepcopy(key_iterable)):
+            for idx, _ in tqdm(enumerate(deepcopy(key_iterable)), "initial indices", disable=self.silent):
                 indices = idx
             assert indices is not None
             indices = list(range(indices))
@@ -38,5 +39,5 @@ class Indicesor(object):
         return self.indices
 
     @staticmethod
-    def get_indices(key_iterable, shuffle=False):
-        return Indicesor(key_iterable, shuffle=shuffle).indices
+    def get_indices(key_iterable, shuffle=False, silent=False):
+        return Indicesor(key_iterable, shuffle=shuffle, silent=silent).indices
