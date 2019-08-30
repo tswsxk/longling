@@ -36,7 +36,8 @@ def load(transformed_data, params):
 
 def etl(*args, params):
     raw_data = extract(*args)
-    transform(raw_data, params)
+    transformed_data = transform(raw_data, params)
+    load(transformed_data, params)
     raise NotImplementedError
 
 
