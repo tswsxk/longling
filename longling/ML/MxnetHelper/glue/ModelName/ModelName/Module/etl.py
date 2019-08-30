@@ -18,9 +18,17 @@ def transform(raw_data, params):
 
     batch_size = params.batch_size
 
+    transformed_data = raw_data
+
+    return transformed_data
+
+
+def load(transformed_data, params):
+    batch_size = params.batch_size
+
     return gluon.data.DataLoader(
         gluon.data.ArrayDataset(
-            mx.nd.array(raw_data, dtype="float32")
+            mx.nd.array(transformed_data, dtype="float32")
         ),
         batch_size
     )
