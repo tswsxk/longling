@@ -334,23 +334,23 @@ class ModelName(object):
     def transform(self, data):
         return transform(data, self.mod.cfg)
 
-    def etl(self, cfg=None):
+    def etl(self, data_src, cfg=None):
         mod = self.mod
         cfg = mod.cfg if cfg is None else cfg
 
         # 4.2 todo 定义数据加载
         mod.logger.info("loading data")
-        data = etl(params=cfg)
+        data = etl(cfg.var2val(data_src), params=cfg)
 
         return data
 
-    def _train(self):
-        train_data = self.etl()
-        valid_data = self.etl()
+    def _train(self, train, valid):
+        train_data = self.etl(train)
+        valid_data = self.etl(valid)
         self.train_net(train_data, valid_data)
 
     @staticmethod
-    def train(cfg=None, **kwargs):
+    def train(*args, cfg=None, **kwargs):
         module = ModelName(cfg=cfg, **kwargs)
         module.set_loss()
         # module.viz()
@@ -358,15 +358,15 @@ class ModelName(object):
         module.toolbox_init()
         module.model_init(**kwargs)
 
-        module._train()
+        module._train(*args)
 
     @staticmethod
-    def test(test_epoch, dump_file=None, **kwargs):
+    def test(test_filename, test_epoch, dump_file=None, **kwargs):
         from longling.ML.toolkit.formatter import EvalFormatter
         formatter = EvalFormatter(dump_file=dump_file)
         module = ModelName.load(test_epoch, **kwargs)
 
-        test_data = module.etl()
+        test_data = module.etl(test_filename)
         eval_result = module.mod.eval(module.net, test_data)
         formatter(
             tips="test",
@@ -375,13 +375,13 @@ class ModelName(object):
         return eval_result
 
     @staticmethod
-    def inc_train(init_model_file, validation_logger_mode="w", **kwargs):
+    def inc_train(init_model_file, *args, validation_logger_mode="w", **kwargs):
         # 增量学习，从某一轮参数继续训练
         module = ModelName(**kwargs)
         module.toolbox_init(validation_logger_mode=validation_logger_mode)
         module.model_init(init_model_file=init_model_file)
 
-        module._train()
+        module._train(*args)
 
     @staticmethod
     def dump_configuration(**kwargs):
