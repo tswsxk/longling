@@ -8,6 +8,10 @@ def get_net(**kwargs):
     return NetName(**kwargs)
 
 
+def get_bp_loss(**kwargs):
+    return {"L2Loss": gluon.loss.L2Loss(**kwargs)}
+
+
 # todo: define your network symbol here
 class NetName(gluon.HybridBlock):
     def __init__(self, **kwargs):
@@ -18,6 +22,3 @@ class NetName(gluon.HybridBlock):
 
     def hybrid_forward(self, F, x, *args, **kwargs):
         pass
-
-
-BP_LOSS_F = {"L2Loss": gluon.loss.L2Loss()}

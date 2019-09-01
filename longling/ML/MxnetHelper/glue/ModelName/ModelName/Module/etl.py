@@ -5,7 +5,25 @@ import mxnet as mx
 from mxnet import gluon
 from tqdm import tqdm
 
-__all__ = ["extract", "transform", "etl"]
+__all__ = ["extract", "transform", "etl", "pesudo_data_iter"]
+
+
+# todo
+
+def pesudo_data_iter(_cfg):
+    def pseudo_data_generation():
+        # 在这里定义测试用伪数据流
+        import random
+        random.seed(10)
+
+        raw_data = [
+            [random.random() for _ in range(5)]
+            for _ in range(1000)
+        ]
+
+        return raw_data
+
+    return transform(pseudo_data_generation(), _cfg)
 
 
 def extract(data_src):

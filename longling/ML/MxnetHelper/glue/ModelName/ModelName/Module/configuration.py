@@ -7,13 +7,14 @@ from __future__ import print_function
 import datetime
 import pathlib
 
+from mxnet import cpu
+
 import longling.ML.MxnetHelper.glue.parser as parser
 from longling.ML.MxnetHelper.glue.parser import path_append, var2exp, eval_var
 from longling.ML.MxnetHelper.toolkit.optimizer_cfg import get_optimizer_cfg, \
     get_update_steps
 from longling.ML.MxnetHelper.toolkit.select_exp import all_params as _select
 from longling.lib.utilog import config_logging, LogLevel
-from mxnet import cpu
 
 
 class Configuration(parser.Configuration):
@@ -63,8 +64,10 @@ class Configuration(parser.Configuration):
     toolbox_params = {}
 
     # 用户变量
-    # 超参数
+    # 网络超参数
     hyper_params = {}
+    # 损失函数超参数
+    loss_params = {}
 
     # 说明
     caption = ""

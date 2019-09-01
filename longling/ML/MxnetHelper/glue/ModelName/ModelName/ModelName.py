@@ -108,7 +108,7 @@ class ModelName(object):
         net_viz(net, mod.cfg)
 
     def set_loss(self, bp_loss_f=None, loss_function=None):
-        bp_loss_f = BP_LOSS_F if bp_loss_f is None else bp_loss_f
+        bp_loss_f = get_bp_loss(**self.mod.cfg.loss_params) if bp_loss_f is None else bp_loss_f
 
         assert bp_loss_f is not None and len(bp_loss_f) == 1
 

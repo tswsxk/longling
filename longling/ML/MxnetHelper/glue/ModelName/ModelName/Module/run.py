@@ -4,31 +4,14 @@ from longling import path_append
 
 try:
     # for python module
-    from .sym import get_net, BP_LOSS_F, fit_f, eval_f, net_viz
-    from .etl import transform, etl
+    from .sym import get_net, get_bp_loss, fit_f, eval_f, net_viz
+    from .etl import transform, etl, pesudo_data_iter
     from .configuration import Configuration, ConfigurationParser
 except (ImportError, SystemError):
     # for python script
-    from sym import get_net, BP_LOSS_F, fit_f, eval_f, net_viz
-    from etl import transform, etl
+    from sym import get_net, get_bp_loss, fit_f, eval_f, net_viz
+    from etl import transform, etl, pesudo_data_iter
     from configuration import Configuration, ConfigurationParser
-
-
-# todo:
-def get_data_iter(_cfg):
-    def pseudo_data_generation():
-        # 在这里定义测试用伪数据流
-        import random
-        random.seed(10)
-
-        raw_data = [
-            [random.random() for _ in range(5)]
-            for _ in range(1000)
-        ]
-
-        return raw_data
-
-    return transform(pseudo_data_generation(), _cfg)
 
 
 def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_result=False):
@@ -37,9 +20,9 @@ def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_resul
 
     _net.initialize(ctx)
 
-    bp_loss_f = BP_LOSS_F
+    bp_loss_f = get_bp_loss
     loss_function = {}
-    loss_function.update(bp_loss_f)
+    loss_function.update(bp_loss_f(**_cfg.loss_params))
 
     from longling.ML.MxnetHelper.glue import module
     from longling.ML.toolkit import EvalFormatter as Formatter
@@ -96,7 +79,7 @@ def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_resul
 
 
 def pesudo_numerical_check(_net, _cfg):
-    datas = get_data_iter(_cfg)
+    datas = pesudo_data_iter(_cfg)
     numerical_check(_net, _cfg, datas, datas, dump_result=False)
 
 
