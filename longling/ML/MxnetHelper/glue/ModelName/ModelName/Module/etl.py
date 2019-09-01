@@ -5,12 +5,12 @@ import mxnet as mx
 from mxnet import gluon
 from tqdm import tqdm
 
-__all__ = ["extract", "transform", "etl", "pesudo_data_iter"]
+__all__ = ["extract", "transform", "etl", "pseudo_data_iter"]
 
 
 # todo: define extract-transform-load process and implement the pesudo data iterator for testing
 
-def pesudo_data_iter(_cfg):
+def pseudo_data_iter(_cfg):
     def pseudo_data_generation():
         # 在这里定义测试用伪数据流
         import random

@@ -5,12 +5,12 @@ from longling import path_append
 try:
     # for python module
     from .sym import get_net, get_bp_loss, fit_f, eval_f, net_viz
-    from .etl import transform, etl, pesudo_data_iter
+    from .etl import transform, etl, pseudo_data_iter
     from .configuration import Configuration, ConfigurationParser
 except (ImportError, SystemError):
     # for python script
     from sym import get_net, get_bp_loss, fit_f, eval_f, net_viz
-    from etl import transform, etl, pesudo_data_iter
+    from etl import transform, etl, pseudo_data_iter
     from configuration import Configuration, ConfigurationParser
 
 
@@ -78,8 +78,8 @@ def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_resul
                 )
 
 
-def pesudo_numerical_check(_net, _cfg):
-    datas = pesudo_data_iter(_cfg)
+def pseudo_numerical_check(_net, _cfg):
+    datas = pseudo_data_iter(_cfg)
     numerical_check(_net, _cfg, datas, datas, dump_result=False)
 
 
@@ -111,7 +111,7 @@ def sym_run(stage: (int, str) = "viz"):
             net_viz(net, cfg, False)
         else:
             # ############################## Pesudo Test #################################
-            pesudo_numerical_check(net, cfg)
+            pseudo_numerical_check(net, cfg)
 
     elif stage == 2:
         # ################################# Simple Train ###############################
