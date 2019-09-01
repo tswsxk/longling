@@ -21,10 +21,12 @@ dev_deps = test_deps + doc_deps + [
     'setuptools>=40',
     'wheel'
 ]
+
 ml_base_deps = [
     "numpy",
     "scipy",
     "sklearn",
+    "matplotlib",
 ]
 
 ml_mx_deps = [
