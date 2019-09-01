@@ -25,6 +25,29 @@ def _fit_f(_net, _data, bp_loss_f, loss_function, loss_monitor):
     return bp_loss
 
 
+def eval_f(_net, test_data, ctx=mx.cpu()):
+    ground_truth = []
+    prediction = []
+
+    def evaluation_function(y_true, y_pred):
+        return 0
+
+    for batch_data in tqdm(test_data, "evaluating"):
+        ctx_data = split_and_load(
+            ctx, *batch_data,
+            even_split=False
+        )
+        for (data, label) in ctx_data:
+            output = _net(data)
+            pred = output
+            ground_truth.extend(label.asnumpy().tolist())
+            prediction.extend(pred.asnumpy().tolist())
+
+    return {
+        "evaluation_name": evaluation_function(ground_truth, prediction)
+    }
+
+
 def fit_f(net, batch_size, batch_data,
           trainer, bp_loss_f, loss_function, loss_monitor=None,
           ctx=mx.cpu()):
@@ -68,27 +91,5 @@ def fit_f(net, batch_size, batch_data,
             )
             assert bp_loss is not None
             bp_loss.backward()
+    # todo: confirm whether the train step is equal to batch_size
     trainer.step(batch_size)
-
-
-def eval_f(_net, test_data, ctx=mx.cpu()):
-    ground_truth = []
-    prediction = []
-
-    def evaluation_function(y_true, y_pred):
-        return 0
-
-    for batch_data in tqdm(test_data, "evaluating"):
-        ctx_data = split_and_load(
-            ctx, *batch_data,
-            even_split=False
-        )
-        for (data, label) in ctx_data:
-            output = _net(data)
-            pred = output
-            ground_truth.extend(label.asnumpy().tolist())
-            prediction.extend(pred.asnumpy().tolist())
-
-    return {
-        "evaluation_name": evaluation_function(ground_truth, prediction)
-    }

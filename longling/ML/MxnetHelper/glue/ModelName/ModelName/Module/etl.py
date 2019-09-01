@@ -8,7 +8,7 @@ from tqdm import tqdm
 __all__ = ["extract", "transform", "etl", "pesudo_data_iter"]
 
 
-# todo
+# todo: define extract-transform-load process and implement the pesudo data iterator for testing
 
 def pesudo_data_iter(_cfg):
     def pseudo_data_generation():

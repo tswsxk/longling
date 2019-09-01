@@ -1,5 +1,6 @@
 # coding: utf-8
 # create by tongshiwei on 2019-9-1
+# todo: define your network symbol and back propagation loss function
 
 from mxnet import gluon
 
@@ -12,7 +13,6 @@ def get_bp_loss(**kwargs):
     return {"L2Loss": gluon.loss.L2Loss(**kwargs)}
 
 
-# todo: define your network symbol here
 class NetName(gluon.HybridBlock):
     def __init__(self, **kwargs):
         super(NetName, self).__init__(kwargs.get("prefix"), kwargs.get("params"))
