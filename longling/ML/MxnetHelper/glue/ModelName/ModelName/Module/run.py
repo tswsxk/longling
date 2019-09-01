@@ -110,7 +110,7 @@ def sym_run(stage: (int, str) = "viz"):
             # ############################## Net Visualization ###########################
             net_viz(net, cfg, False)
         else:
-            # ############################## Pesudo Test #################################
+            # ############################## Pseudo Test #################################
             pseudo_numerical_check(net, cfg)
 
     elif stage == 2:
