@@ -397,22 +397,21 @@ class ModelName(object):
 
     @staticmethod
     def get_parser():
-        cfg_parser = ConfigurationParser(Configuration)
-        cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.config))
-        cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.inc_train))
-        cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.train))
-        cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.test))
-        cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.load))
+        cfg_parser = ConfigurationParser(
+            Configuration,
+            commands=[
+                ModelName.config,
+                ModelName.train, ModelName.test,
+                ModelName.inc_train,
+            ]
+        )
         return cfg_parser
 
     @staticmethod
     def run(parse_args=None):
         cfg_parser = ModelName.get_parser()
+        cfg_kwargs = cfg_parser(parse_args)
 
-        if parse_args is not None:
-            cfg_kwargs = cfg_parser.parse(cfg_parser.parse_args(parse_args))
-        else:
-            cfg_kwargs = cfg_parser()
         assert "subcommand" in cfg_kwargs
         subcommand = cfg_kwargs["subcommand"]
         del cfg_kwargs["subcommand"]
