@@ -4,7 +4,10 @@ __all__ = ["IterableMonitor", "MonitorPlayer", "ProgressMonitor"]
 
 from collections import Iterable
 
-from longling import flush_print
+try:
+    from .stream import flush_print
+except (ImportError, SystemError):
+    from stream import flush_print
 
 
 def pass_function(*args, **kwargs):
@@ -83,7 +86,7 @@ if __name__ == '__main__':
             )
 
 
-    progress_monitor = ProgressMonitor(MonitorPlayer())
+    progress_monitor = DemoMonitor(MonitorPlayer())
 
     for _ in range(5):
         for _ in progress_monitor(range(10000)):
