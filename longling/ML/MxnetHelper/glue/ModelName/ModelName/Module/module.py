@@ -5,12 +5,10 @@ from __future__ import absolute_import
 import os
 
 import mxnet as mx
-from mxnet import autograd
 
 from longling.ML.MxnetHelper.glue import module
-from longling.ML.MxnetHelper.toolkit.ctx import split_and_load
 from .configuration import Configuration
-from .sym import NetName, fit_f, eval_f
+from .sym import get_net, fit_f, eval_f
 
 __all__ = ["Module"]
 
@@ -67,7 +65,7 @@ class Module(module.Module):
         )
         self.logger = configuration.logger
 
-        self.sym_gen = NetName
+        self.sym_gen = get_net
 
     def dump_configuration(self, filename=None):
         filename = filename if filename is not None \

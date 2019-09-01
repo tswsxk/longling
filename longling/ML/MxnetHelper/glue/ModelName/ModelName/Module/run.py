@@ -4,12 +4,12 @@ from longling import path_append
 
 try:
     # for python module
-    from .sym import NetName, BP_LOSS_F, fit_f, eval_f, net_viz
+    from .sym import get_net, BP_LOSS_F, fit_f, eval_f, net_viz
     from .etl import transform, etl
     from .configuration import Configuration, ConfigurationParser
 except (ImportError, SystemError):
     # for python script
-    from sym import NetName, BP_LOSS_F, fit_f, eval_f, net_viz
+    from sym import get_net, BP_LOSS_F, fit_f, eval_f, net_viz
     from etl import transform, etl
     from configuration import Configuration, ConfigurationParser
 
@@ -102,7 +102,7 @@ def pesudo_numerical_check(_net, _cfg):
 
 def train(train_fn, test_fn, **cfg_kwargs):
     _cfg = Configuration(**cfg_kwargs)
-    _net = NetName(**_cfg.hyper_params)
+    _net = get_net(**_cfg.hyper_params)
 
     train_data = etl(_cfg.var2val(train_fn), params=_cfg)
     test_data = etl(_cfg.var2val(test_fn), params=_cfg)
@@ -121,7 +121,7 @@ def sym_run(stage: (int, str) = "viz"):
 
     if stage <= 1:
         cfg = Configuration()
-        net = NetName()
+        net = get_net(**cfg.hyper_params)
 
         if stage == 0:
             # ############################## Net Visualization ###########################

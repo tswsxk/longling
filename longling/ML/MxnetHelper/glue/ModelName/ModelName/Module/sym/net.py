@@ -4,6 +4,10 @@
 from mxnet import gluon
 
 
+def get_net(**kwargs):
+    return NetName(**kwargs)
+
+
 # todo: define your network symbol here
 class NetName(gluon.HybridBlock):
     def __init__(self, **kwargs):
