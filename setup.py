@@ -21,6 +21,20 @@ dev_deps = test_deps + doc_deps + [
     'setuptools>=40',
     'wheel'
 ]
+ml_base_deps = [
+    "numpy",
+    "scipy",
+    "sklearn",
+]
+
+ml_mx_deps = [
+
+]
+ml_pytorch_deps = [
+
+]
+
+ml_full_deps = ml_base_deps + ml_mx_deps + ml_pytorch_deps
 
 
 def read(*names, **kwargs):
@@ -73,12 +87,15 @@ setup(
     description='This project aims to provide some handy toolkit functions to help construct the architecture.',
     long_description=open('README.txt', encoding="utf-8").read(),
     install_requires=[
-        "pip"
+        "pip",
+        "tqdm",
     ],
     extras_require={
         'test': test_deps,
         'doc': doc_deps,
-        'dev': dev_deps
+        'dev': dev_deps,
+        'ml': ml_base_deps,
+        'ml-full': ml_full_deps,
     },
     classifiers=[
         "Programming Language :: Python :: 3",
