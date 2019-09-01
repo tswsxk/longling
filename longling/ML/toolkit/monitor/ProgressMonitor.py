@@ -48,7 +48,7 @@ class ConsoleProgressMonitorPlayer(object):
             indexes = OrderedDict(indexes)
 
         if values is not None:
-            for prefix, names in indexes:
+            for prefix, names in indexes.items():
                 for name in names:
                     _ = values[prefix][name]
 
