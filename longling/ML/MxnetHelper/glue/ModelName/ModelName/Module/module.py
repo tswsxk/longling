@@ -303,21 +303,14 @@ class Module(module.Module):
                 loss_monitor = monitor.get("loss")
                 progress_monitor = monitor.get("progress")
 
-        if progress_monitor is not None:
-            progress_monitor.batch_start(epoch)
-
-        for i, batch_data in enumerate(train_data):
-            self.fit_f(
+        for i, batch_data in progress_monitor(enumerate(train_data), epoch):
+            fit_f(
                 net=net, batch_size=batch_size, batch_data=batch_data,
                 trainer=trainer, bp_loss_f=bp_loss_f,
                 loss_function=loss_function,
                 loss_monitor=loss_monitor,
                 ctx=ctx,
             )
-            if progress_monitor is not None:
-                loss_values = [loss for loss in loss_monitor.values()]
-                progress_monitor(i, loss_value=loss_values)
-        progress_monitor.batch_end()
         loss_values = {
             name: loss for name, loss in loss_monitor.items()
         }
@@ -340,56 +333,3 @@ class Module(module.Module):
 
         """
         return eval_f(net, test_data, ctx)
-
-    @staticmethod
-    def fit_f(net, batch_size, batch_data,
-              trainer, bp_loss_f, loss_function, loss_monitor=None,
-              ctx=mx.cpu()
-              ):
-        """
-        Defined how each step of batch train goes
-
-        Parameters
-        ----------
-        net: HybridBlock
-            The network which has been initialized
-            or loaded from the existed model
-        batch_size: int
-                The size of each batch
-        batch_data: Iterable
-            The batch data for train
-        trainer:
-            The trainer used to update the parameters of the net
-        bp_loss_f: dict with only one value and one key
-            The function to compute the loss for the procession
-            of back propagation
-        loss_function: dict of function
-            Some other measurement in addition to bp_loss_f
-        loss_monitor: LossMonitor
-            Default to ``None``
-        ctx: Context or list of Context
-            Defaults to ``mx.cpu()``.
-
-        Returns
-        -------
-
-        """
-        # 此函数定义训练过程
-        ctx_data = Module.split_and_load(
-            ctx, *batch_data,
-            even_split=False
-        )
-
-        with autograd.record():
-            # todo modify the component extracted from ctx_data
-            for _data in ctx_data:
-                bp_loss = fit_f(
-                    net, _data, bp_loss_f, loss_function, loss_monitor
-                )
-                assert bp_loss is not None
-                bp_loss.backward()
-        trainer.step(batch_size)
-
-    @staticmethod
-    def split_and_load(ctx, *args, **kwargs):
-        return split_and_load(ctx, *args, **kwargs)

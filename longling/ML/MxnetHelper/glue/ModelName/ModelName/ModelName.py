@@ -1,6 +1,5 @@
 # coding: utf-8
 # Copyright @tongshiwei
-import os
 
 import mxnet as mx
 
@@ -56,7 +55,7 @@ class ModelName(object):
         self.trainer = None
 
         if toolbox_init:
-            self.toolbox_init()
+            self.toolbox_init(**self.mod.cfg.toolbox_params)
 
     @staticmethod
     def config(cfg=None, **kwargs):
@@ -128,11 +127,11 @@ class ModelName(object):
             informer_silent=False,
     ):
 
+        from longling import path_append
         from longling.lib.clock import Clock
         from longling.lib.utilog import config_logging
-        from longling.ML.toolkit.formatter import EvalFormatter as Formatter
-        from longling.ML.toolkit.monitor import MovingLoss, \
-            ConsoleProgressMonitor as ProgressMonitor
+        from longling.ML.toolkit import EvalFormatter as Formatter
+        from longling.ML.toolkit import MovingLoss, ConsoleProgressMonitor as ProgressMonitor
 
         self.toolbox = {
             "monitor": dict(),
@@ -155,13 +154,18 @@ class ModelName(object):
         timer = Clock()
 
         progress_monitor = ProgressMonitor(
-            loss_index=[name for name in self.loss_function],
+            indexes={
+                "Loss": [name for name in self.loss_function]
+            },
+            values={
+                "Loss": loss_monitor.losses
+            },
             end_epoch=cfg.end_epoch - 1,
             silent=informer_silent
         )
 
         validation_logger = config_logging(
-            filename=os.path.join(cfg.model_dir, "result.log"),
+            filename=path_append(cfg.model_dir, "result.log"),
             logger="%s-validation" % cfg.model_name,
             mode=validation_logger_mode,
             log_format="%(message)s",

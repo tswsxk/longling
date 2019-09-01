@@ -59,6 +59,9 @@ class Configuration(parser.Configuration):
     # 运行设备
     ctx = cpu()
 
+    # 工具包参数
+    toolbox_params = {}
+
     # 用户变量
     # 超参数
     hyper_params = {}
