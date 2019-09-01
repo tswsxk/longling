@@ -20,8 +20,9 @@ def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_resul
 
     _net.initialize(ctx)
 
+    bp_loss_f = get_bp_loss(**_cfg.loss_params)
     loss_function = {}
-    loss_function.update(get_bp_loss(**_cfg.loss_params))
+    loss_function.update(bp_loss_f)
 
     from longling.ML.MxnetHelper.glue import module
     from longling.ML.toolkit import EvalFormatter as Formatter
