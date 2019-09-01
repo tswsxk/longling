@@ -1,8 +1,11 @@
 # coding: utf-8
 # created by tongshiwei on 18-2-5
 import math
+import warnings
+from collections import OrderedDict
 from contextlib import contextmanager
 
+from longling.lib import ProgressMonitor, IterableMonitor
 from longling.lib.stream import flush_print
 
 try:
@@ -13,34 +16,65 @@ except (AttributeError, ImportError):
 __all__ = ["ConsoleProgressMonitor"]
 
 
-class ConsoleProgressMonitor(object):
-    def __init__(self, loss_index=None, eval_index=None, batch_num=NAN,
-                 end_epoch=NAN, output=True, silent=False,
+class ConsoleProgressMonitor(ProgressMonitor):
+    def __init__(self, indexes: (dict, OrderedDict), values: (dict, None) = None,
+                 batch_num=NAN, end_epoch=NAN, output=True, silent=False, ):
+        super(ConsoleProgressMonitor, self).__init__(
+            ConsoleProgressMonitorPlayer(
+                indexes=indexes,
+                values=values,
+                batch_num=batch_num,
+                end_epoch=end_epoch,
+                output=output,
+                silent=silent,
+            )
+        )
+
+    def __call__(self, iterator, epoch, *args, **kwargs):
+        self.player.batch_start(epoch)
+        return IterableMonitor(iterator, self.player, self.player.batch_end)
+
+
+class ConsoleProgressMonitorPlayer(object):
+    def __init__(self,
+                 indexes: (dict, OrderedDict), values: (dict, None) = None,
+                 batch_num=NAN, end_epoch=NAN, output=True, silent=False,
                  **kwargs):
-        loss_index = [] if loss_index is None else loss_index
-        eval_index = [] if eval_index is None else eval_index
+
+        if values is not None:
+            assert type(indexes) == type(values)
+
+        if isinstance(indexes, dict):
+            indexes = OrderedDict(indexes)
+
+        if values is not None:
+            for prefix, names in indexes:
+                for name in names:
+                    _ = values[prefix][name]
+
+        self.indexes = indexes
 
         self.batch_num = batch_num
         self._batch_num = None
         self.end_epoch = end_epoch
 
-        self.eval_index = eval_index
-        self.loss_index = ["Loss-%s" % ln for ln in loss_index]
-
         self.output = output
 
         info_header = "{:>5}| {:>7}" + " " * 5 \
                       + "{:>10}" + " " * 2 + "{:>10}" + " " * 5
-        loss_header = (" " * 2).join(
-            ["{:>%s}" % min(len(index), 15) for index in loss_index]
-        )
-        eval_header = (" " * 2).join(
-            ["{:>%s}" % min(len(index), 15) for index in eval_index]
-        )
 
-        self.output_formatter = info_header + loss_header + eval_header
+        index_header = ""
+        arguments = []
 
-        arguments = list(self.loss_index) + list(self.eval_index)
+        for prefix, _indexes in self.indexes.items():
+            __indexes = ["%s-%s" % (prefix, _index) for _index in _indexes]
+            arguments += __indexes
+            index_header += (" " * 2).join(
+                ["{:>%s}" % min(len(index), 15) for index in __indexes]
+            )
+
+        self.output_formatter = info_header + index_header
+
         self.index_prefix = self.output_formatter.format("Epoch", "Total-E",
                                                          "Batch", "Total-B",
                                                          *arguments)
@@ -48,11 +82,23 @@ class ConsoleProgressMonitor(object):
         self.epoch = NAN
         self.silent = silent
 
-    def __call__(self, batch_no, loss_value=None, eval_value=None):
-        loss_value = [] if loss_value is None else loss_value
-        eval_value = [] if eval_value is None else eval_value
+        self.values = values
 
-        arguments = list(loss_value) + list(eval_value)
+    def __call__(self, batch_no, **kwargs):
+        arguments = []
+
+        for prefix, names in self.indexes.items():
+            if prefix not in kwargs:
+                ref = self.values[prefix]
+            else:
+                ref = kwargs[prefix]
+            for name in names:
+                arguments.append(ref[prefix][name])
+
+        for prefix, name_value in kwargs.items():
+            if prefix not in self.indexes:
+                warnings.warn("detect unknown prefix: %s, all arguments will be ignored" % prefix)
+
         res_str = self.output_formatter.format(self.epoch, self.end_epoch,
                                                batch_no, self.batch_num,
                                                *arguments)
