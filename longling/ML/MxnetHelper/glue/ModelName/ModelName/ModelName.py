@@ -124,7 +124,7 @@ class ModelName(object):
             self,
             evaluation_formatter_parameters=None,
             validation_logger_mode="w",
-            informer_silent=False,
+            silent=False,
     ):
 
         from longling import path_append
@@ -161,7 +161,7 @@ class ModelName(object):
                 "Loss": loss_monitor.losses
             },
             end_epoch=cfg.end_epoch - 1,
-            silent=informer_silent
+            silent=silent
         )
 
         validation_logger = config_logging(
