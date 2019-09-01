@@ -7,6 +7,7 @@ import json
 import logging
 import os
 import re
+from collections import Iterable
 
 from longling import wf_open
 from longling.lib.path import path_append
@@ -225,7 +226,7 @@ def args_zips(args=None, defaults=None):
 
 
 class ConfigurationParser(argparse.ArgumentParser):
-    def __init__(self, class_obj, excluded_names=None, *args, **kwargs):
+    def __init__(self, class_obj, excluded_names=None, commands=None, *args, **kwargs):
         excluded_names = {
             'logger'
         } if excluded_names is None else excluded_names
@@ -261,6 +262,14 @@ class ConfigurationParser(argparse.ArgumentParser):
         self.sub_command_parsers = None
         super(ConfigurationParser, self).__init__(parents=[self.__proto_type], *args, **kwargs)
 
+        if commands is not None:
+            assert isinstance(commands, Iterable)
+            self.add_command(*commands)
+
+    def add_command(self, *commands):
+        for command in commands:
+            self._add_subcommand(self.func_spec(command))
+
     @staticmethod
     def parse(arguments):
         arguments = vars(arguments)
@@ -282,11 +291,17 @@ class ConfigurationParser(argparse.ArgumentParser):
         return kwargs
 
     def __call__(self, args=None):
+        if isinstance(args, str):
+            args = args.split(" ")
         kwargs = self.parse_args(args)
         kwargs = self.parse(kwargs)
         return kwargs
 
-    def add_subcommand(self, command_parameters):
+    def add_subcommand(self, *command_parameters):
+        for _command_parameters in command_parameters:
+            self._add_subcommand(_command_parameters)
+
+    def _add_subcommand(self, command_parameters):
         if self.sub_command_parsers is None:
             self.sub_command_parsers = self.add_subparsers(
                 parser_class=argparse.ArgumentParser,
