@@ -9,11 +9,13 @@ import pathlib
 
 from mxnet import cpu
 
-import longling.ML.MxnetHelper.glue.parser as parser
-from longling.ML.MxnetHelper.glue.parser import path_append, var2exp, eval_var
+import longling.lib.parser as parser
+from longling import path_append
+from longling.ML.MxnetHelper.glue.parser import eval_var
 from longling.ML.MxnetHelper.toolkit.optimizer_cfg import get_optimizer_cfg, \
     get_update_steps
 from longling.ML.MxnetHelper.toolkit.select_exp import all_params as _select
+from longling.lib.parser import var2exp
 from longling.lib.utilog import config_logging, LogLevel
 
 
