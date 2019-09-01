@@ -28,10 +28,11 @@ ml_base_deps = [
 ]
 
 ml_mx_deps = [
-
+    "mxnet",
+    "gluonnlp",
 ]
 ml_pytorch_deps = [
-
+    "torch"
 ]
 
 ml_full_deps = ml_base_deps + ml_mx_deps + ml_pytorch_deps
