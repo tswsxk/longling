@@ -18,7 +18,7 @@ def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_resul
     ctx = _cfg.ctx
     batch_size = _cfg.batch_size
 
-    _net.initialize(ctx)
+    _net.initialize(ctx=ctx)
 
     bp_loss_f = get_bp_loss(**_cfg.loss_params)
     loss_function = {}
