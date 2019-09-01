@@ -130,8 +130,7 @@ def sym_run(stage: (int, str) = "viz"):
 
     elif stage == 3:
         # ################################# CLI ###########################
-        cfg_parser = ConfigurationParser(Configuration)
-        cfg_parser.add_subcommand(cfg_parser.func_spec(train))
+        cfg_parser = ConfigurationParser(Configuration, commands=[train])
         cfg_kwargs = cfg_parser()
         assert "subcommand" in cfg_kwargs
         subcommand = cfg_kwargs["subcommand"]
