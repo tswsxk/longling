@@ -93,7 +93,7 @@ class ConsoleProgressMonitorPlayer(object):
             else:
                 ref = kwargs[prefix]
             for name in names:
-                arguments.append(ref[prefix][name])
+                arguments.append(ref[name])
 
         for prefix, name_value in kwargs.items():
             if prefix not in self.indexes:
