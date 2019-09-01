@@ -97,7 +97,7 @@ def sym_run(stage: (int, str) = "viz"):
     if isinstance(stage, str):
         stage = {
             "viz": 0,
-            "pesudo": 1,
+            "pseudo": 1,
             "real": 2,
             "cli": 3,
         }[stage]
