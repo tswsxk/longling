@@ -1,5 +1,6 @@
 # coding: utf-8
 # create by tongshiwei on 2019-9-1
+__all__ = ["fit_f", "eval_f"]
 
 import mxnet as mx
 import mxnet.ndarray as nd

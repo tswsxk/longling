@@ -1,5 +1,8 @@
 # coding: utf-8
 # create by tongshiwei on 2019-9-1
+
+__all__ = ["get_net", "get_bp_loss"]
+
 # todo: define your network symbol and back propagation loss function
 
 from mxnet import gluon

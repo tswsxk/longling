@@ -1,5 +1,7 @@
 # coding: utf-8
 # create by tongshiwei on 2019-9-1
+__all__ = ["net_viz"]
+
 import logging
 
 import mxnet as mx
