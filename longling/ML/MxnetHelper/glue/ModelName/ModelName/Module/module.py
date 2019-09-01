@@ -66,6 +66,7 @@ class Module(module.Module):
         self.logger = configuration.logger
 
         self.sym_gen = get_net
+        self.fit_f = fit_f
 
     def dump_configuration(self, filename=None):
         filename = filename if filename is not None \
@@ -302,7 +303,7 @@ class Module(module.Module):
                 progress_monitor = monitor.get("progress")
 
         for i, batch_data in progress_monitor(enumerate(train_data), epoch):
-            fit_f(
+            self.fit_f(
                 net=net, batch_size=batch_size, batch_data=batch_data,
                 trainer=trainer, bp_loss_f=bp_loss_f,
                 loss_function=loss_function,
