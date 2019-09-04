@@ -65,8 +65,8 @@ class Configuration(Params):
         )
 
     @staticmethod
-    def load_cfg(cfg_path, **kwargs):
-        with open(cfg_path) as f:
+    def load_cfg(params_json, **kwargs):
+        with open(params_json) as f:
             params = load_configuration_json(
                 f, load_parse_function={"ctx": MXCtx.load}
             )

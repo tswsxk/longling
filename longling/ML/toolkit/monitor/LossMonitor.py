@@ -19,6 +19,7 @@ class LossMonitor(object):
     * update: 定义损失函数的如何累加更新
 
     """
+
     def __init__(self, loss_function_names, *args, **kwargs):
         self.losses = {name: NAN for name in loss_function_names}
 

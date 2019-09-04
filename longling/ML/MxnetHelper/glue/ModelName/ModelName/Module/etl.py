@@ -5,7 +5,25 @@ import mxnet as mx
 from mxnet import gluon
 from tqdm import tqdm
 
-__all__ = ["extract", "transform", "etl"]
+__all__ = ["extract", "transform", "etl", "pseudo_data_iter"]
+
+
+# todo: define extract-transform-load process and implement the pesudo data iterator for testing
+
+def pseudo_data_iter(_cfg):
+    def pseudo_data_generation():
+        # 在这里定义测试用伪数据流
+        import random
+        random.seed(10)
+
+        raw_data = [
+            [random.random() for _ in range(5)]
+            for _ in range(1000)
+        ]
+
+        return raw_data
+
+    return transform(pseudo_data_generation(), _cfg)
 
 
 def extract(data_src):
@@ -18,9 +36,17 @@ def transform(raw_data, params):
 
     batch_size = params.batch_size
 
+    transformed_data = raw_data
+
+    return transformed_data
+
+
+def load(transformed_data, params):
+    batch_size = params.batch_size
+
     return gluon.data.DataLoader(
         gluon.data.ArrayDataset(
-            mx.nd.array(raw_data, dtype="float32")
+            mx.nd.array(transformed_data, dtype="float32")
         ),
         batch_size
     )
@@ -28,7 +54,8 @@ def transform(raw_data, params):
 
 def etl(*args, params):
     raw_data = extract(*args)
-    transform(raw_data, params)
+    transformed_data = transform(raw_data, params)
+    load(transformed_data, params)
     raise NotImplementedError
 
 

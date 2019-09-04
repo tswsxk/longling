@@ -1,4 +1,4 @@
-longling
+longling>=1.1.1
 mxnet
 sklearn
 tqdm

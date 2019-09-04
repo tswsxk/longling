@@ -7,6 +7,7 @@ import json
 import logging
 import os
 import re
+from collections import Iterable
 
 from longling import wf_open
 from longling.lib.path import path_append
@@ -15,7 +16,8 @@ __all__ = [
     "CLASS_EXCLUDE_NAMES", "get_class_var",
     "get_parsable_var", "load_configuration_json",
     "var2exp", "path_append",
-    "Configuration", "ConfigurationParser"
+    "Configuration", "ConfigurationParser",
+    "Formatter"
 ]
 
 CLASS_EXCLUDE_NAMES = set(vars(object).keys()) | {
@@ -224,7 +226,7 @@ def args_zips(args=None, defaults=None):
 
 
 class ConfigurationParser(argparse.ArgumentParser):
-    def __init__(self, class_obj, excluded_names=None, *args, **kwargs):
+    def __init__(self, class_obj, excluded_names=None, commands=None, *args, **kwargs):
         excluded_names = {
             'logger'
         } if excluded_names is None else excluded_names
@@ -260,6 +262,14 @@ class ConfigurationParser(argparse.ArgumentParser):
         self.sub_command_parsers = None
         super(ConfigurationParser, self).__init__(parents=[self.__proto_type], *args, **kwargs)
 
+        if commands is not None:
+            assert isinstance(commands, Iterable)
+            self.add_command(*commands)
+
+    def add_command(self, *commands):
+        for command in commands:
+            self._add_subcommand(self.func_spec(command))
+
     @staticmethod
     def parse(arguments):
         arguments = vars(arguments)
@@ -281,11 +291,17 @@ class ConfigurationParser(argparse.ArgumentParser):
         return kwargs
 
     def __call__(self, args=None):
+        if isinstance(args, str):
+            args = args.split(" ")
         kwargs = self.parse_args(args)
         kwargs = self.parse(kwargs)
         return kwargs
 
-    def add_subcommand(self, command_parameters):
+    def add_subcommand(self, *command_parameters):
+        for _command_parameters in command_parameters:
+            self._add_subcommand(_command_parameters)
+
+    def _add_subcommand(self, command_parameters):
         if self.sub_command_parsers is None:
             self.sub_command_parsers = self.add_subparsers(
                 parser_class=argparse.ArgumentParser,
@@ -324,6 +340,29 @@ class ConfigurationParser(argparse.ArgumentParser):
             argspec.kwonlyargs,
             argspec.kwonlydefaults.values() if argspec.kwonlydefaults else []
         )
+
+
+class Formatter(object):
+    def __init__(self, formatter=None):
+        self.formatter = formatter
+
+    def __call__(self, *format_string):
+        if self.formatter is None:
+            assert len(format_string) == 1, \
+                "formatter is None, the input should be a single value, now is %s, " \
+                "which has %s value" % (format_string, len(format_string))
+            return format_string[0]
+        elif "{}" in self.formatter:
+            return self.formatter.format(*format_string)
+        else:
+            raise TypeError(
+                "can not handle the format_string: %s, with the formatter: %s" % (self.formatter, format_string)
+            )
+
+    @staticmethod
+    def format(*format_string, formatter=None):
+        formatter = Formatter(formatter)
+        return formatter(*format_string)
 
 
 if __name__ == '__main__':

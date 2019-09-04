@@ -12,15 +12,34 @@ test_deps = [
     'pytest-cov>=2.6.0',
     'pytest-pep8>=1',
 ]
+
 doc_deps = [
     'sphinx',
     'sphinx-rtd-theme',
     'recommonmark'
 ]
+
 dev_deps = test_deps + doc_deps + [
     'setuptools>=40',
     'wheel'
 ]
+
+ml_base_deps = [
+    "numpy",
+    "scipy",
+    "sklearn",
+    "matplotlib",
+]
+
+ml_mx_deps = [
+    "mxnet",
+    "gluonnlp",
+]
+ml_pytorch_deps = [
+    "torch"
+]
+
+ml_full_deps = ml_base_deps + ml_mx_deps + ml_pytorch_deps
 
 
 def read(*names, **kwargs):
@@ -64,7 +83,7 @@ setup(
     entry_points={
         "console_scripts": [
             "glue = longling.ML.MxnetHelper.glue.glue:cli",
-            "longling_install = longling.dependency:cli"
+            "longling = longling.main:cli"
         ],
     },
     url='https://gitlab.com/tswsxk/longling.git',
@@ -72,12 +91,15 @@ setup(
     description='This project aims to provide some handy toolkit functions to help construct the architecture.',
     long_description=open('README.txt', encoding="utf-8").read(),
     install_requires=[
-        "pip"
+        "pip",
+        "tqdm",
     ],
     extras_require={
         'test': test_deps,
         'doc': doc_deps,
-        'dev': dev_deps
+        'dev': dev_deps,
+        'ml': ml_base_deps,
+        'ml-full': ml_full_deps,
     },
     classifiers=[
         "Programming Language :: Python :: 3",

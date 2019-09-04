@@ -1,19 +1,22 @@
 # coding: utf-8
 # Copyright @tongshiwei
-
 from __future__ import absolute_import
 from __future__ import print_function
+
+__all__ = ["Configuration", "ConfigurationParser"]
 
 import datetime
 import pathlib
 
 from mxnet import cpu
 
-import longling.ML.MxnetHelper.glue.parser as parser
-from longling.ML.MxnetHelper.glue.parser import path_append, var2exp, eval_var
+import longling.lib.parser as parser
+from longling import path_append
+from longling.ML.MxnetHelper.glue.parser import eval_var
 from longling.ML.MxnetHelper.toolkit.optimizer_cfg import get_optimizer_cfg, \
     get_update_steps
 from longling.ML.MxnetHelper.toolkit.select_exp import all_params as _select
+from longling.lib.parser import var2exp
 from longling.lib.utilog import config_logging, LogLevel
 
 
@@ -60,9 +63,14 @@ class Configuration(parser.Configuration):
     # 运行设备
     ctx = cpu()
 
+    # 工具包参数
+    toolbox_params = {}
+
     # 用户变量
-    # 超参数
+    # 网络超参数
     hyper_params = {}
+    # 损失函数超参数
+    loss_params = {}
 
     # 说明
     caption = ""
@@ -94,7 +102,7 @@ class Configuration(parser.Configuration):
 
         params = self.class_var
         if params_json:
-            params.update(self.load_cfg(cfg_path=params_json))
+            params.update(self.load_cfg(params_json=params_json))
         params.update(**kwargs)
 
         for param, value in params.items():
@@ -143,6 +151,12 @@ class Configuration(parser.Configuration):
     @staticmethod
     def load(cfg_path, **kwargs):
         return Configuration(Configuration.load_cfg(cfg_path, **kwargs))
+
+    def var2val(self, var):
+        return eval(var2exp(
+            var,
+            env_wrap=lambda x: "self.%s" % x
+        ))
 
 
 class ConfigurationParser(parser.ConfigurationParser):
