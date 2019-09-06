@@ -6,27 +6,12 @@ import re
 import mxnet as mx
 from mxnet import gluon, nd
 
+from longling.ML import DL
+
 __all__ = ["Module"]
 
 
-class Module(object):
-    def __init__(self, parameters):
-        self.cfg = parameters
-
-    def __str__(self):
-        """
-        显示模块参数
-        Display the necessary params of this Module
-
-        Returns
-        -------
-
-        """
-        string = ["Params"]
-        for k, v in vars(self.cfg).items():
-            string.append("%s: %s" % (k, v))
-        return "\n".join(string)
-
+class Module(DL.Module):
     @staticmethod
     def load_net(filename, net, ctx=mx.cpu(), allow_missing=False,
                  ignore_extra=False):

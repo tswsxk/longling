@@ -72,8 +72,10 @@ setup(
             "longling",
             "*.lib", "*.lib.*",
             "*.ML",
+            "*.ML.DL*",
             "*.ML.MxnetHelper*",
-            "*.ML.toolkit*"
+            "*.ML.PytorchHelper*",
+            "*.ML.toolkit*",
         ],
         exclude=[
             "*.mx_example", "*.gluon_example*", "*.gluon_exp*",

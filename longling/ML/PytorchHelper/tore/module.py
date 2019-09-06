@@ -6,29 +6,13 @@ __all__ = ["Module"]
 import torch
 
 from ..toolkit.optimizer import get_trainer
+from ..toolkit.parallel import set_device
+from longling.ML import DL
 
 
-class Module(object):
-    def __init__(self, parameters):
-        self.cfg = parameters
-
-    def __str__(self):
-        """
-        显示模块参数
-        Display the necessary params of this Module
-
-        Returns
-        -------
-
-        """
-        string = ["Params"]
-        for k, v in vars(self.cfg).items():
-            string.append("%s: %s" % (k, v))
-        return "\n".join(string)
-
+class Module(DL.Module):
     @staticmethod
-    def load_net(filename, net: torch.nn.Module, ctx="cpu", allow_missing=False,
-                 ignore_extra=False):
+    def load_net(filename):
         """
         Load the existing net parameters
 
@@ -36,14 +20,6 @@ class Module(object):
         ----------
         filename: str
             The model file
-        net: HybridBlock
-            The network which has been initialized or
-            loaded from the existed model
-        ctx: Context or list of Context
-                Defaults to ``mx.cpu()``.
-        allow_missing: bool
-        ignore_extra: bool
-
         Returns
         -------
         The initialized net
@@ -53,22 +29,14 @@ class Module(object):
             raise FileExistsError
         return torch.load(filename, map_location=lambda s, loc: s)
 
-    def load(self, net, epoch, ctx="cpu", allow_missing=False,
-             ignore_extra=False):
+    def load(self, epoch):
         """"
         Load the existing net parameters
 
         Parameters
         ----------
-        net: HybridBlock
-            The network which has been initialized
-            or loaded from the existed model
         epoch: str or int
             The epoch which specify the model
-        ctx: Context or list of Context
-                Defaults to ``mx.cpu()``.
-        allow_missing: bool
-        ignore_extra: bool
 
         Returns
         -------
@@ -77,8 +45,7 @@ class Module(object):
         # 根据起始轮次装载已有的网络参数
         filename = self.epoch_params_filename(epoch)
         return self.load_net(
-            filename, net, ctx, allow_missing=allow_missing,
-            ignore_extra=ignore_extra
+            filename
         )
 
     def epoch_params_filename(self, epoch):
@@ -93,3 +60,8 @@ class Module(object):
     @staticmethod
     def save_params(filename, net: torch.nn.Module):
         torch.save(net.state_dict(), filename)
+
+    @staticmethod
+    def net_initialize(net, model_ctx="cpu", **kwargs):
+        """初始化网络参数"""
+        set_device(net, model_ctx, **kwargs)
