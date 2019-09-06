@@ -207,7 +207,7 @@ class ModelName(object):
         except FileExistsError:
             if allow_reinit:
                 mod.logger.info("model doesn't exist, initializing")
-                Module.net_initialize(net, cfg.ctx)
+                self.Module.net_initialize(net, cfg.ctx)
             else:
                 mod.logger.info(
                     "model doesn't exist, target file: %s" % model_file

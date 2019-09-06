@@ -64,4 +64,4 @@ class Module(DL.Module):
     @staticmethod
     def net_initialize(net, model_ctx="cpu", **kwargs):
         """初始化网络参数"""
-        set_device(net, model_ctx, **kwargs)
+        return set_device(net, model_ctx, **kwargs)
