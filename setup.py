@@ -73,7 +73,8 @@ setup(
             "*.lib", "*.lib.*",
             "*.ML",
             "*.ML.MxnetHelper*",
-            "*.ML.toolkit*"
+            "*.ML.PytorchHelper",
+            "*.ML.toolkit*",
         ],
         exclude=[
             "*.mx_example", "*.gluon_example*", "*.gluon_exp*",
