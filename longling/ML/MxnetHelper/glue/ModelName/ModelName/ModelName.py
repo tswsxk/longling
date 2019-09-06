@@ -416,7 +416,9 @@ class ModelName(object):
         cfg_parser = ModelName.get_parser()
         cfg_kwargs = cfg_parser(parse_args)
 
-        assert "subcommand" in cfg_kwargs
+        if "subcommand" not in cfg_kwargs:
+            cfg_parser.print_help()
+            return
         subcommand = cfg_kwargs["subcommand"]
         del cfg_kwargs["subcommand"]
 
