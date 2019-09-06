@@ -1,19 +1,23 @@
 # coding: utf-8
 # create by tongshiwei on 2019-8-30
 
+__all__ = ["length2mask", "get_sequence_mask", "sequence_mask"]
+
 import torch
 from torch import Tensor
+
+from longling.ML.PytorchHelper.helper import tensor2list
 
 
 def length2mask(length, max_len, valid_mask_val, invalid_mask_val):
     mask = []
 
     if isinstance(valid_mask_val, Tensor):
-        valid_mask_val = valid_mask_val.numpy().tolist()
+        valid_mask_val = tensor2list(valid_mask_val)
     if isinstance(invalid_mask_val, Tensor):
-        invalid_mask_val = invalid_mask_val.numpy().tolist()
+        invalid_mask_val = tensor2list(invalid_mask_val)
     if isinstance(length, Tensor):
-        length = length.numpy().tolist()
+        length = tensor2list(length)
 
     for l in length:
         mask.append([valid_mask_val] * l + [invalid_mask_val] * (max_len - l))
@@ -34,5 +38,5 @@ def get_sequence_mask(shape, sequence_length, axis=1):
 
 
 def sequence_mask(tensor: Tensor, sequence_length, axis=1):
-    mask = get_sequence_mask(tensor.shape, sequence_length, axis)
+    mask = get_sequence_mask(tensor.shape, sequence_length, axis).to(tensor.device)
     return tensor * mask
