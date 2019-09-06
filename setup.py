@@ -72,6 +72,7 @@ setup(
             "longling",
             "*.lib", "*.lib.*",
             "*.ML",
+            "*.ML.DL*"
             "*.ML.MxnetHelper*",
             "*.ML.PytorchHelper*",
             "*.ML.toolkit*",
