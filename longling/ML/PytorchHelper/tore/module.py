@@ -6,11 +6,11 @@ __all__ = ["Module"]
 import torch
 
 from ..toolkit.optimizer import get_trainer
+from ..toolkit.parallel import set_device
 from longling.ML import DL
 
 
 class Module(DL.Module):
-
     @staticmethod
     def load_net(filename):
         """
@@ -60,3 +60,8 @@ class Module(DL.Module):
     @staticmethod
     def save_params(filename, net: torch.nn.Module):
         torch.save(net.state_dict(), filename)
+
+    @staticmethod
+    def net_initialize(net, model_ctx="cpu", **kwargs):
+        """初始化网络参数"""
+        set_device(net, model_ctx, **kwargs)
