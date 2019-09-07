@@ -201,7 +201,7 @@ def parse_dict_string(string):
         return None
     else:
         name_value_items = [
-            item.strip().split("=", 1) for item in string.strip().strip(";").split(";")
+            item.strip().split("=", 1) for item in string.strip().rstrip(";").split(";")
         ]
         return {
             name_value[0]: value_parse(name_value[1])
