@@ -70,6 +70,7 @@ setup(
     packages=find_packages(
         include=[
             "longling",
+            "*.toolbox", "*.toolbox.*",
             "*.lib", "*.lib.*",
             "*.ML",
             "*.ML.DL*",
@@ -95,6 +96,7 @@ setup(
     install_requires=[
         "pip",
         "tqdm",
+        "fire",
     ],
     extras_require={
         'test': test_deps,
