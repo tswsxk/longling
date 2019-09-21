@@ -13,5 +13,7 @@ def py_proj(tar_dir, main_params, docs_params):
 
     pytest(tar_dir)
 
+    gitignore(main_params["project_type"], tar_dir)
+
     if docs_params:
         docs_proj(tar_dir, docs_params)
