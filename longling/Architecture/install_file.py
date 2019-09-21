@@ -23,7 +23,7 @@ def _template_copy(src, tar, **variables):
             print(default_variable_replace(line, default_value="", **variables), end='', file=wf)
 
 
-def gitignore(atype, tar_dir="./"):
+def gitignore(atype="", tar_dir="./"):
     src = path_append(META, "gitignore", "%s.gitignore" % atype)
     tar = path_append(tar_dir, ".gitignore")
     logger.info("gitignore: copy %s -> %s" % (src, tar))
