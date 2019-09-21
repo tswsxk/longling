@@ -8,6 +8,7 @@ from __future__ import print_function
 import codecs
 import os
 import sys
+from pathlib import PurePath
 
 from longling.base import string_types
 
@@ -114,13 +115,13 @@ def wf_open(stream_name='', mode="w", encoding="utf-8"):
             return sys.stderr
         else:
             return sys.stdout
-    elif isinstance(stream_name, string_types):
+    elif isinstance(stream_name, (string_types, PurePath)):
         build_dir(stream_name)
         if mode == "wb":
             return open(stream_name, mode=mode)
         return codecs.open(stream_name, mode=mode, encoding=encoding)
     else:
-        raise StreamError("wf_open: %s" % stream_name)
+        raise TypeError("unknown type: %s(%s)" % (stream_name, type(stream_name)))
 
 
 def wf_close(stream):
