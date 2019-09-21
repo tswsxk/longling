@@ -72,6 +72,7 @@ setup(
             "longling",
             "*.toolbox", "*.toolbox.*",
             "*.lib", "*.lib.*",
+            "*.Architecture", "*.Architecture.*",
             "*.ML",
             "*.ML.DL*",
             "*.ML.MxnetHelper*",
