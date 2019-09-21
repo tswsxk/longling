@@ -3,7 +3,7 @@
 
 from longling.lib.stream import build_dir
 from longling.lib.path import path_append
-from longling.Architecture.install_file import sphinx_conf, readthedocs
+from longling.Architecture.install_file import sphinx_conf, readthedocs, gitignore
 
 
 def docs_proj(tar_dir, docs_params):
@@ -11,8 +11,9 @@ def docs_proj(tar_dir, docs_params):
     variables = {}
     variables.update(docs_params)
 
-    docs_root = path_append(tar_dir, docs_params["docs_root"])
-    build_dir(docs_root)
+    docs_root = build_dir(path_append(tar_dir, docs_params["docs_root"]))
     sphinx_conf(tar_dir=docs_root, **docs_params)
 
     readthedocs(tar_dir=tar_dir)
+
+    gitignore("docs", tar_dir)
