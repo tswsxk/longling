@@ -1,0 +1,13 @@
+from setuptools import setup
+
+
+setup(
+    name=$PROJECT,
+    version='0.0.1',
+    extras_require={
+    },
+    install_requires=[
+    ],  # And any other dependencies foo needs
+    entry_points={
+    },
+)
