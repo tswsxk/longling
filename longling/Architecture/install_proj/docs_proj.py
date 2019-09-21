@@ -6,7 +6,7 @@ from longling.lib.path import path_append
 from longling.Architecture.install_file import sphinx_conf, readthedocs, gitignore
 
 
-def docs_proj(tar_dir, docs_params):
+def docs_proj(tar_dir, docs_params, __gitignore=True):
     assert docs_params
     variables = {}
     variables.update(docs_params)
@@ -16,4 +16,5 @@ def docs_proj(tar_dir, docs_params):
 
     readthedocs(tar_dir=tar_dir)
 
-    gitignore("docs", tar_dir)
+    if __gitignore:
+        gitignore("docs", tar_dir)
