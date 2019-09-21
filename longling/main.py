@@ -6,7 +6,7 @@ import fire
 
 from longling.ML.toolkit.dataset import train_valid_test, train_test, train_valid, kfold
 from longling.toolbox import toc
-from longling.Architecture import cli as arch
+from longling.Architecture.cli import cli as arch
 from longling import Architecture as arch_cli
 
 
