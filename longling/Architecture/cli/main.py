@@ -22,8 +22,7 @@ def cli(skip_top=True, project=None, **kwargs):
     if skip_top:
         tar_dir = "./"
     else:
-        build_dir("%s" % main_params["project"])
-        tar_dir = main_params["project"]
+        tar_dir = build_dir("%s" % main_params["project"])
 
     __project_type = main_params["project_type"]
 

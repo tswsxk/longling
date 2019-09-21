@@ -38,8 +38,9 @@ def build_dir(path, mode=0o775):
     """
     dirname = os.path.dirname(path)
     if not dirname or os.path.exists(dirname):
-        return
+        return path
     os.makedirs(dirname, mode)
+    return path
 
 
 def check_file(path, size=None):
