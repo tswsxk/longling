@@ -9,9 +9,7 @@ from longling.toolbox import toc
 from longling.Architecture.cli import cli as arch
 from longling import Architecture as arch_cli
 
-
-def tarch():
-    return functools.partial(arch, author="Shiwei Tong")
+tarch = functools.partial(arch, author="Shiwei Tong")
 
 
 def cli():
