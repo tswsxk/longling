@@ -12,7 +12,7 @@ def key_parser(key):
     return key
 
 
-def select_max(src, *keys):
+def _select_max(src, *keys):
     keys = as_list(keys)
 
     result = {
@@ -36,5 +36,13 @@ def select_max(src, *keys):
         print(item)
 
 
+def arg_select_max(*keys, src):
+    _select_max(src, *keys)
+
+
+def select_max(src, *keys):
+    _select_max(src, *keys)
+
+
 if __name__ == '__main__':
-    select_max("result.json", "auc", "prf_1_f1")
+    arg_select_max("auc", "prf_1_f1", src="result.json")
