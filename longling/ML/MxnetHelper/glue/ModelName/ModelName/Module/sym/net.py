@@ -17,8 +17,8 @@ def get_bp_loss(**kwargs):
 
 
 class NetName(gluon.HybridBlock):
-    def __init__(self, **kwargs):
-        super(NetName, self).__init__(kwargs.get("prefix"), kwargs.get("params"))
+    def __init__(self, prefix=None, params=None):
+        super(NetName, self).__init__(prefix, params)
 
         with self.name_scope():
             pass
