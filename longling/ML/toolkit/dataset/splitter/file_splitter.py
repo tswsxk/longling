@@ -53,10 +53,34 @@ def train_valid_test(*filename,
     )
 
 
-def train_valid(*filename,
-                train_ratio=0.8, valid_ratio=0.2,
-                root_dir=None,
+def train_valid(*filename: str,
+                train_ratio: float = 0.8, valid_ratio: float = 0.2,
+                root_dir: str = None,
                 train_filename="{}.train", valid_filename="{}.valid"):
+    """
+    1. filename 可以是一个或多个字符串，指明待切分的文件名，可以通过指定root_dir来批量增加路径前缀
+
+    2. train_filename 和 valid_filename 都是通过字符串format方式生成的:
+    $train_filename = train_filename.format($filename),
+    其中 $train_filename 指的是生成并使用存储训练数据的文件文件名，
+    而 $filename 指的是第一步中合并root_dir之后的源文件文件名
+
+    Parameters
+    ----------
+    filename: str or list
+        需要进行划分的源文件
+    train_ratio
+    valid_ratio
+    root_dir: str
+        根目录
+    train_filename:
+
+    valid_filename
+
+    Returns
+    -------
+
+    """
     file_ratio_split(
         filename,
         [train_ratio, valid_ratio],
