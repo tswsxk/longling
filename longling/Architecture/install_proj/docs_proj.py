@@ -6,7 +6,7 @@ from longling.lib.path import path_append
 from longling.Architecture.install_file import sphinx_conf, readthedocs, gitignore
 
 
-def docs_proj(tar_dir, docs_params, __gitignore=True):
+def docs_proj(tar_dir, docs_params, __gitignore=True, **kwargs):
     assert docs_params
     variables = {}
     variables.update(docs_params)
