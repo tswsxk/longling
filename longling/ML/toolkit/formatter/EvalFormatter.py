@@ -167,7 +167,7 @@ class MultiClassEvalFormatter(EvalFormatter):
                 base_name_value[name] = value
                 data[name] = value
 
-        msg = self.col_format(eval_name_value)
+        msg = self.col_format(base_name_value)
         if msg:
             msg += '\n'
         if prf:
@@ -195,10 +195,10 @@ class MultiClassEvalFormatter(EvalFormatter):
 
 if __name__ == '__main__':
     logging.getLogger().setLevel(logging.INFO)
-    formatter = MultiClassEvalFormatter()
+    formatter = MultiClassEvalFormatter(col=2)
     print(formatter(
         eval_name_value={
-            "Acuuracy": 0.5,
+            "Acuuracy": 0.5, "Acuuracy1": 0.5, "Acuuracy2": 0.5,
             "precision_1": 10, "precision_0": 20,
             "recall_0": 1, "recall_1": 2
         }
