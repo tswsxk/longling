@@ -39,19 +39,25 @@ class EvalFormatter(object):
     def _eval_format(name, value):
         return "Evaluation %s: %s" % (name, value)
 
-    def eval_format(self, eval_name_value):
-        msg = []
+    def col_format(self, eval_name_value):
         if self.col is None:
+            msg = []
             for name, value in eval_name_value.items():
                 msg.append(self._eval_format(name, value))
             msg = "\t".join([m for m in msg if m])
         else:
+            msg = ""
             for i, (name, value) in enumerate(eval_name_value.items()):
                 _msg = self._eval_format(name, value)
                 if (i + 1) % self.col == 0 and i != len(eval_name_value) - 1:
                     _msg += "\n"
                 elif i != len(eval_name_value) - 1:
                     _msg += "\t"
+                msg += _msg
+        return msg
+
+    def eval_format(self, eval_name_value):
+        msg = self.col_format(eval_name_value)
         data = eval_name_value
         return msg, data
 
@@ -138,13 +144,14 @@ class EvalFormatter(object):
 
 class MultiClassEvalFormatter(EvalFormatter):
     def eval_format(self, eval_name_value):
-        msg = []
         data = {}
 
         multi_class_pattern = re.compile(r".+_\d+")
 
         prf = {}
         eval_ids = set()
+
+        base_name_value = {}
 
         for name, value in sorted(eval_name_value.items()):
             if multi_class_pattern.match(name) is not None:
@@ -157,10 +164,10 @@ class MultiClassEvalFormatter(EvalFormatter):
                 prf[class_id][eval_id] = value
                 eval_ids.add(eval_id)
             else:
-                msg.append(self._eval_format(name, value))
+                base_name_value[name] = value
                 data[name] = value
 
-        msg = "\t".join([m for m in msg if m])
+        msg = self.col_format(eval_name_value)
         if msg:
             msg += '\n'
         if prf:
