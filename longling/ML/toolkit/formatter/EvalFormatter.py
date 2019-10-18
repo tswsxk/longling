@@ -17,12 +17,13 @@ def _to_dict(name_value):
 
 
 class EvalFormatter(object):
-    def __init__(self, logger=logging.getLogger(), dump_file=None, **kwargs):
+    def __init__(self, logger=logging.getLogger(), dump_file=None, col=None, **kwargs):
         self.logger = logger
         if dump_file is not None and isinstance(dump_file, string_types):
             # clean file
             wf_open(dump_file, **kwargs).close()
         self.log_f = dump_file
+        self.col = col
 
     @staticmethod
     def _loss_format(name, value):
@@ -40,9 +41,17 @@ class EvalFormatter(object):
 
     def eval_format(self, eval_name_value):
         msg = []
-        for name, value in eval_name_value.items():
-            msg.append(self._eval_format(name, value))
-        msg = "\t".join([m for m in msg if m])
+        if self.col is None:
+            for name, value in eval_name_value.items():
+                msg.append(self._eval_format(name, value))
+            msg = "\t".join([m for m in msg if m])
+        else:
+            for i, (name, value) in enumerate(eval_name_value.items()):
+                _msg = self._eval_format(name, value)
+                if (i + 1) % self.col == 0 and i != len(eval_name_value) - 1:
+                    _msg += "\n"
+                elif i != len(eval_name_value) - 1:
+                    _msg += "\t"
         data = eval_name_value
         return msg, data
 
