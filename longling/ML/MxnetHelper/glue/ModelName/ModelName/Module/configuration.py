@@ -12,6 +12,7 @@ from mxnet import cpu
 
 import longling.lib.parser as parser
 from longling import path_append
+from longling.ML.MxnetHelper.glue import parser
 from longling.ML.MxnetHelper.glue.parser import eval_var
 from longling.ML.MxnetHelper.toolkit.optimizer_cfg import get_optimizer_cfg, \
     get_update_steps

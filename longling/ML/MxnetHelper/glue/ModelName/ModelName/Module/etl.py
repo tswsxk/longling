@@ -23,7 +23,7 @@ def pseudo_data_iter(_cfg):
 
         return raw_data
 
-    return transform(pseudo_data_generation(), _cfg)
+    return load(transform(pseudo_data_generation(), _cfg), _cfg)
 
 
 def extract(data_src):
