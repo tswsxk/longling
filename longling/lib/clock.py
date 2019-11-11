@@ -13,25 +13,25 @@ __all__ = ["Clock", "print_time"]
 
 
 @contextmanager
-def print_time(task, logger=_logger):
+def print_time(tips: str, logger=_logger):
     """
 
     Parameters
     ----------
-    task: str
+    tips: str
     logger: logging.Logger
 
     Examples
     --------
-    >>> with print_time("task_name"):
-    ...     a = 1 + 1
+    >>> with print_time("tips"):
+    ...     a = 1 + 1  # The code you want to test
 
     """
     start_time = time.time()
-    logger.info('Starting to %s', task)
+    logger.info('Starting to %s', tips)
     yield
     logger.info('Finished to {} in {:.6f} seconds'.format(
-        task,
+        tips,
         time.time() - start_time)
     )
 
@@ -39,6 +39,9 @@ def print_time(task, logger=_logger):
 class Clock(object):
     r"""
     计时器
+    包含两种时间：wall_time 和 process_time
+    * wall_time: 包括等待时间在内的程序运行时间
+    * process_time: 不包括等待时间在内的程序运行时间
 
     Parameters
     ----------
@@ -50,6 +53,10 @@ class Clock(object):
     --------
     >>> with Clock():
     ...     a = 1 + 1
+    >>> clock = Clock()
+    >>> clock.start()
+    >>> # some code
+    >>> clock.end(wall=False) # default to return the process_time, to get wall_time, set wall=True
     """
 
     def __init__(self, store_dict=None, logger=_logger, tips=''):
