@@ -7,26 +7,26 @@ from mxnet import symbol, ndarray
 __all__ = ["getF", "copy_net"]
 
 
-def getF(input):
+def getF(input_object: (symbol.Symbol, ndarray.NDArray))->(symbol, ndarray):
     r"""
     判断输入参数类型
 
     Parameters
     ----------
-    input
+    input_object
 
     Returns
     -------
-
+    The type of input object
     """
-    if isinstance(input, symbol.Symbol):
+    if isinstance(input_object, symbol.Symbol):
         return symbol
-    elif isinstance(input, ndarray.NDArray):
+    elif isinstance(input_object, ndarray.NDArray):
         return ndarray
     else:
         raise TypeError(
             "the type of input should be either Symbol or NDArray, now is %s"
-            % type(input)
+            % type(input_object)
         )
 
 
