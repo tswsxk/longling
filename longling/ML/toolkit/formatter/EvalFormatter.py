@@ -32,6 +32,7 @@ class EvalFormatter(object):
     kwargs:
         拓展兼容性参数
     """
+
     def __init__(self, logger=logging.getLogger(), dump_file: (str, None) = None, col: (int, None) = None, **kwargs):
 
         self.logger = logger
@@ -162,22 +163,29 @@ class MultiClassEvalFormatter(EvalFormatter):
     """
     Examples
     --------
-    >>> formatter = MultiClassEvalFormatter(col=2)
-    >>> print(formatter(
-    ...    eval_name_value={
-    ...        "Acuuracy": 0.5, "Acuuracy1": 0.5, "Acuuracy2": 0.5,
-    ...        "precision_1": 10, "precision_0": 20,
-    ...        "recall_0": 1, "recall_1": 2
-    ...    }
-    ... )[0])
-    Evaluation Acuuracy: 0.5	Evaluation Acuuracy1: 0.5
-    Evaluation Acuuracy2: 0.5
-    --- Category 0	recall=1.0000000000	precision=20.0000000000
-    --- Category 1	recall=2.0000000000	precision=10.0000000000
-    --- Category_Avg 	recall=1.5000000000	precision=15.0000000000
+    Run the following code ::
+
+        logging.getLogger().setLevel(logging.INFO)
+        formatter = MultiClassEvalFormatter(col=2)
+        print(formatter(
+            eval_name_value={
+                "Acuuracy": 0.5, "Acuuracy1": 0.5, "Acuuracy2": 0.5,
+                "precision_1": 10, "precision_0": 20,
+                "recall_0": 1, "recall_1": 2
+            }
+        )[0])
+
+    and will get ::
+
+        Evaluation Acuuracy: 0.5	Evaluation Acuuracy1: 0.5
+        Evaluation Acuuracy2: 0.5
+        --- Category 0	recall=1.0000000000	precision=20.0000000000
+        --- Category 1	recall=2.0000000000	precision=10.0000000000
+        --- Category_Avg 	recall=1.5000000000	precision=15.0000000000
+
     """
 
-    def eval_format(self, eval_name_value):
+    def eval_format(self, eval_name_value: dict):
         data = {}
 
         multi_class_pattern = re.compile(r".+_\d+")
@@ -228,12 +236,6 @@ class MultiClassEvalFormatter(EvalFormatter):
 
 
 if __name__ == '__main__':
-    logging.getLogger().setLevel(logging.INFO)
-    formatter = MultiClassEvalFormatter(col=2)
-    print(formatter(
-        eval_name_value={
-            "Acuuracy": 0.5, "Acuuracy1": 0.5, "Acuuracy2": 0.5,
-            "precision_1": 10, "precision_0": 20,
-            "recall_0": 1, "recall_1": 2
-        }
-    )[0])
+    import doctest
+
+    doctest.testmod()
