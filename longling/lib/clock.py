@@ -51,12 +51,13 @@ class Clock(object):
 
     Examples
     --------
-    >>> with Clock():
-    ...     a = 1 + 1
-    >>> clock = Clock()
-    >>> clock.start()
-    >>> # some code
-    >>> clock.end(wall=False) # default to return the process_time, to get wall_time, set wall=True
+     ::
+        with Clock():
+            a = 1 + 1
+        clock = Clock()
+        clock.start()
+        # some code
+        clock.end(wall=False) # default to return the process_time, to get wall_time, set wall=True
     """
 
     def __init__(self, store_dict=None, logger=_logger, tips=''):
@@ -70,28 +71,13 @@ class Clock(object):
         self.tips = tips
 
     def start(self):
-        """
-        开始计时
-        Returns
-        -------
-
-        """
+        """开始计时"""
         self.process_st = time.clock()
         self.wall_st = time.time()
         return self.process_st
 
     def end(self, wall=False):
-        """
-        计时结束，返回间隔时间
-
-        Parameters
-        ----------
-        wall
-
-        Returns
-        -------
-
-        """
+        """计时结束，返回间隔时间"""
         self.process_et = time.clock()
         self.wall_et = time.time()
         if wall:
@@ -101,23 +87,12 @@ class Clock(object):
 
     @property
     def wall_time(self):
-        """
-        获取程序运行时间（包括等待时间）
-
-        Returns
-        -------
-
-        """
+        """获取程序运行时间（包括等待时间）"""
         return self.wall_et - self.wall_st
 
     @property
     def process_time(self):
-        """
-        获取程序运行时间（不包括等待时间）
-        Returns
-        -------
-
-        """
+        """获取程序运行时间（不包括等待时间）"""
         return self.process_et - self.process_st
 
     def __enter__(self):
@@ -138,5 +113,6 @@ class Clock(object):
 
 
 if __name__ == '__main__':
-    with Clock():
-        time.sleep(1)
+    import doctest
+
+    doctest.testmod()
