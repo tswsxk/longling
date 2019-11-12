@@ -12,12 +12,28 @@ from longling.lib.stream import wf_open
 __all__ = ["EvalFormatter", "MultiClassEvalFormatter"]
 
 
-def _to_dict(name_value):
+def _to_dict(name_value: (dict, tuple)) -> dict:
+    """Make sure the name_value a dict object"""
     return dict(name_value) if isinstance(name_value, tuple) else name_value
 
 
 class EvalFormatter(object):
-    def __init__(self, logger=logging.getLogger(), dump_file=None, col=None, **kwargs):
+    """
+    评价指标格式化类。可以按一定格式快速格式化评价指标。可通过重写 eval_format 方法来实现不同的格式化方法。
+
+    Parameters
+    ----------
+    logger:
+        默认为 root logger
+    dump_file:
+        不为空时，将结果写入dump_file
+    col:
+        每行放置的指标数量
+    kwargs:
+        拓展兼容性参数
+    """
+    def __init__(self, logger=logging.getLogger(), dump_file: (str, None) = None, col: (int, None) = None, **kwargs):
+
         self.logger = logger
         if dump_file is not None and isinstance(dump_file, string_types):
             # clean file
@@ -143,6 +159,24 @@ class EvalFormatter(object):
 
 
 class MultiClassEvalFormatter(EvalFormatter):
+    """
+    Examples
+    --------
+    >>> formatter = MultiClassEvalFormatter(col=2)
+    >>> print(formatter(
+    ...    eval_name_value={
+    ...        "Acuuracy": 0.5, "Acuuracy1": 0.5, "Acuuracy2": 0.5,
+    ...        "precision_1": 10, "precision_0": 20,
+    ...        "recall_0": 1, "recall_1": 2
+    ...    }
+    ... )[0])
+    Evaluation Acuuracy: 0.5	Evaluation Acuuracy1: 0.5
+    Evaluation Acuuracy2: 0.5
+    --- Category 0	recall=1.0000000000	precision=20.0000000000
+    --- Category 1	recall=2.0000000000	precision=10.0000000000
+    --- Category_Avg 	recall=1.5000000000	precision=15.0000000000
+    """
+
     def eval_format(self, eval_name_value):
         data = {}
 
