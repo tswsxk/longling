@@ -368,9 +368,7 @@ class ConfigurationParser(argparse.ArgumentParser):
     >>> parser = ConfigurationParser(TestC, commands=[test_f1, test_f2])
     >>> parser(["test_f1"])
     {'a': 1, 'b': 2, 'k': 1, 'subcommand': 'test_f1'}
-
     """
-
     def __init__(self, class_obj, excluded_names: (set, None) = None, commands=None, *args, **kwargs):
         excluded_names = {
             'logger'
@@ -491,7 +489,28 @@ class ConfigurationParser(argparse.ArgumentParser):
 
 
 class Formatter(object):
-    def __init__(self, formatter=None):
+    """
+    以特定格式格式化字符串
+
+    Examples
+    --------
+    >>> formatter = Formatter()
+    >>> formatter("hello world")
+    'hello world'
+    >>> formatter = Formatter("hello {}")
+    >>> formatter("world")
+    'hello world'
+    >>> formatter = Formatter("hello {} v{:.2f}")
+    >>> formatter("world", 0.2)
+    'hello world v0.20'
+    >>> formatter = Formatter("hello {1} v{0:.2f}")
+    >>> formatter(0.2, "world")
+    'hello world v0.20'
+    >>> Formatter.format(0.2, "world", formatter="hello {1} v{0:.3f}")
+    'hello world v0.200'
+    """
+
+    def __init__(self, formatter: (str, None) = None):
         self.formatter = formatter
 
     def __call__(self, *format_string):
@@ -500,12 +519,8 @@ class Formatter(object):
                 "formatter is None, the input should be a single value, now is %s, " \
                 "which has %s value" % (format_string, len(format_string))
             return format_string[0]
-        elif "{}" in self.formatter:
-            return self.formatter.format(*format_string)
         else:
-            raise TypeError(
-                "can not handle the format_string: %s, with the formatter: %s" % (self.formatter, format_string)
-            )
+            return self.formatter.format(*format_string)
 
     @staticmethod
     def format(*format_string, formatter=None):
