@@ -110,6 +110,12 @@ def wf_open(stream_name='', mode="w", encoding="utf-8"):
     -------
     write_stream: StreamReaderWriter
         返回打开的流
+
+    Examples
+    --------
+    >>> wf = wf_open(mode="stdout")
+    >>> print("hello world", file=wf)
+    hello world
     """
     if not stream_name:
         if mode == "w":
@@ -126,6 +132,7 @@ def wf_open(stream_name='', mode="w", encoding="utf-8"):
 
 
 def wf_close(stream):
+    """关闭文件流，忽略 sys.stdin, sys.stdout, sys.stderr"""
     if stream in {sys.stdin, sys.stdout, sys.stderr}:
         return True
     else:
@@ -141,6 +148,16 @@ class AddObject(object):
 
 
 class AddPrinter(AddObject):
+    """
+    以add方法添加文件内容的打印器
+
+    Examples
+    --------
+    >>> import sys
+    >>> printer = AddPrinter(sys.stdout)
+    >>> printer.add("hello world")
+    hello world
+    """
     def __init__(self, fp, values_wrapper=lambda x: x, **kwargs):
         self.fp = fp
         self.value_wrapper = values_wrapper
@@ -148,3 +165,9 @@ class AddPrinter(AddObject):
 
     def add(self, value):
         print(self.value_wrapper(value), file=self.fp, **self.kwargs)
+
+
+if __name__ == '__main__':
+    import doctest
+
+    doctest.testmod()
