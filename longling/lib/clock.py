@@ -51,7 +51,8 @@ class Clock(object):
 
     Examples
     --------
-     ::
+    .. code-block:: python
+
         with Clock():
             a = 1 + 1
         clock = Clock()
