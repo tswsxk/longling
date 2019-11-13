@@ -47,8 +47,11 @@ class Clock(object):
     Parameters
     ----------
     store_dict: dict or None
+        with closure 中存储运行时间
     logger: logging.logger
+        日志
     tips: str
+        提示前缀
 
     Examples
     --------
@@ -63,7 +66,7 @@ class Clock(object):
 
     """
 
-    def __init__(self, store_dict=None, logger=_logger, tips=''):
+    def __init__(self, store_dict: (dict, None) = None, logger=_logger, tips=''):
         assert store_dict is None or type(store_dict) is dict
         self.process_st = 0
         self.process_et = 0
