@@ -100,6 +100,16 @@ longling kfold $filename1 $filename2 -- --n_splits 5
 longling toc .
 ```
 
+such as 
+```text
+/
+├── __init__.py
+├── __pycache__/
+│   ├── __init__.cpython-36.pyc
+│   └── toc.cpython-36.pyc
+└── toc.py
+```
+
 ##### Quickly construct a project
 
 ```shell
