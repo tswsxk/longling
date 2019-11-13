@@ -73,9 +73,9 @@ for simplification and modulation, which are defined in module.py.
 #### Data Stream
 * extract: extract the data from data src
 ```python
-# load data from file, the data format is looked like:
-# feature, label
 def extract(data_src):
+    # load data from file, the data format is looked like:
+    # feature, label
     features = []
     labels = []
     with open(data_src) as f:
