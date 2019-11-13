@@ -53,10 +53,7 @@ architecture.
 
 
 ### CLI
-All available cli tools are listed as follows:
-
-#### longling cli
-Provide several general tools, consistently invoked by:
+Provide several general tools, consistently invoked by: 
 
 ```shell script
 longling $subcommand $parameters1 $parameters2
@@ -68,9 +65,9 @@ longling -- --help
 longling $subcommand --help
 ```
 
-##### Subcommand demo
+#### Subcommand demo
 
-###### Dataset
+##### Dataset
 Split the dataset into `train/valid/test`:
 
 ```shell script
@@ -97,7 +94,7 @@ longling train_valid $filename1 -- --train_ratio 0.8 --valid_ratio 0.2
 longling kfold $filename1 $filename2 -- --n_splits 5
 ```
 
-###### Display the tree of content
+##### Display the tree of content
 
 ```shell script
 longling toc .
