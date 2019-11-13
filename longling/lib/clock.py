@@ -38,8 +38,9 @@ def print_time(tips: str, logger=_logger):
 
 class Clock(object):
     r"""
-    计时器
+    计时器。
     包含两种时间：wall_time 和 process_time
+
     * wall_time: 包括等待时间在内的程序运行时间
     * process_time: 不包括等待时间在内的程序运行时间
 
