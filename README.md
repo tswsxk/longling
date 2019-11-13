@@ -113,5 +113,6 @@ longling arch
 The cli tools for result analysis is specially designed for json result format:
 
 ```shell script
-longling  max
+longling  max $filename $key1 $key2 $key3
+longling  amax $key1 $key2 $key3 -- --src $filename
 ```
