@@ -51,7 +51,7 @@ class Clock(object):
 
     Examples
     --------
-    .. code-block:: python
+    .. code-block :: python
 
         with Clock():
             a = 1 + 1
@@ -59,6 +59,7 @@ class Clock(object):
         clock.start()
         # some code
         clock.end(wall=False) # default to return the process_time, to get wall_time, set wall=True
+
     """
 
     def __init__(self, store_dict=None, logger=_logger, tips=''):
