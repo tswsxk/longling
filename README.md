@@ -12,14 +12,14 @@ Full documentation [here](https://longling.readthedocs.io/zh/latest/index.html).
 
 ### pip
 
-```shell script
+```shell
 pip install longling
 ```
 
 ### source
 clone the repository and then run `python setup.py install`:
 
-```shell script
+```shell
 git clone https://github.com/tswsxk/longling.git
 python setup.py install
 ```
@@ -30,7 +30,7 @@ mxnet(for cpu) and mxnet-cu90(for gpu, with cuda version 9.0),
 it is good to install such frameworks in advance. 
 For swift installation, use `--no-dependencies` option as follows:
 
-```shell script
+```shell
 # pip
 pip install longling --no-dependencies
 # source
@@ -55,12 +55,12 @@ architecture.
 ### CLI
 Provide several general tools, consistently invoked by: 
 
-```shell script
+```shell
 longling $subcommand $parameters1 $parameters2
 ```
 
 To see the `help` information:
-```shell script
+```shell
 longling -- --help
 longling $subcommand --help
 ```
@@ -70,7 +70,7 @@ longling $subcommand --help
 ##### Dataset
 Split the dataset into `train/valid/test`:
 
-```shell script
+```shell
 longling train_valid_test $filename1 $filename2 -- --train_ratio 0.8 --valid_ratio 0.1 --test_ratio 0.1 
 ```
 
@@ -78,38 +78,38 @@ Similar commands:
 
 * `train_test`
 
-```shell script
+```shell
 longling train_test $filename1 -- --train_ratio 0.8 --test_ratio 0.2 
 ```
 
 * `train_valid`
 
-```shell script
+```shell
 longling train_valid $filename1 -- --train_ratio 0.8 --valid_ratio 0.2 
 ```
 
 * Cross Validation `kfold`
 
-```shell script
+```shell
 longling kfold $filename1 $filename2 -- --n_splits 5
 ```
 
 ##### Display the tree of content
 
-```shell script
+```shell
 longling toc .
 ```
 
 ##### Quickly construct a project
 
-```shell script
+```shell
 longling arch 
 ```
 
 ##### Result Analysis
 The cli tools for result analysis is specially designed for json result format:
 
-```shell script
+```shell
 longling  max $filename $key1 $key2 $key3
 longling  amax $key1 $key2 $key3 -- --src $filename
 ```
