@@ -26,7 +26,7 @@ def path_append(path, *addition, to_str=False):
     -------
 
     """
-    path = PurePath(path) if not isinstance(path, PurePath) else path
+    path = PurePath(path)
     if addition:
         for a in addition:
             path = path / a
