@@ -4,10 +4,11 @@
 
 import logging
 
+import json
 from longling.base import string_types
-from longling.lib.stream import build_dir
+from longling.lib.stream import build_dir, wf_open, wf_close
 
-__all__ = ["LogLevel", "config_logging"]
+__all__ = ["LogLevel", "config_logging", "LogRF", "NullLogRF", "JsonLogRF"]
 
 
 class LogLevel(object):
@@ -95,3 +96,44 @@ def config_logging(filename=None,
         logger.addHandler(ch)
 
     return logger
+
+
+class LogRF(object):
+    def __init__(self, *args, **kwargs):
+        self._f = None
+
+    def write(self, *arg, **kwargs):
+        raise NotImplementedError
+
+    add = write
+    dumps = write
+
+    def open(self, *args, **kwargs):
+        raise UserWarning("open function is not implemented")
+
+    def close(self, *args, **kwargs):
+        raise UserWarning("close function is not implemented")
+
+    @staticmethod
+    def load(*args, **kwargs):
+        raise UserWarning("load function is not implemented")
+
+    def dump(self, *args, **kwargs):
+        raise UserWarning("dump function is not implemented")
+
+
+class NullLogRF(LogRF):
+    def write(self, *arg, **kwargs):
+        pass
+
+
+class JsonLogRF(LogRF):
+    def __init__(self, *args, **kwargs):
+        super(JsonLogRF, self).__init__(*args, **kwargs)
+        self._f = self.open(*args, **kwargs)
+
+    def open(self, *args, **kwargs):
+        return wf_open(*args, **kwargs)
+
+    def write(self, *args, **kwargs):
+        print(json.dumps(*args, **kwargs), self._f)
