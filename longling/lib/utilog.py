@@ -107,6 +107,7 @@ class LogRF(object):
 
     add = write
     dumps = write
+    log = write
 
     def open(self, *args, **kwargs):
         raise UserWarning("open function is not implemented")
