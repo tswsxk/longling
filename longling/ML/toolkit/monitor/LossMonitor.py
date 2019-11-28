@@ -7,8 +7,10 @@ __all__ = ["LossMonitor", "MovingLoss"]
 
 
 class LossMonitor(ValueMonitor):
-    pass
+    @property
+    def losses(self):
+        return self._values
 
 
-class MovingLoss(MovingValue):
+class MovingLoss(MovingValue, LossMonitor):
     pass
