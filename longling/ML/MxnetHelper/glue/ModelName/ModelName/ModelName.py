@@ -5,7 +5,7 @@ import mxnet as mx
 
 try:
     from .Module import *
-except (SystemError, ModuleNotFoundError):
+except (SystemError, ModuleNotFoundError):  # pragma: no cover
     from Module import *
 
 
