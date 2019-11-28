@@ -137,3 +137,6 @@ class JsonLogRF(LogRF):
 
     def write(self, *args, **kwargs):
         print(json.dumps(*args, **kwargs), self._f)
+
+    def close(self, *args, **kwargs):
+        wf_close(self._f)
