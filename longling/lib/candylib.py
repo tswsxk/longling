@@ -29,7 +29,7 @@ def as_list(obj):
         return [obj]
 
 
-def get_all_subclass(cls):
+def get_all_subclass(cls):  # pragma: no cover
     subclass = set()
 
     def _get_all_subclass(cls, res_set):
@@ -41,11 +41,11 @@ def get_all_subclass(cls):
     return subclass
 
 
-class RegisterNameExistedError(Exception):
+class RegisterNameExistedError(Exception):  # pragma: no cover
     pass
 
 
-class Register(object):
+class Register(object):  # pragma: no cover
     def __init__(self):
         self.reg = set()
 
