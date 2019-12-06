@@ -126,3 +126,6 @@ The cli tools for result analysis is specially designed for json result format:
 longling  max $filename $key1 $key2 $key3
 longling  amax $key1 $key2 $key3 -- --src $filename
 ```
+
+For the composite key like `{'prf':{'avg': {'f1': 0.77}}}`, the key should be presented as `prf_avg_f1`.
+Thus, all the key used in the result file should not contain `_`.
