@@ -92,7 +92,7 @@ def train_valid(*filename: str,
 def train_test(*filename,
                train_ratio=0.8, test_ratio=0.2,
                root_dir=None,
-               train_filename="{}.train", test_filename="{}.valid"):
+               train_filename="{}.train", test_filename="{}.test"):
     file_ratio_split(
         filename,
         [train_ratio, test_ratio],
