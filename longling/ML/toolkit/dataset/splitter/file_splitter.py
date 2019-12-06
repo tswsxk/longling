@@ -49,7 +49,7 @@ def train_valid_test(*filename,
         filename,
         [train_ratio, valid_ratio, test_ratio],
         root_dir,
-        [train_filename, valid_filename, test_filename]
+        [train_filename.format(filename), valid_filename.format(filename), test_filename.format(filename)]
     )
 
 
@@ -85,7 +85,7 @@ def train_valid(*filename: str,
         filename,
         [train_ratio, valid_ratio],
         root_dir,
-        [train_filename, valid_filename]
+        [train_filename.format(filename), valid_filename.format(filename)]
     )
 
 
@@ -97,7 +97,7 @@ def train_test(*filename,
         filename,
         [train_ratio, test_ratio],
         root_dir,
-        [train_filename, test_filename]
+        [train_filename.format(filename), test_filename.format(filename)]
     )
 
 
