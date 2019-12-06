@@ -21,7 +21,7 @@ def file_ratio_split(filename_list, ratio_list, root_dir=None, filename_formatte
     source_target_iterable = []
     for filename in filename_list:
         _wfps = [
-            wf_open(Formatter.format(filename, formatter=formatter) for formatter in filename_formatter_list)
+            wf_open(Formatter.format(filename, formatter=formatter)) for formatter in filename_formatter_list
         ]
         wfps.append(_wfps)
         targets = [
@@ -49,7 +49,7 @@ def train_valid_test(*filename,
         filename,
         [train_ratio, valid_ratio, test_ratio],
         root_dir,
-        [train_filename.format(filename), valid_filename.format(filename), test_filename.format(filename)]
+        [train_filename, valid_filename, test_filename]
     )
 
 
@@ -85,7 +85,7 @@ def train_valid(*filename: str,
         filename,
         [train_ratio, valid_ratio],
         root_dir,
-        [train_filename.format(filename), valid_filename.format(filename)]
+        [train_filename, valid_filename]
     )
 
 
@@ -97,7 +97,7 @@ def train_test(*filename,
         filename,
         [train_ratio, test_ratio],
         root_dir,
-        [train_filename.format(filename), test_filename.format(filename)]
+        [train_filename, test_filename]
     )
 
 
