@@ -25,7 +25,7 @@ class RatioSplitter(Splitter):
 
         ratios[-1] = 1.0 - sum(ratios[:-1]) if ratios[-1] is None else ratios[-1]
 
-        assert isinstance(all(ratios), float), "all of ratios should be float, now are %s" % ratios
+        assert all([isinstance(ratio, float) for ratio in ratios]), "all of ratios should be float, now are %s" % ratios
         assert 0.0 <= all(ratios) <= 1.0, "all of ratios should be in [0.0, 1.0], now are %s" % ratios
 
         ratios_sum = sum(ratios)

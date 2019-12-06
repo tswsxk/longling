@@ -25,7 +25,7 @@ def file_ratio_split(filename_list, ratio_list, root_dir=None, filename_formatte
         ]
         wfps.append(_wfps)
         targets = [
-            AddPrinter(wfp) for wfp in _wfps
+            AddPrinter(wfp, end='') for wfp in _wfps
         ]
         fp = open(filename, encoding="utf-8")
         fps.append(fp)
