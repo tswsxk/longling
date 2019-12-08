@@ -78,13 +78,13 @@ class Clock(object):
 
     def start(self):
         """开始计时"""
-        self.process_st = time.clock()
+        self.process_st = time.process_time()
         self.wall_st = time.time()
         return self.process_st
 
     def end(self, wall=False):
         """计时结束，返回间隔时间"""
-        self.process_et = time.clock()
+        self.process_et = time.process_time()
         self.wall_et = time.time()
         if wall:
             return self.wall_time
