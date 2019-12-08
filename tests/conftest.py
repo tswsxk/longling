@@ -8,20 +8,20 @@ from longling import path_append
 
 @pytest.fixture(scope="module")
 def logger():
-    config_logging(
-
-    )
+    return config_logging(logger="test")
 
 
 @pytest.fixture(scope="module")
 def file_logger(tmpdir):
     return config_logging(
         filename=path_append(tmpdir, "test.log", to_str=True),
+        logger="test.file"
     )
 
 
 @pytest.fixture(scope="module")
 def json_logger(tmpdir):
     return config_logging(
-        filename=path_append(tmpdir, "test.log.json", to_str=True)
+        filename=path_append(tmpdir, "test.log.json", to_str=True),
+        logger="test.json"
     )
