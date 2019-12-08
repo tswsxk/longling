@@ -35,12 +35,6 @@ class Indicesor(object):
         if hasattr(key_iterable, "__len__"):
             indices = range(len(key_iterable))
         else:
-            try:
-                key_iterable = deepcopy(key_iterable)
-            except TypeError as e:
-                logger.warning("Skip deepcopy procedure")
-                logger.warning(e)
-
             def get_indices(_key_iterable):
                 _indices = None
                 for idx, _ in tqdm(enumerate(_key_iterable), "initial indices", disable=self.silent):
@@ -53,8 +47,12 @@ class Indicesor(object):
                 indices = get_indices(key_iterable)
                 key_iterable.seek(offset)
             else:
+                try:
+                    key_iterable = deepcopy(key_iterable)
+                except TypeError as e:
+                    logger.warning("Skip deepcopy procedure")
+                    logger.warning(e)
                 indices = get_indices(key_iterable)
-
         self.indices = indices
         return self.indices
 
