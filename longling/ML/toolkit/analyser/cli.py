@@ -6,9 +6,9 @@ from longling.lib.candylib import as_list
 
 
 def key_parser(key):
-    if "_" in key:
+    if ":" in key:
         # prf_0_f1
-        return key.split("_")
+        return key.split(":")
     return key
 
 
