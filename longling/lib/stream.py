@@ -13,11 +13,14 @@ from pathlib import PurePath
 from longling.base import string_types
 
 __all__ = ['rf_open', 'wf_open', 'wf_close', 'flush_print', 'build_dir', 'json_load',
-           'pickle_load', 'AddPrinter']
+           'pickle_load', 'AddPrinter', 'AddObject', 'StreamError', 'check_file']
 
 
 class StreamError(Exception):
     pass
+
+
+IO_TYPE = (string_types, PurePath)
 
 
 def flush_print(*values, **kwargs):
@@ -63,15 +66,14 @@ def check_file(path, size=None):
 
 
 def rf_open(filename, encoding='utf-8', **kwargs):
-    if sys.version_info[0] == 3:
-        return open(filename, encoding=encoding, **kwargs)
-    else:
+    if kwargs.get("mode"):
         return open(filename, **kwargs)
+    return open(filename, encoding=encoding, **kwargs)
 
 
 def json_load(fp, **kwargs):
     import json
-    if isinstance(fp, string_types):
+    if isinstance(fp, IO_TYPE):
         fp = rf_open(fp, **kwargs)
         datas = json.load(fp, **kwargs)
         fp.close()
@@ -82,7 +84,7 @@ def json_load(fp, **kwargs):
 
 def pickle_load(fp, encoding='utf-8', mode='rb', **kwargs):
     import pickle
-    if isinstance(fp, string_types):
+    if isinstance(fp, IO_TYPE):
         fp = open(fp, mode=mode, **kwargs)
         datas = pickle.load(fp, encoding=encoding, **kwargs)
         fp.close()
@@ -91,7 +93,7 @@ def pickle_load(fp, encoding='utf-8', mode='rb', **kwargs):
         return pickle.load(fp, encoding=encoding, **kwargs)
 
 
-def wf_open(stream_name='', mode="w", encoding="utf-8"):
+def wf_open(stream_name: (string_types, PurePath, None) = '', mode="w", encoding="utf-8"):
     r"""
     Simple wrapper to codecs for writing.
 
@@ -102,7 +104,7 @@ def wf_open(stream_name='', mode="w", encoding="utf-8"):
 
     Parameters
     ----------
-    stream_name: str or None
+    stream_name: str, PurePath or None
     mode: str
     encoding: str
         编码方式，默认为 utf-8
@@ -118,11 +120,13 @@ def wf_open(stream_name='', mode="w", encoding="utf-8"):
     hello world
     """
     if not stream_name:
-        if mode == "w":
+        if mode == "stderr":
             return sys.stderr
-        else:
+        elif mode == "stdout":
             return sys.stdout
-    elif isinstance(stream_name, (string_types, PurePath)):
+        else:
+            raise TypeError("Unknown mode for std mode, only `stdout` and `stderr` are supported.")
+    elif isinstance(stream_name, IO_TYPE):
         build_dir(stream_name)
         if mode == "wb":
             return open(stream_name, mode=mode)
@@ -143,7 +147,7 @@ def wf_close(stream):
 
 
 class AddObject(object):
-    def add(self, *args, **kwargs):
+    def add(self, *args, **kwargs):  # pragma: no cover
         raise NotImplementedError
 
 
@@ -158,7 +162,9 @@ class AddPrinter(AddObject):
     >>> printer.add("hello world")
     hello world
     """
+
     def __init__(self, fp, values_wrapper=lambda x: x, **kwargs):
+        super(AddPrinter, self).__init__()
         self.fp = fp
         self.value_wrapper = values_wrapper
         self.kwargs = kwargs
