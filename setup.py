@@ -39,6 +39,12 @@ ml_pytorch_deps = [
     "torch"
 ]
 
+spider_deps = [
+    "requests",
+    "rarfile",
+    "bs4",
+]
+
 ml_full_deps = ml_base_deps + ml_mx_deps + ml_pytorch_deps
 
 
@@ -73,6 +79,7 @@ setup(
             "longling",
             "*.toolbox", "*.toolbox.*",
             "*.lib", "*.lib.*",
+            "*.spider", "*.spider.*",
             "*.Architecture", "*.Architecture.*",
             "*.ML",
             "*.ML.DL*",
@@ -106,6 +113,7 @@ setup(
         'dev': dev_deps,
         'ml': ml_base_deps,
         'ml-full': ml_full_deps,
+        "spider": spider_deps
     },
     classifiers=[
         "Programming Language :: Python :: 3",
