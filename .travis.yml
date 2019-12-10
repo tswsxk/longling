@@ -9,7 +9,7 @@ matrix:
       sudo: true
   
 install:
-  - pip install -e .[test,ml-full]
+  - pip install -e .[test,full]
   - pip install codecov
 
 script:

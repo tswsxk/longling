@@ -47,6 +47,8 @@ spider_deps = [
 
 ml_full_deps = ml_base_deps + ml_mx_deps + ml_pytorch_deps
 
+full_deps = ml_full_deps + spider_deps
+
 
 def read(*names, **kwargs):
     with io.open(
@@ -113,7 +115,8 @@ setup(
         'dev': dev_deps,
         'ml': ml_base_deps,
         'ml-full': ml_full_deps,
-        "spider": spider_deps
+        "spider": spider_deps,
+        "full": full_deps
     },
     classifiers=[
         "Programming Language :: Python :: 3",
