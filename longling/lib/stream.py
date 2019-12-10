@@ -171,9 +171,3 @@ class AddPrinter(AddObject):
 
     def add(self, value):
         print(self.value_wrapper(value), file=self.fp, **self.kwargs)
-
-
-if __name__ == '__main__':
-    import doctest
-
-    doctest.testmod()
