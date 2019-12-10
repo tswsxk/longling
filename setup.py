@@ -1,5 +1,6 @@
 # coding: utf-8
 # created by tongshiwei on 17-12-17
+import logging
 import io
 import os
 import re
@@ -31,13 +32,29 @@ ml_base_deps = [
     "matplotlib",
 ]
 
+try:
+    import mxnet
+
+    mxnet_requires = []
+except ModuleNotFoundError:
+    mxnet_requires = ["mxnet"]
+
 ml_mx_deps = [
-    "mxnet",
-    "gluonnlp",
-]
-ml_pytorch_deps = [
-    "torch"
-]
+                 "gluonnlp",
+             ] + mxnet_requires
+
+try:
+    import torch
+
+    ml_pytorch_deps = []
+except ModuleNotFoundError:
+    import sys
+
+    if 5 <= sys.version_info[1] <= 7:
+        ml_pytorch_deps = ["torch"]
+    else:
+        ml_pytorch_deps = []
+        logging.warning("Current python version %s is not supported by pytorch", str(sys.version_info[:2]))
 
 spider_deps = [
     "requests",
