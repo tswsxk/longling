@@ -4,12 +4,12 @@ from longling import path_append
 
 try:
     # for python module
-    from .etl import transform, etl, pesudo_data_iter
+    from .etl import transform, etl, pseudo_data_iter
     from .configuration import Configuration, ConfigurationParser
     from .sym import get_net, get_bp_loss, fit_f, eval_f
 except (ImportError, SystemError):
     # for python script
-    from etl import transform, etl, pesudo_data_iter
+    from etl import transform, etl, pseudo_data_iter
     from configuration import Configuration, ConfigurationParser
     from sym import get_net, get_bp_loss, fit_f, eval_f
 
