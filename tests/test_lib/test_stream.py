@@ -32,8 +32,7 @@ def test_write(capsys):
     assert captured.err == "test stderr\n"
 
     with pytest.raises(TypeError):
-        with wf_open(mode="error") as wf:
-            print("test error", file=wf)
+        wf_open(mode="error")
 
     assert not check_file("error")
 
