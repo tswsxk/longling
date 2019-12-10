@@ -62,18 +62,18 @@ class Clock(object):
         clock = Clock()
         clock.start()
         # some code
-        clock.end(wall=False) # default to return the process_time, to get wall_time, set wall=True
+        clock.end(wall=True) # default to return the wall_time, to get process_time, set wall=False
 
     """
 
-    def __init__(self, store_dict: (dict, None) = None, logger=_logger, tips=''):
+    def __init__(self, store_dict: (dict, None) = None, logger: (logging.Logger, None) = None, tips=''):
         assert store_dict is None or type(store_dict) is dict
         self.process_st = 0
         self.process_et = 0
         self.wall_st = 0
         self.wall_et = 0
         self.store_dict = store_dict
-        self.logger = logger
+        self.logger = logger if logger is not None else _logger
         self.tips = tips
 
     def start(self):
@@ -82,7 +82,7 @@ class Clock(object):
         self.wall_st = time.time()
         return self.process_st
 
-    def end(self, wall=False):
+    def end(self, wall=True):
         """计时结束，返回间隔时间"""
         self.process_et = time.process_time()
         self.wall_et = time.time()
@@ -116,9 +116,3 @@ class Clock(object):
         if self.store_dict is not None:
             self.store_dict['wall_time'] = self.wall_time
             self.store_dict['process_time'] = self.process_time
-
-
-if __name__ == '__main__':
-    import doctest
-
-    doctest.testmod()
