@@ -62,9 +62,3 @@ def arg_select_max(*keys, src, with_keys=None, with_all=False):
 
 def select_max(src, *keys, with_keys=None, with_all=False):
     _select_max(src, *keys, with_keys=with_keys, with_all=with_all)
-
-
-if __name__ == '__main__':
-    arg_select_max("auc", "prf:1:f1", src="result.json")
-    arg_select_max("auc", "prf:1:f1", src="result.json", with_all=True)
-    arg_select_max("auc", "prf:1:f1", src="result.json", with_keys="Epoch;train_time")
