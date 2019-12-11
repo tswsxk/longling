@@ -30,7 +30,6 @@ try:
 except (ImportError, SystemError):
     from stream import flush_print
 
-import functools
 
 def pass_function(*args, **kwargs):
     pass
@@ -98,6 +97,7 @@ class IterableMonitor(Iterable):
 
 class MonitorPlayer(object):
     """监控器显示器"""
+
     def __init__(self):
         self._count = 0
         self._length = None
