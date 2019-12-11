@@ -58,6 +58,7 @@ spider_deps = [
     "requests",
     "rarfile",
     "bs4",
+    "lxml"
 ]
 
 ml_full_deps = ml_base_deps + ml_mx_deps + ml_pytorch_deps
