@@ -5,7 +5,7 @@ __all__ = ["IterableMonitor", "MonitorPlayer", "ProgressMonitor"]
 """
 进度监视器，帮助用户知晓当前运行进度 
 
-一个简单的示例如下 ::
+一个简单的示例如下 .. code-block:: python
 
     class DemoMonitor(ProgressMonitor):
         def __call__(self, iterator):
@@ -13,7 +13,6 @@ __all__ = ["IterableMonitor", "MonitorPlayer", "ProgressMonitor"]
                 iterator,
                 self.player, self.player.set_length
             )
-
 
     progress_monitor = DemoMonitor(MonitorPlayer())
 
@@ -24,11 +23,7 @@ __all__ = ["IterableMonitor", "MonitorPlayer", "ProgressMonitor"]
 """
 
 from collections import Iterable
-
-try:
-    from .stream import flush_print
-except (ImportError, SystemError):
-    from stream import flush_print
+from .stream import flush_print
 
 
 def pass_function(*args, **kwargs):
@@ -120,20 +115,3 @@ class ProgressMonitor(object):
 
     def __call__(self, iterator):
         raise NotImplementedError
-
-
-if __name__ == '__main__':
-    class DemoMonitor(ProgressMonitor):
-        def __call__(self, iterator):
-            return IterableMonitor(
-                iterator,
-                self.player, self.player.set_length
-            )
-
-
-    progress_monitor = DemoMonitor(MonitorPlayer())
-
-    for _ in range(5):
-        for _ in progress_monitor(range(10000)):
-            pass
-        print()
