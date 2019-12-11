@@ -1,5 +1,6 @@
 # coding: utf-8
 # create by tongshiwei on 2019/7/2
+# PYTEST_DONT_REWRITE
 
 __all__ = ["path_append", "file_exist", "abs_current_dir"]
 
