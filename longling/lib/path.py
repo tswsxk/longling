@@ -14,8 +14,8 @@ def path_append(path, *addition, to_str=False):
 
     Examples
     --------
-    >>> path_append("../", "../data", "../dataset1/", "train")
-    PureWindowsPath('../../data/../dataset1/train')
+    >>> path_append("../", "../data", "../dataset1/", "train", to_str=True)
+    '../../data/../dataset1/train'
 
     Parameters
     ----------
