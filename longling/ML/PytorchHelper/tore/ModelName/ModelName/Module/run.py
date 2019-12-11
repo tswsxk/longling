@@ -140,4 +140,3 @@ def sym_run(stage: (int, str) = "viz"):
 
 if __name__ == '__main__':
     sym_run("pseudo")
-

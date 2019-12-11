@@ -1,7 +1,7 @@
 # coding: utf-8
 # create by tongshiwei on 2019-8-30
 
-__all__ =["pick", "tensor2list"]
+__all__ = ["pick", "tensor2list"]
 
 import torch
 from torch import Tensor

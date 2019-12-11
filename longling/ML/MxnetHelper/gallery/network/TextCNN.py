@@ -70,8 +70,7 @@ class TextCNN(gluon.HybridBlock):
                     kernel_size=(filter_size, self.vec_size),
                     activation=self.activation) if not self.channel_size else \
                     gluon.nn.Conv3D(
-                        num_filter,
-                        kernel_size=(
+                        num_filter, kernel_size=(
                             filter_size, self.vec_size, self.channel_size
                         ), activation=activation
                     )
