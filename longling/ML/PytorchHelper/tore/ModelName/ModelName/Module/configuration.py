@@ -67,7 +67,7 @@ class Configuration(parser.Configuration):
     toolbox_params = {}
 
     # 用户变量
-    
+
     # 超参数
     hyper_params = {
     }
