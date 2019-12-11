@@ -39,9 +39,7 @@ try:
 except ModuleNotFoundError:
     mxnet_requires = ["mxnet"]
 
-ml_mx_deps = [
-                 "gluonnlp",
-             ] + mxnet_requires
+ml_mx_deps = ["gluonnlp"] + mxnet_requires
 
 try:
     import torch
