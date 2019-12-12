@@ -527,9 +527,3 @@ class Formatter(object):
     def format(*format_string, formatter=None):
         formatter = Formatter(formatter)
         return formatter(*format_string)
-
-
-if __name__ == '__main__':
-    import doctest
-
-    doctest.testmod()
