@@ -91,6 +91,7 @@ def parse_params(params: dict, parse_functions: (dict, None) = None) -> dict:
     >>> params = {"a": 1}
     >>> parse_params(params)
     {'a': 1}
+
     """
     if parse_functions is not None:
         for name, func in parse_functions.items():
