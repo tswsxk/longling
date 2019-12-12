@@ -7,14 +7,14 @@ try:
     from .sym import get_net, get_bp_loss, fit_f, eval_f, net_viz
     from .etl import transform, etl, pseudo_data_iter
     from .configuration import Configuration, ConfigurationParser
-except (ImportError, SystemError):
+except (ImportError, SystemError):  # pragma: no cover
     # for python script
     from sym import get_net, get_bp_loss, fit_f, eval_f, net_viz
     from etl import transform, etl, pseudo_data_iter
     from configuration import Configuration, ConfigurationParser
 
 
-def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_result=False):
+def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_result=False):  # pragma: no cover
     ctx = _cfg.ctx
     batch_size = _cfg.batch_size
 
@@ -76,12 +76,12 @@ def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_resul
                 )
 
 
-def pseudo_numerical_check(_net, _cfg):
+def pseudo_numerical_check(_net, _cfg):  # pragma: no cover
     datas = pseudo_data_iter(_cfg)
     numerical_check(_net, _cfg, datas, datas, dump_result=False)
 
 
-def train(train_fn, test_fn, **cfg_kwargs):
+def train(train_fn, test_fn, **cfg_kwargs):  # pragma: no cover
     _cfg = Configuration(**cfg_kwargs)
     _net = get_net(**_cfg.hyper_params)
 
@@ -91,7 +91,7 @@ def train(train_fn, test_fn, **cfg_kwargs):
     numerical_check(_net, _cfg, train_data, test_data, dump_result=True)
 
 
-def sym_run(stage: (int, str) = "viz"):
+def sym_run(stage: (int, str) = "viz"):  # pragma: no cover
     if isinstance(stage, str):
         stage = {
             "viz": 0,
@@ -140,5 +140,5 @@ def sym_run(stage: (int, str) = "viz"):
         raise TypeError
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     sym_run("viz")
