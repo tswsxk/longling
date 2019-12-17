@@ -22,6 +22,7 @@ __all__ = ["IterableMonitor", "MonitorPlayer", "ProgressMonitor"]
         print()
 """
 
+import logging
 from collections import Iterable
 from .stream import flush_print
 
@@ -39,9 +40,9 @@ class IterableMonitor(Iterable):
     iterator:
         待迭代数据
     call_in_iter:
-        每次迭代中的回调函数（例如：打印进度等）
+        每次迭代中的回调函数（例如：打印进度等）,接受当前的 count 为输入
     call_after_iter:
-        每轮迭代后的回调函数（所有数据遍历一遍后）
+        每轮迭代后的回调函数（所有数据遍历一遍后），接受当前的 length 为输入
     length:
         数据总长（有多少条数据）
     """
@@ -57,21 +58,25 @@ class IterableMonitor(Iterable):
 
         self._count = 0
         try:
-            if length is not None:
+            if isinstance(length, int):
                 self._length = length
-            else:
+            elif length is None:
                 self._length = len(iterator)
+            else:
+                raise TypeError()
         except TypeError:
             self._length = None
 
     def set_length(self, length):
         self._length = length
 
-    def reset(self):
+    def reset(self, iterator):
+        self.iterator = iter(iterator)
         self._count = 0
         self._length = None
 
     def __len__(self):
+        """TypeError will be raised when _length is None."""
         return self._length
 
     def __next__(self):
