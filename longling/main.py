@@ -13,7 +13,7 @@ from longling import Architecture as arch_cli
 tarch = functools.partial(arch, author="Shiwei Tong")
 
 
-def cli():
+def cli():  # pragma: no cover
     fire.Fire(
         {
             "train_valid_test": train_valid_test,
