@@ -40,7 +40,7 @@ except ModuleNotFoundError:
     mxnet_requires = ["mxnet"]
 except Exception as e:
     mxnet_requires = []
-    logging.warning(e)
+    logging.error(e)
 
 ml_mx_deps = ["gluonnlp"] + mxnet_requires
 
@@ -58,7 +58,7 @@ except ModuleNotFoundError:
         logging.warning("Current python version %s is not supported by pytorch", str(sys.version_info[:2]))
 except Exception as e:
     ml_pytorch_deps = []
-    logging.warning(e)
+    logging.error(e)
 
 spider_deps = [
     "requests",
