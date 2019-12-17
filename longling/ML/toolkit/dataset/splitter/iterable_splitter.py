@@ -29,7 +29,7 @@ class RatioSplitter(Splitter):
         assert 0.0 <= all(ratios) <= 1.0, "all of ratios should be in [0.0, 1.0], now are %s" % ratios
 
         ratios_sum = sum(ratios)
-        if not math.isclose(ratios_sum, 1, 1e-09):
+        if not math.isclose(ratios_sum, 1, rel_tol=1e-09):
             warnings.warn("the sum of ratios %s is %s, little than 1.0" % (ratios, ratios_sum))
         elif ratios_sum < 0.0 or ratios_sum > 1.0:
             raise ValueError("the sum of ratios %s is %s, not in [0.0, 1.0]" % (ratios, ratios_sum))
