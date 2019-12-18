@@ -60,7 +60,7 @@ class Configuration(Params):
         """
         return get_parsable_var(
             self,
-            parse_exclude={'logger'},
+            parse_exclude=None,
             dump_parse_functions={'ctx': MXCtx.dump}
         )
 
