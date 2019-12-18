@@ -33,6 +33,4 @@ class Factor(object):
 
 def linearly_decay(initial_rate, min_rate, period, warmup=0):
     assert initial_rate > min_rate
-    return initial_rate, min_rate, (initial_rate - min_rate) / (
-            period - warmup
-    )
+    return initial_rate, min_rate, (initial_rate - min_rate) / (period - warmup)

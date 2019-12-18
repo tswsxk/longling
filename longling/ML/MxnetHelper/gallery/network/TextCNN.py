@@ -68,14 +68,12 @@ class TextCNN(gluon.HybridBlock):
                 conv = gluon.nn.Conv2D(
                     num_filter,
                     kernel_size=(filter_size, self.vec_size),
-                    activation=self.activation) if not self.channel_size else \
-                    gluon.nn.Conv3D(
-                        num_filter,
-                        kernel_size=(
-                            filter_size, self.vec_size, self.channel_size
-                        ),
-                        activation=activation
-                    )
+                    activation=self.activation
+                ) if not self.channel_size else gluon.nn.Conv3D(
+                    num_filter,
+                    kernel_size=(filter_size, self.vec_size, self.channel_size),
+                    activation=activation
+                )
                 setattr(self, "conv%s" % i, conv)
 
                 pool = pool2d(

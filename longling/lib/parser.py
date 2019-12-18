@@ -1,21 +1,27 @@
 # coding: utf-8
 # create by tongshiwei on 2019/4/11
 
+"""
+自定义的配置文件及对应的解析工具包。目的是为了更方便、快速地进行文件参数配置与解析。
+"""
+
 import argparse
 import inspect
 import json
 import logging
 import os
 import re
-from pathlib import PurePath
+from collections import Iterable
 
 from longling import wf_open
+from longling.lib.path import path_append
 
 __all__ = [
     "CLASS_EXCLUDE_NAMES", "get_class_var",
-    "get_parsable_var", "load_parameters_json",
+    "get_parsable_var", "load_configuration_json",
     "var2exp", "path_append",
-    "Configuration", "ConfigurationParser"
+    "Configuration", "ConfigurationParser",
+    "Formatter"
 ]
 
 CLASS_EXCLUDE_NAMES = set(vars(object).keys()) | {
@@ -23,9 +29,43 @@ CLASS_EXCLUDE_NAMES = set(vars(object).keys()) | {
 }
 
 
-def get_class_var(class_type, exclude_names=None):
+def get_class_var(class_type, exclude_names: (set, None) = None) -> dict:
+    """
+    获取某个类的所有属性的变量名及其值
+
+    Examples
+    --------
+    >>> class A(object):
+    ...     att1 = 1
+    ...     att2 = 2
+    >>> get_class_var(A)
+    {'att1': 1, 'att2': 2}
+    >>> get_class_var(A, exclude_names={"att1"})
+    {'att2': 2}
+    >>> class B(object):
+    ...     att3 = 3
+    ...     att4 = 4
+    ...     @staticmethod
+    ...     def excluded_names():
+    ...         return {"att4"}
+    >>> get_class_var(B)
+    {'att3': 3}
+
+    Parameters
+    ----------
+    class_type:
+        类。注意是类，不是类实例。
+    exclude_names:
+        需要排除在外的变量名。也可以通过在类定义 excluded_names 方法来指定要排除的变量名。
+
+    Returns
+    -------
+    class_var:
+        类内属性变量名及值
+
+    """
     default_excluded_names = CLASS_EXCLUDE_NAMES if exclude_names is None \
-        else exclude_names
+        else CLASS_EXCLUDE_NAMES | exclude_names
     excluded_names = default_excluded_names if not hasattr(
         class_type, "excluded_names"
     ) else class_type.excluded_names() | default_excluded_names
@@ -37,7 +77,22 @@ def get_class_var(class_type, exclude_names=None):
     return variables
 
 
-def parse_params(params, parse_functions=None):
+def parse_params(params: dict, parse_functions: (dict, None) = None) -> dict:
+    """
+    参数后处理，根据parse_functions中定义的转换函数，对params中的变量值进行转换。
+    例如，可用于将无法直接dump的变量转换成可以dump的变量。
+
+    Examples
+    --------
+    >>> params = {"a": 1}
+    >>> parse_functions = {"a": lambda x: x + x}
+    >>> parse_params(params, parse_functions)
+    {'a': 2}
+    >>> params = {"a": 1}
+    >>> parse_params(params)
+    {'a': 1}
+
+    """
     if parse_functions is not None:
         for name, func in parse_functions.items():
             if name in params:
@@ -45,17 +100,34 @@ def parse_params(params, parse_functions=None):
     return params
 
 
-def get_parsable_var(class_obj, parse_exclude=None, dump_parse_functions=None):
+def get_parsable_var(class_obj, parse_exclude: set = None, dump_parse_functions=None):
+    """获取所有可以被解析的参数及其值，可以使用dump_parse_functions来对不可dump的值进行转换"""
     params = get_class_var(class_obj, exclude_names=parse_exclude)
     return parse_params(params, dump_parse_functions)
 
 
-def load_parameters_json(fp, load_parse_function=None):
+def load_configuration_json(fp, load_parse_function=None):
+    """装载配置文件"""
     params = json.load(fp)
     return parse_params(params, load_parse_function)
 
 
 def var2exp(var_str, env_wrap=lambda x: x):
+    """
+    将含有 $ 标识的变量转换为表达式
+
+    Parameters
+    ----------
+    var_str
+    env_wrap
+
+    Examples
+    --------
+    >>> root = "dir"
+    >>> dataset = "d1"
+    >>> eval(var2exp("$root/data/$dataset"))
+    'dir/data/d1'
+    """
     var_str = str(var_str)
 
     pattern = re.compile(r"\$(\w+)")
@@ -70,29 +142,17 @@ def var2exp(var_str, env_wrap=lambda x: x):
     return exp
 
 
-def path_append(path, addition=None, to_str=False):
-    """
-
-    Parameters
-    ----------
-    path: str or PurePath
-    addition: str or PurePath
-    to_str: bool
-        Convert the new path to str
-    Returns
-    -------
-
-    """
-    path = PurePath(path)
-    new_path = path / addition if addition else path
-    if to_str:
-        return str(new_path)
-    return new_path
-
-
 class Configuration(object):
-    def __init__(self, logger=logging):
+    """自定义的配置文件基类"""
+
+    def __init__(self, logger=logging, **kwargs):
         self.logger = logger
+
+        params = self.class_var
+
+        params.update(**kwargs)
+        for param, value in params.items():
+            setattr(self, "%s" % param, value)
 
     @property
     def class_var(self):
@@ -104,7 +164,7 @@ class Configuration(object):
         parameters: dict
             all variables used as parameters
         """
-        return get_class_var(self)
+        return get_class_var(type(self))
 
     @property
     def parsable_var(self):
@@ -123,19 +183,26 @@ class Configuration(object):
         )
 
     @staticmethod
-    def load(params_json):
+    def load_cfg(params_json, **kwargs):
+        """从配置文件中装载配置参数"""
         with open(params_json) as f:
-            params = load_parameters_json(
+            params = load_configuration_json(
                 f, load_parse_function=None
             )
-
+        params.update(kwargs)
         return params
 
-    def dump(self, cfg_json, override=False):
+    @classmethod
+    def load(cls, cfg_path, **kwargs):
+        """从配置文件中装载配置类"""
+        return cls(**cls.load_cfg(cfg_path, **kwargs))
+
+    def dump(self, cfg_json: str, override=False):
+        """将配置参数写入文件"""
         if os.path.isfile(cfg_json) and not override:
             self.logger.warning("file %s existed, dump aborted" % cfg_json)
             return
-        self.logger.info("writing parameters to %s" % cfg_json)
+        self.logger.info("writing configuration parameters to %s" % cfg_json)
         with wf_open(cfg_json) as wf:
             json.dump(self.parsable_var, wf, indent=4)
 
@@ -146,7 +213,7 @@ class Configuration(object):
         return getattr(self, item)
 
     def items(self):
-        return {k: v for k, v in self.parsable_var}
+        return {k: v for k, v in self.parsable_var.items()}
 
     @staticmethod
     def excluded_names():
@@ -160,21 +227,57 @@ class Configuration(object):
         """
         return CLASS_EXCLUDE_NAMES | {
             'class_var', 'parsable_var', 'items', 'load', 'dump'
-        }
+        } | {'logger'}
 
 
 def value_parse(value):
-    if re.findall(r"(int|float|dict|set|tuple)\(.*\)", value):
+    r"""
+    将含有关键字的字符串转换为关键字指定的类型
+    支持的关键字类型为python的基础数据类型:
+    int, float, dict, list, set, tuple, None
+
+    Parameters
+    ----------
+    value: str
+        字符串值
+
+    Examples
+    --------
+    >>> value_parse("int(1.0)")
+    1
+    >>> value_parse("float(1.0)")
+    1.0
+    >>> value_parse("dict(a=1, b=2.0, c='d')")
+    {'a': 1, 'b': 2.0, 'c': 'd'}
+    >>> value_parse("list([1, 2, 3, 4])")
+    [1, 2, 3, 4]
+    >>> value_parse("set([1, 1, 2, 3])")
+    {1, 2, 3}
+    >>> value_parse("tuple([1, 2, 3])")
+    (1, 2, 3)
+    >>> value_parse("None") is None
+    True
+    """
+    if re.findall(r"(int|float|dict|list|set|tuple|bool)\(.*\)|None", value):
         value = eval(value)
     return value
 
 
 def parse_dict_string(string):
+    """
+    解析字典字符串
+
+    Examples
+    --------
+    >>> parse_dict_string("a=1;b=int(1);c=list([1]);d=None")
+    {'a': '1', 'b': 1, 'c': [1], 'd': None}
+    >>> parse_dict_string("")
+    """
     if not string:
         return None
     else:
         name_value_items = [
-            item.strip().split("=") for item in string.strip().split(",")
+            item.strip().split("=", 1) for item in string.strip().rstrip(";").split(";")
         ]
         return {
             name_value[0]: value_parse(name_value[1])
@@ -183,6 +286,7 @@ def parse_dict_string(string):
 
 
 def args_zips(args=None, defaults=None):
+    """组合参数及默认值"""
     args = [] if args is None else args
     defaults = [] if defaults is None else defaults
     assert len(args) >= len(defaults)
@@ -199,20 +303,105 @@ def args_zips(args=None, defaults=None):
 
 
 class ConfigurationParser(argparse.ArgumentParser):
-    def __init__(self, class_obj, excluded_names=None, *args, **kwargs):
+    """
+    配置文件解析类，可用于构建cli工具。该类首先读入所有目标配置文件类class_obj的所有类属性，解析后生成命令行。
+    普通属性参数使用 "--att_name att_value" 来读入。另外提供一个额外参数标记 ‘--kwargs’ 来读入可选参数。
+    可选参数格式为 ::
+
+        --kwargs key1=value1;key2=value2;...
+
+    首先生成一个解析类 ::
+
+        cli_parser = ConfigurationParser(Configuration)
+
+    除了解析已有配置文件外，解析类还可以进一步添加函数来生成子解析器 ::
+
+        cli_parser = ConfigurationParser($function)
+
+    或者 ::
+
+        cli_parser = ConfigurationParser([$function1, $function2])
+
+    用以下三种解析方式中任意一种来解析参数：
+    * 命令行模式 ::
+
+        cli_parser()
+
+    * 字符串传参模式 ::
+
+        cli_parser('$parameter1 $parameters ...')
+
+    * 列表传参模式 ::
+
+        cli_parser(["--a", "int(1)", "--b", "int(2)"])
+
+    Notes
+    -----
+    包含以下关键字的字符串会在解析过程中进行类型转换
+
+    int, float, dict, list, set, tuple, None
+
+    Parameters
+    ----------
+    class_obj:
+        类。注意是类，不是类实例。
+    excluded_names:
+        类中不进行解析的变量名集合
+    commands:
+        待解析的命令函数
+
+    Examples
+    --------
+    >>> class TestC(Configuration):
+    ...     a = 1
+    ...     b = 2
+    >>> def test_f1(k=1):
+    ...     return k
+    >>> def test_f2(h=1):
+    ...      return h
+    >>> def test_f3(m):
+    ...      return m
+    >>> parser = ConfigurationParser(TestC)
+    >>> parser("--a 1 --b 2")
+    {'a': '1', 'b': '2'}
+    >>> ConfigurationParser.get_cli_cfg(TestC)
+    {'a': 1, 'b': 2}
+    >>> parser(["--a", "1", "--b", "int(1)"])
+    {'a': '1', 'b': 1}
+    >>> parser(["--a", "1", "--b", "int(1)", "--kwargs", "c=int(3);d=None"])
+    {'a': '1', 'b': 1, 'c': 3, 'd': None}
+    >>> parser.add_command(test_f1, test_f2, test_f3)
+    >>> parser(["test_f1"])
+    {'a': 1, 'b': 2, 'k': 1, 'subcommand': 'test_f1'}
+    >>> parser(["test_f2"])
+    {'a': 1, 'b': 2, 'h': 1, 'subcommand': 'test_f2'}
+    >>> parser(["test_f3", "3"])
+    {'a': 1, 'b': 2, 'm': '3', 'subcommand': 'test_f3'}
+    >>> parser = ConfigurationParser(TestC, commands=[test_f1, test_f2])
+    >>> parser(["test_f1"])
+    {'a': 1, 'b': 2, 'k': 1, 'subcommand': 'test_f1'}
+    >>> class TestCC:
+    ...     c = {"_c": 1, "_d": 0.1}
+    >>> parser = ConfigurationParser(TestCC)
+    >>> parser("--c _c=int(3);_d=float(0.3)")
+    {'c': {'_c': 3, '_d': 0.3}}
+    """
+
+    def __init__(self, class_obj, excluded_names: (set, None) = None, commands=None, *args, **kwargs):
         excluded_names = {
             'logger'
         } if excluded_names is None else excluded_names
 
-        super(ConfigurationParser, self).__init__(*args, **kwargs)
+        self.__proto_type = argparse.ArgumentParser(add_help=False)
+
         params = {k: v for k, v in get_class_var(class_obj).items()}
         for param, value in params.items():
-            if param in excluded_names:
+            if param in excluded_names:  # pragma: no cover
                 continue
             if isinstance(value, dict):
                 format_tips = ", dict variables, " \
-                              "use format: <key>=<value>(,<key>=<value>)"
-                self.add_argument(
+                              "use format: <key>=<value>(;<key>=<value>)"
+                self.__proto_type.add_argument(
                     '--%s' % param,
                     help='set %s, default is %s%s' % (
                         param, value, format_tips
@@ -220,21 +409,32 @@ class ConfigurationParser(argparse.ArgumentParser):
                     type=parse_dict_string,
                 )
             else:
-                self.add_argument(
+                self.__proto_type.add_argument(
                     '--%s' % param,
                     help='set %s, default is %s' % (param, value),
                     default=value,
                     type=value_parse,
                 )
-        self.add_argument(
+        self.__proto_type.add_argument(
             '--kwargs', required=False,
             help=r"add extra argument here, "
-                 r"use format: <key>=<value>(,<key>=<value>)"
+                 r"use format: <key>=<value>(;<key>=<value>)"
         )
         self.sub_command_parsers = None
+        super(ConfigurationParser, self).__init__(parents=[self.__proto_type], *args, **kwargs)
+
+        if commands is not None:
+            assert isinstance(commands, Iterable)
+            self.add_command(*commands)
+
+    def add_command(self, *commands):
+        """批量添加子命令解析器"""
+        for command in commands:
+            self._add_subcommand(self.func_spec(command))
 
     @staticmethod
     def parse(arguments):
+        """参数后解析"""
         arguments = vars(arguments)
         args_dict = dict()
         for k, v in arguments.items():
@@ -242,23 +442,29 @@ class ConfigurationParser(argparse.ArgumentParser):
                 kwargs = parse_dict_string(v)
                 if kwargs:
                     args_dict.update(kwargs)
-                continue
-            args_dict[k] = v
+            elif k == "kwargs":
+                pass
+            else:
+                args_dict[k] = v
         return args_dict
 
-    @staticmethod
-    def get_cli_cfg(params_class):
-        params_parser = ConfigurationParser(params_class)
+    @classmethod
+    def get_cli_cfg(cls, params_class) -> dict:
+        """获取默认配置参数"""
+        params_parser = cls(params_class)
         kwargs = params_parser.parse_args()
         kwargs = params_parser.parse(kwargs)
         return kwargs
 
-    def __call__(self, args=None):
+    def __call__(self, args: (str, list, None) = None) -> dict:
+        if isinstance(args, str):
+            args = args.split(" ")
         kwargs = self.parse_args(args)
         kwargs = self.parse(kwargs)
         return kwargs
 
-    def add_subcommand(self, command_parameters):
+    def _add_subcommand(self, command_parameters):
+        """添加子命令解析器"""
         if self.sub_command_parsers is None:
             self.sub_command_parsers = self.add_subparsers(
                 parser_class=argparse.ArgumentParser,
@@ -267,7 +473,7 @@ class ConfigurationParser(argparse.ArgumentParser):
         subparsers = self.sub_command_parsers
         subcommand, parameters = command_parameters
         subparser = subparsers.add_parser(
-            subcommand, help="%s help" % subcommand
+            subcommand, help="%s help" % subcommand, parents=[self.__proto_type],
         )
         subparser.set_defaults(subcommand=subcommand)
         for parameter in parameters:
@@ -290,6 +496,7 @@ class ConfigurationParser(argparse.ArgumentParser):
 
     @staticmethod
     def func_spec(f):
+        """获取函数参数表"""
         argspec = inspect.getfullargspec(f)
         return f.__name__, args_zips(
             argspec.args, argspec.defaults
@@ -297,3 +504,43 @@ class ConfigurationParser(argparse.ArgumentParser):
             argspec.kwonlyargs,
             argspec.kwonlydefaults.values() if argspec.kwonlydefaults else []
         )
+
+
+class Formatter(object):
+    """
+    以特定格式格式化字符串
+
+    Examples
+    --------
+    >>> formatter = Formatter()
+    >>> formatter("hello world")
+    'hello world'
+    >>> formatter = Formatter("hello {}")
+    >>> formatter("world")
+    'hello world'
+    >>> formatter = Formatter("hello {} v{:.2f}")
+    >>> formatter("world", 0.2)
+    'hello world v0.20'
+    >>> formatter = Formatter("hello {1} v{0:.2f}")
+    >>> formatter(0.2, "world")
+    'hello world v0.20'
+    >>> Formatter.format(0.2, "world", formatter="hello {1} v{0:.3f}")
+    'hello world v0.200'
+    """
+
+    def __init__(self, formatter: (str, None) = None):
+        self.formatter = formatter
+
+    def __call__(self, *format_string):
+        if self.formatter is None:
+            assert len(format_string) == 1, \
+                "formatter is None, the input should be a single value, now is %s, " \
+                "which has %s value" % (format_string, len(format_string))
+            return format_string[0]
+        else:
+            return self.formatter.format(*format_string)
+
+    @staticmethod
+    def format(*format_string, formatter=None):
+        formatter = Formatter(formatter)
+        return formatter(*format_string)

@@ -3,14 +3,19 @@
 from mxnet import Context, cpu, gpu
 
 from longling.lib.candylib import as_list
-from longling.lib.parser import get_parsable_var, load_parameters_json, \
+from longling.lib.parser import get_parsable_var, load_configuration_json, \
     var2exp, path_append, Configuration as Params, ConfigurationParser
 
 __all__ = [
     "MXCtx", "Configuration",
-    "var2exp", "path_append", "ConfigurationParser",
+    "var2exp", "eval_var",
+    "path_append", "ConfigurationParser",
     "cpu", "gpu"
 ]
+
+
+def eval_var(variable):
+    return eval(variable)
 
 
 class MXCtx(object):
@@ -55,15 +60,25 @@ class Configuration(Params):
         """
         return get_parsable_var(
             self,
-            parse_exclude={'logger'},
+            parse_exclude=None,
             dump_parse_functions={'ctx': MXCtx.dump}
         )
 
     @staticmethod
-    def load(cfg_path):
-        with open(cfg_path) as f:
-            params = load_parameters_json(
+    def load_cfg(params_json, **kwargs):
+        with open(params_json) as f:
+            params = load_configuration_json(
                 f, load_parse_function={"ctx": MXCtx.load}
             )
-
+        params.update(kwargs)
         return params
+
+    @staticmethod
+    def load(cfg_path, **kwargs):
+        Configuration(Configuration.load_cfg(cfg_path, **kwargs))
+
+
+if __name__ == '__main__':
+    print(eval_var(
+        "[gpu(0), gpu(1), gpu(2)]"
+    ))

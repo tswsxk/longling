@@ -14,10 +14,11 @@
 #
 import os
 import sys
+
 sys.path.insert(0, os.path.abspath('../'))
 
 import longling
-
+import sphinx_rtd_theme
 
 # -- Project information -----------------------------------------------------
 
@@ -29,7 +30,6 @@ author = 'tongshiwei'
 version = longling.__version__
 # The full version, including alpha/beta/rc tags
 release = 'alpha'
-
 
 # -- General configuration ---------------------------------------------------
 
@@ -60,8 +60,8 @@ templates_path = ['_templates']
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-# source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+source_suffix = ['.rst', '.md']
+# source_suffix = '.rst'
 
 # The master toctree document.
 master_doc = 'index'
@@ -81,13 +81,12 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
 
-
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-import sphinx_rtd_theme
+
 
 html_theme = "sphinx_rtd_theme"
 html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
@@ -119,7 +118,6 @@ html_static_path = ['_static']
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'longlingdoc'
 
-
 # -- Options for LaTeX output ------------------------------------------------
 
 latex_elements = {
@@ -148,7 +146,6 @@ latex_documents = [
      'tongshiwei', 'manual'),
 ]
 
-
 # -- Options for manual page output ------------------------------------------
 
 # One entry per manual page. List of tuples
@@ -157,7 +154,6 @@ man_pages = [
     (master_doc, 'longling', 'longling Documentation',
      [author], 1)
 ]
-
 
 # -- Options for Texinfo output ----------------------------------------------
 

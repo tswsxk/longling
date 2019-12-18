@@ -1,0 +1,14 @@
+sphinx
+sphinx-gallery
+nbsphinx
+sphinx_rtd_theme
+Image
+recommonmark
+ipython
+m2r
+scipy
+sklearn
+matplotlib
+tqdm
+mxnet
+numpy

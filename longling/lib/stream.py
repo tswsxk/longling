@@ -8,15 +8,19 @@ from __future__ import print_function
 import codecs
 import os
 import sys
+from pathlib import PurePath
 
 from longling.base import string_types
 
-__all__ = ['rf_open', 'wf_open', 'wf_close', 'flush_print', 'json_load',
-           'pickle_load']
+__all__ = ['rf_open', 'wf_open', 'wf_close', 'flush_print', 'build_dir', 'json_load',
+           'pickle_load', 'AddPrinter', 'AddObject', 'StreamError', 'check_file']
 
 
 class StreamError(Exception):
     pass
+
+
+IO_TYPE = (string_types, PurePath)
 
 
 def flush_print(*values, **kwargs):
@@ -37,8 +41,9 @@ def build_dir(path, mode=0o775):
     """
     dirname = os.path.dirname(path)
     if not dirname or os.path.exists(dirname):
-        return
+        return path
     os.makedirs(dirname, mode)
+    return path
 
 
 def check_file(path, size=None):
@@ -61,15 +66,14 @@ def check_file(path, size=None):
 
 
 def rf_open(filename, encoding='utf-8', **kwargs):
-    if sys.version_info[0] == 3:
-        return open(filename, encoding=encoding, **kwargs)
-    else:
+    if kwargs.get("mode"):
         return open(filename, **kwargs)
+    return open(filename, encoding=encoding, **kwargs)
 
 
 def json_load(fp, **kwargs):
     import json
-    if isinstance(fp, string_types):
+    if isinstance(fp, IO_TYPE):
         fp = rf_open(fp, **kwargs)
         datas = json.load(fp, **kwargs)
         fp.close()
@@ -80,7 +84,7 @@ def json_load(fp, **kwargs):
 
 def pickle_load(fp, encoding='utf-8', mode='rb', **kwargs):
     import pickle
-    if isinstance(fp, string_types):
+    if isinstance(fp, IO_TYPE):
         fp = open(fp, mode=mode, **kwargs)
         datas = pickle.load(fp, encoding=encoding, **kwargs)
         fp.close()
@@ -89,7 +93,7 @@ def pickle_load(fp, encoding='utf-8', mode='rb', **kwargs):
         return pickle.load(fp, encoding=encoding, **kwargs)
 
 
-def wf_open(stream_name='', mode="w", encoding="utf-8"):
+def wf_open(stream_name: (string_types, PurePath, None) = '', mode="w", encoding="utf-8"):
     r"""
     Simple wrapper to codecs for writing.
 
@@ -100,7 +104,7 @@ def wf_open(stream_name='', mode="w", encoding="utf-8"):
 
     Parameters
     ----------
-    stream_name: str or None
+    stream_name: str, PurePath or None
     mode: str
     encoding: str
         编码方式，默认为 utf-8
@@ -108,22 +112,31 @@ def wf_open(stream_name='', mode="w", encoding="utf-8"):
     -------
     write_stream: StreamReaderWriter
         返回打开的流
+
+    Examples
+    --------
+    >>> wf = wf_open(mode="stdout")
+    >>> print("hello world", file=wf)
+    hello world
     """
     if not stream_name:
-        if mode == "w":
+        if mode == "stderr":
             return sys.stderr
-        else:
+        elif mode == "stdout":
             return sys.stdout
-    elif isinstance(stream_name, string_types):
+        else:
+            raise TypeError("Unknown mode for std mode, only `stdout` and `stderr` are supported.")
+    elif isinstance(stream_name, IO_TYPE):
         build_dir(stream_name)
         if mode == "wb":
             return open(stream_name, mode=mode)
         return codecs.open(stream_name, mode=mode, encoding=encoding)
     else:
-        raise StreamError("wf_open: %s" % stream_name)
+        raise TypeError("unknown type: %s(%s)" % (stream_name, type(stream_name)))
 
 
 def wf_close(stream):
+    """关闭文件流，忽略 sys.stdin, sys.stdout, sys.stderr"""
     if stream in {sys.stdin, sys.stdout, sys.stderr}:
         return True
     else:
@@ -131,3 +144,30 @@ def wf_close(stream):
             stream.close()
         except Exception:
             raise StreamError('wf_close: %s' % stream)
+
+
+class AddObject(object):
+    def add(self, *args, **kwargs):  # pragma: no cover
+        raise NotImplementedError
+
+
+class AddPrinter(AddObject):
+    """
+    以add方法添加文件内容的打印器
+
+    Examples
+    --------
+    >>> import sys
+    >>> printer = AddPrinter(sys.stdout)
+    >>> printer.add("hello world")
+    hello world
+    """
+
+    def __init__(self, fp, values_wrapper=lambda x: x, **kwargs):
+        super(AddPrinter, self).__init__()
+        self.fp = fp
+        self.value_wrapper = values_wrapper
+        self.kwargs = kwargs
+
+    def add(self, value):
+        print(self.value_wrapper(value), file=self.fp, **self.kwargs)

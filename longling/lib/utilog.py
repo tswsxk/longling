@@ -18,6 +18,18 @@ class LogLevel(object):
     CRITICAL = logging.CRITICAL
 
 
+LogLevelDict = {}
+for key, value in {
+    "error": LogLevel.ERROR,
+    "warn": LogLevel.WARN,
+    "info": LogLevel.INFO,
+    "debug": LogLevel.DEBUG,
+    "critical": LogLevel.CRITICAL,
+}.items():
+    LogLevelDict[key] = value
+    LogLevelDict[key.upper()] = value
+
+
 def config_logging(filename=None,
                    log_format='%(name)s, %(levelname)s %(message)s',
                    level=logging.INFO,
@@ -33,12 +45,12 @@ def config_logging(filename=None,
         日志存储文件名，不为空时将创建文件存储日志
     log_format: str
         默认日志输出格式
-    level: int
+    level: str or int
         默认日志等级
     logger: str or logging.logger
         日志logger名，可以为空（使用root logger），
         字符串类型（创建对应名logger），logger
-    console_log_level: int or None
+    console_log_level: str, int or None
         屏幕日志等级，不为空时，使能屏幕日志输出
     propagate: bool
     mode: str
@@ -52,6 +64,12 @@ def config_logging(filename=None,
         logger = logging.getLogger()
     elif isinstance(logger, string_types):
         logger = logging.getLogger(logger)
+
+    if isinstance(level, str):
+        level = LogLevelDict[level]
+    if isinstance(console_log_level, str):
+        console_log_level = LogLevelDict[console_log_level]
+
     # need a clean state, for some module may
     # have called logging functions already (i.e. logging.info)
     # in that case, a default handler would been appended,

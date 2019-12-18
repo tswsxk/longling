@@ -105,6 +105,10 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+# conflict package (not ignore)
+!tests/test_lib
+!longling/lib
+
 # IDE
 .idea/
 .vscode/

@@ -6,11 +6,14 @@
 """
 import math
 import re
+import warnings
 from collections import defaultdict
 
 import matplotlib.pyplot as plt
 
 __all__ = ["ResultAnalyser"]
+
+warnings.warn("do not use this package, unstable")
 
 
 class ResultAnalyser(object):
@@ -31,7 +34,8 @@ class ResultAnalyser(object):
 
     def add_record(self, dict_data, prefix=''):
         """
-        添加字典数据并解析，如果字典的value也是字典的话，会深入解析，键名会进行拼接操作，如: {'key1': {'key2': value}}
+        添加字典数据并解析，如果字典的value也是字典的话，会深入解析，
+        键名会进行拼接操作，如: {'key1': {'key2': value}}
         会返回 (key1_key2, value)
 
         Parameters
@@ -81,7 +85,8 @@ class ResultAnalyser(object):
     def visual_selects(self, x_select='iteration',
                        y_selects=('accuracy|prf_avg_.*', 'prf_\d+_f1')):
         """
-        按 x，y 格式选取数据，x_select 和 y_selects 都是正则匹配式，采用 re.match 方式匹配
+        按 x，y 格式选取数据，x_select 和 y_selects 都是正则匹配式，
+        采用 re.match 方式匹配
 
         Parameters
         ----------
@@ -97,7 +102,8 @@ class ResultAnalyser(object):
             x: list
                 代表数据
         y_datas: list[list[tuple(str, list)]]
-            每一个元素都是一个列表，列表中的每一个元素是一个元组，元组包含两个元素:
+            每一个元素都是一个列表，列表中的每一个元素是一个元组，
+            元组包含两个元素:
                 第一个元素，字符串类型，代表数据名称(path_key形式)
                 第二个元素，列表，代表数据
         """
@@ -126,7 +132,8 @@ class ResultAnalyser(object):
     def visual_select(self, x_select='iteration',
                       y_select='accuracy|prf_avg_.*'):
         """
-        按 x，y 格式选取数据，x_select 和 y_select 都是正则匹配式，采用 re.match 方式匹配
+        按 x，y 格式选取数据，x_select 和 y_select 都是正则匹配式，
+        采用 re.match 方式匹配
 
         Parameters
         ----------
@@ -172,7 +179,8 @@ def method_compare(method_args, x_select='iteration',
     """
     @ Dev
 
-    对比不同方法在不同指标下的表现，两种呈现方式，一种以表的形式，一种以图的形式
+    对比不同方法在不同指标下的表现，两种呈现方式，
+    一种以表的形式，一种以图的形式
     在图形式下，如果有多个指标，将会绘制多个子图
     # todo 统一相同label的线的颜色
     # todo 处理x_select出的x长度不一致的case
@@ -377,7 +385,7 @@ def recall_group(result):
     result: ResultAnalyser
 
     """
-    evaluation_group(result, "prf_\d+_precision")
+    evaluation_group(result, r"prf_\d+_precision")
 
 
 def f1_group(result):
@@ -388,7 +396,7 @@ def f1_group(result):
     result: ResultAnalyser
 
     """
-    evaluation_group(result, "prf_\d+_f1")
+    evaluation_group(result, r"prf_\d+_f1")
 
 
 def pandas_api(result):
