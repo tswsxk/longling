@@ -26,7 +26,7 @@ dev_deps = test_deps + doc_deps + [
 ]
 
 ml_base_deps = [
-    "numpy<2.0.0,>1.16.0",
+    "numpy",
     "scipy",
     "sklearn",
     "matplotlib",
