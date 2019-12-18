@@ -100,7 +100,7 @@ def parse_params(params: dict, parse_functions: (dict, None) = None) -> dict:
     return params
 
 
-def get_parsable_var(class_obj, parse_exclude=None, dump_parse_functions=None):
+def get_parsable_var(class_obj, parse_exclude: set = None, dump_parse_functions=None):
     """获取所有可以被解析的参数及其值，可以使用dump_parse_functions来对不可dump的值进行转换"""
     params = get_class_var(class_obj, exclude_names=parse_exclude)
     return parse_params(params, dump_parse_functions)
@@ -145,8 +145,14 @@ def var2exp(var_str, env_wrap=lambda x: x):
 class Configuration(object):
     """自定义的配置文件基类"""
 
-    def __init__(self, logger=logging):
+    def __init__(self, logger=logging, **kwargs):
         self.logger = logger
+
+        params = self.class_var
+
+        params.update(**kwargs)
+        for param, value in params.items():
+            setattr(self, "%s" % param, value)
 
     @property
     def class_var(self):
@@ -158,7 +164,7 @@ class Configuration(object):
         parameters: dict
             all variables used as parameters
         """
-        return get_class_var(self)
+        return get_class_var(type(self))
 
     @property
     def parsable_var(self):
@@ -207,7 +213,7 @@ class Configuration(object):
         return getattr(self, item)
 
     def items(self):
-        return {k: v for k, v in self.parsable_var}
+        return {k: v for k, v in self.parsable_var.items()}
 
     @staticmethod
     def excluded_names():
@@ -221,7 +227,7 @@ class Configuration(object):
         """
         return CLASS_EXCLUDE_NAMES | {
             'class_var', 'parsable_var', 'items', 'load', 'dump'
-        }
+        } | {'logger'}
 
 
 def value_parse(value):
@@ -265,6 +271,7 @@ def parse_dict_string(string):
     --------
     >>> parse_dict_string("a=1;b=int(1);c=list([1]);d=None")
     {'a': '1', 'b': 1, 'c': [1], 'd': None}
+    >>> parse_dict_string("")
     """
     if not string:
         return None
@@ -352,6 +359,8 @@ class ConfigurationParser(argparse.ArgumentParser):
     ...     return k
     >>> def test_f2(h=1):
     ...      return h
+    >>> def test_f3(m):
+    ...      return m
     >>> parser = ConfigurationParser(TestC)
     >>> parser("--a 1 --b 2")
     {'a': '1', 'b': '2'}
@@ -361,15 +370,23 @@ class ConfigurationParser(argparse.ArgumentParser):
     {'a': '1', 'b': 1}
     >>> parser(["--a", "1", "--b", "int(1)", "--kwargs", "c=int(3);d=None"])
     {'a': '1', 'b': 1, 'c': 3, 'd': None}
-    >>> parser.add_command(test_f1, test_f2)
+    >>> parser.add_command(test_f1, test_f2, test_f3)
     >>> parser(["test_f1"])
     {'a': 1, 'b': 2, 'k': 1, 'subcommand': 'test_f1'}
     >>> parser(["test_f2"])
     {'a': 1, 'b': 2, 'h': 1, 'subcommand': 'test_f2'}
+    >>> parser(["test_f3", "3"])
+    {'a': 1, 'b': 2, 'm': '3', 'subcommand': 'test_f3'}
     >>> parser = ConfigurationParser(TestC, commands=[test_f1, test_f2])
     >>> parser(["test_f1"])
     {'a': 1, 'b': 2, 'k': 1, 'subcommand': 'test_f1'}
+    >>> class TestCC:
+    ...     c = {"_c": 1, "_d": 0.1}
+    >>> parser = ConfigurationParser(TestCC)
+    >>> parser("--c _c=int(3);_d=float(0.3)")
+    {'c': {'_c': 3, '_d': 0.3}}
     """
+
     def __init__(self, class_obj, excluded_names: (set, None) = None, commands=None, *args, **kwargs):
         excluded_names = {
             'logger'
@@ -379,7 +396,7 @@ class ConfigurationParser(argparse.ArgumentParser):
 
         params = {k: v for k, v in get_class_var(class_obj).items()}
         for param, value in params.items():
-            if param in excluded_names:
+            if param in excluded_names:  # pragma: no cover
                 continue
             if isinstance(value, dict):
                 format_tips = ", dict variables, " \
