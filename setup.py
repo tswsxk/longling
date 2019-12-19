@@ -12,8 +12,6 @@ test_deps = [
     'pytest>=4',
     'pytest-cov>=2.6.0',
     'pytest-pep8>=1',
-    'mxnet',
-    'torch',
 ]
 
 doc_deps = [
@@ -35,6 +33,16 @@ ml_base_deps = [
 ]
 
 try:
+    import mxnet
+
+    mxnet_requires = []
+except ModuleNotFoundError:
+    mxnet_requires = ["mxnet"]
+except Exception as e:
+    mxnet_requires = []
+    logging.error(e)
+
+try:
     import torch
 
     ml_pytorch_deps = []
@@ -50,16 +58,6 @@ except Exception as e:
     ml_pytorch_deps = []
     logging.error(e)
 
-try:
-    import mxnet
-
-    mxnet_requires = []
-except ModuleNotFoundError:
-    mxnet_requires = ["mxnet"]
-except Exception as e:
-    mxnet_requires = []
-    logging.error(e)
-
 ml_mx_deps = ["gluonnlp"] + mxnet_requires
 
 spider_deps = [
@@ -69,7 +67,7 @@ spider_deps = [
     "lxml"
 ]
 
-ml_full_deps = ml_base_deps + ml_pytorch_deps + ml_mx_deps
+ml_full_deps = ml_base_deps + ml_mx_deps + ml_pytorch_deps
 
 full_deps = ml_full_deps + spider_deps
 
