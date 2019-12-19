@@ -32,33 +32,36 @@ ml_base_deps = [
     "matplotlib",
 ]
 
-try:
-    import mxnet
+# try:
+#     import mxnet
+#
+#     mxnet_requires = []
+# except ModuleNotFoundError:
+#     mxnet_requires = ["mxnet"]
+# except Exception as e:
+#     mxnet_requires = []
+#     logging.error(e)
 
-    mxnet_requires = []
-except ModuleNotFoundError:
-    mxnet_requires = ["mxnet"]
-except Exception as e:
-    mxnet_requires = []
-    logging.error(e)
-
+mxnet_requires = []
 ml_mx_deps = ["gluonnlp"] + mxnet_requires
 
-try:
-    import torch
+# try:
+#     import torch
+#
+#     ml_pytorch_deps = []
+# except ModuleNotFoundError:
+#     import sys
+#
+#     if 5 <= sys.version_info[1] <= 7:
+#         ml_pytorch_deps = ["torch"]
+#     else:
+#         ml_pytorch_deps = []
+#         logging.warning("Current python version %s is not supported by pytorch", str(sys.version_info[:2]))
+# except Exception as e:
+#     ml_pytorch_deps = []
+#     logging.error(e)
 
-    ml_pytorch_deps = []
-except ModuleNotFoundError:
-    import sys
-
-    if 5 <= sys.version_info[1] <= 7:
-        ml_pytorch_deps = ["torch"]
-    else:
-        ml_pytorch_deps = []
-        logging.warning("Current python version %s is not supported by pytorch", str(sys.version_info[:2]))
-except Exception as e:
-    ml_pytorch_deps = []
-    logging.error(e)
+ml_pytorch_deps = []
 
 spider_deps = [
     "requests",
