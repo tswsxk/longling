@@ -9,6 +9,7 @@ matrix:
   
 install:
   - pip install mxnet
+  - pip install torch
   - pip install -e .[test,full]
   - pip install codecov
 
