@@ -33,6 +33,22 @@ ml_base_deps = [
 ]
 
 try:
+    import torch
+
+    ml_pytorch_deps = []
+except ModuleNotFoundError:
+    import sys
+
+    if 5 <= sys.version_info[1] <= 7:
+        ml_pytorch_deps = ["torch"]
+    else:
+        ml_pytorch_deps = []
+        logging.warning("Current python version %s is not supported by pytorch", str(sys.version_info[:2]))
+except Exception as e:
+    ml_pytorch_deps = []
+    logging.error(e)
+
+try:
     import mxnet
 
     mxnet_requires = []
@@ -44,24 +60,6 @@ except Exception as e:
 
 ml_mx_deps = ["gluonnlp"] + mxnet_requires
 
-# try:
-#     import torch
-#
-#     ml_pytorch_deps = []
-# except ModuleNotFoundError:
-#     import sys
-#
-#     if 5 <= sys.version_info[1] <= 7:
-#         ml_pytorch_deps = ["torch"]
-#     else:
-#         ml_pytorch_deps = []
-#         logging.warning("Current python version %s is not supported by pytorch", str(sys.version_info[:2]))
-# except Exception as e:
-#     ml_pytorch_deps = []
-#     logging.error(e)
-
-ml_pytorch_deps = []
-
 spider_deps = [
     "requests",
     "rarfile",
@@ -69,7 +67,7 @@ spider_deps = [
     "lxml"
 ]
 
-ml_full_deps = ml_base_deps + ml_mx_deps + ml_pytorch_deps
+ml_full_deps = ml_base_deps + ml_pytorch_deps + ml_mx_deps
 
 full_deps = ml_full_deps + spider_deps
 
