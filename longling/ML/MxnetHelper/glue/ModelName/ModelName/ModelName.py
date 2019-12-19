@@ -363,6 +363,8 @@ class ModelName(object):
         module.model_init(**kwargs)
 
         module._train(*args)
+        
+        return module
 
     @staticmethod
     def test(test_filename, test_epoch, dump_file=None, **kwargs):

@@ -350,6 +350,8 @@ class ModelName(object):
 
         module._train(*args)
 
+        return module
+
     @staticmethod
     def test(test_filename, test_epoch, dump_file=None, **kwargs):
         from longling.ML.toolkit.formatter import EvalFormatter
