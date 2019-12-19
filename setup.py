@@ -32,16 +32,17 @@ ml_base_deps = [
     "matplotlib",
 ]
 
-try:
-    import mxnet
+# try:
+#     import mxnet
+#
+#     mxnet_requires = []
+# except ModuleNotFoundError:
+#     mxnet_requires = ["mxnet"]
+# except Exception as e:
+#     mxnet_requires = []
+#     logging.error(e)
 
-    mxnet_requires = []
-except ModuleNotFoundError:
-    mxnet_requires = ["mxnet"]
-except Exception as e:
-    mxnet_requires = []
-    logging.error(e)
-
+mxnet_requires = ["mxnet"]
 ml_mx_deps = ["gluonnlp"] + mxnet_requires
 
 try:
