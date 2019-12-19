@@ -4,6 +4,31 @@ import numpy as np
 
 
 class Factor(object):
+    """
+    Examples
+    --------
+    >>> factor = Factor(10, 0, 1, 1)
+    >>> factor.value
+    10
+    >>> factor.value
+    10
+    >>> factor.value
+    9
+    >>> factor.reset()
+    >>> factor.value
+    10
+    >>> factor = Factor(0, 10)
+    >>> factor.value
+    0
+    >>> factor.value
+    0
+    >>> factor = Factor(0, 10, 1)
+    >>> factor.value
+    0
+    >>> factor.value
+    1
+    """
+
     def __init__(
             self, initial_value, end_value, change_rate=0, warmup_steps=0
     ):
@@ -20,11 +45,13 @@ class Factor(object):
         if self._sign == 0:
             return self._value
         else:
-            if self.cnt >= self.warmup_steps and self._sign * (
-                    self._value - self._end_value) > 0:
+            _value = self._value
+            if self.cnt >= self.warmup_steps and self._sign * (self._value - self._end_value) > 0:
+                # start after warm up
                 self._value += self._change_rate
             else:
                 self.cnt += 1
+            return _value
 
     def reset(self):
         self._value = self._initial_value
@@ -32,5 +59,11 @@ class Factor(object):
 
 
 def linearly_decay(initial_rate, min_rate, period, warmup=0):
+    """
+    Examples
+    --------
+    >>> linearly_decay(10, 0, 10, 0)
+    (10, 0, 1.0)
+    """
     assert initial_rate > min_rate
     return initial_rate, min_rate, (initial_rate - min_rate) / (period - warmup)
