@@ -52,7 +52,7 @@ except ModuleNotFoundError:
     import sys
 
     if 5 <= sys.version_info[1] <= 7:
-        ml_pytorch_deps = ["torch==1.3.1+cpu"]
+        ml_pytorch_deps = ["torch"]
     else:
         ml_pytorch_deps = []
         logging.warning("Current python version %s is not supported by pytorch", str(sys.version_info[:2]))
