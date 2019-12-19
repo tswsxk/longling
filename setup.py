@@ -42,6 +42,8 @@ except Exception as e:
     mxnet_requires = []
     logging.error(e)
 
+ml_mx_deps = ["gluonnlp"] + mxnet_requires
+
 try:
     import torch
 
