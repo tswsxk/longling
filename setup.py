@@ -32,18 +32,15 @@ ml_base_deps = [
     "matplotlib",
 ]
 
-# try:
-#     import mxnet
-#
-#     mxnet_requires = []
-# except ModuleNotFoundError:
-#     mxnet_requires = ["mxnet"]
-# except Exception as e:
-#     mxnet_requires = []
-#     logging.error(e)
+try:
+    import mxnet
 
-mxnet_requires = ["mxnet"]
-ml_mx_deps = ["gluonnlp"] + mxnet_requires
+    mxnet_requires = []
+except ModuleNotFoundError:
+    mxnet_requires = ["mxnet"]
+except Exception as e:
+    mxnet_requires = []
+    logging.error(e)
 
 try:
     import torch
