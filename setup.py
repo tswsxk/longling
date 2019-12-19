@@ -12,6 +12,8 @@ test_deps = [
     'pytest>=4',
     'pytest-cov>=2.6.0',
     'pytest-pep8>=1',
+    'mxnet',
+    'torch',
 ]
 
 doc_deps = [
