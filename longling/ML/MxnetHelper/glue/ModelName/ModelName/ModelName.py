@@ -363,7 +363,7 @@ class ModelName(object):
         module.model_init(**kwargs)
 
         module._train(*args)
-        
+
         return module
 
     @staticmethod
