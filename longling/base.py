@@ -9,11 +9,10 @@ integer_types = int
 def unistr(x):
     return x
 
-
-def tostr(x):
-    return str(x)
-
 # py2 aborted
+# def tostr(x):
+#     return str(x)
+
 # string_types = basestring,
 # integer_types = (int, long)
 # unistr = lambda x: x.decode('utf-8')
