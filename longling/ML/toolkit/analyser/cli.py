@@ -3,6 +3,9 @@
 
 import json
 from longling.lib.candylib import as_list
+from .select import get_max
+
+__all__ = ["select_max", "arg_select_max"]
 
 
 def key_parser(key):
@@ -24,29 +27,7 @@ def get_by_key(data, parsed_key):
 
 
 def _select_max(src, *keys, with_keys: (str, None) = None, with_all=False):
-    keys = as_list(keys)
-
-    with_keys = [] if with_keys is None else with_keys.split(";")
-
-    result = {
-        key: None for key in keys
-    }
-
-    result_appendix = {
-        key: None for key in keys
-    }
-
-    with open(src) as f:
-        for line in f:
-            data = json.loads(line)
-            for key in result:
-                _data = get_by_key(data, parsed_key=key_parser(key))
-                if result[key] is None or _data > result[key]:
-                    result[key] = _data
-                    if with_all:
-                        result_appendix[key] = data
-                    elif with_keys:
-                        result_appendix[key] = [(_key, get_by_key(data, key_parser(_key))) for _key in with_keys]
+    result, result_appendix = get_max(src, *keys, with_keys=with_keys, with_all=with_all)
 
     for item in result.items():
         print(item, end='')
