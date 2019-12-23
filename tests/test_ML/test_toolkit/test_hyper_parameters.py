@@ -1,6 +1,7 @@
 # coding: utf-8
 # 2019/12/20 @ tongshiwei
 
+import pytest
 from longling.ML.toolkit.hyper_parameters import extract_params_combinations
 
 
@@ -20,3 +21,7 @@ def test_extract_params_combinations():
 
     for candidate in combinations:
         assert candidate["f"] == external["e"]
+
+    candidates = {"a": "$b"}
+    with pytest.raises(TypeError):
+        extract_params_combinations(candidates)
