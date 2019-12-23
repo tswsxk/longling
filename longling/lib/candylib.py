@@ -1,4 +1,4 @@
-__all__ = ['as_list']
+__all__ = ['as_list', 'dict2pv', 'list2dict', 'get_dict_by_path']
 
 
 def as_list(obj):
@@ -27,6 +27,58 @@ def as_list(obj):
         return obj
     else:
         return [obj]
+
+
+def list2dict(list_obj, value=None, dict_obj=None):
+    """
+    >>> list_obj = ["a", 2, "c"]
+    >>> list2dict(list_obj, 10)
+    {'a': {2: {'c': 10}}}
+    """
+    dict_obj = {} if dict_obj is None else dict_obj
+    _dict_obj = dict_obj
+    for e in list_obj[:-1]:
+        if e not in _dict_obj:
+            _dict_obj[e] = {}
+        _dict_obj = _dict_obj[e]
+    _dict_obj[list_obj[-1]] = value
+
+    return dict_obj
+
+
+def get_dict_by_path(dict_obj, path_to_node):
+    """
+    >>> dict_obj = {"a": {"b": {"c": 1}}}
+    >>> get_dict_by_path(dict_obj, ["a", "b", "c"])
+    1
+    """
+    _dict_obj = dict_obj
+    for p in path_to_node:
+        _dict_obj = _dict_obj[p]
+    return _dict_obj
+
+
+def dict2pv(dict_obj: dict, path_to_node: list = None):
+    """
+    >>> dict_obj = {"a": {"b": [1, 2], "c": "d"}, "e": 1}
+    >>> a, b = dict2pv(dict_obj)
+    >>> a
+    [['a', 'b'], ['a', 'c'], ['e']]
+    >>> b
+    [[1, 2], 'd', 1]
+    """
+    paths = []
+    values = []
+    path_to_node = [] if path_to_node is None else path_to_node
+    for key, value in dict_obj.items():
+        if isinstance(value, dict):
+            _paths, _values = dict2pv(dict_obj[key], path_to_node + [key])
+            paths.extend(_paths)
+            values.extend(_values)
+        else:
+            paths.append(path_to_node + [key])
+            values.append(value)
+    return paths, values
 
 
 def get_all_subclass(cls):  # pragma: no cover
