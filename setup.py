@@ -30,6 +30,7 @@ ml_base_deps = [
     "scipy",
     "sklearn",
     "matplotlib",
+    "nvidia-ml-py3",
 ]
 
 try:
