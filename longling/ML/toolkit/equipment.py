@@ -42,7 +42,7 @@ def _get_device_free(device_id):
     return mem_info.free / mem_info.total
 
 
-def get_device_free(device_id=None):
+def get_device_free(device_id: int = None):
     if device_id is not None:
         return _get_device_free(device_id)
     else:
@@ -51,5 +51,10 @@ def get_device_free(device_id=None):
         ]
 
 
-def get_free_device_ids(threshold=0.5):
-    return [_id for _id, _f in get_device_free() if _f >= threshold]
+def get_free_device_ids(threshold=0.5, device_ids=None):
+    device_ids = set(device_ids) if device_ids else set(range(pynvml.nvmlDeviceGetCount()))
+    return [_id for _id, _f in get_device_free() if _f >= threshold and _id in device_ids]
+
+
+def get_device_num():
+    return pynvml.nvmlDeviceGetCount()
