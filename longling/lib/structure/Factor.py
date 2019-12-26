@@ -27,6 +27,9 @@ class Factor(object):
     0
     >>> factor.value
     1
+    >>> factor = Factor(10, 10)
+    >>> for _ in range(5):
+    ...     assert factor.value == 10
     """
 
     def __init__(
