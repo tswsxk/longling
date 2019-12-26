@@ -23,5 +23,6 @@ def test_extract_params_combinations():
         assert candidate["f"] == external["e"]
 
     candidates = {"a": "$b"}
-    with pytest.raises(TypeError):
-        extract_params_combinations(candidates)
+    with pytest.raises(KeyError):
+        for _ in extract_params_combinations(candidates):
+            pass
