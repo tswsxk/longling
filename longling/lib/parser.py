@@ -12,6 +12,7 @@ import logging
 import os
 import re
 from collections import Iterable
+import sys
 
 from longling import wf_open
 from longling.lib.path import path_append
@@ -323,6 +324,7 @@ class ConfigurationParser(argparse.ArgumentParser):
         cli_parser = ConfigurationParser([$function1, $function2])
 
     用以下三种解析方式中任意一种来解析参数：
+
     * 命令行模式 ::
 
         cli_parser()
@@ -504,6 +506,88 @@ class ConfigurationParser(argparse.ArgumentParser):
             argspec.kwonlyargs,
             argspec.kwonlydefaults.values() if argspec.kwonlydefaults else []
         )
+
+
+class ParserGroup(argparse.ArgumentParser):
+    """
+    >>> class TestC(Configuration):
+    ...     a = 1
+    ...     b = 2
+    >>> def test_f1(k=1):
+    ...     return k
+    >>> def test_f2(h=1):
+    ...      return h
+    >>> class TestC2(Configuration):
+    ...     c = 3
+    >>> parser1 = ConfigurationParser(TestC, commands=[test_f1])
+    >>> parser2 = ConfigurationParser(TestC, commands=[test_f2])
+    >>> pg = ParserGroup({"model1": parser1, "model2": parser2})
+    >>> pg(["model1", "test_f1"])
+    {'a': 1, 'b': 2, 'k': 1, 'subcommand': 'test_f1'}
+    >>> pg("model2 test_f2")
+    {'a': 1, 'b': 2, 'h': 1, 'subcommand': 'test_f2'}
+    """
+
+    def __init__(self, parsers: dict, prog=None,
+                 usage=None,
+                 description=None,
+                 epilog=None, add_help=True):
+        super(ParserGroup, self).__init__(
+            prog=prog,
+            usage=usage,
+            description=description,
+            epilog=epilog,
+            add_help=add_help
+        )
+        self.parsers = parsers
+
+    def parse_args(self, args=None):
+        args = sys.argv[1:] if args is None else args
+        if args[0] in {"-h", "--help"}:  # pragma: no cover
+            return super(ParserGroup, self).parse_args(args)
+        else:
+            target_parser = self.parsers[args[0]]
+            real_args = args[1:]
+            return target_parser.parse_args(real_args)
+
+    def __call__(self, args: (str, list, None) = None) -> (dict, None):
+        if isinstance(args, str):
+            args = args.split(" ")
+        args = sys.argv[1:] if args is None else args
+        if args[0] in {"-h", "--help"}:  # pragma: no cover
+            self.parse_args(args)
+            return
+        kwargs = self.parse_args(args)
+        target_parser = args[0]
+        return self.parsers[target_parser].parse(kwargs)
+
+    def format_help(self) -> str:
+        # hacking the original method
+        formatter = self._get_formatter()
+
+        # usage
+        formatter.add_usage(self.usage, self._actions,
+                            self._mutually_exclusive_groups)
+
+        # description
+        formatter.add_text(self.description)
+
+        # positionals, optionals and user-defined groups
+        for title, parser in self.parsers.items():
+            formatter.start_section(title)
+            formatter.add_text(parser.description)
+            for action_group in parser._action_groups:
+                formatter.start_section(action_group.title)
+                formatter.add_text(action_group.description)
+                formatter.add_arguments(action_group._group_actions)
+                formatter.end_section()
+            formatter.end_section()
+
+        # epilog
+        formatter.add_text(self.epilog)
+
+        # determine help from format above
+        return formatter.format_help()
 
 
 class Formatter(object):
