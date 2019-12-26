@@ -4,6 +4,7 @@
 import json
 from longling import wf_open, path_append
 from longling.lib.parser import get_parsable_var, load_configuration_json, Configuration
+from longling.lib.parser import ConfigurationParser, ParserGroup
 
 
 class DemoConfiguration(Configuration):
@@ -48,3 +49,11 @@ def test_configuration(tmpdir):
     print(_config)
 
     assert len(_config.items()) == 2
+
+
+def test_parser():
+    parser = ConfigurationParser(DemoConfiguration)
+
+    pg = ParserGroup({"train": parser, "test": parser})
+
+    pg.print_help()
