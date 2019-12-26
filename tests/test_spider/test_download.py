@@ -9,7 +9,7 @@ from longling.lib.path import file_exist
 
 
 def test_download_data(tmp_path):
-    url = "http://base.ustc.edu.cn/data/ASSISTment/2015_100_skill_builders_main_problems.zip "
+    url = "http://base.ustc.edu.cn/data/EdNet/EdNet-Contents.zip "
     tmp_file = path_append(tmp_path, "download", to_str=True)
 
     download_file(url, decomp=False)
