@@ -13,14 +13,14 @@ from pathlib import PurePath
 from longling.base import string_types
 
 __all__ = ['rf_open', 'wf_open', 'wf_close', 'flush_print', 'build_dir', 'json_load',
-           'pickle_load', 'AddPrinter', 'AddObject', 'StreamError', 'check_file']
+           'pickle_load', 'AddPrinter', 'AddObject', 'StreamError', 'check_file', 'PATH_TYPE']
 
 
 class StreamError(Exception):
     pass
 
 
-IO_TYPE = (string_types, PurePath)
+PATH_TYPE = (string_types, PurePath)
 
 
 def flush_print(*values, **kwargs):
@@ -73,7 +73,7 @@ def rf_open(filename, encoding='utf-8', **kwargs):
 
 def json_load(fp, **kwargs):
     import json
-    if isinstance(fp, IO_TYPE):
+    if isinstance(fp, PATH_TYPE):
         fp = rf_open(fp, **kwargs)
         datas = json.load(fp, **kwargs)
         fp.close()
@@ -84,7 +84,7 @@ def json_load(fp, **kwargs):
 
 def pickle_load(fp, encoding='utf-8', mode='rb', **kwargs):
     import pickle
-    if isinstance(fp, IO_TYPE):
+    if isinstance(fp, PATH_TYPE):
         fp = open(fp, mode=mode, **kwargs)
         datas = pickle.load(fp, encoding=encoding, **kwargs)
         fp.close()
@@ -126,7 +126,7 @@ def wf_open(stream_name: (string_types, PurePath, None) = '', mode="w", encoding
             return sys.stdout
         else:
             raise TypeError("Unknown mode for std mode, only `stdout` and `stderr` are supported.")
-    elif isinstance(stream_name, IO_TYPE):
+    elif isinstance(stream_name, PATH_TYPE):
         build_dir(stream_name)
         if mode == "wb":
             return open(stream_name, mode=mode)
