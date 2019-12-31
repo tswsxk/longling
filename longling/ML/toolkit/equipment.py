@@ -12,7 +12,7 @@ try:
     import pynvml
 
     pynvml.nvmlInit()
-except OSError as e:  # pragma: no cover
+except Exception as e:  # pragma: no cover
     import logging
 
     logging.error("import pynvml failed")
