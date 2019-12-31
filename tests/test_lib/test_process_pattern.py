@@ -19,6 +19,8 @@ def test_variable_replace():
     with pytest.raises(KeyError):
         variable_replace(demo_string2, key_lower=False, who="world", name="longling")
 
+    assert variable_replace("$PROJECT-", project="longling") == "longling-"
+
 
 def test_patterner():
     tmp = mode_dict[0]
