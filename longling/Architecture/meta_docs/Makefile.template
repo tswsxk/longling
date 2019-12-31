@@ -1,4 +1,4 @@
-VERSION=`ls dist/*.tar.gz | sed "s/dist\/longling-\(.*\)\.tar\.gz/\1/g"`
+VERSION=`ls dist/*.tar.gz | sed "s/dist\/$PROJECT-\(.*\)\.tar\.gz/\1/g"`
 
 ifdef ENVPIP
     PIP = $(ENVPIP)
@@ -20,7 +20,7 @@ endif
 
 help:
 
-	@echo "install              install longling"
+	@echo "install              install $PROJECT"
 	@echo "test                 run test"
 	@echo "release              publish to PyPI and release in github"
 	@echo "release_test         publish to TestPyPI"
@@ -32,7 +32,7 @@ help:
 .PHONY: install, test, build, release, release_test, version, .test, .build, clean
 
 install:
-	@echo "install longling"
+	@echo "install $PROJECT"
 	$(PIP) install -e . --user
 
 test:
