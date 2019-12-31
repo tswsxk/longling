@@ -4,7 +4,9 @@
 __all__ = [
     "gitignore",
     "pytest", "coverage",
-    "pysetup", "sphinx_conf", "readthedocs", "makefile", "template_copy"
+    "pysetup", "sphinx_conf", "makefile",
+    "readthedocs", "travis",
+    "template_copy",
 ]
 
 import functools
