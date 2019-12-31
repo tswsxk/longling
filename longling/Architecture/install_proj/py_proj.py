@@ -11,7 +11,10 @@ def py_proj(tar_dir, main_params, docs_params):
 
     pysetup(tar_dir, **variables)
 
+    makefile(tar_dir, **variables)
+
     pytest(tar_dir)
+    coverage(tar_dir)
 
     gitignore("python", tar_dir)
 
