@@ -22,6 +22,11 @@ def cli(skip_top=True, project=None, **kwargs):  # pragma: no cover
     else:
         docs_params = {}
 
+    indicator = dict(
+        travis=True if legal_input("Install docs (y/n, default is y) < ", __legal_input={'y', 'n'},
+                                   __default_value='y') == 'y' else False
+    )
+
     if skip_top:
         tar_dir = "./"
     else:
@@ -29,4 +34,4 @@ def cli(skip_top=True, project=None, **kwargs):  # pragma: no cover
 
     __project_type = main_params["project_type"]
 
-    project_types[__project_type](tar_dir=tar_dir, main_params=main_params, docs_params=docs_params)
+    project_types[__project_type](tar_dir=tar_dir, main_params=main_params, docs_params=docs_params, **indicator)
