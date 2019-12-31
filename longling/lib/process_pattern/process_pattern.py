@@ -126,9 +126,3 @@ class PatternHitter(object):
 
         # def hit_num(self, line):
         #     return len(self.hit_group(line))
-
-
-if __name__ == '__main__':
-    import doctest
-
-    doctest.testmod()
