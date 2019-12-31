@@ -68,23 +68,20 @@ class PatternHitter(object):
         else:
             self.pps = init_patterns(location, mode)
 
-    def is_in(self, line):
+    def is_in(self, line: str):
         """
         检查输入中是否命中规则
 
         Parameters
         ----------
-        line: string_type
+        line: str
 
         Returns
         -------
         bool
             命中返回True
         """
-        if isinstance(line, str):
-            line = unistr(line)
-        if not isinstance(line, string_types):
-            raise Exception("输入必须是str或unicode")
+
         for name, (ps1, ps2) in self.pps.items():
             t1 = regex(ps1, line)
             t2 = regex(ps2, line)
@@ -94,23 +91,20 @@ class PatternHitter(object):
                 return True
         return False
 
-    def hit_num(self, line):
+    def hit_num(self, line: str):
         """
         计算输入命中规则的次数
 
         Parameters
         ----------
-        line: string_type
+        line: str
 
         Returns
         -------
         int
             命中次数
         """
-        if isinstance(line, str):
-            line = unistr(line)
-        if not isinstance(line, string_types):
-            raise ProcessPatternEncodedError("输入必须是str或unicode")
+
         t = 0
         for name, (ps1, ps2) in self.pps.items():
             t1 = regex(ps1, line)

@@ -6,7 +6,6 @@ import json
 import logging
 import re
 
-from longling.base import string_types
 from longling.lib.stream import wf_open
 
 __all__ = ["EvalFormatter", "MultiClassEvalFormatter"]
@@ -148,7 +147,7 @@ class EvalFormatter(object):
             log_f = kwargs.get('log_f', self.log_f)
             if log_f is not None:
                 try:
-                    if log_f is not None and isinstance(log_f, string_types):
+                    if log_f is not None and isinstance(log_f, str):
                         log_f = codecs.open(log_f, "a", encoding="utf-8")
                         print(json.dumps(data, ensure_ascii=False), file=log_f)
                         log_f.close()

@@ -10,8 +10,6 @@ import os
 import sys
 from pathlib import PurePath
 
-from longling.base import string_types
-
 __all__ = ['rf_open', 'wf_open', 'wf_close', 'flush_print', 'build_dir', 'json_load',
            'pickle_load', 'AddPrinter', 'AddObject', 'StreamError', 'check_file', 'PATH_TYPE']
 
@@ -20,7 +18,7 @@ class StreamError(Exception):
     pass
 
 
-PATH_TYPE = (string_types, PurePath)
+PATH_TYPE = (str, PurePath)
 
 
 def flush_print(*values, **kwargs):
@@ -93,7 +91,7 @@ def pickle_load(fp, encoding='utf-8', mode='rb', **kwargs):
         return pickle.load(fp, encoding=encoding, **kwargs)
 
 
-def wf_open(stream_name: (string_types, PurePath, None) = '', mode="w", encoding="utf-8"):
+def wf_open(stream_name: (PATH_TYPE, None) = '', mode="w", encoding="utf-8"):
     r"""
     Simple wrapper to codecs for writing.
 

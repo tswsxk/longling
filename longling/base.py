@@ -2,9 +2,6 @@
 # create by tongshiwei on 2017/12/2
 from __future__ import absolute_import
 
-string_types = str,
-integer_types = int
-
 
 def unistr(x):
     return x

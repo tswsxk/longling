@@ -4,7 +4,6 @@
 
 import logging
 
-from longling.base import string_types
 from longling.lib.stream import build_dir
 
 __all__ = ["LogLevel", "config_logging"]
@@ -62,7 +61,7 @@ def config_logging(filename=None,
     """
     if logger is None:
         logger = logging.getLogger()
-    elif isinstance(logger, string_types):
+    elif isinstance(logger, str):
         logger = logging.getLogger(logger)
 
     if isinstance(level, str):
