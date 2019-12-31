@@ -5,6 +5,7 @@ from longling import wf_open, path_append
 from longling.Architecture.install_file import template_copy
 from longling.Architecture.install_file import gitignore, pytest as gen_pytest, coverage, pysetup, sphinx_conf
 from longling.Architecture.install_file import readthedocs, makefile
+from longling.Architecture.install_proj import py_proj, docs_proj
 
 
 def test_template_copy(tmpdir):
@@ -43,3 +44,8 @@ def test_files(tmpdir):
 
     with open(path_append(tmpdir, "Makefile")) as f:
         assert f.readline().strip() == r"""VERSION=`ls dist/*.tar.gz | sed "s/dist\/longling-\(.*\)\.tar\.gz/\1/g"`"""
+
+
+def test_proj(tmpdir):
+    docs_proj(tmpdir, {"docs_root": "docs/"})
+    py_proj(tmpdir, {}, {"docs_root": "docs/"}, travis=True)
