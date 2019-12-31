@@ -20,3 +20,6 @@ def py_proj(tar_dir, main_params, docs_params, **kwargs):
 
     if docs_params:
         docs_proj(tar_dir, docs_params, __gitignore=False)
+
+    if kwargs.get("travis") is True:
+        travis(tar_dir)
