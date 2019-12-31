@@ -1,10 +1,10 @@
 # coding: utf-8
 # create by tongshiwei on 2017/12/2
-from __future__ import absolute_import
+# from __future__ import absolute_import
 
-
-def unistr(x):
-    return x
+# py2 aborted
+# def unistr(x):
+#     return x
 
 # py2 aborted
 # def tostr(x):
