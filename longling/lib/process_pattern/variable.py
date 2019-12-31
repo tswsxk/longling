@@ -11,7 +11,7 @@ __all__ = ["variable_replace", "default_variable_replace"]
 
 import re
 
-VARIABLE_REGEX = r"(\$[A-z_]*)\b"
+VARIABLE_REGEX = r"(\$[A-z_]*)"
 VARIABLE = re.compile(VARIABLE_REGEX)
 
 
