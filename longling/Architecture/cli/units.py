@@ -8,7 +8,7 @@ from longling.Architecture.install_proj import project_types
 from longling.Architecture.cli.utils import legal_input
 
 
-def main_cli(project, **kwargs):
+def main_cli(project, **kwargs):  # pragma: no cover
     params = dict(
         project=legal_input("Project Name < ", is_legal=lambda x: True if x else False) if not project else project,
         project_type=legal_input("Project Type (%s) < " % "/".join(project_types), __legal_input=project_types),
@@ -16,7 +16,7 @@ def main_cli(project, **kwargs):
     return params
 
 
-def docs_cli(project=None, title=None, author=None, copyright=None, **kwargs):
+def docs_cli(project=None, title=None, author=None, copyright=None, **kwargs):  # pragma: no cover
     params = dict(
         project=legal_input("Project Name < ", is_legal=lambda x: True if x else False) if not project else project,
         docs_root="docs/" if legal_input("mkdir docs? (y/n, default is n) < ",
