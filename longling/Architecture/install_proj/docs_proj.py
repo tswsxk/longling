@@ -7,7 +7,6 @@ from longling.Architecture.install_file import sphinx_conf, readthedocs, gitigno
 
 
 def docs_proj(tar_dir, docs_params, __gitignore=True, **kwargs):
-    assert docs_params
     variables = {}
     variables.update(docs_params)
 
