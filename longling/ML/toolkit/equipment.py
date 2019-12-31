@@ -8,10 +8,16 @@ mem_info.free: 剩余显存大小
 
 上述三个量单位都是字节bytes
 """
+try:
+    import pynvml
 
-import pynvml
+    pynvml.nvmlInit()
+except OSError as e:  # pragma: no cover
+    import logging
 
-pynvml.nvmlInit()
+    logging.error("import pynvml failed")
+    logging.error(e)
+    logging.warning("do not use this module before the problem is fixed")
 
 
 def _get_device_info(device_id):
