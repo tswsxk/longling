@@ -6,7 +6,7 @@ __all__ = ["toc"]
 from pathlib import Path
 
 
-def toc(root, parent=None, is_last=False, criteria=None):
+def toc(root="./", parent=None, is_last=False, criteria=None):
     paths = DisplayablePath.make_tree(root, parent, is_last, criteria)
     for path in paths:
         print(path.displayable())
