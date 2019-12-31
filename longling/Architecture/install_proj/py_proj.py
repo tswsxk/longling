@@ -5,7 +5,7 @@ from longling.Architecture.install_proj.docs_proj import docs_proj
 from longling.Architecture.install_file import *
 
 
-def py_proj(tar_dir, main_params, docs_params):
+def py_proj(tar_dir, main_params, docs_params, **kwargs):
     variables = {}
     variables.update(main_params)
 
