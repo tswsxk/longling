@@ -2,25 +2,22 @@
 # todo 文件说明写成 README.md
 """
 此文件用以处理文件正则，需要指定一个正则规则文件
-文件正则文件各式如下
+文件正则文件格式如下
 
+0 号模式
+不可命中规则: 命中规则
+
+1 号模式
 不可命中规则1 不可命中规则2: 命中规则1 命中规则2
 
 规则之间由空格分割，不可命中可以有也可以没有，不可命中和可命中规则均可有多个
-在 分号: 前的规则有一个被命中视为与该正则规则不符，
-分号: 后的规则有一个被命中，视为符合
-
-规则实例文件见example/process_pattern_regex.exp
+在 冒号: 前的规则有一个被命中视为与该正则规则不符，
+冒号: 后的规则有一个被命中，视为符合
 """
-from __future__ import absolute_import
-from __future__ import print_function
-from __future__ import unicode_literals
 
-from longling.base import *
-from longling.lib.process_pattern.pattener import line_init_patterns, \
-    init_patterns
-from longling.lib.process_pattern.process_pattern_base import \
-    ProcessPatternEncodedError
+from longling.lib.process_pattern.pattener import line_init_patterns, init_patterns
+
+__all__ = ["PatternHitter"]
 
 
 def regex(ps, line):
@@ -42,15 +39,15 @@ class PatternHitter(object):
 
     Examples
     --------
-    >>> p = PatternHitter(":世界 和平", 1)
+    >>> p = PatternHitter("黑色毛衣:世界 和平", 1)
     >>> print(p.hit_num("世界 和平"))
     1
-    >>> print(p.is_in(u"世界和平"))
+    >>> print(p.is_in("世界和平"))
     True
-    >>> p = PatternHitter(":世界 和平", 0)
+    >>> p = PatternHitter("止战之殇:世界 和平", 0)
     >>> print(p.hit_num("世界 和平"))
     1
-    >>> print(p.is_in(u"世界和平"))
+    >>> print(p.is_in("世界和平"))
     False
     """
 
@@ -123,6 +120,3 @@ class PatternHitter(object):
                 # 不满足1的同时满足2才行
                 hit_group.append(name)
         return hit_group
-
-        # def hit_num(self, line):
-        #     return len(self.hit_group(line))

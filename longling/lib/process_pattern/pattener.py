@@ -1,10 +1,10 @@
-from __future__ import absolute_import
-
 import re
 
 from .process_pattern_base import *
 
 mode_dict = {}
+
+__all__ = ["register", "mode_dict", "init_patterns", "line_init_patterns"]
 
 
 def register(number):
@@ -22,34 +22,33 @@ def register(number):
     return _register
 
 
+def _init_line(line):
+    try:
+        line = line.strip()
+        line1, line2 = line.split(':')
+        return line, (line1, line2)
+    except Exception:
+        raise ValueError('error in %s' % line)
+
+
 @register(0)
 def _init_patterns0(line, pps=None):
-    try:
-        line = line.decode('utf-8').strip()
-    except AttributeError:
-        pass
-    try:
-        line1, line2 = line.split(':')
-    except Exception:
-        raise ProcessPatternLineError('error in %s' % line)
+    line, (line1, line2) = _init_line(line)
 
-    v = line1.strip()
-    ps1 = []
-    if v:
-        try:
-            p = re.compile(v)
-        except Exception:
-            raise ProcessPatternLineError('error in %s' % line)
+    try:
+        v = line1.strip()
+        ps1 = []
+        p = re.compile(v)
         ps1.append(p)
 
-    v = line2.strip()
-    assert v
-    ps2 = []
-    try:
+        v = line2.strip()
+        assert v
+
+        ps2 = []
         p = re.compile(v)
-    except Exception:
-        raise ProcessPatternLineError('error in %s' % line)
-    ps2.append(p)
+        ps2.append(p)
+    except Exception:  # pragma: no cover
+        raise ValueError('error in %s' % line)
 
     if pps is not None and isinstance(pps, dict):
         pps[line] = (ps1, ps2)
@@ -58,33 +57,23 @@ def _init_patterns0(line, pps=None):
 
 @register(1)
 def _init_patterns1(line, pps):
-    try:
-        line = line.decode('utf-8').strip()
-    except AttributeError:
-        pass
-    try:
-        line1, line2 = line.split(':')
-    except Exception:
-        raise ProcessPatternLineError('error in %s' % line)
+    line, (line1, line2) = _init_line(line)
 
-    vs = line1.split()
-    ps1 = []
-    for v in vs:
-        try:
+    try:
+        vs = line1.split()
+        ps1 = []
+        for v in vs:
             p = re.compile(v)
-        except Exception:
-            raise ProcessPatternLineError('error in %s' % line)
-        ps1.append(p)
+            ps1.append(p)
 
-    vs = line2.split()
-    ps2 = []
-    for v in vs:
-        try:
+        vs = line2.split()
+        ps2 = []
+        for v in vs:
             p = re.compile(v)
-        except Exception:
-            print("error:", v)
-            raise ProcessPatternLineError('error in %s' % line)
-        ps2.append(p)
+            ps2.append(p)
+
+    except Exception:  # pragma: no cover
+        raise ValueError('error in %s' % line)
 
     if pps is not None and isinstance(pps, dict):
         pps[line] = (ps1, ps2)
@@ -112,7 +101,7 @@ def _init_patterns(location, patterns):
         for line in f:
             try:
                 patterns(line, pps)
-            except ProcessPatternLineError as e:
+            except ValueError as e:  # pragma: no cover
                 print(e)
                 continue
     return pps
@@ -136,7 +125,7 @@ def line_init_patterns(line, mode, pps=None):
 
     """
     if mode not in mode_dict:
-        raise ProcessPatternNotExistedPatternError(
+        raise KeyError(
             "available mode is %s" % list(mode_dict.keys())
         )
     return mode_dict[mode](line, pps)
