@@ -26,6 +26,11 @@ def json2csv(src, tar, delimiter=",", **kwargs):
             csv_writer.writerow(line)
 
 
+def load_file(src: PATH_TYPE):
+    with rf_open(src) as f:
+        yield f.readline()
+
+
 def load_csv(src: PATH_TYPE, delimiter=",", **kwargs):
     """read the dict from csv"""
     with rf_open(src) as f:
@@ -48,4 +53,6 @@ def loading(src: (PATH_TYPE, ...)):
             return load_csv(src)
         elif suffix == "json":
             return load_json(src)
+        else:
+            return load_file(src)
     return src
