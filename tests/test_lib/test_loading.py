@@ -12,8 +12,7 @@ Jerry,1
 
 
 def text_to_csv(path):
-    src = path_append(path)
-    with wf_open(src) as wf:
+    with wf_open(path) as wf:
         print(DEMO_TEXT.strip(), file=wf)
 
 
@@ -59,3 +58,9 @@ def test_loading(tmpdir):
                 assert line["name"] == "Tom", line
             elif i == 1:
                 assert line["name"] == "Jerry", line
+
+    src = path_append(tmpdir, "test")
+    with wf_open(src) as wf:
+        print(DEMO_TEXT.strip(), file=wf)
+
+    assert [line.strip() for line in loading(src)] == DEMO_TEXT.strip().split("\n")

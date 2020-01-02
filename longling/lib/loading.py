@@ -28,7 +28,8 @@ def json2csv(src, tar, delimiter=",", **kwargs):
 
 def load_file(src: PATH_TYPE):
     with rf_open(src) as f:
-        yield f.readline()
+        for line in f:
+            yield line
 
 
 def load_csv(src: PATH_TYPE, delimiter=",", **kwargs):
