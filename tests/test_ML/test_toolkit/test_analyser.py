@@ -4,6 +4,7 @@
 import json
 from longling import path_append, wf_open
 from longling.ML.toolkit.analyser.cli import select_max, arg_select_max
+from longling.ML.toolkit.analyser import get_max
 
 result_demo = [
     {"Epoch": 0, "train_time": 283.87022066116333, "SLMLoss": 0.27298363054701535, "auc": 0.6983898502363638,
@@ -19,6 +20,10 @@ result_demo = [
              "1": {"f1": 0.6777260141158684, "precision": 0.6958208904860724, "recall": 0.6605484015632007},
              "avg": {"recall": 0.7381079959087384, "f1": 0.7402031888678839, "precision": 0.7429605581456231}}}
 ]
+
+
+def test_get_max():
+    assert get_max(result_demo, "prf:0:f1")[0]["prf:0:f1"] == 0.8026803636198995
 
 
 def test_cli(tmp_path):
