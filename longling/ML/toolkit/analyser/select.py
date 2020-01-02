@@ -3,6 +3,8 @@
 
 import json
 from longling.lib.candylib import as_list
+from longling import PATH_TYPE
+from typing import overload
 
 __all__ = ["get_max"]
 
@@ -25,7 +27,34 @@ def get_by_key(data, parsed_key):
     return _data
 
 
-def get_max(src, *keys, with_keys: (str, None) = None, with_all=False):
+@overload
+def get_max(src: list, *keys, with_keys: (str, None) = None, with_all=False):
+    keys = as_list(keys)
+
+    with_keys = [] if with_keys is None else with_keys.split(";")
+
+    result = {
+        key: None for key in keys
+    }
+
+    result_appendix = {
+        key: None for key in keys
+    }
+
+    for data in src:
+        for key in result:
+            _data = get_by_key(data, parsed_key=key_parser(key))
+            if result[key] is None or _data > result[key]:
+                result[key] = _data
+                if with_all:
+                    result_appendix[key] = data
+                elif with_keys:
+                    result_appendix[key] = [(_key, get_by_key(data, key_parser(_key))) for _key in with_keys]
+
+    return result, result_appendix
+
+
+def get_max(src: PATH_TYPE, *keys, with_keys: (str, None) = None, with_all=False):
     keys = as_list(keys)
 
     with_keys = [] if with_keys is None else with_keys.split(";")
