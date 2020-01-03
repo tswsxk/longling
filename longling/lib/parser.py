@@ -345,7 +345,7 @@ class ConfigurationParser(argparse.ArgumentParser):
 
     Parameters
     ----------
-    class_obj:
+    class_type:
         类。注意是类，不是类实例。
     excluded_names:
         类中不进行解析的变量名集合
@@ -389,14 +389,14 @@ class ConfigurationParser(argparse.ArgumentParser):
     {'c': {'_c': 3, '_d': 0.3}}
     """
 
-    def __init__(self, class_obj, excluded_names: (set, None) = None, commands=None, *args, **kwargs):
+    def __init__(self, class_type, excluded_names: (set, None) = None, commands=None, *args, **kwargs):
         excluded_names = {
             'logger'
         } if excluded_names is None else excluded_names
 
         self.__proto_type = argparse.ArgumentParser(add_help=False)
 
-        params = {k: v for k, v in get_class_var(class_obj).items()}
+        params = {k: v for k, v in get_class_var(class_type).items()}
         for param, value in params.items():
             if param in excluded_names:  # pragma: no cover
                 continue
