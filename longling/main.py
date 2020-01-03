@@ -11,6 +11,7 @@ from longling.toolbox import toc
 from longling.Architecture.cli import cli as arch
 from longling import Architecture as arch_cli
 from longling.lib.loading import csv2json, json2csv
+from longling.spider import download_file as download
 
 tarch = functools.partial(arch, author="Shiwei Tong")
 
@@ -31,6 +32,7 @@ def cli():  # pragma: no cover
             "csv2json": csv2json,
             "json2csv": json2csv,
             "encoding": encoding,
+            "download": download,
         }
     )
 
