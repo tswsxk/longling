@@ -5,6 +5,7 @@
 
 from __future__ import print_function
 
+from tqdm import tqdm
 import codecs
 import os
 import sys
@@ -146,7 +147,7 @@ def wf_close(stream):
 
 def encoding(src, src_encoding, tar, tar_encoding):
     with rf_open(src, encoding=src_encoding) as f, wf_open(tar, encoding=tar_encoding) as wf:
-        for line in f:
+        for line in tqdm(f, "encoding %s[%s] --> %s[%s]" % (src, src_encoding, tar, tar_encoding)):
             print(line, end='', file=wf)
 
 
