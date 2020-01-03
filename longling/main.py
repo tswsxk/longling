@@ -4,6 +4,7 @@
 import functools
 import fire
 
+from longling.lib.stream import encoding
 from longling.ML.toolkit.dataset import train_valid_test, train_test, train_valid, kfold
 from longling.ML.toolkit.analyser.cli import select_max, arg_select_max
 from longling.toolbox import toc
@@ -29,6 +30,7 @@ def cli():  # pragma: no cover
             "amax": arg_select_max,
             "csv2json": csv2json,
             "json2csv": json2csv,
+            "encoding": encoding,
         }
     )
 

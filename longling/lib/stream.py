@@ -11,7 +11,7 @@ import sys
 from pathlib import PurePath
 
 __all__ = ['rf_open', 'wf_open', 'wf_close', 'flush_print', 'build_dir', 'json_load',
-           'pickle_load', 'AddPrinter', 'AddObject', 'StreamError', 'check_file', 'PATH_TYPE']
+           'pickle_load', 'AddPrinter', 'AddObject', 'StreamError', 'check_file', 'PATH_TYPE', 'encoding']
 
 
 class StreamError(Exception):
@@ -142,6 +142,12 @@ def wf_close(stream):
             stream.close()
         except Exception:
             raise StreamError('wf_close: %s' % stream)
+
+
+def encoding(src, src_encoding, tar, tar_encoding):
+    with rf_open(src, encoding=src_encoding) as f, wf_open(tar, encoding=tar_encoding) as wf:
+        for line in f:
+            print(line, end='', file=wf)
 
 
 class AddObject(object):

@@ -109,3 +109,19 @@ def test_add(capsys, tmp_path):
         assert captured.out == "%s\n" % i
 
     wf_close(wf)
+
+
+def test_encoding(tmpdir):
+    demo_text = "测试用中文\nhello world\n如果再重来"
+
+    src = path_append(tmpdir, "gbk.txt")
+    tar = path_append(tmpdir, "utf8.txt")
+
+    with wf_open(src, encoding="gbk") as wf:
+        print(demo_text, end='', file=wf)
+
+    encoding(src, "gbk", tar, "utf-8")
+
+    with rf_open(tar) as f:
+        for line in f:
+            print(line)
