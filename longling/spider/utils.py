@@ -1,5 +1,6 @@
 # coding: utf-8
 # 2019/12/9 @ tongshiwei
+import os
 import gzip
 import shutil
 import tarfile
@@ -59,6 +60,7 @@ def un_gzip(file):  # pragma: no cover
     with gzip.open(file, 'rb') as f_in:
         with open(uz_file, 'wb') as f_out:
             shutil.copyfileobj(f_in, f_out)
+    os.remove(file)
 
 
 def reporthook4urlretrieve(blocknum, bs, size):
