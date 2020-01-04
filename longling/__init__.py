@@ -21,4 +21,4 @@ from longling.lib import candylib
 from longling.lib import path
 from longling.lib import parser
 
-__version__ = '1.3.6'
+__version__ = '1.3.7'
