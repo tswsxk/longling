@@ -1,5 +1,7 @@
 # coding: utf-8
 # 2019/12/9 @ tongshiwei
+import gzip
+import shutil
 import tarfile
 import zipfile
 import rarfile
@@ -10,19 +12,21 @@ __all__ = ["decompress", "get_path", "un_zip", "un_rar", "un_tar", "reporthook4u
 
 
 def decompress(file):  # pragma: no cover
-    for z in [".tar.gz", ".tar.bz2", ".tar.bz", ".tar.tgz", ".tar", ".tgz", ".zip", ".rar"]:
+    for z in [".tar.gz", ".tar.bz2", ".tar.bz", ".tar.tgz", ".tar", ".tgz", ".zip", ".rar", ".gz"]:
         if file.endswith(z):
             if z == ".zip":
                 un_zip(file)
             elif z == ".rar":
                 un_rar(file)
+            elif z == ".gz":
+                un_gzip(file)
             else:
                 un_tar(file)
 
 
 def get_path(file):  # pragma: no cover
     #  返回解压缩后的文件名
-    for i in [".tar.gz", ".tar.bz2", ".tar.bz", ".tar.tgz", ".tar", ".tgz", ".zip", ".rar"]:
+    for i in [".tar.gz", ".tar.bz2", ".tar.bz", ".tar.tgz", ".tar", ".tgz", ".zip", ".rar", ".gz"]:
         file = file.replace(i, "")
     return file
 
@@ -48,6 +52,13 @@ def un_tar(file):  # pragma: no cover
     uz_path = get_path(file)
     print(file + " is untar to " + uz_path)
     tar_file.extractall(path=uz_path)
+
+
+def un_gzip(file):  # pragma: no cover
+    uz_file = get_path(file)
+    with gzip.open(file, 'rb') as f_in:
+        with open(uz_file, 'wb') as f_out:
+            shutil.copyfileobj(f_in, f_out)
 
 
 def reporthook4urlretrieve(blocknum, bs, size):
