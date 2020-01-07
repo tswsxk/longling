@@ -101,7 +101,9 @@ def sym_run(stage: (int, str) = "viz"):  # pragma: no cover
         }[stage]
 
     if stage <= 1:
-        cfg = Configuration()
+        cfg = Configuration(
+            hyper_params={}
+        )
         net = get_net(**cfg.hyper_params)
 
         if stage == 0:
