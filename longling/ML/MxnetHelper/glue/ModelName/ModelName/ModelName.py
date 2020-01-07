@@ -60,10 +60,6 @@ class ModelName(DL.CliServiceModule):
     def get_configuration_cls():
         return Configuration
 
-    @staticmethod
-    def get_configuration_parser_cls():
-        return ConfigurationParser
-
     @classmethod
     def config(cls, cfg=None, **kwargs):
         """
@@ -364,9 +360,9 @@ class ModelName(DL.CliServiceModule):
         valid_data = self.etl(valid)
         self.train_net(train_data, valid_data)
 
-    @staticmethod
-    def train(*args, cfg=None, **kwargs):
-        module = ModelName(cfg=cfg, **kwargs)
+    @classmethod
+    def train(cls, *args, cfg=None, **kwargs):
+        module = cls(cfg=cfg, **kwargs)
         module.set_loss()
         # module.viz()
 
@@ -377,11 +373,11 @@ class ModelName(DL.CliServiceModule):
 
         return module
 
-    @staticmethod
-    def test(test_filename, test_epoch, dump_file=None, **kwargs):
+    @classmethod
+    def test(cls, test_filename, test_epoch, dump_file=None, **kwargs):
         from longling.ML.toolkit.formatter import EvalFormatter
         formatter = EvalFormatter(dump_file=dump_file)
-        module = ModelName.load(test_epoch, **kwargs)
+        module = cls.load(test_epoch, **kwargs)
 
         test_data = module.etl(test_filename)
         eval_result = module.mod.eval(module.net, test_data)
@@ -391,26 +387,31 @@ class ModelName(DL.CliServiceModule):
         )
         return eval_result
 
-    @staticmethod
-    def inc_train(init_model_file, *args, validation_logger_mode="w", **kwargs):
+    @classmethod
+    def inc_train(cls, init_model_file, *args, validation_logger_mode="w", **kwargs):
         # 增量学习，从某一轮参数继续训练
-        module = ModelName(**kwargs)
+        module = cls(**kwargs)
         module.toolbox_init(validation_logger_mode=validation_logger_mode)
         module.model_init(init_model_file=init_model_file)
 
         module._train(*args)
 
-    @staticmethod
-    def dump_configuration(**kwargs):
-        ModelName.get_module(**kwargs)
+    @classmethod
+    def dump_configuration(cls, **kwargs):
+        cls.get_module(**kwargs)
 
-    @staticmethod
-    def load(load_epoch=None, **kwargs):
-        module = ModelName(**kwargs)
+    @classmethod
+    def load(cls, load_epoch=None, **kwargs):
+        module = cls(**kwargs)
         load_epoch = module.mod.cfg.end_epoch if load_epoch is None \
             else load_epoch
         module.model_init(load_epoch, **kwargs)
         return module
+
+    # ################### config cli ######################
+    @staticmethod
+    def get_configuration_parser_cls():
+        return ConfigurationParser
 
     @classmethod
     def cli_commands(cls):
