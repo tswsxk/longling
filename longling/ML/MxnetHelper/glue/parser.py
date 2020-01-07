@@ -73,9 +73,9 @@ class Configuration(Params):
         params.update(kwargs)
         return params
 
-    @staticmethod
-    def load(cfg_path, **kwargs):
-        Configuration(Configuration.load_cfg(cfg_path, **kwargs))
+    @classmethod
+    def load(cls, cfg_path, **kwargs):
+        cls(cls.load_cfg(cfg_path, **kwargs))
 
 
 if __name__ == '__main__':

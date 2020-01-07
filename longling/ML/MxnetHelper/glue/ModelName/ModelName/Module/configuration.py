@@ -161,10 +161,6 @@ class Configuration(parser.Configuration):
         cfg_path = self.cfg_path if cfg_path is None else cfg_path
         super(Configuration, self).dump(cfg_path, override)
 
-    @staticmethod
-    def load(cfg_path, **kwargs):
-        return Configuration(Configuration.load_cfg(cfg_path, **kwargs))
-
     def var2val(self, var):
         return eval(var2exp(
             var,
