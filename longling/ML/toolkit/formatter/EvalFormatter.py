@@ -35,7 +35,7 @@ class EvalFormatter(object):
     def __init__(self, logger=logging.getLogger(), dump_file: (str, None) = None, col: (int, None) = None, **kwargs):
 
         self.logger = logger
-        if dump_file is not None and isinstance(dump_file, string_types):
+        if dump_file is not None and isinstance(dump_file, str):
             # clean file
             wf_open(dump_file, **kwargs).close()
         self.log_f = dump_file
