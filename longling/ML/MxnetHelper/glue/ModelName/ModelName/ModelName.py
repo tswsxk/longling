@@ -1,6 +1,6 @@
 # coding: utf-8
 # Copyright @tongshiwei
-
+from longling.ML import DL
 import mxnet as mx
 
 try:
@@ -9,7 +9,7 @@ except (SystemError, ModuleNotFoundError):  # pragma: no cover
     from Module import *
 
 
-class ModelName(object):
+class ModelName(DL.CliServiceModule):
     def __init__(
             self, load_epoch=None, cfg=None, toolbox_init=False, **kwargs
     ):
@@ -30,8 +30,7 @@ class ModelName(object):
         """
         # 1 配置参数初始化
         # todo 到Configuration处定义相关参数
-        cfg = self.config(cfg, **kwargs)
-        self.mod = self.get_module(cfg)
+        super(ModelName, self).__init__(cfg, **kwargs)
 
         # 2 todo 定义网络结构
         # 2.1 重新生成
@@ -58,7 +57,15 @@ class ModelName(object):
             self.toolbox_init(**self.mod.cfg.toolbox_params)
 
     @staticmethod
-    def config(cfg=None, **kwargs):
+    def get_configuration_cls():
+        return Configuration
+
+    @staticmethod
+    def get_configuration_parser_cls():
+        return ConfigurationParser
+
+    @classmethod
+    def config(cls, cfg=None, **kwargs):
         """
         配置初始化
 
@@ -70,16 +77,18 @@ class ModelName(object):
         kwargs
             参数配置可选参数
         """
-        cfg = Configuration(
+        configuration_cls = cls.get_configuration_cls()
+
+        cfg = configuration_cls(
             **kwargs
         ) if cfg is None else cfg
-        if not isinstance(cfg, Configuration):
-            cfg = Configuration.load_cfg(cfg, **kwargs)
+        if not isinstance(cfg, configuration_cls):
+            cfg = configuration_cls.load_cfg(cfg, **kwargs)
         cfg.dump(override=True)
         return cfg
 
-    @staticmethod
-    def get_module(cfg):
+    @classmethod
+    def get_module(cls, cfg):
         """
         根据配置，生成模型模块
 
@@ -92,20 +101,13 @@ class ModelName(object):
         mod: Module
             模型模块
         """
-        mod = Module(cfg)
+        module_cls = cls.get_module_cls()
+
+        mod = module_cls(cfg)
         mod.logger.info(str(mod))
         filename = mod.cfg.cfg_path
         mod.logger.info("parameters saved to %s" % filename)
         return mod
-
-    def viz(self):
-        """可视化网络"""
-        mod = self.mod
-        net = self.net
-
-        # optional 3 可视化检查网络
-        mod.logger.info("visualizing symbol")
-        net_viz(net, mod.cfg)
 
     def set_loss(self, bp_loss_f=None, loss_function=None):
         bp_loss_f = get_bp_loss(**self.mod.cfg.loss_params) if bp_loss_f is None else bp_loss_f
@@ -119,6 +121,15 @@ class ModelName(object):
 
         self.bp_loss_f = bp_loss_f
         self.loss_function = loss_function
+
+    def viz(self):
+        """可视化网络"""
+        mod = self.mod
+        net = self.net
+
+        # optional 3 可视化检查网络
+        mod.logger.info("visualizing symbol")
+        net_viz(net, mod.cfg)
 
     def toolbox_init(
             self,
@@ -216,7 +227,7 @@ class ModelName(object):
         except FileExistsError:
             if allow_reinit:
                 mod.logger.info("model doesn't exist, initializing")
-                Module.net_initialize(net, cfg.ctx)
+                mod.net_initialize(net, cfg.ctx)
             else:
                 mod.logger.info(
                     "model doesn't exist, target file: %s" % model_file
@@ -230,7 +241,7 @@ class ModelName(object):
         # # suggestion: annotate this until your process worked
         # net.hybridize()
 
-        self.trainer = Module.get_trainer(
+        self.trainer = mod.get_trainer(
             net, optimizer=cfg.optimizer,
             optimizer_params=cfg.optimizer_params,
             lr_params=cfg.lr_params,
@@ -401,30 +412,14 @@ class ModelName(object):
         module.model_init(load_epoch, **kwargs)
         return module
 
-    @staticmethod
-    def get_parser():
-        cfg_parser = ConfigurationParser(
-            Configuration,
-            commands=[
-                ModelName.config,
-                ModelName.train, ModelName.test,
-                ModelName.inc_train,
-            ]
-        )
-        return cfg_parser
-
-    @staticmethod
-    def run(parse_args=None):
-        cfg_parser = ModelName.get_parser()
-        cfg_kwargs = cfg_parser(parse_args)
-
-        if "subcommand" not in cfg_kwargs:
-            cfg_parser.print_help()
-            return
-        subcommand = cfg_kwargs["subcommand"]
-        del cfg_kwargs["subcommand"]
-
-        eval("%s.%s" % (ModelName.__name__, subcommand))(**cfg_kwargs)
+    @classmethod
+    def cli_commands(cls):
+        return [
+            cls.config,
+            cls.train,
+            cls.test,
+            cls.inc_train,
+        ]
 
 
 if __name__ == '__main__':

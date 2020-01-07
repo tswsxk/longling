@@ -3,3 +3,4 @@
 
 from .ecli import cli as ecli
 from .module import Module
+from .service import CliServiceModule
