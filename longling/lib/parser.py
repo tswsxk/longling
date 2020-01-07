@@ -208,7 +208,10 @@ class Configuration(object):
             json.dump(self.parsable_var, wf, indent=4)
 
     def __str__(self):
-        return str(self.parsable_var)
+        string = []
+        for k, v in vars(self).items():
+            string.append("%s: %s" % (k, v))
+        return "\n".join(string)
 
     def __getitem__(self, item):
         return getattr(self, item)
