@@ -101,9 +101,9 @@ def parse_params(params: dict, parse_functions: (dict, None) = None) -> dict:
     return params
 
 
-def get_parsable_var(class_obj, parse_exclude: set = None, dump_parse_functions=None):
+def get_parsable_var(class_type, parse_exclude: set = None, dump_parse_functions=None):
     """获取所有可以被解析的参数及其值，可以使用dump_parse_functions来对不可dump的值进行转换"""
-    params = get_class_var(class_obj, exclude_names=parse_exclude)
+    params = get_class_var(class_type, exclude_names=parse_exclude)
     return parse_params(params, dump_parse_functions)
 
 
