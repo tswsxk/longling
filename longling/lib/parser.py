@@ -216,6 +216,9 @@ class Configuration(object):
     def __getitem__(self, item):
         return getattr(self, item)
 
+    def __contains__(self, item):
+        return item in self.class_var
+
     def items(self):
         return {k: v for k, v in self.parsable_var.items()}
 

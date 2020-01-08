@@ -44,6 +44,7 @@ def test_configuration(tmpdir):
 
     _config = DemoConfiguration.load(filename)
 
+    assert "a" in _config
     assert _config["a"] == 1 and _config.b == 4
 
     print(_config)
