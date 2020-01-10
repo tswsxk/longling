@@ -5,7 +5,7 @@ __all__ = [
     "gitignore",
     "pytest", "coverage",
     "pysetup", "sphinx_conf", "makefile",
-    "readthedocs", "travis",
+    "readthedocs", "travis", "nni",
     "template_copy",
 ]
 
@@ -104,7 +104,7 @@ def docker():
     pass
 
 
-def travis(tar_dir: PATH_TYPE="./"):
+def travis(tar_dir: PATH_TYPE = "./"):
     src = path_append(META, ".travis.yml")
     tar = path_append(tar_dir, ".travis.yml")
     logger.info("travis: copy %s -> %s" % (src, tar))
@@ -120,3 +120,9 @@ def makefile(tar_dir="./", **variables):
     tar = path_append(tar_dir, "Makefile")
     logger.info("makefile: template %s -> %s" % (src, tar))
     template_copy(src, tar, default_value=None, quotation='', **variables)
+
+
+def nni(tar_dir="./"):
+    src_dir = path_append(META, "nni")
+    for file in ["config.yml", "search_space.json"]:
+        copyfile(path_append(src_dir, file), path_append(tar_dir, file))
