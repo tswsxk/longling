@@ -30,7 +30,7 @@ CLASS_EXCLUDE_NAMES = set(vars(object).keys()) | {
 }
 
 
-def get_class_var(class_type, exclude_names: (set, None) = None) -> dict:
+def get_class_var(class_obj, exclude_names: (set, None) = None) -> dict:
     """
     获取某个类的所有属性的变量名及其值
 
@@ -54,8 +54,8 @@ def get_class_var(class_type, exclude_names: (set, None) = None) -> dict:
 
     Parameters
     ----------
-    class_type:
-        类。注意是类，不是类实例。
+    class_obj:
+        类或类实例。需要注意两者的区别。
     exclude_names:
         需要排除在外的变量名。也可以通过在类定义 excluded_names 方法来指定要排除的变量名。
 
@@ -68,11 +68,11 @@ def get_class_var(class_type, exclude_names: (set, None) = None) -> dict:
     default_excluded_names = CLASS_EXCLUDE_NAMES if exclude_names is None \
         else CLASS_EXCLUDE_NAMES | exclude_names
     excluded_names = default_excluded_names if not hasattr(
-        class_type, "excluded_names"
-    ) else class_type.excluded_names() | default_excluded_names
+        class_obj, "excluded_names"
+    ) else class_obj.excluded_names() | default_excluded_names
 
     variables = {
-        k: v for k, v in vars(class_type).items() if
+        k: v for k, v in vars(class_obj).items() if
         not inspect.isroutine(v) and k not in excluded_names
     }
     return variables
@@ -101,9 +101,9 @@ def parse_params(params: dict, parse_functions: (dict, None) = None) -> dict:
     return params
 
 
-def get_parsable_var(class_type, parse_exclude: set = None, dump_parse_functions=None):
+def get_parsable_var(class_obj, parse_exclude: set = None, dump_parse_functions=None):
     """获取所有可以被解析的参数及其值，可以使用dump_parse_functions来对不可dump的值进行转换"""
-    params = get_class_var(class_type, exclude_names=parse_exclude)
+    params = get_class_var(class_obj, exclude_names=parse_exclude)
     return parse_params(params, dump_parse_functions)
 
 
@@ -153,7 +153,12 @@ class Configuration(object):
 
         params.update(**kwargs)
         for param, value in params.items():
+            # all class variables will be contained in instance variables
             setattr(self, "%s" % param, value)
+
+    @classmethod
+    def vars(cls):
+        return get_class_var(cls)
 
     @property
     def class_var(self):
@@ -165,7 +170,15 @@ class Configuration(object):
         parameters: dict
             all variables used as parameters
         """
-        return get_class_var(type(self))
+        return self.vars()
+
+    @classmethod
+    def pvars(cls):
+        return get_parsable_var(
+            cls,
+            parse_exclude=None,
+            dump_parse_functions=None,
+        )
 
     @property
     def parsable_var(self):
