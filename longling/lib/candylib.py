@@ -61,10 +61,10 @@ def get_dict_by_path(dict_obj, path_to_node):
 def dict2pv(dict_obj: dict, path_to_node: list = None):
     """
     >>> dict_obj = {"a": {"b": [1, 2], "c": "d"}, "e": 1}
-    >>> a, b = dict2pv(dict_obj)
-    >>> a
+    >>> path, value = dict2pv(dict_obj)
+    >>> path
     [['a', 'b'], ['a', 'c'], ['e']]
-    >>> b
+    >>> value
     [[1, 2], 'd', 1]
     """
     paths = []
