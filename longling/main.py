@@ -11,6 +11,7 @@ from longling.ML.toolkit.hyper_search.nni import show_top_k
 from longling.toolbox import toc
 from longling.Architecture.cli import cli as arch
 from longling import Architecture as arch_cli
+from longling.Architecture.install_file import nni as install_nni
 from longling.lib.loading import csv2json, json2csv
 from longling.spider import download_file as download
 
@@ -36,6 +37,9 @@ def cli():  # pragma: no cover
             "download": download,
             "nni": {
                 "k_best": show_top_k,
+            },
+            "install": {
+                "nni": install_nni,
             }
         }
     )
