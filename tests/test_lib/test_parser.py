@@ -36,6 +36,9 @@ def test_load_configuration_json(tmpdir):
 def test_configuration(tmpdir):
     _config = DemoConfiguration()
 
+    assert _config.class_var == DemoConfiguration.vars()
+    assert _config.parsable_var == DemoConfiguration.pvars()
+
     filename = path_append(tmpdir, "test_config.json", to_str=True)
 
     _config.b = 4
