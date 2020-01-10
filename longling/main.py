@@ -7,7 +7,7 @@ import fire
 from longling.lib.stream import encoding
 from longling.ML.toolkit.dataset import train_valid_test, train_test, train_valid, kfold
 from longling.ML.toolkit.analyser.cli import select_max, arg_select_max
-from longling.ML.toolkit import show_top_k
+from longling.ML.toolkit.hyper_search.nni import show_top_k
 from longling.toolbox import toc
 from longling.Architecture.cli import cli as arch
 from longling import Architecture as arch_cli
@@ -34,7 +34,7 @@ def cli():  # pragma: no cover
             "json2csv": json2csv,
             "encoding": encoding,
             "download": download,
-            "hyper": {
+            "nni": {
                 "k_best": show_top_k,
             }
         }

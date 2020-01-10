@@ -4,6 +4,7 @@
 from heapq import nlargest
 from longling.ML.toolkit.analyser import get_max
 from longling import Configuration, path_append
+from longling import dict2pv, list2dict
 
 import json
 import sqlite3
@@ -44,18 +45,29 @@ class BaseReporter(object):
 def get_params(received_params: dict, cfg_cls: Configuration):
     cfg_params = {}
     u_params = {}
-    for k, v in received_params:
+
+    path, _ = dict2pv(cfg_cls.vars())
+
+    keys = {p[-1]: p for p in path}
+
+    for k, v in received_params.items():
         if k in cfg_cls.vars():
             cfg_params[k] = v
         else:
-            u_params[k] = v
+            if k in keys:
+                cfg_params.update(list2dict(keys[k], v))
+            else:
+                u_params[k] = v
+
     return cfg_params, u_params
 
 
-def prepare_hyper_search(cfg_kwargs: dict, cfg_cls: Configuration, reporthook=None, final_reporthook=None,
+def prepare_hyper_search(cfg_kwargs: dict, cfg_cls, reporthook=None, final_reporthook=None,
                          final_key=None, reporter_cls=None):
     try:
         from nni import get_next_parameter, report_intermediate_result, report_final_result
+
+        assert final_key is not None
 
         class Reporter(object):
             def __init__(self):
@@ -72,9 +84,10 @@ def prepare_hyper_search(cfg_kwargs: dict, cfg_cls: Configuration, reporthook=No
         reporthook = reporthook if reporthook is not None else rc.intermediate
         final_reporthook = final_reporthook if final_reporthook is not None else rc.final
         cfg_cls_params, hyper_params = get_params(get_next_parameter(), cfg_cls)
+        using_nni_tag = cfg_cls_params or hyper_params
         cfg_kwargs.update(cfg_cls_params)
         cfg_kwargs["hyper_params"].update(hyper_params)
-        return cfg_kwargs, reporthook, final_reporthook
+        return cfg_kwargs, reporthook, final_reporthook, using_nni_tag
 
     except ModuleNotFoundError:
-        return cfg_kwargs, reporthook, final_reporthook
+        return cfg_kwargs, reporthook, final_reporthook, False
