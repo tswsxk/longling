@@ -5,7 +5,7 @@ maxExecDuration: 24h
 maxTrialNum: 20
 trainingServicePlatform: local
 # 搜索空间文件
-searchSpacePath: search_space.json
+searchSpacePath: _search_space.json
 useAnnotation: false
 tuner:
   builtinTunerName: TPE
