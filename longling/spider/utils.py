@@ -19,10 +19,11 @@ def decompress(file):  # pragma: no cover
                 un_zip(file)
             elif z == ".rar":
                 un_rar(file)
+            elif z in {".tar.bz2", ".tar.bz", ".tar.tgz", ".tar", ".tgz"}:
+                un_tar(file)
             elif z == ".gz":
                 un_gzip(file)
-            else:
-                un_tar(file)
+            break
 
 
 def get_path(file):  # pragma: no cover

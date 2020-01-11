@@ -11,7 +11,7 @@ import sqlite3
 import os
 
 
-def show_top_k(k, exp_id=None, exp_dir=path_append(os.environ["HOME"], "nni/experiments"), show=True):
+def show_top_k(k, exp_id=None, exp_dir=path_append(os.environ["HOME"], "nni/experiments")):
     if exp_id:
         exp_dir = path_append(exp_dir, exp_id)
     sqlite_db = path_append(exp_dir, "db", "nni.sqlite", to_str=True)
@@ -22,15 +22,12 @@ def show_top_k(k, exp_id=None, exp_dir=path_append(os.environ["HOME"], "nni/expe
     _ret = []
     top_k = nlargest(k, [row for row in cursor], key=lambda x: float(x[1]))
     trial_dir = path_append(exp_dir, "trials")
-    for trial, result in top_k:
+    for trial, result in sorted(top_k, key=lambda x: float(x[1]), reverse=True):
         with open(path_append(trial_dir, trial, "parameter.cfg")) as f:
             trial_params = json.load(f)["parameters"]
             _ret.append([trial, result, trial_params])
     conn.close()
 
-    if show:
-        for e in _ret:
-            print(e)
     return _ret
 
 
