@@ -12,6 +12,7 @@ from longling.lib.path import *
 from longling.lib.parser import *
 from longling.lib.candylib import *
 from longling.lib.loading import *
+from longling.lib.iterator import *
 
 from longling.lib import clock
 from longling.lib import process_pattern

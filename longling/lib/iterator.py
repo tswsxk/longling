@@ -8,10 +8,13 @@ import warnings
 import functools
 import queue
 import threading
-from longling import path_append, loading, wf_open
+import logging
+from longling import wf_open, path_append, loading
+
+__all__ = ["BaseIter", "LoopIter", "AsyncLoopIter", "AsyncIter", "CacheAsyncLoopIter", "iterwrap"]
 
 
-class Register(dict):
+class Register(dict):  # pragma: no cover
     def add(self, cls):
         if cls.__name__ in self:
             warnings.warn("key %s has already existed, which will be overridden" % cls.__name__)
@@ -28,13 +31,17 @@ class BaseIter(object):
         self._reset = src
         self._data = None
         self._length = length
+        self._count = 0
         self.init()
 
-    def next(self):
-        return self.__next__()
-
     def __next__(self):
-        return next(self._data)
+        try:
+            self._count += 1
+            return next(self._data)
+        except StopIteration:
+            self._count -= 1
+            self._set_length()
+            raise StopIteration
 
     def __iter__(self):
         return self
@@ -52,8 +59,12 @@ class BaseIter(object):
         try:
             self._length = len(_data)
         except TypeError:
-            pass
+            self._set_length()
         self._data = iter(_data)
+
+    def _set_length(self):
+        if self._length is None and self._count > 0:
+            self._length = self._count
 
     @classmethod
     def wrap(cls, f):
@@ -67,19 +78,7 @@ class BaseIter(object):
 @register.add
 class LoopIter(BaseIter):
     def __init__(self, src, length=None, *args, **kwargs):
-        self._count = 0
         super(LoopIter, self).__init__(src, length)
-
-    def init(self):
-        self.reset()
-
-    def reset(self):
-        _data = self._reset() if callable(self._reset) else self._reset
-        try:
-            self._length = len(_data)
-        except TypeError:
-            self._set_length()
-        self._data = iter(_data)
 
     def __next__(self):
         try:
@@ -89,10 +88,6 @@ class LoopIter(BaseIter):
             self._count -= 1
             self.reset()
             raise StopIteration
-
-    def _set_length(self):
-        if self._length is None and self._count > 0:
-            self._length = self._count
 
 
 @register.add
@@ -118,12 +113,15 @@ class AsyncLoopIter(LoopIter):
     def __next__(self):
         if not self.prefetch:
             self.produce(False)
-        item = self.queue.get()
+        if self.queue is not None:
+            item = self.queue.get()
+        else:
+            raise StopIteration
         if isinstance(item, Exception):
             if isinstance(item, StopIteration):
                 self.reset()
                 raise StopIteration
-            else:
+            else:  # pragma: no cover
                 raise item
         else:
             return item
@@ -141,7 +139,7 @@ class AsyncLoopIter(LoopIter):
                 self.queue.put(e)
                 self._stop = True
 
-        except Exception as e:
+        except Exception as e:  # pragma: no cover
             if not self._stop:
                 self._stop = True
                 self.queue.put(e)
@@ -153,7 +151,9 @@ class AsyncIter(AsyncLoopIter):
         super(AsyncIter, self).reset()
 
     def reset(self):
-        pass
+        self.thread = None
+        self.queue = None
+        self._set_length()
 
 
 @register.add
@@ -171,7 +171,9 @@ class CacheAsyncLoopIter(AsyncLoopIter):
 
         if os.path.exists(self.cache_file) and not rerun:
             # 从已有数据中进行装载
-            src = lambda: loading(self.cache_file, "json")
+            def src():
+                return loading(self.cache_file, "json")
+
             self._cache_stop = True
         else:
             # 重新生成数据
@@ -202,7 +204,7 @@ class CacheAsyncLoopIter(AsyncLoopIter):
             if isinstance(item, StopIteration):
                 self.reset()
                 raise StopIteration
-            else:
+            else:  # pragma: no cover
                 raise item
         else:
             return item
