@@ -64,3 +64,4 @@ def test_loading(tmpdir):
         print(DEMO_TEXT.strip(), file=wf)
 
     assert [line.strip() for line in loading(src)] == DEMO_TEXT.strip().split("\n")
+    assert "hello world" == loading(lambda: "hello world")
