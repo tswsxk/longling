@@ -47,13 +47,15 @@ def load_json(src: PATH_TYPE):
             yield json.loads(line)
 
 
-def loading(src: (PATH_TYPE, ...)):
+def loading(src: (PATH_TYPE, ...), src_type=None):
     if isinstance(src, PATH_TYPE):
         suffix = pathlib.PurePath(src).suffix[1:]
-        if suffix == "csv":
+        if suffix == "csv" or src_type == "csv":
             return load_csv(src)
-        elif suffix == "json":
+        elif suffix == "json" or src_type == "json":
             return load_json(src)
         else:
             return load_file(src)
+    elif callable(src):
+        return src()
     return src
