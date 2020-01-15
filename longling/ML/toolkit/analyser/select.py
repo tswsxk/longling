@@ -5,7 +5,7 @@ import json
 from longling.lib.candylib import as_list
 from longling import PATH_TYPE, loading
 
-__all__ = ["get_max"]
+__all__ = ["get_max", "key_parser", "get_by_key"]
 
 
 def key_parser(key):
