@@ -144,5 +144,5 @@ def sym_run(stage: (int, str) = "viz"):  # pragma: no cover
         raise TypeError
 
 
-if __name__ == '__main__':  # pragma: no cover
+if __name__ == '__main__':
     sym_run("pseudo")
