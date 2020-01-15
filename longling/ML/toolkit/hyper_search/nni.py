@@ -3,13 +3,19 @@
 
 import warnings
 from heapq import nlargest
-from longling.ML.toolkit.analyser import get_max
+from longling.ML.toolkit.analyser import get_max, get_by_key, key_parser
 from longling import Configuration, path_append
 from longling import dict2pv, list2dict
 
 import json
 import sqlite3
 import os
+
+def _key(x):
+    try:
+        return float(x)
+    except ValueError:
+        return float(json.loads(x)["default"])
 
 
 def show_top_k(k, exp_id=None, exp_dir=path_append(os.environ["HOME"], "nni/experiments")):
@@ -19,11 +25,11 @@ def show_top_k(k, exp_id=None, exp_dir=path_append(os.environ["HOME"], "nni/expe
     print(sqlite_db)
     conn = sqlite3.connect(sqlite_db)
     c = conn.cursor()
-    cursor = c.execute("select trialJobId, data from MetricData;")
+    cursor = c.execute("select trialJobId, data from MetricData where type='FINAL';")
     _ret = []
-    top_k = nlargest(k, [row for row in cursor], key=lambda x: float(x[1]))
+    top_k = nlargest(k, [row for row in cursor], key=lambda x: _key(x[1]))
     trial_dir = path_append(exp_dir, "trials")
-    for trial, result in sorted(top_k, key=lambda x: float(x[1]), reverse=True):
+    for trial, result in sorted(top_k, key=lambda x: _key(x[1]), reverse=True):
         with open(path_append(trial_dir, trial, "parameter.cfg")) as f:
             trial_params = json.load(f)["parameters"]
             _ret.append([trial, result, trial_params])
@@ -61,22 +67,40 @@ def get_params(received_params: dict, cfg_cls: Configuration):
 
 
 def prepare_hyper_search(cfg_kwargs: dict, cfg_cls, reporthook=None, final_reporthook=None,
-                         final_key=None, reporter_cls=None):
+                         primary_key=None, reporter_cls=None, with_keys: (list, str, None) = None):
     try:
         from nni import get_next_parameter, report_intermediate_result, report_final_result
 
-        assert final_key is not None
+        assert primary_key is not None
 
-        class Reporter(object):
+        if isinstance(with_keys, str):
+            if ";" in with_keys:
+                with_keys = with_keys.split(";")
+            else:
+                with_keys = [with_keys]
+        elif with_keys is None:
+            with_keys = []
+
+        class Reporter(BaseReporter):
             def __init__(self):
                 self.datas = []
 
             def intermediate(self, data):
-                # report_intermediate_result(data)
+                feed_dict = {'default': float(data[primary_key])}
+                for key in with_keys:
+                    feed_dict[key] = get_by_key(data, key_parser(key))
+                report_intermediate_result(feed_dict)
                 self.datas.append(data)
 
             def final(self):
-                report_final_result(float(get_max(self.datas, final_key)[0][final_key]))
+                final_result = get_max(self.datas, primary_key, with_keys=";".join(with_keys) if with_keys else None)
+                feed_dict = {
+                    'default': float(final_result[0][primary_key])
+                }
+                appendix_dict = dict(final_result[1][primary_key])
+                for key in with_keys:
+                    feed_dict[key] = appendix_dict[key]
+                report_final_result(feed_dict)
 
         rc = Reporter() if reporter_cls is None else reporter_cls
         reporthook = reporthook if reporthook is not None else rc.intermediate
