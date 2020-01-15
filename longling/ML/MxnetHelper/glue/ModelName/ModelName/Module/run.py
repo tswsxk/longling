@@ -85,7 +85,7 @@ def train(train_fn, test_fn, reporthook=None, final_reporthook=None, **cfg_kwarg
     from longling.ML.toolkit.hyper_search import prepare_hyper_search
 
     cfg_kwargs, reporthook, final_reporthook, tag = prepare_hyper_search(
-        cfg_kwargs, Configuration, reporthook, final_reporthook, final_key="prf:avg:f1"
+        cfg_kwargs, Configuration, reporthook, final_reporthook, primary_key="prf:avg:f1"
     )
 
     _cfg = Configuration(**cfg_kwargs)
