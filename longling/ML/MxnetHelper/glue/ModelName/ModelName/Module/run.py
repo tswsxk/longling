@@ -14,7 +14,8 @@ except (ImportError, SystemError):  # pragma: no cover
     from configuration import Configuration, ConfigurationParser
 
 
-def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_result=False):  # pragma: no cover
+def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_result=False,
+                    reporthook=None, final_reporthook=None):  # pragma: no cover
     ctx = _cfg.ctx
     batch_size = _cfg.batch_size
 
@@ -64,16 +65,19 @@ def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_resul
             )
 
         if epoch % 1 == 0:
-            if epoch % 1 == 0:
-                print(
-                    evaluation_formatter(
-                        epoch=epoch,
-                        loss_name_value=dict(loss_monitor.items()),
-                        eval_name_value=eval_f(_net, test_data, ctx=ctx),
-                        extra_info=None,
-                        dump=True,
-                    )[0]
-                )
+            msg, data = evaluation_formatter(
+                epoch=epoch,
+                loss_name_value=dict(loss_monitor.items()),
+                eval_name_value=eval_f(_net, test_data, ctx=ctx),
+                extra_info=None,
+                dump=dump_result,
+            )
+            print(msg)
+            if reporthook is not None:
+                reporthook(data)
+
+    if final_reporthook is not None:
+        final_reporthook()
 
 
 def pseudo_numerical_check(_net, _cfg):  # pragma: no cover
@@ -94,7 +98,8 @@ def train(train_fn, test_fn, reporthook=None, final_reporthook=None, **cfg_kwarg
     train_data = etl(_cfg.var2val(train_fn), params=_cfg)
     test_data = etl(_cfg.var2val(test_fn), params=_cfg)
 
-    numerical_check(_net, _cfg, train_data, test_data, dump_result=True)
+    numerical_check(_net, _cfg, train_data, test_data, dump_result=not tag, reporthook=reporthook,
+                    final_reporthook=final_reporthook)
 
 
 def sym_run(stage: (int, str) = "viz"):  # pragma: no cover

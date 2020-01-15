@@ -16,7 +16,8 @@ except (ImportError, SystemError):  # pragma: no cover
 from longling.ML.PytorchHelper import set_device
 
 
-def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_result=False):  # pragma: no cover
+def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_result=False,
+                    reporthook=None, final_reporthook=None):  # pragma: no cover
     ctx = _cfg.ctx
 
     _net = set_device(_net, ctx)
@@ -64,16 +65,19 @@ def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_resul
             )
 
         if epoch % 1 == 0:
-            if epoch % 1 == 0:
-                print(
-                    evaluation_formatter(
-                        epoch=epoch,
-                        loss_name_value=dict(loss_monitor.items()),
-                        eval_name_value=eval_f(_net, test_data),
-                        extra_info=None,
-                        dump=True,
-                    )[0]
-                )
+            msg, data = evaluation_formatter(
+                epoch=epoch,
+                loss_name_value=dict(loss_monitor.items()),
+                eval_name_value=eval_f(_net, test_data, ctx=ctx),
+                extra_info=None,
+                dump=dump_result,
+            )
+            print(msg)
+            if reporthook is not None:
+                reporthook(data)
+
+    if final_reporthook is not None:
+        final_reporthook()
 
 
 def pseudo_numerical_check(_net, _cfg):  # pragma: no cover
