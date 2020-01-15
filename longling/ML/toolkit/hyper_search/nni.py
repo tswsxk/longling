@@ -1,6 +1,7 @@
 # coding: utf-8
 # 2020/1/10 @ tongshiwei
 
+import warnings
 from heapq import nlargest
 from longling.ML.toolkit.analyser import get_max
 from longling import Configuration, path_append
@@ -87,4 +88,5 @@ def prepare_hyper_search(cfg_kwargs: dict, cfg_cls, reporthook=None, final_repor
         return cfg_kwargs, reporthook, final_reporthook, using_nni_tag
 
     except ModuleNotFoundError:
+        warnings.warn("nni package not found, skip")
         return cfg_kwargs, reporthook, final_reporthook, False
