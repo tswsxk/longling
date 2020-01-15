@@ -81,7 +81,13 @@ def pseudo_numerical_check(_net, _cfg):  # pragma: no cover
     numerical_check(_net, _cfg, datas, datas, dump_result=False)
 
 
-def train(train_fn, test_fn, **cfg_kwargs):  # pragma: no cover
+def train(train_fn, test_fn, reporthook=None, final_reporthook=None, **cfg_kwargs):  # pragma: no cover
+    from longling.ML.toolkit.hyper_search import prepare_hyper_search
+
+    cfg_kwargs, reporthook, final_reporthook, tag = prepare_hyper_search(
+        cfg_kwargs, Configuration, reporthook, final_reporthook, final_key="prf:avg:f1"
+    )
+
     _cfg = Configuration(**cfg_kwargs)
     _net = get_net(**_cfg.hyper_params)
 
