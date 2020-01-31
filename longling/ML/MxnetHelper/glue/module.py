@@ -36,7 +36,7 @@ class Module(DL.Module):
         """
         # 根据文件名装载已有的网络参数
         if not os.path.isfile(filename):
-            raise FileExistsError
+            raise FileExistsError("%s does not exist" % filename)
         net.load_parameters(filename, ctx, allow_missing=allow_missing,
                             ignore_extra=ignore_extra)
         return net
@@ -74,7 +74,7 @@ class Module(DL.Module):
 
     @staticmethod
     def net_initialize(
-            net, model_ctx, initializer=mx.init.Normal(sigma=.1), select=None
+            net, model_ctx, initializer=mx.init.Xavier(), select=None
     ):
         """初始化网络参数"""
         net.collect_params(select).initialize(initializer, ctx=model_ctx)
