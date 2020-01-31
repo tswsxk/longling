@@ -10,6 +10,7 @@ import codecs
 import os
 import sys
 from pathlib import PurePath
+import fileinput
 
 __all__ = ['rf_open', 'wf_open', 'wf_close', 'flush_print', 'build_dir', 'json_load',
            'pickle_load', 'AddPrinter', 'AddObject', 'StreamError', 'check_file', 'PATH_TYPE', 'encoding']
@@ -64,7 +65,9 @@ def check_file(path, size=None):
     return False
 
 
-def rf_open(filename, encoding='utf-8', **kwargs):
+def rf_open(filename: (PATH_TYPE, list), encoding='utf-8', **kwargs):
+    if isinstance(filename, list):
+        return fileinput.input(files=filename, **kwargs)
     if kwargs.get("mode"):
         return open(filename, **kwargs)
     return open(filename, encoding=encoding, **kwargs)
