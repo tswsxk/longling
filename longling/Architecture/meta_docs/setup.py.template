@@ -6,11 +6,18 @@ test_deps = [
     'pytest-flake8',
 ]
 
+doc_deps = [
+    'sphinx',
+    'sphinx-rtd-theme',
+    'recommonmark'
+]
+
 setup(
     name=$PROJECT,
     version='0.0.1',
     extras_require={
         'test': test_deps,
+        'doc': doc_deps,
     },
     install_requires=[
     ],  # And any other dependencies foo needs
