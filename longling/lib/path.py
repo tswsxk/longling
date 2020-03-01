@@ -42,7 +42,16 @@ def file_exist(file_path):
 
 
 def abs_current_dir(file_path):
-    """获取文件所在目录的绝对路径"""
+    """
+    获取文件所在目录的绝对路径
+
+    Example
+    -------
+    .. code ::
+
+        abs_current_dir(__file__)
+
+    """
     return os.path.abspath(os.path.dirname(file_path))
 
 
