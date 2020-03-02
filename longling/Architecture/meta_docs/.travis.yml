@@ -8,7 +8,7 @@ matrix:
       sudo: true
   
 install:
-  - pip install -e .[test,full]
+  - pip install -e .[test]
   - pip install codecov
 
 script:
