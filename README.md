@@ -121,6 +121,13 @@ such as
 longling arch 
 ```
 
+or you can also directly copy the template files
+
+```shell
+longling arch-cli
+```
+To be noticed that, you need to check `$VARIABLE` in the template files.
+
 ##### Result Analysis
 The cli tools for result analysis is specially designed for json result format:
 
