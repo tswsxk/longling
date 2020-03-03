@@ -49,3 +49,9 @@ def legal_input(__promt: str,
     if not inp and __default_value:
         return __default_value
     return inp
+
+
+def binary_legal_input(tip, _y="y", _n="n", _default="y"):
+    assert _default in [_y, _n, None]
+    return True if legal_input("%s (%s/%s, default is %s) < " % (tip, _y, _n, _default),
+                               __default_value=_default) == _y else False
