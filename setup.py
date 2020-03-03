@@ -126,6 +126,7 @@ setup(
         "pip",
         "tqdm",
         "fire",
+        "PyYAML",
     ],
     extras_require={
         'test': test_deps,
