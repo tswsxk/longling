@@ -2,9 +2,9 @@ FROM python:3.6-alpine
 
 WORKDIR /usr/src/app
 
+COPY . /usr/src/app
 RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 RUN pip install --no-cache-dir -e .
 
-COPY . /usr/src/app
 
-RUN python $PATH_TO_MAIN
+CMD ["python", ""$PATH_TO_MAIN"]
