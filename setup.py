@@ -14,13 +14,8 @@ test_deps = [
     'pytest-pep8>=1',
 ]
 
-doc_deps = [
-    'sphinx',
-    'sphinx-rtd-theme',
-    'recommonmark'
-]
 
-dev_deps = test_deps + doc_deps + [
+dev_deps = test_deps + [
     'setuptools>=40',
     'wheel'
 ]
@@ -134,7 +129,6 @@ setup(
     ],
     extras_require={
         'test': test_deps,
-        'doc': doc_deps,
         'dev': dev_deps,
         'ml': ml_base_deps,
         'ml-full': ml_full_deps,
