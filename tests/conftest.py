@@ -1,7 +1,6 @@
 # coding: utf-8
 # 2019/12/3 @ tongshiwei
 
-import json
 import pytest
 from longling import config_logging
 from longling import path_append
