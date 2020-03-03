@@ -6,6 +6,7 @@ __all__ = [
     "pytest", "coverage",
     "pysetup", "sphinx_conf", "makefile",
     "readthedocs", "travis", "nni",
+    "dockerfile",
     "template_copy",
 ]
 
@@ -82,15 +83,34 @@ def pysetup(tar_dir="./", **variables):
 
 
 def sphinx_conf(tar_dir="./", **variables):
-    src = path_append(META, "docs/conf.py.template")
-    tar = path_append(tar_dir, "conf.py")
-    logger.info("sphinx_conf: template %s -> %s" % (src, tar))
-    template_copy(src, tar, **variables)
+    if variables["docs_style"] == "mxnet":
+        src = path_append(META, "docs/mxnet/conf.py.template")
+        tar = path_append(tar_dir, "conf.py")
+        logger.info("sphinx_conf: template %s -> %s" % (src, tar))
+        template_copy(src, tar, **variables)
 
-    src = path_append(META, "docs/.math.json")
-    tar = path_append(tar_dir, ".math.json")
-    logger.info("sphinx_conf: copy %s -> %s" % (src, tar))
-    copyfile(src, tar)
+        src = path_append(META, "docs/mxnet/.math.json")
+        tar = path_append(tar_dir, ".math.json")
+        logger.info("sphinx_conf: copy %s -> %s" % (src, tar))
+        copyfile(src, tar)
+
+        src = path_append(META, "docs/mxnet/requirements.txt")
+        tar = path_append(tar_dir, "requirements.txt")
+        logger.info("sphinx_conf: copy %s -> %s" % (src, tar))
+        copyfile(src, tar)
+
+        logger.warning(
+            "\n%s\nmodify setup.py according to the components in %s\n%s\n" % ('*' * 60, tar, '*' * 60)
+        )
+    else:
+        src = path_append(META, "docs/sphinx/requirements.txt")
+        tar = path_append(tar_dir, "requirements.txt")
+        logger.info("sphinx_conf: copy %s -> %s" % (src, tar))
+        copyfile(src, tar)
+        logger.warning(
+            "\n%s\nmanually run 'sphinx-quickstart' in %s to create necessary components\n%s" % (
+                '*' * 60, tar_dir, '*' * 60)
+        )
 
 
 def readthedocs(tar_dir="./"):
@@ -100,8 +120,11 @@ def readthedocs(tar_dir="./"):
     copyfile(src, tar)
 
 
-def docker():
-    pass
+def dockerfile(atype, tar_dir="./", **variables):
+    src = path_append(META, "Dockerfile/%s.docker" % atype)
+    tar = path_append(tar_dir, "Dockerfile")
+    logger.info("Dockerfile:  %s -> %s" % (src, tar))
+    template_copy(src, tar, **variables)
 
 
 def travis(tar_dir: PATH_TYPE = "./"):
