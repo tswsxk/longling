@@ -21,20 +21,45 @@ def cli(skip_top=True, project=None, **kwargs):  # pragma: no cover
         traivs=binary_legal_input("Install travis?"),
     )
 
-    if main_params["project_type"] == "docs" or binary_legal_input("Install docs?"):
+    docs = binary_legal_input("Install docs?")
+    if main_params["project_type"] == "docs" or docs:
         default_style = "mxnet" if main_params["project_type"] == "docs" else "sphinx"
         docs_params = docs_cli(default_style=default_style, **kwargs)
     else:
         docs_params = {}
 
+    service_params = {}
+    docker_params = {}
     if main_params["project_type"] != "docs":
-        if binary_legal_input("To deploy as a service"):
-            indicator.update(dict(
-                service_type=legal_input(
-                    "Choose a service type (cli/flask/nginx) < ",
-                    __legal_input={"cli", "flask", "nginx"},
-                )
+        service = binary_legal_input("To deploy as a service")
+        if service:
+            docker_params.update(
+                dockerfile_cli(project_type=main_params["project_type"])
+            )
+            if "port" not in docker_params:
+                port = legal_input("Image Port (default is None) < ", __default_value='null')
+                port = None if port == "null" else port
+            else:
+                port = docker_params["port"]
+            service_params["port"] = None if port == 'null' else port
+            service_params.update(dict(
+                private=binary_legal_input("Is private project?"),
             ))
+            stages_candidates = {
+                "test": {"stage_image_name": docker_params["image_name"]}
+            }
+            if main_params["project_type"] == "python":
+                stages_candidates["build"] = {"need": "n"}
+            if binary_legal_input("Install .gitlab-ci.yml?"):
+                service_params.update(dict(
+                    gitlab_ci_params=gitlab_ci_cli(
+                        port=port, docs=docs,
+                        stages_candidates=stages_candidates
+                    ),
+                ))
+
+        elif binary_legal_input("Install Dockerfile?"):
+            docker_params.update(dockerfile_cli(project_type=main_params["project_type"]))
 
     if skip_top:
         tar_dir = "./"
@@ -44,4 +69,7 @@ def cli(skip_top=True, project=None, **kwargs):  # pragma: no cover
 
     __project_type = main_params["project_type"]
 
-    project_types[__project_type](tar_dir=tar_dir, main_params=main_params, docs_params=docs_params, **indicator)
+    project_types[__project_type](
+        tar_dir=tar_dir, main_params=main_params, docs_params=docs_params,
+        docker_params=docker_params, service_params=service_params, **indicator
+    )

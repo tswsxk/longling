@@ -1,0 +1,79 @@
+cache:
+  paths:
+    - node_modules/
+
+stages:
+  - build
+  - test
+  - staging
+  - production
+
+build:
+  image: $IMAGE_NAME
+  stage: build
+  script:
+    - npm config set unsafe-perm true
+    - npm install -g cnpm --registry=https://registry.npm.taobao.org
+    - cnpm install
+    # code style check
+    - npm run lint
+    #####
+    # build scripts (such as webpack) goes here
+    ###
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+
+test:
+  image: $IMAGE_NAME
+  stage: test
+  script:
+    # - sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
+    # - apk add openjdk8-jre
+    - npm config set unsafe-perm true
+    - npm install -g cnpm --registry=https://registry.npm.taobao.org
+    - cnpm install -D
+    #####
+    # test scripts (such as jest) goes here
+    ###
+    - npm run unit
+
+review:
+  stage: review
+  image: registry.git.bdaa.pro:4567/yxonic/bdaa-deploy-image:v3.0.2
+  before_script:
+    - helm repo add stable http://mirror.azure.cn/kubernetes/charts
+  script:
+    # build image
+    - docker build -t ${CI_REGISTRY_IMAGE} .
+    - docker login -u gitlab-ci-token -p ${CI_BUILD_TOKEN} ${CI_REGISTRY}
+    - docker push ${CI_REGISTRY_IMAGE}
+    # configure deployment
+
+
+staging:
+  stage: staging
+  image: registry.git.bdaa.pro:4567/yxonic/bdaa-deploy-image:v3.0.2
+  before_script:
+    - docker login -u gitlab-ci-token -p ${CI_BUILD_TOKEN} ${CI_REGISTRY}
+    - helm repo add stable https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts
+    - helm version
+  script:
+    # build image
+    - docker build -t ${CI_REGISTRY_IMAGE} .
+    - docker push ${CI_REGISTRY_IMAGE}
+    # configure deployment
+
+
+production:
+  stage: production
+  image: registry.git.bdaa.pro:4567/yxonic/bdaa-deploy-image:v3.0.2
+  before_script:
+    - docker login -u gitlab-ci-token -p ${CI_BUILD_TOKEN} ${CI_REGISTRY}
+    - helm repo add stable https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts
+  script:
+    # build image
+    - docker build -t ${CI_REGISTRY_IMAGE}:stable .
+    - docker push ${CI_REGISTRY_IMAGE}:stable
+    # configure deployment

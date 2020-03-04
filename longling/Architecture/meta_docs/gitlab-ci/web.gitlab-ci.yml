@@ -1,0 +1,22 @@
+cache:
+  paths:
+    - node_modules/
+    - chart/charts/
+
+
+test:
+  image: $IMAGE_NAME
+  stage: test
+  script:
+    - "export POSTGRESQL_URI="
+    - npm ci -D --registry=http://registry.npm.taobao.org --disturl=http://npm.taobao.org/dist
+    - npm run build
+    #####
+    # test scripts (such as jest) goes here
+    ###
+  artifacts:
+    paths:
+      - node_modules/@prisma/
+      - prisma/
+      - dist/
+

@@ -1,13 +1,16 @@
 # coding: utf-8
 # 2019/9/21 @ tongshiwei
 
-__all__ = ["main_cli", "docs_cli"]
+__all__ = ["main_cli", "docs_cli", "dockerfile_cli", "gitlab_ci_cli"]
 
+from copy import deepcopy
+from collections import OrderedDict
 import os
 import pathlib
 import datetime
 from longling.Architecture.install_proj import project_types
-from longling.Architecture.cli.utils import legal_input, binary_legal_input
+from longling.Architecture.cli.utils import legal_input, binary_legal_input, default_legal_input
+from longling.Architecture.config import STAGE_CANDIDATES
 
 
 def main_cli(skip_top, project, **kwargs):  # pragma: no cover
@@ -47,6 +50,113 @@ def docs_cli(project=None, title=None, author=None, copyright=None, default_styl
                                   __default_value=default_copyright) if not copyright else copyright,
         ))
     params.update(readthedocs=binary_legal_input("Install .readthedocs.yml?"))
-    params.update(dockerfile=binary_legal_input("Install Dockerfile for documents?"))
+
+    if binary_legal_input("Install Dockerfile for documents?"):
+        params.update(dict(
+            docker_params=dockerfile_cli("docs", docker_type="nginx"))
+        )
+
+    return params
+
+
+def dockerfile_cli(project_type, docker_type=None, port=None):
+    project_docker = {
+        "python": {"cli", "flask"},
+        "web": {"nginx"},
+        "docs": {"nginx"},
+    }
+
+    docker_params = {}
+
+    docker_type = legal_input(
+        "Choose a service type (%s) < " % "/".join(project_docker[project_type]),
+        __legal_input=project_docker[project_type],
+    ) if docker_type is None else docker_type
+
+    docker_params["docker_type"] = docker_type
+
+    if docker_type == "nginx":
+        docker_params.update(
+            image_name=default_legal_input(
+                "Choose a image", __default_value="nginx"
+            ),
+            path_to_html=default_legal_input(
+                "Specify the html directory",
+                __default_value="_build/html" if project_type == "docs" else "build/html"
+            )
+        )
+
+    if project_type == "python":
+        docker_params.update(
+            image_name=default_legal_input(
+                "Choose a image", __default_value="python:3.6-alpine"
+            )
+        )
+        if docker_type == "cli":
+            docker_params.update(
+                path_to_main=default_legal_input(
+                    "Specify the main entry (e.g., the path to main.py)",
+                    is_legal=lambda x: True if x else False
+                )
+            )
+        elif docker_type == "flask":
+            docker_params.update(
+                path_to_main=default_legal_input(
+                    "Specify the main entry (e.g., main_package.main_py:main_func)",
+                    is_legal=lambda x: True if x else False
+                ),
+                port=default_legal_input(
+                    "Specify the port that docker will listen",
+                    is_legal=lambda x: True if x else False
+                ) if port is None else port
+            )
+
+        else:
+            raise TypeError("%s: cannot handle docker type %s, only supports %s" % (
+                project_type, docker_type, project_docker[project_type]))
+
+    return docker_params
+
+
+def gitlab_ci_cli(port=None, stages_candidates: (OrderedDict, dict) = None, docs=False, **kwargs):
+    def get_stage_params(stage_image_name=None, stage_image_port=None, on_stop=False, only_master=None, manual=None):
+        _params = {}
+        if stage_image_name is None:
+            _params["image_name"] = default_legal_input("Choose a image", is_legal=lambda x: True if x else False)
+        else:
+            _params["image_name"] = default_legal_input("Choose a image", __default_value=stage_image_name)
+
+        if stage_image_port is not None:
+            _params["image_port"] = legal_input("Stage Image Port (default is %s) < " % stage_image_port,
+                                                __default_value=stage_image_port)
+        if on_stop:
+            _params["on_stop"] = binary_legal_input("Add Corresponding Stop Stage?")
+        if only_master is not None:
+            _params["only_master"] = binary_legal_input("Only triggered in master branch?", _default=only_master)
+        if manual is not None:
+            _params["manual"] = binary_legal_input("Triggered manually?", _default=manual)
+        return _params
+
+    _stages_candidates = deepcopy(STAGE_CANDIDATES)
+
+    if stages_candidates is not None:
+        _stages_candidates.update(stages_candidates)
+
+    if docs is False:
+        _stages_candidates.pop("docs")
+
+    deployment_image = None
+
+    params = {}
+    for stage, ques_params in _stages_candidates.items():
+        if binary_legal_input("Need [%s] Stage?" % stage, _default=ques_params.get("need", "y")):
+            if stage in {"review", "production"}:
+                if "image_port" not in ques_params and port is not None:
+                    ques_params.update({"stage_image_port": port})
+                if "image_name" not in ques_params and deployment_image is not None:
+                    ques_params.update({"stage_image_name": deployment_image})
+            params[stage] = get_stage_params(**ques_params)
+            if stage in {"review", "production"} and "image_name" in params[stage]:
+                deployment_image = params[stage]["image_name"]
 
     return params

@@ -5,7 +5,7 @@ from longling.Architecture.install_proj.docs_proj import docs_proj
 from longling.Architecture.install_file import *
 
 
-def py_proj(tar_dir, main_params, docs_params, **kwargs):
+def py_proj(tar_dir, main_params, docs_params, docker_params=None, service_params=None, **kwargs):
     variables = {}
     variables.update(main_params)
 
@@ -14,7 +14,7 @@ def py_proj(tar_dir, main_params, docs_params, **kwargs):
     makefile(tar_dir, **variables)
 
     pytest(tar_dir)
-    coverage(tar_dir)
+    coverage(tar_dir, **variables)
 
     gitignore("python", tar_dir)
 
@@ -23,3 +23,16 @@ def py_proj(tar_dir, main_params, docs_params, **kwargs):
 
     if kwargs.get("travis") is True:
         travis(tar_dir)
+
+    if docker_params:
+        dockerfile("python-%s" % docker_params["docker_type"], tar_dir=tar_dir, **docker_params)
+
+    if service_params:
+        if service_params.get("gitlab_ci_params"):
+            chart(tar_dir)
+            gitlab_ci(
+                atype=variables["project_type"],
+                stages=service_params["gitlab_ci_params"],
+                private=service_params["private"],
+                tar_dir=tar_dir
+            )

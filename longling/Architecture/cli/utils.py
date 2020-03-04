@@ -51,6 +51,26 @@ def legal_input(__promt: str,
     return inp
 
 
+def default_legal_input(tip, __legal_input: set = None, __illegal_input: set = None, is_legal=None,
+                        __default_value: str = None, cursor=">"):
+    __promt = tip
+
+    legal_tip = []
+
+    if __legal_input is not None:
+        legal_tip.append("/".join(__legal_input))
+
+    if __default_value is not None:
+        legal_tip.append("default is %s" % __default_value)
+
+    if legal_tip:
+        __promt = tip + " (%s)" % ", ".join(legal_tip)
+
+    __promt += " %s " % cursor
+    return legal_input(__promt, __legal_input=__legal_input, __illegal_input=__illegal_input, is_legal=is_legal,
+                       __default_value=__default_value)
+
+
 def binary_legal_input(tip, _y="y", _n="n", _default="y"):
     assert _default in [_y, _n, None]
     return True if legal_input("%s (%s/%s, default is %s) < " % (tip, _y, _n, _default),
