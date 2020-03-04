@@ -42,10 +42,9 @@ def variable_replace(string: str, key_lower: bool = True, quotation: str = "", *
     return VARIABLE.sub(replace, string)
 
 
-@overload
-def default_variable_replace(string: str, default_value: dict, key_lower: bool = True, quotation: str = "",
-                             **variables) -> str:  # pragma: no cover
-    # coverage cannot test this function
+def default_variable_replace(string: str, default_value: (str, None, dict) = None, key_lower: bool = True,
+                             quotation: str = "",
+                             **variables) -> str:
     """
     Examples
     --------
@@ -55,8 +54,23 @@ def default_variable_replace(string: str, default_value: dict, key_lower: bool =
     >>> string = "hello $who, I am $author"
     >>> default_variable_replace(string, default_value={"author": "groot"})
     'hello , I am groot'
+    >>> string = "hello $who, I am $author"
+    >>> default_variable_replace(string, who="world")
+    'hello world, I am '
+    >>> string = "hello $who, I am $author"
+    >>> default_variable_replace(string, default_value=None, who="world")
+    'hello world, I am $author'
     """
+    if default_value is None or isinstance(default_value, str):
+        return _default_variable_replace(string, default_value, key_lower, quotation, **variables)
+    elif isinstance(default_value, dict):
+        return _dict_variable_replace(string, default_value, key_lower, quotation, **variables)
+    else:
+        raise TypeError("cannot handle the type %s for default_value" % type(default_value))
 
+
+def _dict_variable_replace(string: str, default_value: dict, key_lower: bool = True, quotation: str = "",
+                           **variables) -> str:
     def replace(match):
         variable = string[match.start() + 1:match.end()]
         variable = variable.lower() if key_lower else variable
@@ -67,19 +81,8 @@ def default_variable_replace(string: str, default_value: dict, key_lower: bool =
     return VARIABLE.sub(replace, string)
 
 
-def default_variable_replace(string: str, default_value: (str, None) = "", key_lower: bool = True, quotation: str = "",
-                             **variables) -> str:
-    """
-    Examples
-    --------
-    >>> string = "hello $who, I am $author"
-    >>> default_variable_replace(string, who="world")
-    'hello world, I am '
-    >>> string = "hello $who, I am $author"
-    >>> default_variable_replace(string, default_value=None, who="world")
-    'hello world, I am $author'
-    """
-
+def _default_variable_replace(string: str, default_value: (str, None) = "", key_lower: bool = True, quotation: str = "",
+                              **variables) -> str:
     def replace(match):
         variable = string[match.start() + 1:match.end()]
         variable = variable.lower() if key_lower else variable

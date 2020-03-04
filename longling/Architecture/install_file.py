@@ -155,7 +155,7 @@ def chart(tar_dir: PATH_TYPE = "./"):
     tar_dir = path_append(tar_dir, "chart/")
     logger.info("chart: copy %s -> %s" % (src_dir, tar_dir))
     if os.path.exists(tar_dir):
-        logger.warning("target directory exists, override")
+        logger.warning("target directory %s exists, override" % tar_dir)
         rmtree(tar_dir)
     copytree(src_dir, tar_dir)
 
@@ -185,10 +185,11 @@ def helm_service(image_repo="${CI_REGISTRY_IMAGE}", image_port=None, private=Tru
 
 
 def _gitlab_ci(commands: dict, stage, image_name, private=True, on_stop=None, manual=False, only_master=False,
-               service=False, deployment=True, registry_suffix="", **kwargs):
+               deployment=True, registry_suffix="", **kwargs):
     name = "$KUBE_NAMESPACE"
 
     _commands = commands.get(stage, OrderedDict())
+    _commands["image"] = image_name
     script = _commands.get("script", [])
     if script is None:
         script = []

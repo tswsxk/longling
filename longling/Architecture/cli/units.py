@@ -153,7 +153,7 @@ def gitlab_ci_cli(port=None, stages_candidates: (OrderedDict, dict) = None, docs
             if stage in {"review", "production"}:
                 if "image_port" not in ques_params and port is not None:
                     ques_params.update({"stage_image_port": port})
-                if "image_name" not in ques_params and deployment_image is not None:
+                if "stage_image_name" not in ques_params and deployment_image is not None:
                     ques_params.update({"stage_image_name": deployment_image})
             params[stage] = get_stage_params(**ques_params)
             if stage in {"review", "production"} and "image_name" in params[stage]:

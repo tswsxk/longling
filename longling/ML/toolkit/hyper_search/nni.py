@@ -20,7 +20,8 @@ def _key(x):
         return float(json.loads(x)["default"])
 
 
-def show(key, exp_id=None, res_dir="./", nni_dir=path_append(os.environ["HOME"], "nni/experiments"), only_final=False,
+def show(key, exp_id=None, res_dir="./", nni_dir=path_append(os.environ.get("HOME", "./"), "nni/experiments"),
+         only_final=False,
          with_keys=None, with_all=False):
     if exp_id is None:
         exp_id = pathlib.PurePath(os.path.abspath(res_dir)).name
@@ -49,7 +50,7 @@ def show(key, exp_id=None, res_dir="./", nni_dir=path_append(os.environ["HOME"],
     return result
 
 
-def show_top_k(k, exp_id=None, exp_dir=path_append(os.environ["HOME"], "nni/experiments")):
+def show_top_k(k, exp_id=None, exp_dir=path_append(os.environ.get("HOME", "./"), "nni/experiments")):
     if exp_id:
         exp_dir = path_append(exp_dir, exp_id)
     sqlite_db = path_append(exp_dir, "db", "nni.sqlite", to_str=True)
