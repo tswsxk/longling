@@ -2,7 +2,8 @@
 # 2019/9/20 @ tongshiwei
 
 from longling.Architecture.install_proj.docs_proj import docs_proj
-from longling.Architecture.install_file import *
+from longling.Architecture.install_file import pysetup, makefile, pytest, coverage
+from longling.Architecture.install_file import gitignore, gitlab_ci, dockerfile, chart, travis
 
 
 def py_proj(tar_dir, main_params, docs_params, docker_params=None, service_params=None, **kwargs):
