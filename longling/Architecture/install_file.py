@@ -160,7 +160,7 @@ def chart(tar_dir: PATH_TYPE = "./"):
     copytree(src_dir, tar_dir)
 
 
-def helm_service(image_repo="${CI_REGISTRY_IMAGE}", image_port=None, private=True, name="$KUBE_NAMESPACE",
+def helm_service(host="${KUBE_NAMESPACE}", image_repo="${CI_REGISTRY_IMAGE}", image_port=None, private=True, name="$KUBE_NAMESPACE",
                  image_tag="latest", path_to_api=""):
     src = path_append(META, "gitlab-ci/helm_install.gitlab-ci.yml.template")
 
@@ -168,12 +168,14 @@ def helm_service(image_repo="${CI_REGISTRY_IMAGE}", image_port=None, private=Tru
         "NAME": name,
         "IMAGE_TAG": image_tag,
         "IMAGE_REPO": image_repo,
+        "HOST": host,
         "PATH_TO_API": path_to_api,
     }
 
     with open(src, encoding="utf-8") as f:
         helm_install_commands = "".join(f.readlines()).strip() + "\n"
-        helm_install_commands = default_variable_replace(helm_install_commands, key_lower=False, **variables)
+        helm_install_commands = default_variable_replace(helm_install_commands,
+                                                         key_lower=False, quotation="", **variables)
 
     if image_port:
         helm_install_commands += "--set \"image.port=%s\"" % image_port + "\n"
@@ -181,11 +183,14 @@ def helm_service(image_repo="${CI_REGISTRY_IMAGE}", image_port=None, private=Tru
     if private:
         helm_install_commands += "--set \"dockercfg=$(cat /root/.docker/config.json | base64 | tr -d '\\n')\"" + "\n"
 
+    if not path_to_api:
+        helm_install_commands += "--set \"ingress.annotations=null\"" + "\n"
+
     return FoldedString(helm_install_commands)
 
 
 def _gitlab_ci(commands: dict, stage, image_name, private=True, on_stop=None, manual=False, only_master=False,
-               deployment=True, registry_suffix="", **kwargs):
+               deployment=True, registry_suffix="", version_in_path=True, **kwargs):
     name = "$KUBE_NAMESPACE"
 
     _commands = commands.get(stage, OrderedDict())
@@ -219,7 +224,11 @@ def _gitlab_ci(commands: dict, stage, image_name, private=True, on_stop=None, ma
 
         script.append("helm dep build chart")
         script.append(uninstall_heml)
-        path_to_api = "${API_VERSION}(/|$)(.*)"
+        if version_in_path:
+            path_to_api = "${API_VERSION}(/|$)(.*)"
+        else:
+            path_to_api = ""
+            kwargs.update({"host": "${$KUBE_NAMESPACE}-%s" % "${API_VERSION}"})
 
         script.append(helm_service(name=name, private=private, path_to_api=path_to_api, image_tag=image_tag, **kwargs))
 
@@ -256,7 +265,7 @@ def _gitlab_ci(commands: dict, stage, image_name, private=True, on_stop=None, ma
             commands["stop_review"] = stop_commands
 
 
-def gitlab_ci(private, stages: dict, atype: str = "", tar_dir: PATH_TYPE = "./"):
+def gitlab_ci(private, stages: dict, atype: str = "", tar_dir: PATH_TYPE = "./", version_in_path=True):
     base_src = path_append(META, "gitlab-ci", ".gitlab-ci.yml")
     src = path_append(META, "gitlab-ci", "%s.gitlab-ci.yml" % atype)
     tar = path_append(tar_dir, ".gitlab-ci.yml")
@@ -288,7 +297,7 @@ def gitlab_ci(private, stages: dict, atype: str = "", tar_dir: PATH_TYPE = "./")
                 logger.warning("%s is not listed in %s, skipped" % (stage, src))
                 continue
             commands = {stage: config_template[stage]}
-            _gitlab_ci(commands, stage, private=private, **params)
+            _gitlab_ci(commands, stage, private=private, version_in_path=version_in_path, **params)
             print(dump_folded_yaml(commands), file=wf)
 
     if private:

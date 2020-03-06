@@ -73,3 +73,7 @@ def cli(skip_top=True, project=None, **kwargs):  # pragma: no cover
         tar_dir=tar_dir, main_params=main_params, docs_params=docs_params,
         docker_params=docker_params, service_params=service_params, **indicator
     )
+
+
+if __name__ == '__main__':
+    cli()

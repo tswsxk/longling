@@ -62,7 +62,7 @@ def docs_cli(project=None, title=None, author=None, copyright=None, default_styl
 def dockerfile_cli(project_type, docker_type=None, port=None):
     project_docker = {
         "python": {"cli", "flask"},
-        "web": {"nginx"},
+        "web": {"nginx", "vue"},
         "docs": {"nginx"},
     }
 
@@ -75,7 +75,7 @@ def dockerfile_cli(project_type, docker_type=None, port=None):
 
     docker_params["docker_type"] = docker_type
 
-    if docker_type == "nginx":
+    if docker_type in {"nginx", "vue"}:
         docker_params.update(
             image_name=default_legal_input(
                 "Choose a image", __default_value="nginx"
@@ -158,5 +158,7 @@ def gitlab_ci_cli(port=None, stages_candidates: (OrderedDict, dict) = None, docs
             params[stage] = get_stage_params(**ques_params)
             if stage in {"review", "production"} and "image_name" in params[stage]:
                 deployment_image = params[stage]["image_name"]
+            elif stage == "build" and "image_name" in params[stage]:
+                _stages_candidates["test"]["stage_image_name"] = params[stage]["image_name"]
 
     return params
