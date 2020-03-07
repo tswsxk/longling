@@ -30,7 +30,7 @@ docs:
   image: $IMAGE_NAME
   before_script:
   - apk add make && apk add python3
-  - pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple -e .[doc]
+  - pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple -r docs/requirements.txt
   - docker login -u gitlab-ci-token -p ${CI_BUILD_TOKEN} ${CI_REGISTRY}
   - helm repo add stable http://mirror.azure.cn/kubernetes/charts
   - helm version
