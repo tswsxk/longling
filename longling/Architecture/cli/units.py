@@ -89,7 +89,7 @@ def dockerfile_cli(project_type, docker_type=None, port=None):
     if project_type == "python":
         docker_params.update(
             image_name=default_legal_input(
-                "Choose a image", __default_value="python:3.6-alpine"
+                "Choose a image", __default_value="python:3.6"
             )
         )
         if docker_type == "cli":
