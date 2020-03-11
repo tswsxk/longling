@@ -10,21 +10,50 @@ __all__ = [
     "dockerfile", "gitlab_ci", "chart"
 ]
 
-import os
 import functools
-from shutil import copyfile, rmtree, copytree
+import os
 from collections import OrderedDict
+from shutil import copyfile as _copyfile, rmtree, copytree as _copytree
 
 from longling import wf_open, PATH_TYPE
+from longling.Architecture.utils import binary_legal_input
 from longling.lib.path import abs_current_dir, path_append
 from longling.lib.process_pattern import default_variable_replace as dvr
 from longling.lib.utilog import config_logging, LogLevel
 from longling.lib.yaml import FoldedString, ordered_yaml_load, dump_folded_yaml
 
+from . import config
+
 logger = config_logging(logger="arch", console_log_level=LogLevel.INFO)
 
 META = path_append(abs_current_dir(__file__), "meta_docs")
 default_variable_replace = functools.partial(dvr, quotation="\'")
+
+
+def copytree(src, dst, **kwargs):
+    if not override_check(dst):
+        return
+    elif os.path.exists(dst):
+        rmtree(dst)
+    _copytree(src, dst, **kwargs)
+
+
+def copyfile(src, dst):
+    if override_check(dst):
+        _copyfile(src, dst)
+
+
+def override_check(path):
+    if os.path.exists(path):
+        if config.OVERRIDE is False:
+            logger.error("%s exists, skipped" % path)
+            return False
+        elif config.OVERRIDE is None and not binary_legal_input("%s exists, override?" % path, _default="n"):
+            logger.info("skip %s" % path)
+            return False
+        else:
+            logger.info("%s exists, overrided" % path)
+    return True
 
 
 def template_copy(src: PATH_TYPE, tar: PATH_TYPE,
@@ -43,6 +72,10 @@ def template_copy(src: PATH_TYPE, tar: PATH_TYPE,
     quotation: the quotation to wrap the variable value
     variables: the real variable values which are used to replace the variable in template file
     """
+
+    if not override_check(tar):
+        return
+
     with open(src) as f, wf_open(tar) as wf:
         for line in f:
             print(
@@ -154,13 +187,11 @@ def chart(tar_dir: PATH_TYPE = "./"):
     src_dir = path_append(META, "chart")
     tar_dir = path_append(tar_dir, "chart/")
     logger.info("chart: copy %s -> %s" % (src_dir, tar_dir))
-    if os.path.exists(tar_dir):
-        logger.warning("target directory %s exists, override" % tar_dir)
-        rmtree(tar_dir)
     copytree(src_dir, tar_dir)
 
 
-def helm_service(host="${KUBE_NAMESPACE}", image_repo="${CI_REGISTRY_IMAGE}", image_port=None, private=True, name="$KUBE_NAMESPACE",
+def helm_service(host="${KUBE_NAMESPACE}", image_repo="${CI_REGISTRY_IMAGE}", image_port=None, private=True,
+                 name="$KUBE_NAMESPACE",
                  image_tag="latest", path_to_api=""):
     src = path_append(META, "gitlab-ci/helm_install.gitlab-ci.yml.template")
 

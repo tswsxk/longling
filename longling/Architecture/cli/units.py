@@ -3,14 +3,15 @@
 
 __all__ = ["main_cli", "docs_cli", "dockerfile_cli", "gitlab_ci_cli"]
 
-from copy import deepcopy
-from collections import OrderedDict
+import datetime
 import os
 import pathlib
-import datetime
-from longling.Architecture.install_proj import project_types
-from longling.Architecture.cli.utils import legal_input, binary_legal_input, default_legal_input
+from collections import OrderedDict
+from copy import deepcopy
+
 from longling.Architecture.config import STAGE_CANDIDATES
+from longling.Architecture.install_proj import project_types
+from longling.Architecture.utils import legal_input, binary_legal_input, default_legal_input
 
 
 def main_cli(skip_top, project, **kwargs):  # pragma: no cover

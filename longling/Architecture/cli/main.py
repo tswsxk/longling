@@ -4,15 +4,20 @@
 __all__ = ["cli"]
 
 import os
-from longling.Architecture.cli.utils import legal_input, binary_legal_input
-from longling.Architecture.install_proj import project_types
+
 from longling.Architecture.cli.units import *
+from longling.Architecture.install_proj import project_types
+from longling.Architecture.utils import legal_input, binary_legal_input
+
+from .. import config
 
 
-def cli(skip_top=True, project=None, **kwargs):  # pragma: no cover
+def cli(skip_top=True, project=None, override=None, **kwargs):  # pragma: no cover
     """
     The main function for arch
     """
+    config.OVERRIDE = override
+
     main_params = main_cli(skip_top, project, **kwargs)
 
     kwargs.update(main_params)
