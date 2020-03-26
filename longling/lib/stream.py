@@ -5,15 +5,23 @@
 
 from __future__ import print_function
 
+import json
+import uuid
+import tempfile
+from _io import TextIOWrapper
+from contextlib import contextmanager
 from tqdm import tqdm
 import codecs
 import os
 import sys
 from pathlib import PurePath
 import fileinput
+from typing import BinaryIO, TextIO
 
-__all__ = ['rf_open', 'wf_open', 'wf_close', 'flush_print', 'build_dir', 'json_load',
-           'pickle_load', 'AddPrinter', 'AddObject', 'StreamError', 'check_file', 'PATH_TYPE', 'encoding']
+__all__ = ['rf_open', 'as_io', 'wf_open', 'close_io', 'flush_print', 'build_dir', 'json_load',
+           'pickle_load', 'AddPrinter', 'AddObject', 'StreamError', 'check_file',
+           'PATH_TYPE', 'encode', 'as_out_io', 'IO_TYPE', 'tmpfile',
+           ]
 
 
 class StreamError(Exception):
@@ -21,6 +29,7 @@ class StreamError(Exception):
 
 
 PATH_TYPE = (str, PurePath)
+IO_TYPE = (TextIOWrapper, TextIO, BinaryIO)
 
 
 def flush_print(*values, **kwargs):
@@ -65,23 +74,29 @@ def check_file(path, size=None):
     return False
 
 
-def rf_open(filename: (PATH_TYPE, list), encoding='utf-8', **kwargs):
+def rf_open(filename: (TextIO, BinaryIO, PATH_TYPE, list, None) = None, encoding='utf-8', **kwargs):
+    if filename is None:
+        return sys.stdin
     if isinstance(filename, list):
-        return fileinput.input(files=filename, **kwargs)
-    if kwargs.get("mode"):
-        return open(filename, **kwargs)
+        if encoding is None:
+            return fileinput.input(files=filename, **kwargs)
+        else:
+            return fileinput.input(
+                files=filename,
+                openhook=fileinput.hook_encoded(encoding)
+            )
     return open(filename, encoding=encoding, **kwargs)
 
 
-def json_load(fp, **kwargs):
-    import json
-    if isinstance(fp, PATH_TYPE):
-        fp = rf_open(fp, **kwargs)
-        datas = json.load(fp, **kwargs)
-        fp.close()
-        return datas
-    else:
-        return json.load(fp, **kwargs)
+def json_load(fp: (IO_TYPE, PurePath), **kwargs):
+    with as_io(fp) as f:
+        return json.load(f, **kwargs)
+
+
+def jsonl(src, **kwargs):
+    with as_io(src, **kwargs) as f:
+        for line in f:
+            yield json.loads(line)
 
 
 def pickle_load(fp, encoding='utf-8', mode='rb', **kwargs):
@@ -95,7 +110,7 @@ def pickle_load(fp, encoding='utf-8', mode='rb', **kwargs):
         return pickle.load(fp, encoding=encoding, **kwargs)
 
 
-def wf_open(stream_name: (PATH_TYPE, None) = '', mode="w", encoding="utf-8"):
+def wf_open(stream_name: (PATH_TYPE, None) = None, mode="w", encoding="utf-8", **kwargs):
     r"""
     Simple wrapper to codecs for writing.
 
@@ -122,33 +137,59 @@ def wf_open(stream_name: (PATH_TYPE, None) = '', mode="w", encoding="utf-8"):
     hello world
     """
     if not stream_name:
+        if stream_name is None or mode == "stdout":
+            return sys.stdout
         if mode == "stderr":
             return sys.stderr
-        elif mode == "stdout":
-            return sys.stdout
         else:
             raise TypeError("Unknown mode for std mode, only `stdout` and `stderr` are supported.")
     elif isinstance(stream_name, PATH_TYPE):
         build_dir(stream_name)
         if mode == "wb":
-            return open(stream_name, mode=mode)
-        return codecs.open(stream_name, mode=mode, encoding=encoding)
+            return open(stream_name, mode=mode, **kwargs)
+        return codecs.open(stream_name, mode=mode, encoding=encoding, **kwargs)
     else:
         raise TypeError("unknown type: %s(%s)" % (stream_name, type(stream_name)))
 
 
-def wf_close(stream):
+def to_io(stream: (TextIOWrapper, TextIO, BinaryIO, PATH_TYPE, list, None) = None, mode='r', encoding='utf-8',
+          **kwargs):
+    if isinstance(stream, IO_TYPE):
+        return stream
+    if 'r' in mode:
+        return rf_open(stream, encoding=encoding, mode=mode, **kwargs)
+    elif 'w' in mode or 'stderr' in mode or 'stdout' in mode:
+        return wf_open(stream_name=stream, mode=mode, encoding=encoding)
+    else:
+        return open(stream, mode, encoding=encoding, **kwargs)
+
+
+def close_io(stream):
     """关闭文件流，忽略 sys.stdin, sys.stdout, sys.stderr"""
     if stream in {sys.stdin, sys.stdout, sys.stderr}:
-        return True
+        pass
     else:
         try:
             stream.close()
         except Exception:
-            raise StreamError('wf_close: %s' % stream)
+            raise StreamError('io_close: %s' % stream)
 
 
-def encoding(src, src_encoding, tar, tar_encoding):
+@contextmanager
+def as_io(src: (TextIOWrapper, TextIO, BinaryIO, PATH_TYPE, list, None) = None, mode='r', encoding='utf-8', **kwargs):
+    _io_object = to_io(src, mode, encoding, **kwargs)
+    yield _io_object
+    close_io(_io_object)
+
+
+@contextmanager
+def as_out_io(tar: (TextIOWrapper, TextIO, BinaryIO, PATH_TYPE, list, None) = None, mode='w', encoding='utf-8',
+              **kwargs):
+    with as_io(tar, mode, encoding, **kwargs) as out_io:
+        yield out_io
+
+
+def encode(src, src_encoding, tar, tar_encoding):
     with rf_open(src, encoding=src_encoding) as f, wf_open(tar, encoding=tar_encoding) as wf:
         for line in tqdm(f, "encoding %s[%s] --> %s[%s]" % (src, src_encoding, tar, tar_encoding)):
             print(line, end='', file=wf)
@@ -179,3 +220,10 @@ class AddPrinter(AddObject):
 
     def add(self, value):
         print(self.value_wrapper(value), file=self.fp, **self.kwargs)
+
+
+def tmpfile(suffix=None, prefix=None):
+    prefix = prefix if prefix is not None else tempfile.gettempprefix() + str(uuid.uuid4())[:6]
+    filename = prefix + suffix if suffix is not None else prefix
+    with tempfile.TemporaryDirectory() as tmpdir:
+        yield os.path.join(tmpdir, filename)
