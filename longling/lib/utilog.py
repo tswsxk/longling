@@ -5,8 +5,9 @@
 import logging
 
 from longling.lib.stream import build_dir
+from longling.lib.time import get_current_timestamp as default_timestamp
 
-__all__ = ["LogLevel", "config_logging"]
+__all__ = ["LogLevel", "config_logging", "default_timestamp"]
 
 
 class LogLevel(object):
@@ -34,7 +35,7 @@ def config_logging(filename=None,
                    level=logging.INFO,
                    logger=None, console_log_level=None, propagate=False,
                    mode='a',
-                   file_format=None):
+                   file_format=None, encoding: (str, None)="utf-8"):
     """
     主日志设定文件
 
@@ -55,6 +56,7 @@ def config_logging(filename=None,
     mode: str
     file_format: str or None
         文件日志输出格式，为空时，使用log_format
+    encoding
     Returns
     -------
 
@@ -81,7 +83,7 @@ def config_logging(filename=None,
         logger.propagate = False
     if filename and filename is not None:
         build_dir(filename)
-        handler = logging.FileHandler(filename, mode=mode)
+        handler = logging.FileHandler(filename, mode=mode, encoding=encoding)
         file_formatter = formatter
         if file_format:
             file_formatter = logging.Formatter(file_format)
