@@ -2,10 +2,14 @@
 # create by tongshiwei on 2019/7/2
 # PYTEST_DONT_REWRITE
 
-__all__ = ["path_append", "file_exist", "abs_current_dir"]
+__all__ = ["path_append", "file_exist", "abs_current_dir", "type_from_name"]
 
 import os
 from pathlib import PurePath
+
+
+def type_from_name(filename):
+    return PurePath(filename).suffix
 
 
 def path_append(path, *addition, to_str=False):
