@@ -18,7 +18,7 @@ from shutil import copyfile as _copyfile, rmtree, copytree as _copytree
 from longling import wf_open, PATH_TYPE
 from longling.Architecture.utils import binary_legal_input
 from longling.lib.path import abs_current_dir, path_append
-from longling.lib.process_pattern import default_variable_replace as dvr
+from longling.lib.regex import default_variable_replace as dvr
 from longling.lib.utilog import config_logging, LogLevel
 from longling.lib.yaml import FoldedString, ordered_yaml_load, dump_folded_yaml
 

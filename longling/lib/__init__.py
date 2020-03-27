@@ -6,7 +6,7 @@ from . import candylib
 from . import clock
 from . import stream
 from . import utilog
-from . import process_pattern
+from . import regex
 from . import progress
 
 from .progress import ProgressMonitor, IterableMonitor

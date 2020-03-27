@@ -15,7 +15,7 @@ from longling.lib.loading import *
 from longling.lib.iterator import *
 
 from longling.lib import clock
-from longling.lib import process_pattern
+from longling.lib import regex
 from longling.lib import stream
 from longling.lib import utilog
 from longling.lib import candylib
