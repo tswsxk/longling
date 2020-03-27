@@ -1,4 +1,4 @@
-.. mdinclude:: ../../../../longling/Architecture/README.md
+.. mdinclude:: ../../../longling/Architecture/README.md
 
 entrance
 --------
