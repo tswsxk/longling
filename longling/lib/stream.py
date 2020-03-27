@@ -85,6 +85,8 @@ def rf_open(filename: (TextIO, BinaryIO, PATH_TYPE, list, None) = None, encoding
                 files=filename,
                 openhook=fileinput.hook_encoded(encoding)
             )
+
+    encoding = None if kwargs.get("mode") == "rb" else encoding
     return open(filename, encoding=encoding, **kwargs)
 
 
