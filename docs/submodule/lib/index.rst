@@ -31,8 +31,8 @@ utilog
    :members:
    :imported-members:
 
-process_pattern
+regex
 ---------------
-.. automodule:: longling.lib.process_pattern
+.. automodule:: longling.lib.regex
    :members:
    :imported-members:
