@@ -6,9 +6,12 @@ from longling.Architecture.install_file import template_copy
 from longling.Architecture.install_file import gitignore, pytest as gen_pytest, coverage, pysetup, sphinx_conf
 from longling.Architecture.install_file import readthedocs, makefile
 from longling.Architecture.install_proj import py_proj, docs_proj
+from longling.Architecture import config
 
 
 def test_template_copy(tmpdir):
+    config.OVERRIDE = True
+
     pseudo_template = """
     project=$PROJECT
     author=$AUTHOR
@@ -30,7 +33,7 @@ def test_files(tmpdir):
     for atype in ["", "docs", "python"]:
         gitignore(atype=atype, tar_dir=tmpdir)
 
-    gen_pytest()
+    gen_pytest(tmpdir)
     coverage(tmpdir, project="longling")
 
     with open(path_append(tmpdir, "setup.cfg")) as f:
@@ -38,7 +41,8 @@ def test_files(tmpdir):
         assert f.readline().strip() == "source=longling"
 
     pysetup(tmpdir, project="longling")
-    sphinx_conf(tmpdir)
+    sphinx_conf(tmpdir, docs_style="mxnet")
+    sphinx_conf(tmpdir, docs_style="sphinx")
     readthedocs(tmpdir)
     makefile(tmpdir, project="longling")
 
@@ -47,5 +51,5 @@ def test_files(tmpdir):
 
 
 def test_proj(tmpdir):
-    docs_proj(tmpdir, {"docs_root": "docs/"})
-    py_proj(tmpdir, {}, {"docs_root": "docs/"}, travis=True)
+    docs_proj(tmpdir, {"docs_root": "docs/", "doc_style": "sphinx"})
+    py_proj(tmpdir, {}, {"docs_root": "docs/", "doc_style": "mxnet"}, travis=True)
