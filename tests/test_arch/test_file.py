@@ -51,5 +51,5 @@ def test_files(tmpdir):
 
 
 def test_proj(tmpdir):
-    docs_proj(tmpdir, {"docs_root": "docs/", "doc_style": "sphinx"})
-    py_proj(tmpdir, {}, {"docs_root": "docs/", "doc_style": "mxnet"}, travis=True)
+    docs_proj(tmpdir, {"docs_root": "docs/", "docs_style": "sphinx", "readthedocs": True})
+    py_proj(tmpdir, {}, {"docs_root": "docs/", "docs_style": "mxnet", "readthedocs": False}, travis=True)
