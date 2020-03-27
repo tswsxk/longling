@@ -3,6 +3,8 @@
 import yaml
 from collections import OrderedDict
 
+from .stream import as_io
+
 
 def folded_string_representer(dumper, data):
     return dumper.represent_scalar(u'tag:yaml.org,2002:str', data, style='|')
@@ -38,6 +40,15 @@ def dump_folded_yaml(yaml_string):
 
 
 def ordered_yaml_load(stream, Loader=yaml.Loader, object_pairs_hook=OrderedDict):
+    """
+    Examples
+    -------
+    .. code-block :: python
+
+    ordered_yaml_load("path_to_file.yaml")
+    OrderedDict({"a":123})
+    """
+
     class OrderedLoader(Loader):
         pass
 
@@ -48,4 +59,6 @@ def ordered_yaml_load(stream, Loader=yaml.Loader, object_pairs_hook=OrderedDict)
     OrderedLoader.add_constructor(
         yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
         construct_mapping)
-    return yaml.load(stream, OrderedLoader)
+
+    with as_io(stream) as stream:
+        return yaml.load(stream, OrderedLoader)
