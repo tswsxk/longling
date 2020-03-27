@@ -1,5 +1,4 @@
-arch: Tools for Constructing Project
-====================================
+.. mdinclude:: ../../../../longling/Architecture/README.md
 
 entrance
 --------
