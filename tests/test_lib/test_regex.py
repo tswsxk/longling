@@ -3,7 +3,7 @@
 
 import pytest
 
-from longling.lib.regex import variable_replace
+from longling.lib.regex import variable_replace, default_variable_replace
 
 
 # from longling.lib.regex import PatternHitter
@@ -21,6 +21,9 @@ def test_variable_replace():
 
     with pytest.raises(KeyError):
         variable_replace(demo_string2, key_lower=False, who="world", name="longling")
+
+    with pytest.raises(TypeError):
+        default_variable_replace("I'm $who", default_value={"groot"})
 
     assert variable_replace("$PROJECT-", project="longling") == "longling-"
 
