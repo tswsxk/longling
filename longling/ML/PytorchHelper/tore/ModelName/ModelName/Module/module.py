@@ -231,8 +231,7 @@ class Module(module.Module):
                     )
 
             if kwargs.get('prefix') and (
-                    epoch % kwargs.get('save_epoch', 1) == 0 or
-                    end_epoch - 10 <= epoch <= end_epoch - 1
+                    epoch % kwargs.get('save_epoch', 1) == 0 or end_epoch - 10 <= epoch <= end_epoch - 1
             ):
                 self.save_params(
                     kwargs['prefix'] + "-%04d.parmas" % (epoch + 1), net
