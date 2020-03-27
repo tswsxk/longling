@@ -20,7 +20,7 @@ from typing import BinaryIO, TextIO
 
 __all__ = ['rf_open', 'as_io', 'wf_open', 'close_io', 'flush_print', 'build_dir', 'json_load',
            'pickle_load', 'AddPrinter', 'AddObject', 'StreamError', 'check_file',
-           'PATH_TYPE', 'encode', 'as_out_io', 'IO_TYPE', 'tmpfile',
+           'PATH_TYPE', 'encode', 'as_out_io', 'IO_TYPE', 'tmpfile', "jsonl_load"
            ]
 
 
@@ -95,7 +95,7 @@ def json_load(fp: (IO_TYPE, PurePath), **kwargs):
         return json.load(f, **kwargs)
 
 
-def jsonl(src, **kwargs):
+def jsonl_load(src, **kwargs):
     with as_io(src, **kwargs) as f:
         for line in f:
             yield json.loads(line)
@@ -139,9 +139,11 @@ def wf_open(stream_name: (PATH_TYPE, None) = None, mode="w", encoding="utf-8", *
     hello world
     """
     if not stream_name:
-        if stream_name is None or mode == "stdout":
+        if stream_name is None and mode in {"w", "wb"}:
             return sys.stdout
-        if mode == "stderr":
+        elif mode == "stdout":
+            return sys.stdout
+        elif mode == "stderr":
             return sys.stderr
         else:
             raise TypeError("Unknown mode for std mode, only `stdout` and `stderr` are supported.")
@@ -224,7 +226,16 @@ class AddPrinter(AddObject):
         print(self.value_wrapper(value), file=self.fp, **self.kwargs)
 
 
+@contextmanager
 def tmpfile(suffix=None, prefix=None):
+    """
+    .. code-block ::
+
+    with tmpfile("test_tmp") as tmp:
+        print(tmp)
+        with open(tmp, mode="w") as wf:
+            print("hello world", file=wf)
+    """
     prefix = prefix if prefix is not None else tempfile.gettempprefix() + str(uuid.uuid4())[:6]
     filename = prefix + suffix if suffix is not None else prefix
     with tempfile.TemporaryDirectory() as tmpdir:
