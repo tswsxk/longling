@@ -7,7 +7,7 @@ from mxnet import symbol, ndarray
 __all__ = ["getF", "copy_net"]
 
 
-def getF(input_object: (symbol.Symbol, ndarray.NDArray))->(symbol, ndarray):
+def getF(input_object: (symbol.Symbol, ndarray.NDArray)) -> (symbol, ndarray):
     r"""
     判断输入参数类型
 
@@ -54,7 +54,7 @@ def copy_net(src_net, target_net, select=None):
         ].set_data(value)
 
 
-def get_fine_tune_model(symbol, label, arg_params, num_classes,
+def get_fine_tune_model(sym, label, arg_params, num_classes,
                         layer_name='flatten0'):
     """
     Only for static newwotk
@@ -63,7 +63,7 @@ def get_fine_tune_model(symbol, label, arg_params, num_classes,
 
     Parameters
     ----------
-    symbol:
+    sym:
         the pretrained network symbol
     label:
 
@@ -77,7 +77,7 @@ def get_fine_tune_model(symbol, label, arg_params, num_classes,
     -------
 
     """
-    all_layers = symbol.get_internals()
+    all_layers = sym.get_internals()
     net = all_layers[layer_name + '_output']
     net = mx.symbol.FullyConnected(
         data=net, num_hidden=num_classes, name='fc1'
