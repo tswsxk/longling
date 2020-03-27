@@ -17,7 +17,7 @@ def test_flush_print(capsys):
 def test_write(capsys):
     wf = wf_open(mode="stdout")
     print("test stdout", file=wf)
-    wf_close(wf)
+    close_io(wf)
 
     captured = capsys.readouterr()
 
@@ -25,7 +25,7 @@ def test_write(capsys):
 
     wf = wf_open(mode="stderr")
     print("test stderr", file=wf)
-    wf_close(wf)
+    close_io(wf)
 
     captured = capsys.readouterr()
 
@@ -45,7 +45,7 @@ def test_read_write(tmp_path):
 
     wf = wf_open(str(tmp_file), mode="a")
     print("test read write 2", file=wf)
-    wf_close(wf)
+    close_io(wf)
 
     _sum = 0
     with rf_open(tmp_file) as f:
@@ -80,7 +80,7 @@ def test_read_write(tmp_path):
         wf_open({"123": 123})
 
     with pytest.raises(StreamError):
-        wf_close("123")
+        close_io("123")
 
 
 def test_add(capsys, tmp_path):
@@ -93,7 +93,7 @@ def test_add(capsys, tmp_path):
     for i in range(10):
         output_flow.add(i)
 
-    wf_close(wf)
+    close_io(wf)
 
     with open(tmp_file) as f:
         for i, line in enumerate(f):
@@ -108,7 +108,7 @@ def test_add(capsys, tmp_path):
         captured = capsys.readouterr()
         assert captured.out == "%s\n" % i
 
-    wf_close(wf)
+    close_io(wf)
 
 
 def test_encoding(tmpdir):
