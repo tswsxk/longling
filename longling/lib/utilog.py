@@ -35,7 +35,7 @@ def config_logging(filename=None,
                    level=logging.INFO,
                    logger=None, console_log_level=None, propagate=False,
                    mode='a',
-                   file_format=None, encoding: (str, None)="utf-8"):
+                   file_format=None, encoding: (str, None) = "utf-8"):
     """
     主日志设定文件
 
