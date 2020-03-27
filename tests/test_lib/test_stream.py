@@ -1,6 +1,7 @@
 # coding: utf-8
 # create by tongshiwei on 2019/6/27
 
+import sys
 import json
 import pickle
 import pytest
@@ -15,6 +16,13 @@ def test_flush_print(capsys):
 
 
 def test_write(capsys):
+    with as_out_io() as wf:
+        print("hello world", file=wf)
+
+    captured = capsys.readouterr()
+
+    assert captured.out == "hello world\n"
+
     wf = wf_open(mode="stdout")
     print("test stdout", file=wf)
     close_io(wf)
@@ -40,15 +48,17 @@ def test_write(capsys):
 def test_read_write(tmp_path):
     tmp_file = path_append(tmp_path, "read_write")
 
-    with wf_open(tmp_file) as wf:
+    with as_io() as f:
+        assert f == sys.stdin
+
+    with as_out_io(tmp_file) as wf:
         print("test read write 1", file=wf)
 
-    wf = wf_open(str(tmp_file), mode="a")
-    print("test read write 2", file=wf)
-    close_io(wf)
+    with as_out_io(str(tmp_file), mode="a") as wf:
+        print("test read write 2", file=wf)
 
     _sum = 0
-    with rf_open(tmp_file) as f:
+    with as_io([tmp_file]) as f:
         for line in f:
             if line.strip():
                 _sum += int(line.strip().split(" ")[-1])
@@ -57,23 +67,36 @@ def test_read_write(tmp_path):
 
     tmp_file = path_append(tmp_path, "tmp_path", "tmp_file")
 
-    with wf_open(tmp_file, mode="wb") as wf:
+    with as_out_io(tmp_file, mode="wb") as wf:
         pickle.dump({"test": 123}, wf)
 
     assert pickle_load(tmp_file)["test"] == 123
 
-    with rf_open(tmp_file, mode="rb") as f:
+    with as_io(tmp_file, mode="rb") as f:
         assert pickle_load(f)["test"] == 123
 
-    with wf_open(tmp_file) as wf:
+    with as_out_io(tmp_file) as wf:
         json.dump({"test": 123}, wf)
 
     assert json_load(tmp_file)["test"] == 123
 
-    with rf_open(tmp_file) as f:
+    with as_out_io(tmp_file) as wf:
+        print(json.dumps({"test": 123}), file=wf)
+
+    for line in jsonl_load(tmp_file):
+        assert line["test"] == 123
+
+    with as_io(tmp_file) as f:
         assert json_load(f)["test"] == 123
 
     assert check_file(tmp_file)
+
+    with tmpfile("manual") as tmp:
+        with as_out_io(tmp, encoding=None) as wf:
+            print("hello world", file=wf)
+        with as_io([tmp], encoding=None) as f:
+            for line in f:
+                assert line == "hello world\n"
 
     # Exception Test
     with pytest.raises(TypeError):
