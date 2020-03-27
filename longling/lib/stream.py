@@ -20,7 +20,7 @@ from typing import BinaryIO, TextIO
 
 __all__ = ['rf_open', 'as_io', 'wf_open', 'close_io', 'flush_print', 'build_dir', 'json_load',
            'pickle_load', 'AddPrinter', 'AddObject', 'StreamError', 'check_file',
-           'PATH_TYPE', 'encode', 'as_out_io', 'IO_TYPE', 'tmpfile', "jsonl_load"
+           'PATH_TYPE', 'encode', 'as_out_io', 'IO_TYPE', 'tmpfile', "jsonl_load", "PATH_IO_TYPE"
            ]
 
 
@@ -30,6 +30,7 @@ class StreamError(Exception):
 
 PATH_TYPE = (str, PurePath)
 IO_TYPE = (TextIOWrapper, TextIO, BinaryIO)
+PATH_IO_TYPE = (PATH_TYPE, IO_TYPE)
 
 
 def flush_print(*values, **kwargs):
