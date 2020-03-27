@@ -9,6 +9,12 @@ from pathlib import PurePath
 
 
 def type_from_name(filename):
+    """
+    Examples
+    --------
+    >>> type_from_name("1.txt")
+    '.txt'
+    """
     return PurePath(filename).suffix
 
 
