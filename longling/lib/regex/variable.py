@@ -5,8 +5,6 @@ r"""
 To replace the variable str which is in the pattern r"(\$[A-z_]*)\b" （i.e., `$xxx`)
 """
 
-from typing import overload
-
 __all__ = ["variable_replace", "default_variable_replace"]
 
 import re
@@ -55,7 +53,7 @@ def default_variable_replace(string: str, default_value: (str, None, dict) = Non
     >>> default_variable_replace(string, default_value={"author": "groot"})
     'hello , I am groot'
     >>> string = "hello $who, I am $author"
-    >>> default_variable_replace(string, who="world")
+    >>> default_variable_replace(string, default_value='', who="world")
     'hello world, I am '
     >>> string = "hello $who, I am $author"
     >>> default_variable_replace(string, default_value=None, who="world")
