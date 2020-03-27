@@ -111,7 +111,7 @@ def test_add(capsys, tmp_path):
     close_io(wf)
 
 
-def test_encoding(tmpdir):
+def test_encode(tmpdir):
     demo_text = "测试用中文\nhello world\n如果再重来"
 
     src = path_append(tmpdir, "gbk.txt")
@@ -120,7 +120,7 @@ def test_encoding(tmpdir):
     with wf_open(src, encoding="gbk") as wf:
         print(demo_text, end='', file=wf)
 
-    encoding(src, "gbk", tar, "utf-8")
+    encode(src, "gbk", tar, "utf-8")
 
     with rf_open(tar) as f:
         for line in f:
