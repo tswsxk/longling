@@ -1,7 +1,7 @@
 # coding: utf-8
 # 2020/1/2 @ tongshiwei
 
-from longling.lib.loading import load_csv, load_json, json2csv, csv2json, loading
+from longling.lib.loading import load_csv, load_jsonl, json2csv, csv2json, loading
 from longling import path_append, wf_open
 
 DEMO_TEXT = """
@@ -35,7 +35,7 @@ def test_load_json(tmpdir):
 
     csv2json(csv_src, src)
 
-    for i, line in enumerate(load_json(src)):
+    for i, line in enumerate(load_jsonl(src)):
         assert int(line["id"]) == i
         if i == 0:
             assert line["name"] == "Tom"
@@ -51,7 +51,7 @@ def test_loading(tmpdir):
     csv2json(csv_src, json_src)
     json2csv(json_src, csv_src)
 
-    for src in [csv_src, json_src, load_json(json_src)]:
+    for src in [csv_src, json_src, load_jsonl(json_src)]:
         for i, line in enumerate(loading(src)):
             assert int(line["id"]) == i, line
             if i == 0:
