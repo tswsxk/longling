@@ -85,7 +85,18 @@ path
 
 progress
 -------------
-进度监视器，帮助用户知晓当前运行进度
+进度监视器，帮助用户知晓当前运行进度，主要适配于机器学习中分 epoch，batch 的情况。
+
+和 tqdm 针对单个迭代对象进行快速适配不同，
+progress的目标是能将监视器不同功能部件模块化后再行组装，可以实现description的动态化，
+给用户提供更大的便利性。
+
+* MonitorPlayer 定义了如何显示进度和其它过程参数(better than tqdm, where only n is changed and description is fixed)
+    * 在 __call__ 方法中定义如何显示
+* 继承ProgressMonitor并传入必要参数进行实例化
+    * 继承重写ProgressMonitor的__call__函数，用 IterableMIcing 包裹迭代器，这一步可以灵活定义迭代前后的操作
+    * 需要在__init__的时候传入一个MonitorPlayer实例
+* IterableMIcing 用来组装迭代器、监控器
 
 一个简单的示例如下
 
@@ -93,7 +104,7 @@ progress
 
     class DemoMonitor(ProgressMonitor):
         def __call__(self, iterator):
-            return IterableMonitor(
+            return IterableMIcing(
                 iterator,
                 self.player, self.player.set_length
             )
@@ -104,6 +115,16 @@ progress
         for _ in progress_monitor(range(10000)):
             pass
         print()
+
+cooperate with tqdm
+
+.. code-block:: python
+
+    from tqdm import tqdm
+
+    class DemoTqdmMonitor(ProgressMonitor):
+        def __call__(self, iterator, **kwargs):
+            return tqdm(iterator, **kwargs)
 
 .. automodule:: longling.lib.progress
    :members:
