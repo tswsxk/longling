@@ -10,7 +10,7 @@ import json
 
 logger = logging.getLogger("longling")
 
-__all__ = ["csv2json", "json2csv", "loading", "load_jsonl", "load_csv",  "load_file"]
+__all__ = ["csv2json", "json2csv", "loading", "load_jsonl", "load_csv", "load_file"]
 
 
 def csv2json(src, tar, delimiter=",", **kwargs):
