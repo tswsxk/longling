@@ -73,6 +73,8 @@ loading
 
 parser
 -------------
+自定义的配置文件及对应的解析工具包。目的是为了更方便、快速地进行文件参数配置与解析。
+
 .. automodule:: longling.lib.parser
    :members:
    :imported-members:
