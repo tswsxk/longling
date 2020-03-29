@@ -6,16 +6,29 @@ import logging
 import os
 
 from urllib.request import urlretrieve
-
-try:
-    from .utils import decompress, reporthook4urlretrieve as _reporthook4urlretrieve
-except (SystemError, ModuleNotFoundError):  # pragma: no cover
-    from utils import decompress, reporthook4urlretrieve as _reporthook4urlretrieve
+from .utils import decompress, reporthook4urlretrieve as _reporthook4urlretrieve
 
 logger = logging.getLogger("spider")
 
+__all__ = ["download_file"]
+
 
 def download_file(url, save_path=None, override=True, decomp=True, reporthook=None):
+    """
+    download data from specified url
+
+    Parameters
+    ----------
+    url
+    save_path
+    override
+    decomp
+    reporthook
+
+    Returns
+    -------
+
+    """
     save_path = url.split('/')[-1] if not save_path else save_path
     if os.path.exists(save_path):
         if override is True:
