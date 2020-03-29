@@ -70,10 +70,11 @@ longling $subcommand --help
 The cli tools is constructed based on [fire](https://github.com/google/python-fire). 
 Refer to the [documentation](https://github.com/google/python-fire/blob/master/docs/using-cli.md) for detailed usage.
 
-#### Subcommand demo
+#### Demo
 
-##### Dataset
-Split the dataset into `train/valid/test`:
+##### Split dataset
+
+target: split a dataset into `train/valid/test`
 
 ```shell
 longling train_valid_test $filename1 $filename2 -- --train_ratio 0.8 --valid_ratio 0.1 --test_ratio 0.1 
