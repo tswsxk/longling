@@ -37,9 +37,9 @@ progress的目标是能将监视器不同功能部件模块化后再行组装，
 cooperate with tqdm
 
 .. code-block:: python
-    
+
     from tqdm import tqdm
-    
+
     class DemoTqdmMonitor(ProgressMonitor):
         def __call__(self, iterator, **kwargs):
             return tqdm(iterator, **kwargs)
