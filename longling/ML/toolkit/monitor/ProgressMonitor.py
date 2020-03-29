@@ -5,7 +5,7 @@ import warnings
 from collections import OrderedDict
 from contextlib import contextmanager
 
-from longling.lib import ProgressMonitor, IterableMonitor
+from longling.lib import ProgressMonitor, IterableMIcing
 from longling.lib.stream import flush_print
 
 try:
@@ -32,7 +32,7 @@ class ConsoleProgressMonitor(ProgressMonitor):
 
     def __call__(self, iterator, epoch, *args, **kwargs):
         self.player.batch_start(epoch)
-        return IterableMonitor(iterator, self.player, self.player.batch_end)
+        return IterableMIcing(iterator, self.player, self.player.batch_end)
 
 
 class ConsoleProgressMonitorPlayer(object):
