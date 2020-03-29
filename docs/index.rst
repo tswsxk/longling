@@ -12,6 +12,7 @@ Module Index
    :maxdepth: 3
 
    submodule/lib/index
+   submodule/spider/index
    submodule/arch/index
    submodule/ML/index
 
