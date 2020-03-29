@@ -42,16 +42,16 @@ python setup.py install --no-dependencies
 ## Overview
 The project contains several modules for different purposes:
 
-* [lib](https://longling.readthedocs.io/zh/latest/submodule/lib/index.html) serves as the basic toolkit that can be used in any place without extra dependencies.
+* [lib](submodule/lib/index.html) serves as the basic toolkit that can be used in any place without extra dependencies.
 
-* [ML](https://longling.readthedocs.io/zh/latest/submodule/ML/index.html) provides many interfaces to quickly build machine learning tools.
+* [ML](submodule/ML/index.html) provides many interfaces to quickly build machine learning tools.
 
 ## Quick scripts
 The project provide several cli scripts to help construct different 
 architecture.
 
 ### Neural Network
-* [glue](https://longling.readthedocs.io/zh/latest/submodule/ML/MxnetHelper/glue.html) for mxnet-gluon
+* [glue](submodule/ML/MxnetHelper/glue.html) for mxnet-gluon
 
 
 ### CLI
