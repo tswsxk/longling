@@ -6,7 +6,8 @@ __all__ = ["AttrDict"]
 
 class AttrDict(dict):
     """
-    Example:
+    Example
+    -------
     >>> ad = AttrDict({'first_name': 'Eduardo'}, last_name='Pool', age=24, sports=['Soccer'])
     >>> ad
     {'first_name': 'Eduardo', 'last_name': 'Pool', 'age': 24, 'sports': ['Soccer']}
