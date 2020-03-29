@@ -83,9 +83,6 @@ def test_read_write(tmp_path):
     with as_out_io(tmp_file) as wf:
         print(json.dumps({"test": 123}), file=wf)
 
-    for line in jsonl_load(tmp_file):
-        assert line["test"] == 123
-
     with as_io(tmp_file) as f:
         assert json_load(f)["test"] == 123
 
