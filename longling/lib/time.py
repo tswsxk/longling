@@ -3,6 +3,8 @@
 
 import datetime
 
+__all__ = ["get_current_timestamp"]
+
 
 def get_current_timestamp() -> str:  # pragma: no cover
     """
@@ -10,8 +12,8 @@ def get_current_timestamp() -> str:  # pragma: no cover
     ---------
     .. code-block :: python
 
-    get_current_timestamp()
-    '20200327172235'
+        > get_current_timestamp()
+        '20200327172235'
 
     """
     return datetime.datetime.now().strftime("%Y%m%d%H%M%S")
