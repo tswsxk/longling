@@ -50,8 +50,8 @@ def test_base(Iter):
 
 def test_loop(tmpdir):
     test_iter = {
-        LoopIter: [],
-        AsyncLoopIter: [dict(prefetch=False)],
+        LoopIter: [{}],
+        AsyncLoopIter: [{}, dict(prefetch=False)],
         CacheAsyncLoopIter: [
             dict(cache_file=path_append(tmpdir, "test.jsonl"), prefetch=False),
             dict(cache_file=path_append(tmpdir, "test.jsonl"), rerun=False)
@@ -59,18 +59,21 @@ def test_loop(tmpdir):
     }
 
     for Iter, params in test_iter.items():
-        @Iter.wrap
-        def etl_loop():
-            return etl()
 
-        data = etl_loop()
+        if Iter != CacheAsyncLoopIter:
+            @Iter.wrap
+            def etl_loop():
+                return etl()
 
-        for _ in range(3):
-            tag = False
-            for _ in data:
-                tag = True
-            else:
-                assert tag
+            data = etl_loop()
+
+            for _ in range(3):
+                tag = False
+                for _ in data:
+                    tag = True
+                else:
+                    assert tag
+
         for p in params:
             @iterwrap(Iter.__name__, **p)
             def etl_loop():
