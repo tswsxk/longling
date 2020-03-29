@@ -5,7 +5,9 @@ __all__ = ["IterableMonitor", "MonitorPlayer", "ProgressMonitor"]
 """
 进度监视器，帮助用户知晓当前运行进度
 
-一个简单的示例如下 .. code-block:: python
+一个简单的示例如下 
+
+.. code-block:: python
 
     class DemoMonitor(ProgressMonitor):
         def __call__(self, iterator):
@@ -22,7 +24,6 @@ __all__ = ["IterableMonitor", "MonitorPlayer", "ProgressMonitor"]
         print()
 """
 
-import logging
 from collections import Iterable
 from .stream import flush_print
 
