@@ -12,30 +12,40 @@ def etl():
         yield [random.random() * 5 for _ in range(20)]
 
 
-def test_base():
-    for Iter in [BaseIter, AsyncIter]:
-        @Iter.wrap
-        def etl_base():
-            return etl()
+@pytest.mark.parametrize("Iter", [BaseIter, AsyncIter])
+def test_base(Iter):
+    @Iter.wrap
+    def etl_base():
+        return etl()
 
-        data = etl_base()
+    data = etl_base()
 
-        with pytest.raises(TypeError):
-            len(data)
+    with pytest.raises(TypeError):
+        len(data)
 
+    for _ in data:
+        pass
+
+    assert len(data) == 100
+
+    data = etl_base()
+    with pytest.raises(AssertionError):
+        for _ in range(3):
+            tag = False
+            for _ in data:
+                tag = True
+            else:
+                assert tag
+
+    data = Iter(etl)
+
+    for i in range(3):
+        tag = False
         for _ in data:
-            pass
-
-        assert len(data) == 100
-
-        data = etl_base()
-        with pytest.raises(AssertionError):
-            for _ in range(3):
-                tag = False
-                for _ in data:
-                    tag = True
-                else:
-                    assert tag
+            tag = True
+        else:
+            assert tag, "%s, %s" % (i, Iter)
+        data.reset()
 
 
 def test_loop(tmpdir):
@@ -43,9 +53,8 @@ def test_loop(tmpdir):
         LoopIter: [],
         AsyncLoopIter: [dict(prefetch=False)],
         CacheAsyncLoopIter: [
-            dict(prefetch=False),
-            dict(cache_file=path_append(tmpdir, "test.json")),
-            dict(cache_file=path_append(tmpdir, "test.json"), rerun=False)
+            dict(cache_file=path_append(tmpdir, "test.jsonl"), prefetch=False),
+            dict(cache_file=path_append(tmpdir, "test.jsonl"), rerun=False)
         ]
     }
 
