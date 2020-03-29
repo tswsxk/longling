@@ -9,4 +9,4 @@ from . import utilog
 from . import regex
 from . import progress
 
-from .progress import ProgressMonitor, IterableMonitor
+from .progress import ProgressMonitor, IterableMIcing
