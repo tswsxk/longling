@@ -18,9 +18,9 @@ from pathlib import PurePath
 import fileinput
 from typing import BinaryIO, TextIO
 
-__all__ = ['rf_open', 'as_io', 'wf_open', 'close_io', 'flush_print', 'build_dir', 'json_load',
+__all__ = ['to_io', 'as_io', 'as_out_io', 'rf_open', 'wf_open', 'close_io', 'flush_print', 'build_dir', 'json_load',
            'pickle_load', 'AddPrinter', 'AddObject', 'StreamError', 'check_file',
-           'PATH_TYPE', 'encode', 'as_out_io', 'IO_TYPE', 'tmpfile', "jsonl_load", "PATH_IO_TYPE"
+           'PATH_TYPE', 'encode', 'IO_TYPE', 'tmpfile', "PATH_IO_TYPE"
            ]
 
 
@@ -34,6 +34,7 @@ PATH_IO_TYPE = (PATH_TYPE, IO_TYPE)
 
 
 def flush_print(*values, **kwargs):
+    """刷新打印函数"""
     sep = kwargs.get('sep', "")
     end = kwargs.get('end', "")
     print('\r', *values, sep=sep, end=end, flush=True)
@@ -96,12 +97,6 @@ def json_load(fp: (IO_TYPE, PurePath), **kwargs):
         return json.load(f, **kwargs)
 
 
-def jsonl_load(src, **kwargs):
-    with as_io(src, **kwargs) as f:
-        for line in f:
-            yield json.loads(line)
-
-
 def pickle_load(fp, encoding='utf-8', mode='rb', **kwargs):
     import pickle
     if isinstance(fp, PATH_TYPE):
@@ -159,6 +154,19 @@ def wf_open(stream_name: (PATH_TYPE, None) = None, mode="w", encoding="utf-8", *
 
 def to_io(stream: (TextIOWrapper, TextIO, BinaryIO, PATH_TYPE, list, None) = None, mode='r', encoding='utf-8',
           **kwargs):
+    """
+    Convert an object as an io stream, could be a path to file or an io stream.
+
+    Examples
+    --------
+
+    .. code-block:: python
+
+        to_io("demo.txt")  # equal to open("demo.txt")
+        to_io(open("demo.txt"))  # equal to open("demo.txt")
+        a = to_io()  # equal to a = sys.stdin
+        b = to_io(mode="w)  # equal to a = sys.stdout
+    """
     if isinstance(stream, IO_TYPE):
         return stream
     if 'r' in mode:
@@ -182,6 +190,34 @@ def close_io(stream):
 
 @contextmanager
 def as_io(src: (TextIOWrapper, TextIO, BinaryIO, PATH_TYPE, list, None) = None, mode='r', encoding='utf-8', **kwargs):
+    """
+    with wrapper for to_io function, default mode is "r"
+
+    Examples
+    --------
+
+    .. code-block:: python
+
+        with as_io("demo.txt") as f:
+            for line in f:
+                pass
+
+        # equal to
+        with open(demo.txt) as src:
+            with as_io(src) as f:
+                for line in f:
+                    pass
+
+        # from several files
+        with as_io(["demo1.txt", "demo2.txt"]) as f:
+            for line in f:
+                pass
+
+        # from sys.stdin
+        with as_io() as f:
+            for line in f:
+                pass
+    """
     _io_object = to_io(src, mode, encoding, **kwargs)
     yield _io_object
     close_io(_io_object)
@@ -190,6 +226,30 @@ def as_io(src: (TextIOWrapper, TextIO, BinaryIO, PATH_TYPE, list, None) = None, 
 @contextmanager
 def as_out_io(tar: (TextIOWrapper, TextIO, BinaryIO, PATH_TYPE, list, None) = None, mode='w', encoding='utf-8',
               **kwargs):
+    """
+    with wrapper for to_io function, default mode is "w"
+
+    Examples
+    --------
+
+    .. code-block:: python
+
+        with as_out_io("demo.txt") as wf:
+            print("hello world", file=wf)
+
+        # equal to
+        with open(demo.txt) as tar:
+            with as_out_io(tar) as f:
+                print("hello world", file=wf)
+
+        # to sys.stdout
+        with as_out_io() as wf:
+            print("hello world", file=wf)
+
+        # to sys.stderr
+        with as_out_io(mode="stderr) as wf:
+            print("hello world", file=wf)
+    """
     with as_io(tar, mode, encoding, **kwargs) as out_io:
         yield out_io
 
@@ -230,12 +290,17 @@ class AddPrinter(AddObject):
 @contextmanager
 def tmpfile(suffix=None, prefix=None):
     """
+    Create a temporary file, which will automatically cleaned after used (outside "with" closure).
+
+    Examples
+    --------
+
     .. code-block ::
 
-    with tmpfile("test_tmp") as tmp:
-        print(tmp)
-        with open(tmp, mode="w") as wf:
-            print("hello world", file=wf)
+        with tmpfile("test_tmp") as tmp:
+            print(tmp)
+            with open(tmp, mode="w") as wf:
+                print("hello world", file=wf)
     """
     prefix = prefix if prefix is not None else tempfile.gettempprefix() + str(uuid.uuid4())[:6]
     filename = prefix + suffix if suffix is not None else prefix

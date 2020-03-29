@@ -65,9 +65,3 @@ def abs_current_dir(file_path):
 
     """
     return os.path.abspath(os.path.dirname(file_path))
-
-
-if __name__ == '__main__':
-    import doctest
-
-    doctest.testmod()

@@ -107,9 +107,3 @@ class Register(object):  # pragma: no cover
             return True
         else:
             raise RegisterNameExistedError("name %s existed" % name)
-
-
-if __name__ == '__main__':
-    import doctest
-
-    doctest.testmod()

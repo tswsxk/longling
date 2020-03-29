@@ -10,12 +10,12 @@ import json
 
 logger = logging.getLogger("longling")
 
-__all__ = ["csv2json", "json2csv", "load_csv", "load_jsonl", "loading", "load_file"]
+__all__ = ["csv2json", "json2csv", "loading", "load_jsonl", "load_csv",  "load_file"]
 
 
 def csv2json(src, tar, delimiter=",", **kwargs):
     """
-    将 csv 格式文件/io流 转换为  json 格式文件/io流
+    将 csv 格式文件/io流 转换为 json 格式文件/io流
 
     transfer csv file or io stream into  json file or io stream
 
@@ -168,7 +168,11 @@ def loading(src: (PATH_IO_TYPE, ...), src_type=None):
     """
     缓冲式按行读取文件
 
-    Support read from jsonl, csv. Other format will be treated as raw text
+    Support read from
+
+    * jsonl (apply load_jsonl)
+    * csv (apply load_csv).
+    * Other format will be treated as raw text (apply load_file).
     """
     if isinstance(src, PATH_TYPE):
         suffix = pathlib.PurePath(src).suffix[1:]
