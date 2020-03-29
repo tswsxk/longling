@@ -29,6 +29,7 @@ def represent_ordereddict(dumper, data):
 
 
 def dump_folded_yaml(yaml_string):
+    """specially designed for arch module, should not be used in other places"""
     yaml.add_representer(FoldedString, folded_string_representer)
     yaml.add_representer(OrderedDict, represent_ordereddict)
     output = ""
