@@ -5,6 +5,8 @@ from collections import OrderedDict
 
 from .stream import as_io
 
+__all__ = ["FoldedString", "dump_folded_yaml", "ordered_yaml_load"]
+
 
 def folded_string_representer(dumper, data):
     return dumper.represent_scalar(u'tag:yaml.org,2002:str', data, style='|')
@@ -45,8 +47,8 @@ def ordered_yaml_load(stream, Loader=yaml.Loader, object_pairs_hook=OrderedDict)
     -------
     .. code-block :: python
 
-    ordered_yaml_load("path_to_file.yaml")
-    OrderedDict({"a":123})
+        ordered_yaml_load("path_to_file.yaml")
+        OrderedDict({"a":123})
     """
 
     class OrderedLoader(Loader):
