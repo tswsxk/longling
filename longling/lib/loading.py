@@ -172,7 +172,9 @@ def loading(src: (PATH_IO_TYPE, ...), src_type=None):
 
     * jsonl (apply load_jsonl)
     * csv (apply load_csv).
-    * Other format will be treated as raw text (apply load_file).
+    * file in other format will be treated as raw text (apply load_file).
+    * function will be invoked and return
+    * others will be directly returned
     """
     if isinstance(src, PATH_TYPE):
         suffix = pathlib.PurePath(src).suffix[1:]
