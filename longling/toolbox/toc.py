@@ -1,5 +1,4 @@
 # coding: utf-8
-# reference: https://stackoverflow.com/a/49912639
 
 __all__ = ["toc"]
 
@@ -7,6 +6,23 @@ from pathlib import Path
 
 
 def toc(root="./", parent=None, is_last=False, criteria=None):
+    """
+    打印目录树
+
+    show the tree of contents in the specified root directory
+
+    Parameters
+    ----------
+    root
+    parent
+    is_last
+    criteria
+
+    References
+    ----------
+    https://stackoverflow.com/a/49912639
+
+    """
     paths = DisplayablePath.make_tree(root, parent, is_last, criteria)
     for path in paths:
         print(path.displayable())

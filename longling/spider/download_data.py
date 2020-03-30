@@ -15,7 +15,7 @@ __all__ = ["download_file"]
 
 def download_file(url, save_path=None, override=True, decomp=True, reporthook=None):
     """
-    download data from specified url
+    cli alias: ``download``, download data from specified url
 
     Parameters
     ----------

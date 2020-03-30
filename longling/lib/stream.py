@@ -255,6 +255,20 @@ def as_out_io(tar: (TextIOWrapper, TextIO, BinaryIO, PATH_TYPE, list, None) = No
 
 
 def encode(src, src_encoding, tar, tar_encoding):
+    """
+    Convert a file in source encoding to target encoding
+
+    Parameters
+    ----------
+    src
+    src_encoding
+    tar
+    tar_encoding
+
+    Returns
+    -------
+
+    """
     with rf_open(src, encoding=src_encoding) as f, wf_open(tar, encoding=tar_encoding) as wf:
         for line in tqdm(f, "encoding %s[%s] --> %s[%s]" % (src, src_encoding, tar, tar_encoding)):
             print(line, end='', file=wf)
