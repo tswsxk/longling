@@ -12,7 +12,7 @@ Jerry,1
 
 
 def text_to_csv(path):
-    with wf_open(path) as wf:
+    with as_out_io(path) as wf:
         print(DEMO_TEXT.strip(), file=wf)
 
 
@@ -67,5 +67,3 @@ def test_loading(tmpdir):
     with as_io(src) as f:
         assert [line.strip() for line in loading(f)] == DEMO_TEXT.strip().split("\n")
     assert "hello world" == loading(lambda: "hello world")
-
-
