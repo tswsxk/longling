@@ -89,6 +89,8 @@ def template_copy(src: PATH_TYPE, tar: PATH_TYPE,
 
 def gitignore(atype: str = "", tar_dir: PATH_TYPE = "./"):
     """
+    cli alias: ``arch gitignore``
+
 
     Parameters
     ----------
@@ -103,6 +105,17 @@ def gitignore(atype: str = "", tar_dir: PATH_TYPE = "./"):
 
 
 def pytest(tar_dir: PATH_TYPE = "./"):
+    """
+    cli alias: ``arch pytest``
+
+    Parameters
+    ----------
+    tar_dir
+
+    Returns
+    -------
+
+    """
     src = path_append(META, "pytest.ini")
     tar = path_append(tar_dir, "pytest.ini")
     logger.info("pytest: copy %s -> %s" % (src, tar))
@@ -110,6 +123,18 @@ def pytest(tar_dir: PATH_TYPE = "./"):
 
 
 def coverage(tar_dir: PATH_TYPE = "./", **variables):
+    """
+    cli alias: ``arch coverage``
+
+    Parameters
+    ----------
+    tar_dir:
+    variables:
+        These variables should be provided:
+
+        * project
+
+    """
     src = path_append(META, "setup.cfg.template")
     tar = path_append(tar_dir, "setup.cfg")
     logger.info("coverage: template %s -> %s" % (src, tar))
@@ -117,6 +142,18 @@ def coverage(tar_dir: PATH_TYPE = "./", **variables):
 
 
 def pysetup(tar_dir="./", **variables):
+    """
+    cli alias: ``arch pysetup``
+
+    Parameters
+    ----------
+    tar_dir
+    variables
+
+    Returns
+    -------
+
+    """
     src = path_append(META, "setup.py.template")
     tar = path_append(tar_dir, "setup.py")
     logger.info("pysetup: template %s -> %s" % (src, tar))
@@ -124,6 +161,18 @@ def pysetup(tar_dir="./", **variables):
 
 
 def sphinx_conf(tar_dir="./", **variables):
+    """
+    cli alias: ``arch sphinx_conf``
+
+    Parameters
+    ----------
+    tar_dir
+    variables
+
+    Returns
+    -------
+
+    """
     if variables["docs_style"] == "mxnet":
         src = path_append(META, "docs/mxnet/conf.py.template")
         tar = path_append(tar_dir, "conf.py")
@@ -155,6 +204,17 @@ def sphinx_conf(tar_dir="./", **variables):
 
 
 def readthedocs(tar_dir="./"):
+    """
+    cli alias: ``arch readthedocs``
+
+    Parameters
+    ----------
+    tar_dir
+
+    Returns
+    -------
+
+    """
     src = path_append(META, "docs/.readthedocs.yml")
     tar = path_append(tar_dir, ".readthedocs.yml")
     logger.info("readthedocs: copy %s -> %s" % (src, tar))
@@ -162,6 +222,19 @@ def readthedocs(tar_dir="./"):
 
 
 def dockerfile(atype, tar_dir="./", **variables):
+    """
+    cli alias: ``arch dockerfile``
+
+    Parameters
+    ----------
+    atype
+    tar_dir
+    variables
+
+    Returns
+    -------
+
+    """
     src = path_append(META, "Dockerfile/%s.docker" % atype)
     tar = path_append(tar_dir, "Dockerfile")
     logger.info("Dockerfile:  %s -> %s" % (src, tar))
@@ -169,6 +242,17 @@ def dockerfile(atype, tar_dir="./", **variables):
 
 
 def travis(tar_dir: PATH_TYPE = "./"):
+    """
+    cli alias: ``arch travis``
+
+    Parameters
+    ----------
+    tar_dir
+
+    Returns
+    -------
+
+    """
     src = path_append(META, ".travis.yml")
     tar = path_append(tar_dir, ".travis.yml")
     logger.info("travis: copy %s -> %s" % (src, tar))
@@ -177,6 +261,7 @@ def travis(tar_dir: PATH_TYPE = "./"):
 
 def chart(tar_dir: PATH_TYPE = "./"):
     """
+    cli alias: ``arch chart``
 
     Parameters
     ----------
@@ -193,6 +278,22 @@ def chart(tar_dir: PATH_TYPE = "./"):
 def helm_service(host="${KUBE_NAMESPACE}", image_repo="${CI_REGISTRY_IMAGE}", image_port=None, private=True,
                  name="$KUBE_NAMESPACE",
                  image_tag="latest", path_to_api=""):
+    """
+
+    Parameters
+    ----------
+    host
+    image_repo
+    image_port
+    private
+    name
+    image_tag
+    path_to_api
+
+    Returns
+    -------
+
+    """
     src = path_append(META, "gitlab-ci/helm_install.gitlab-ci.yml.template")
 
     variables = {
@@ -297,6 +398,21 @@ def _gitlab_ci(commands: dict, stage, image_name, private=True, on_stop=None, ma
 
 
 def gitlab_ci(private, stages: dict, atype: str = "", tar_dir: PATH_TYPE = "./", version_in_path=True):
+    """
+    cli alias: ``arch gitlab_ci``
+
+    Parameters
+    ----------
+    private
+    stages
+    atype
+    tar_dir
+    version_in_path
+
+    Returns
+    -------
+
+    """
     base_src = path_append(META, "gitlab-ci", ".gitlab-ci.yml")
     src = path_append(META, "gitlab-ci", "%s.gitlab-ci.yml" % atype)
     tar = path_append(tar_dir, ".gitlab-ci.yml")
@@ -342,6 +458,18 @@ def gitlab_ci(private, stages: dict, atype: str = "", tar_dir: PATH_TYPE = "./",
 
 
 def makefile(tar_dir="./", **variables):
+    """
+    cli alias: ``arch makefile``
+
+    Parameters
+    ----------
+    tar_dir
+    variables
+
+    Returns
+    -------
+
+    """
     src = path_append(META, "Makefile.template")
     tar = path_append(tar_dir, "Makefile")
     logger.info("makefile: template %s -> %s" % (src, tar))
@@ -349,6 +477,17 @@ def makefile(tar_dir="./", **variables):
 
 
 def nni(tar_dir="./"):
+    """
+    cli alias: ``arch nni`` and ``install nni``
+
+    Parameters
+    ----------
+    tar_dir
+
+    Returns
+    -------
+
+    """
     src_dir = path_append(META, "nni")
     for file in ["config.yml", "search_space.json"]:
         copyfile(path_append(src_dir, file), path_append(tar_dir, file))
