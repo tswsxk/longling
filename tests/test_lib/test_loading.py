@@ -2,7 +2,7 @@
 # 2020/1/2 @ tongshiwei
 
 from longling.lib.loading import load_csv, load_jsonl, json2csv, csv2json, loading
-from longling import path_append, wf_open
+from longling import path_append, as_out_io, as_io
 
 DEMO_TEXT = """
 name,id
@@ -60,8 +60,12 @@ def test_loading(tmpdir):
                 assert line["name"] == "Jerry", line
 
     src = path_append(tmpdir, "test")
-    with wf_open(src) as wf:
+    with as_out_io(src) as wf:
         print(DEMO_TEXT.strip(), file=wf)
 
     assert [line.strip() for line in loading(src)] == DEMO_TEXT.strip().split("\n")
+    with as_io(src) as f:
+        assert [line.strip() for line in loading(f)] == DEMO_TEXT.strip().split("\n")
     assert "hello world" == loading(lambda: "hello world")
+
+
