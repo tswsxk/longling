@@ -67,6 +67,8 @@ longling -- --help
 longling $subcommand --help
 ```
 
+Take a glance on [all available cli](submodule/cli.html).
+
 The cli tools is constructed based on [fire](https://github.com/google/python-fire). 
 Refer to the [documentation](https://github.com/google/python-fire/blob/master/docs/using-cli.md) for detailed usage.
 
