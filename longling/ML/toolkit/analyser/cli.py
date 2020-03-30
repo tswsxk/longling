@@ -38,8 +38,36 @@ def _select_max(src, *keys, with_keys: (str, None) = None, with_all=False):
 
 
 def arg_select_max(*keys, src, with_keys=None, with_all=False):
+    """
+    cli alias: ``amax``
+
+    Parameters
+    ----------
+    keys
+    src
+    with_keys
+    with_all
+
+    Returns
+    -------
+
+    """
     _select_max(src, *keys, with_keys=with_keys, with_all=with_all)
 
 
 def select_max(src, *keys, with_keys=None, with_all=False):
+    """
+    cli alias: ``max``
+
+    Parameters
+    ----------
+    src
+    keys
+    with_keys
+    with_all
+
+    Returns
+    -------
+
+    """
     _select_max(src, *keys, with_keys=with_keys, with_all=with_all)

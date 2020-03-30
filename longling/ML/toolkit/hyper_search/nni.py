@@ -23,6 +23,23 @@ def _key(x):
 def show(key, exp_id=None, res_dir="./", nni_dir=path_append(os.environ.get("HOME", "./"), "nni/experiments"),
          only_final=False,
          with_keys=None, with_all=False):
+    """
+    cli alias: ``nni show``
+
+    Parameters
+    ----------
+    key
+    exp_id
+    res_dir
+    nni_dir
+    only_final
+    with_keys
+    with_all
+
+    Returns
+    -------
+
+    """
     if exp_id is None:
         exp_id = pathlib.PurePath(os.path.abspath(res_dir)).name
     nni_dir = path_append(nni_dir, exp_id)
@@ -51,6 +68,19 @@ def show(key, exp_id=None, res_dir="./", nni_dir=path_append(os.environ.get("HOM
 
 
 def show_top_k(k, exp_id=None, exp_dir=path_append(os.environ.get("HOME", "./"), "nni/experiments")):
+    """
+    cli alias: ``nni k-best``
+
+    Parameters
+    ----------
+    k
+    exp_id
+    exp_dir
+
+    Returns
+    -------
+
+    """
     if exp_id:
         exp_dir = path_append(exp_dir, exp_id)
     sqlite_db = path_append(exp_dir, "db", "nni.sqlite", to_str=True)
