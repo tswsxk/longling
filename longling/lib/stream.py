@@ -29,7 +29,7 @@ class StreamError(Exception):
 
 
 PATH_TYPE = (str, PurePath)
-IO_TYPE = (TextIOWrapper, TextIO, BinaryIO)
+IO_TYPE = (TextIOWrapper, TextIO, BinaryIO, codecs.StreamReaderWriter)
 PATH_IO_TYPE = (PATH_TYPE, IO_TYPE)
 
 
