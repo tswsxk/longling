@@ -105,10 +105,6 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-# conflict package (not ignore)
-!tests/test_lib
-!longling/lib
-
 # IDE
 .idea/
 .vscode/
@@ -123,3 +119,8 @@ graph/plot/
 **/model
 **/temp
 test.py
+
+# conflict package (not ignore)
+!longling/lib
+!tests/test_lib
+!longling/spider/lib
