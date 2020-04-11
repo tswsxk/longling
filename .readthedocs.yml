@@ -23,3 +23,5 @@ python:
   install:
     - requirements: docs/requirements.txt
     - method: pip
+      extra_requirements:
+        - full
