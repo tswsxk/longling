@@ -8,8 +8,8 @@ Format and Encoding
 -------------------
 .. autosummary::
    longling.lib.stream.encode
-   longling.lib.loading.csv2json
-   longling.lib.loading.json2csv
+   longling.lib.loading.csv2jsonl
+   longling.lib.loading.jsonl2csv
 
 
 Download Data
