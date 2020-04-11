@@ -12,7 +12,7 @@ from longling.toolbox import toc
 from longling.Architecture.cli import cli as arch
 from longling import Architecture as arch_cli
 from longling.Architecture.install_file import nni as install_nni
-from longling.lib.loading import csv2json, json2csv
+from longling.lib.loading import csv2jsonl, jsonl2csv
 from longling.spider import download_file as download
 
 tarch = functools.partial(arch, author="Shiwei Tong")
@@ -31,8 +31,8 @@ def cli():  # pragma: no cover
             "arch-cli": arch_cli,
             "max": select_max,
             "amax": arg_select_max,
-            "csv2json": csv2json,
-            "json2csv": json2csv,
+            "csv2jsonl": csv2jsonl,
+            "jsonl2csv": jsonl2csv,
             "encode": encode,
             "download": download,
             "nni": {
