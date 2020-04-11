@@ -10,10 +10,10 @@ import json
 
 logger = logging.getLogger("longling")
 
-__all__ = ["csv2json", "json2csv", "loading", "load_jsonl", "load_csv", "load_file"]
+__all__ = ["csv2jsonl", "jsonl2csv", "loading", "load_jsonl", "load_csv", "load_file"]
 
 
-def csv2json(src, tar, delimiter=",", **kwargs):
+def csv2jsonl(src, tar, delimiter=",", **kwargs):
     """
     将 csv 格式文件/io流 转换为 json 格式文件/io流
 
@@ -32,13 +32,36 @@ def csv2json(src, tar, delimiter=",", **kwargs):
         the delimiter used in csv. some usually used delimiters are ","  and " "
     kwargs: dict
         options passed to csv.DictWriter
+
+    Examples
+    --------
+    Assume such component is written in demo.csv:
+
+    .. code-block::
+
+        column1,column2
+        hello,world
+        hello,you
+
+    use following codes to reading the component
+
+    .. code-block:: python
+
+        csv2json("demo.csv", "demo.jsonl")
+
+    and get
+
+    .. code-block::
+
+        {'column1': 'hello', 'column2': 'world'}
+        {'column1': 'hello', 'column2': 'you'}
     """
     with as_out_io(tar) as wf:
         for line in tqdm(load_csv(src, delimiter=delimiter, **kwargs), "csv2json: %s --> %s" % (src, tar)):
             print(json.dumps(line), file=wf)
 
 
-def json2csv(src: PATH_IO_TYPE, tar: PATH_IO_TYPE, delimiter=",", **kwargs):
+def jsonl2csv(src: PATH_IO_TYPE, tar: PATH_IO_TYPE, delimiter=",", **kwargs):
     """
     将 json 格式文件/io流 转换为 csv 格式文件/io流
 
@@ -57,6 +80,28 @@ def json2csv(src: PATH_IO_TYPE, tar: PATH_IO_TYPE, delimiter=",", **kwargs):
         the delimiter used in csv. some usually used delimiters are ","  and " "
     kwargs: dict
         options passed to csv.DictWriter
+
+    Examples
+    --------
+    Assume such component is written in demo.csv:
+
+    .. code-block::
+
+        {'column1': 'hello', 'column2': 'world'}
+        {'column1': 'hello', 'column2': 'you'}
+
+    use following codes to reading the component
+
+    .. code-block:: python
+
+        jsonl2csv("demo.csv", "demo.jsonl")
+
+    and get
+
+    .. code-block::
+        column1,column2
+        hello,world
+        hello,you
     """
     with as_out_io(tar) as wf:
         csv_writer = None
