@@ -1,6 +1,15 @@
 # longling documents with Sphinx
 使用Sphinx生成longling文档
 
+Documents are written under the `docs/` directory as RestructuredText (`.rst`) files. `index.rst` is the main page. A Tutorial on RestructuredText can be found [here](https://pythonhosted.org/an_example_pypi_project/sphinx.html).
+
+To compile docs into webpages, run
+```
+make html
+```
+under the `docs/` directory. The generated webpages are in `docs/_build` and
+can be viewed with browsers.
+
 ## 依赖
 ```sh
 pip install sphinx sphinx-gallery nbsphinx sphinx_rtd_theme Image recommonmark ipython m2r
