@@ -99,6 +99,7 @@ def jsonl2csv(src: PATH_IO_TYPE, tar: PATH_IO_TYPE=None, delimiter=",", **kwargs
     and get
 
     .. code-block::
+
         column1,column2
         hello,world
         hello,you
