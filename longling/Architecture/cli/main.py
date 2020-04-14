@@ -7,7 +7,7 @@ import os
 
 from longling.Architecture.cli.units import *
 from longling.Architecture.install_proj import project_types
-from longling.Architecture.utils import legal_input, binary_legal_input
+from longling.Architecture.utils import legal_input, binary_legal_input, default_legal_input
 from longling.lib.path import path_append
 
 from .. import config
@@ -24,7 +24,7 @@ def cli(skip_top=True, project=None, override=None, tar_dir="./", **kwargs):
     kwargs.update(main_params)
 
     indicator = dict(
-        traivs=binary_legal_input("Install travis?"),
+        travis=binary_legal_input("Install travis?"),
     )
 
     docs = binary_legal_input("Install docs?")
@@ -43,8 +43,7 @@ def cli(skip_top=True, project=None, override=None, tar_dir="./", **kwargs):
                 dockerfile_cli(project_type=main_params["project_type"])
             )
             if "port" not in docker_params:
-                port = legal_input("Image Port (default is None) < ", __default_value='null')
-                port = None if port == "null" else port
+                port = default_legal_input("Image Port", __default_value=None)
             else:
                 port = docker_params["port"]
             service_params["port"] = None if port == 'null' else port
