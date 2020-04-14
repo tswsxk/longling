@@ -1,4 +1,6 @@
-__all__ = ['as_list', 'dict2pv', 'list2dict', 'get_dict_by_path']
+__all__ = ['as_list', 'dict2pv', 'list2dict', 'get_dict_by_path', 'format_byte_sizeof']
+
+from collections import OrderedDict
 
 
 def as_list(obj):
@@ -22,11 +24,40 @@ def as_list(obj):
     [1]
     >>> as_list([1])
     [1]
+    >>> as_list((1, 2))
+    [1, 2]
     """
-    if isinstance(obj, (list, tuple)):
+    if isinstance(obj, list):
         return obj
+    elif isinstance(obj, tuple):
+        return list(obj)
     else:
         return [obj]
+
+
+def as_ordered_dict(dict_data: (dict, OrderedDict), index: (list, None) = None):
+    """
+    Examples
+    --------
+    >>> as_ordered_dict({0: 0, 2: 123, 1: 1})
+    OrderedDict([(0, 0), (2, 123), (1, 1)])
+    >>> as_ordered_dict({0: 0, 2: 123, 1: 1}, [2, 0, 1])
+    OrderedDict([(2, 123), (0, 0), (1, 1)])
+    >>> as_ordered_dict(OrderedDict([(2, 123), (0, 0), (1, 1)]))
+    OrderedDict([(2, 123), (0, 0), (1, 1)])
+    """
+
+    if index is None and isinstance(dict_data, dict):
+        return OrderedDict(dict_data)
+    elif index is None and isinstance(dict_data, OrderedDict):
+        return dict_data
+
+    ret = OrderedDict()
+
+    for key in index:
+        ret[key] = dict_data[key]
+
+    return ret
 
 
 def list2dict(list_obj, value=None, dict_obj=None):
@@ -91,6 +122,55 @@ def get_all_subclass(cls):  # pragma: no cover
 
     _get_all_subclass(cls, res_set=subclass)
     return subclass
+
+
+def format_sizeof(num, suffix='', divisor=1000):
+    """
+    Code from tqdm
+
+    Formats a number (greater than unity) with SI Order of Magnitude
+    prefixes.
+
+    Parameters
+    ----------
+    num  : float
+        Number ( >= 1) to format.
+    suffix  : str, optional
+        Post-postfix [default: ''].
+    divisor  : float, optional
+        Divisor between prefixes [default: 1000].
+
+    Returns
+    -------
+    out  : str
+        Number with Order of Magnitude SI unit postfix.
+
+    Examples
+    --------
+    >>> format_sizeof(40000000000000)
+    '40.0T'
+    >>> format_sizeof(1000000000000000000000000000)
+    '1000.0Y'
+    """
+    for unit in ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z']:
+        if abs(num) < 999.5:
+            if abs(num) < 99.95:
+                if abs(num) < 9.995:
+                    return '{0:1.2f}'.format(num) + unit + suffix
+                return '{0:2.1f}'.format(num) + unit + suffix
+            return '{0:3.0f}'.format(num) + unit + suffix
+        num /= divisor
+    return '{0:3.1f}Y'.format(num) + suffix
+
+
+def format_byte_sizeof(num, suffix='B'):
+    """
+    Examples
+    --------
+    >>> format_byte_sizeof(1024)
+    '1.00KB'
+    """
+    return format_sizeof(num, suffix, divisor=1024)
 
 
 class RegisterNameExistedError(Exception):  # pragma: no cover
