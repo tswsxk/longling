@@ -4,7 +4,7 @@
 
 def legal_input(__promt: str,
                 __legal_input: set = None, __illegal_input: set = None, is_legal=None,
-                __default_value: str = None):  # pragma: no cover
+                __default_value: str = None):
     """
     To make sure the input legal, if the input is illegal, the user will be asked to retype the input.
 
@@ -52,7 +52,7 @@ def legal_input(__promt: str,
 
 
 def default_legal_input(tip, __legal_input: set = None, __illegal_input: set = None, is_legal=None,
-                        __default_value: str = None, cursor=">"):
+                        __default_value: str = None, cursor="<"):
     __promt = tip
 
     legal_tip = []
