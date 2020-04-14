@@ -2,9 +2,11 @@
 # 2019/12/31 @ tongshiwei
 
 from longling import wf_open, path_append
-from longling.Architecture.install_file import template_copy
-from longling.Architecture.install_file import gitignore, pytest as gen_pytest, coverage, pysetup, sphinx_conf
-from longling.Architecture.install_file import readthedocs, makefile
+from longling.Architecture.install_file import (
+    template_copy,
+    gitignore, pytest as gen_pytest, coverage, pysetup, sphinx_conf,
+    readthedocs, makefile, nni
+)
 from longling.Architecture.install_proj import py_proj, docs_proj
 from longling.Architecture import config
 
@@ -48,6 +50,8 @@ def test_files(tmpdir):
 
     with open(path_append(tmpdir, "Makefile")) as f:
         assert f.readline().strip() == r"""VERSION=`ls dist/*.tar.gz | sed "s/dist\/longling-\(.*\)\.tar\.gz/\1/g"`"""
+
+    nni(tmpdir)
 
 
 def test_proj(tmpdir):
