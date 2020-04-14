@@ -174,7 +174,7 @@ def to_io(stream: (TextIOWrapper, TextIO, BinaryIO, PATH_TYPE, list, None) = Non
     elif 'w' in mode or 'a' in mode or 'stderr' in mode or 'stdout' in mode:
         return wf_open(stream_name=stream, mode=mode, encoding=encoding)
     else:
-        return open(stream, mode, encoding=encoding, **kwargs)
+        raise ValueError("cannot handle the mode %s" % mode)
 
 
 def close_io(stream):
