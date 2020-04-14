@@ -47,8 +47,8 @@ def dict_format(data: dict, digits=6, col: int = None):
     return msg
 
 
-def pandas_format(data: (dict, list, tuple), columns: list = None, index: (list, str) = None, orient="index", pd_kwargs: dict = None,
-                  max_rows=80, max_columns=80, **kwargs):
+def pandas_format(data: (dict, list, tuple), columns: list = None, index: (list, str) = None, orient="index",
+                  pd_kwargs: dict = None, max_rows=80, max_columns=80, **kwargs):
     """
 
     Parameters
