@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 __all__ = ["ResultAnalyser"]
 
 warnings.warn("do not use this package, unstable")
+warnings.warn("do not use this package, deprecated")
 
 
 class ResultAnalyser(object):
