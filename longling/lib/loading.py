@@ -13,7 +13,7 @@ logger = logging.getLogger("longling")
 __all__ = ["csv2jsonl", "jsonl2csv", "loading", "load_jsonl", "load_csv", "load_file"]
 
 
-def csv2jsonl(src: PATH_IO_TYPE, tar: PATH_IO_TYPE=None, delimiter=",", **kwargs):
+def csv2jsonl(src: PATH_IO_TYPE, tar: PATH_IO_TYPE = None, delimiter=",", **kwargs):
     """
     将 csv 格式文件/io流 转换为 json 格式文件/io流
 
@@ -61,7 +61,7 @@ def csv2jsonl(src: PATH_IO_TYPE, tar: PATH_IO_TYPE=None, delimiter=",", **kwargs
             print(json.dumps(line, ensure_ascii=False), file=wf)
 
 
-def jsonl2csv(src: PATH_IO_TYPE, tar: PATH_IO_TYPE=None, delimiter=",", **kwargs):
+def jsonl2csv(src: PATH_IO_TYPE, tar: PATH_IO_TYPE = None, delimiter=",", **kwargs):
     """
     将 json 格式文件/io流 转换为 csv 格式文件/io流
 
