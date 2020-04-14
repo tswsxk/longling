@@ -8,11 +8,12 @@ import os
 from longling.Architecture.cli.units import *
 from longling.Architecture.install_proj import project_types
 from longling.Architecture.utils import legal_input, binary_legal_input
+from longling.lib.path import path_append
 
 from .. import config
 
 
-def cli(skip_top=True, project=None, override=None, **kwargs):  # pragma: no cover
+def cli(skip_top=True, project=None, override=None, tar_dir="./", **kwargs):
     """
     The main function for arch
     """
@@ -67,9 +68,9 @@ def cli(skip_top=True, project=None, override=None, **kwargs):  # pragma: no cov
             docker_params.update(dockerfile_cli(project_type=main_params["project_type"]))
 
     if skip_top:
-        tar_dir = "./"
+        tar_dir = path_append(tar_dir, "./")
     else:
-        tar_dir = main_params["project"]
+        tar_dir = path_append(tar_dir, main_params["project"])
         os.makedirs(tar_dir)
 
     __project_type = main_params["project_type"]
