@@ -23,7 +23,7 @@ def docs_proj(tar_dir, docs_params, docker_params=None, __gitignore=True, **kwar
     if __gitignore:
         gitignore("docs", tar_dir)
 
-    if docker_params:
+    if docker_params:  # pragma: no cover
         dockerfile(docs_params["docker_type"], **docker_params, tar_dir=docs_root)
 
     elif "docker_params" in docs_params:
