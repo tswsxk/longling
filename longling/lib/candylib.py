@@ -47,10 +47,10 @@ def as_ordered_dict(dict_data: (dict, OrderedDict), index: (list, None) = None):
     OrderedDict([(2, 123), (0, 0), (1, 1)])
     """
 
-    if index is None and isinstance(dict_data, dict):
-        return OrderedDict(dict_data)
-    elif index is None and isinstance(dict_data, OrderedDict):
+    if index is None and isinstance(dict_data, OrderedDict):
         return dict_data
+    elif index is None and isinstance(dict_data, dict):
+        return OrderedDict(dict_data)
 
     ret = OrderedDict()
 
