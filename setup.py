@@ -23,7 +23,7 @@ dev_deps = test_deps + [
 ml_base_deps = [
     "numpy",
     "scipy",
-    "sklearn",
+    "scikit-learn>=0.22.2",
     "matplotlib",
     "nvidia-ml-py3",
 ]
