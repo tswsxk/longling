@@ -14,7 +14,7 @@ from longling.Architecture.install_proj import project_types
 from longling.Architecture.utils import legal_input, binary_legal_input, default_legal_input
 
 
-def main_cli(skip_top, project, **kwargs):  # pragma: no cover
+def main_cli(skip_top, project, **kwargs):
     if skip_top:
         default_project_name = pathlib.PurePath(os.getcwd()).name
         project = legal_input("Project Name (default is %s) < " % default_project_name,
@@ -29,12 +29,12 @@ def main_cli(skip_top, project, **kwargs):  # pragma: no cover
 
 
 def docs_cli(project=None, title=None, author=None, copyright=None, default_style="sphinx",
-             **kwargs):  # pragma: no cover
+             **kwargs):
     params = dict(
         project=legal_input("Project Name < ", is_legal=lambda x: True if x else False) if not project else project,
-        docs_style=legal_input("Docs Style (mxnet/sphinx, default is %s)? < " % default_style,
-                               __legal_input={"mxnet", "sphinx"},
-                               __default_value="%s" % default_style),
+        docs_style=default_legal_input("Docs Style",
+                                       __legal_input={"mxnet", "sphinx"},
+                                       __default_value="%s" % default_style),
         docs_root="docs/" if binary_legal_input("Make 'docs/' directory?", _default="y") else "./",
     )
     if params["docs_style"] != "sphinx":
@@ -112,7 +112,7 @@ def dockerfile_cli(project_type, docker_type=None, port=None):
                 ) if port is None else port
             )
 
-        else:
+        else:  # pragma: no cover
             raise TypeError("%s: cannot handle docker type %s, only supports %s" % (
                 project_type, docker_type, project_docker[project_type]))
 
