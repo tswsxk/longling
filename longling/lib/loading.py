@@ -228,7 +228,7 @@ def loading(src: (PATH_IO_TYPE, ...), src_type=None):
             return load_csv(src)
         elif suffix in {"json", "jsonl"} or src_type in {"json", "jsonl"}:
             if suffix == "json" or src_type == "json":
-                logger.warning("detect source type as json, processed as jsonl format")
+                logger.info("detect source type as json, processed as jsonl format")
             return load_jsonl(src)
         else:
             return load_file(src)
