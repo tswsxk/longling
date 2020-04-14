@@ -14,8 +14,8 @@ def test_python_cli(tmp_path_factory):
     To deploy as a service (y/n, default is y) < n
     Install Dockerfile? (y/n, default is y) <
     Choose a service type (flask/cli) < cli
-    Choose a image (default is python:3.6) >
-    Specify the main entry (e.g., the path to main.py) > main.py
+    Choose a image (default is python:3.6) <
+    Specify the main entry (e.g., the path to main.py) < main.py
     """
     project = tmp_path_factory.mktemp("python")
     inputs = ["arch", "python"] + ["", "n", "n", ""] + ["cli"] + ["", "main.py"]
@@ -36,8 +36,8 @@ def test_docs_cli(tmp_path_factory):
     Copyright (default is 2020, Shiwei Tong) <
     Install .readthedocs.yml? (y/n, default is y) <
     Install Dockerfile for documents? (y/n, default is y) <
-    Choose a image (default is nginx) >
-    Specify the html directory (default is _build/html) >
+    Choose a image (default is nginx) <
+    Specify the html directory (default is _build/html) <
     """
     project = tmp_path_factory.mktemp("docs")
     inputs = ["arch", "docs"] + [""] * 5 + ["Sherlock"] + [""] * 5
@@ -55,30 +55,30 @@ def test_web_cli(tmp_path_factory):
     Make 'docs/' directory? (y/n, default is y) <
     Install .readthedocs.yml? (y/n, default is y) <
     Install Dockerfile for documents? (y/n, default is y) <
-    Choose a image (default is nginx) >
-    Specify the html directory (default is _build/html) >
+    Choose a image (default is nginx) <
+    Specify the html directory (default is _build/html) <
     To deploy as a service (y/n, default is y) <
     Choose a service type (vue/nginx) < vue
-    Specify the html directory (default is build/html) >
+    Specify the html directory (default is build/html) <
     Image Port (default is None) <
     Is private project? (y/n, default is y) <
     Install .gitlab-ci.yml? (y/n, default is y) <
     Need [build] Stage? (y/n, default is y) <
-    Choose a image > hello
+    Choose a image < hello
     Need [test] Stage? (y/n, default is y) <
-    Choose a image (default is hello) >
+    Choose a image (default is hello) <
     Need [review] Stage? (y/n, default is y) <
-    Choose a image > hello
+    Choose a image < hello
     Add Corresponding Stop Stage? (y/n, default is y) <
     Only triggered in master branch? (y/n, default is n) <
     Triggered manually? (y/n, default is n) <
     Need [docs] Stage? (y/n, default is y) <
-    Choose a image > world
+    Choose a image < world
     Stage Image Port (default is 80) <
     Only triggered in master branch? (y/n, default is y) <
     Triggered manually? (y/n, default is y) <
     Need [production] Stage? (y/n, default is y) <
-    Choose a image (default is hello) >
+    Choose a image (default is hello) <
     Only triggered in master branch? (y/n, default is y) <
     Triggered manually? (y/n, default is y) <
     """
@@ -98,8 +98,8 @@ def test_deploy_cli(tmp_path_factory):
         Install docs? (y/n, default is y) < n
         To deploy as a service (y/n, default is y) <
         Choose a service type (vue/nginx) < nginx
-        Choose a image (default is nginx) >
-        Specify the html directory (default is build/html) >
+        Choose a image (default is nginx) <
+        Specify the html directory (default is build/html) <
         Image Port (default is None) <
         Is private project? (y/n, default is y) <
         Install .gitlab-ci.yml? (y/n, default is y) <
@@ -115,9 +115,9 @@ def test_deploy_cli(tmp_path_factory):
         Install docs? (y/n, default is y) < n
         To deploy as a service (y/n, default is y) <
         Choose a service type (flask/cli) < flask
-        Choose a image (default is python:3.6) >
-        Specify the main entry (e.g., main_package.main_py:main_func) > main_package.main_py:main_func
-        Specify the port that docker will listen > 80
+        Choose a image (default is python:3.6) <
+        Specify the main entry (e.g., main_package.main_py:main_func) < main_package.main_py:main_func
+        Specify the port that docker will listen < 80
         Is private project? (y/n, default is y) < n
         Install .gitlab-ci.yml? (y/n, default is y) < n
 
@@ -128,15 +128,15 @@ def test_deploy_cli(tmp_path_factory):
         Install docs? (y/n, default is y) < n
         To deploy as a service (y/n, default is y) <
         Choose a service type (flask/cli) < cli
-        Choose a image (default is python:3.6) >
-        Specify the main entry (e.g., the path to main.py) > main.py
+        Choose a image (default is python:3.6) <
+        Specify the main entry (e.g., the path to main.py) < main.py
         Image Port (default is None) < 80
         Is private project? (y/n, default is y) < n
         Install .gitlab-ci.yml? (y/n, default is y) <
         Need [build] Stage? (y/n, default is n) < n
         Need [test] Stage? (y/n, default is y) < n
         Need [review] Stage? (y/n, default is y) <
-        Choose a image > hello
+        Choose a image < hello
         Add Corresponding Stop Stage? (y/n, default is y) < n
         Only triggered in master branch? (y/n, default is n) <
         Triggered manually? (y/n, default is n) <
