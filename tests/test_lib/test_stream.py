@@ -83,17 +83,21 @@ def test_read_write(tmp_path):
     with as_out_io(tmp_file) as wf:
         print(json.dumps({"test": 123}), file=wf)
 
-    with as_io(tmp_file) as f:
-        assert json_load(f)["test"] == 123
+    assert json_load(tmp_file)["test"] == 123
 
     assert check_file(tmp_file)
 
     with tmpfile("manual") as tmp:
         with as_out_io(tmp, encoding=None) as wf:
             print("hello world", file=wf)
+
         with as_io([tmp], encoding=None) as f:
             for line in f:
                 assert line == "hello world\n"
+
+        with pytest.raises(ValueError):
+            with as_io(tmp, mode="unknown"):
+                pass
 
     # Exception Test
     with pytest.raises(TypeError):
