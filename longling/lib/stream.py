@@ -135,7 +135,7 @@ def wf_open(stream_name: (PATH_TYPE, None) = None, mode="w", encoding="utf-8", *
     hello world
     """
     if not stream_name:
-        if stream_name is None and mode in {"w", "wb"}:
+        if stream_name is None and mode in {"w", "wb", "a", "ab"}:
             return sys.stdout
         elif mode == "stdout":
             return sys.stdout
@@ -171,7 +171,7 @@ def to_io(stream: (TextIOWrapper, TextIO, BinaryIO, PATH_TYPE, list, None) = Non
         return stream
     if 'r' in mode:
         return rf_open(stream, encoding=encoding, mode=mode, **kwargs)
-    elif 'w' in mode or 'stderr' in mode or 'stdout' in mode:
+    elif 'w' in mode or 'a' in mode or 'stderr' in mode or 'stdout' in mode:
         return wf_open(stream_name=stream, mode=mode, encoding=encoding)
     else:
         return open(stream, mode, encoding=encoding, **kwargs)
