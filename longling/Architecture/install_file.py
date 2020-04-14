@@ -31,6 +31,21 @@ default_variable_replace = functools.partial(dvr, quotation="\'")
 
 
 def copytree(src, dst, **kwargs):
+    """
+    Recursively copy a directory tree.
+
+    Change OVERRIDE mode to specify the operation when dst existed.
+
+    Examples
+    --------
+    .. code-block :: python
+
+        # to change the OVERRIDE operation
+        from longling.Architecture import config
+        config.OVERRIDE = False  # skip existed dst
+        config.OVERRIDE = None  # use console input to determine
+        config.OVERRIDE = False  # override existed dst
+    """
     if not override_check(dst):
         return
     elif os.path.exists(dst):
@@ -39,11 +54,38 @@ def copytree(src, dst, **kwargs):
 
 
 def copyfile(src, dst):
+    """
+    Copy data from src to dst.
+
+    Change OVERRIDE mode to specify the operation when dst existed.
+
+    Examples
+    --------
+    .. code-block :: python
+
+        # to change the OVERRIDE operation
+        from longling.Architecture import config
+        config.OVERRIDE = False  # skip existed dst
+        config.OVERRIDE = None  # use console input to determine
+        config.OVERRIDE = False  # override existed dst
+    """
     if override_check(dst):
         _copyfile(src, dst)
 
 
-def override_check(path):
+def override_check(path) -> bool:
+    """
+    Whether to override the specified file or directory
+
+    not override:
+     * config.OVERRIDE is False
+     * config.OVERRIDE is None and user confirm not to override by console input
+
+    Returns
+    -------
+    override: bool
+        True to override while False not
+    """
     if os.path.exists(path):
         if config.OVERRIDE is False:
             logger.error("%s exists, skipped" % path)
@@ -328,7 +370,7 @@ def _gitlab_ci(commands: dict, stage, image_name, private=True, on_stop=None, ma
     _commands = commands.get(stage, OrderedDict())
     _commands["image"] = image_name
     script = _commands.get("script", [])
-    if script is None:
+    if script is None:  # pragma: no cover
         script = []
         _commands["script"] = script
 
@@ -489,5 +531,5 @@ def nni(tar_dir="./"):
 
     """
     src_dir = path_append(META, "nni")
-    for file in ["config.yml", "search_space.json"]:
+    for file in ["_config.yml", "_search_space.json"]:
         copyfile(path_append(src_dir, file), path_append(tar_dir, file))
