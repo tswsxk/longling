@@ -7,20 +7,56 @@ from longling.lib.testing import simulate_stdin
 
 def test_python_cli(tmp_path_factory):
     """
-    Project Name (default is test) <
-    Project Type (python/docs/web) < python
-    Install travis? (y/n, default is y) <
-    Install docs? (y/n, default is y) < n
-    To deploy as a service (y/n, default is y) < n
-    Install Dockerfile? (y/n, default is y) <
-    Choose a service type (flask/cli) < cli
-    Choose a image (default is python:3.6) <
-    Specify the main entry (e.g., the path to main.py) < main.py
+    without docs:
+        Project Name (default is test) <
+        Project Type (python/docs/web) < python
+        Install travis? (y/n, default is y) <
+        Install docs? (y/n, default is y) < n
+        To deploy as a service (y/n, default is y) < n
+        Install Dockerfile? (y/n, default is y) <
+        Choose a service type (flask/cli) < cli
+        Choose a image (default is python:3.6) <
+        Specify the main entry (e.g., the path to main.py) < main.py
+
+    with docs:
+        Project Name (default is test) <
+        Project Type (python/docs/web) < python
+        Install travis? (y/n, default is y) < n
+        Install docs? (y/n, default is y) <
+        Docs Style (sphinx/mxnet, default is sphinx) <
+        Make 'docs/' directory? (y/n, default is y) <
+        Install .readthedocs.yml? (y/n, default is y) <
+        Install Dockerfile for documents? (y/n, default is y) <
+        Choose a image (default is nginx) <
+        Specify the html directory (default is _build/html) <
+        To deploy as a service (y/n, default is y) <
+        Choose a service type (cli/flask) < cli
+        Choose a image (default is python:3.6) <
+        Specify the main entry (e.g., the path to main.py) < main.py
+        Image Port < 80
+        Is private project? (y/n, default is y) < n
+        Install .gitlab-ci.yml? (y/n, default is y) <
+        Need [build] Stage? (y/n, default is n) <
+        Need [test] Stage? (y/n, default is y) < n
+        Need [review] Stage? (y/n, default is y) < n
+        Need [docs] Stage? (y/n, default is y) <
+        Choose a image < nginx
+        Stage Image Port (default is 80) <
+        Only triggered in master branch? (y/n, default is y) <
+        Triggered manually? (y/n, default is y) <
+        Need [production] Stage? (y/n, default is y) < n
+
+
     """
     project = tmp_path_factory.mktemp("python")
     inputs = ["arch", "python"] + ["", "n", "n", ""] + ["cli"] + ["", "main.py"]
     with simulate_stdin(*inputs):
         cli(tar_dir=project)
+
+    inputs = ["python_docs", "python"] + ["n"] + [""] * 8 + ["cli"] + ["", "main.py"] + [
+        "80"] + ["n", "", "", "n", "n"] + ["", "nginx", "", "", ""] + ["n"]
+    with simulate_stdin(*inputs):
+        cli(skip_top=False, tar_dir=project)
 
 
 def test_docs_cli(tmp_path_factory):
@@ -91,7 +127,7 @@ def test_web_cli(tmp_path_factory):
 
 def test_deploy_cli(tmp_path_factory):
     """
-    Web:
+    Web nginx:
         Project Name (default is test) <
         Project Type (python/docs/web) < web
         Install travis? (y/n, default is y) < n
@@ -106,6 +142,35 @@ def test_deploy_cli(tmp_path_factory):
         Need [build] Stage? (y/n, default is y) < n
         Need [test] Stage? (y/n, default is y) < n
         Need [review] Stage? (y/n, default is y) < n
+        Need [production] Stage? (y/n, default is y) < n
+
+    Web nginx with docs:
+        Project Name (default is test) <
+        Project Type (python/docs/web) < web
+        Install travis? (y/n, default is y) < n
+        Install docs? (y/n, default is y) <
+        Docs Style (mxnet/sphinx, default is sphinx) <
+        Make 'docs/' directory? (y/n, default is y) <
+        Install .readthedocs.yml? (y/n, default is y) <
+        Install Dockerfile for documents? (y/n, default is y) <
+        Choose a image (default is nginx) <
+        Specify the html directory (default is _build/html) <
+        To deploy as a service (y/n, default is y) <
+        Choose a service type (vue/nginx) < nginx
+        Choose a image (default is nginx) <
+        Specify the html directory (default is build/html) <
+        Image Port < 80
+        Is private project? (y/n, default is y) < n
+        Install .gitlab-ci.yml? (y/n, default is y) <
+        Need [build] Stage? (y/n, default is y) <
+        Choose a image < nginx
+        Need [test] Stage? (y/n, default is y) < n
+        Need [review] Stage? (y/n, default is y) < n
+        Need [docs] Stage? (y/n, default is y) <
+        Choose a image < nginx
+        Stage Image Port (default is 80) <
+        Only triggered in master branch? (y/n, default is y) < n
+        Triggered manually? (y/n, default is y) < n
         Need [production] Stage? (y/n, default is y) < n
 
     Python 1:
@@ -144,6 +209,12 @@ def test_deploy_cli(tmp_path_factory):
     """
     project = tmp_path_factory.mktemp("deploy")
     inputs = ["arch", "web"] + ["n", "n", "", "nginx"] + [""] * 5 + ["n"] * 4
+    with simulate_stdin(*inputs):
+        cli(skip_top=False, tar_dir=project)
+
+    inputs = ["web_arch", "web"] + ["n"] + [""] * 8 + [
+        "nginx"] + [""] * 2 + ["80", "n"] + [""] * 2 + [
+        "nginx"] + ["n"] * 2 + ["", "nginx", ""] + ["n"] * 3
     with simulate_stdin(*inputs):
         cli(skip_top=False, tar_dir=project)
 
