@@ -5,6 +5,7 @@ import pytest
 import random
 from longling import BaseIter, LoopIter, AsyncLoopIter, AsyncIter, CacheAsyncLoopIter
 from longling import iterwrap, path_append
+from functools import partial
 
 
 def etl():
@@ -12,8 +13,10 @@ def etl():
         yield [random.random() * 5 for _ in range(20)]
 
 
-@pytest.mark.parametrize("Iter", [BaseIter, AsyncIter])
-def test_base(Iter):
+@pytest.mark.parametrize("iter_params", [(BaseIter, {}), (AsyncIter, {}), (AsyncIter, {"prefetch": False})])
+def test_base(iter_params):
+    Iter, params = iter_params
+
     @Iter.wrap
     def etl_base():
         return etl()
@@ -37,7 +40,7 @@ def test_base(Iter):
             else:
                 assert tag
 
-    data = Iter(etl)
+    data = Iter(etl, **params)
 
     for i in range(3):
         tag = False
