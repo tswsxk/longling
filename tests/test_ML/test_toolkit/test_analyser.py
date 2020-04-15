@@ -3,8 +3,8 @@
 
 import json
 from longling import path_append, wf_open
-from longling.ML.toolkit.analyser.cli import select_max, arg_select_max
-from longling.ML.toolkit.analyser import get_max
+from longling.ML.toolkit.analyser.cli import select_max, arg_select_max, select_min, arg_select_min
+from longling.ML.toolkit.analyser import get_max, get_min
 
 result_demo = [
     {"Epoch": 0, "train_time": 283.87022066116333, "SLMLoss": 0.27298363054701535, "auc": 0.6983898502363638,
@@ -23,7 +23,11 @@ result_demo = [
 
 
 def test_get_max():
-    assert get_max(result_demo, "prf:0:f1")[0]["prf:0:f1"] == 0.8026803636198995
+    assert get_max(result_demo, "prf:0:f1")["prf:0:f1"] == 0.8026803636198995
+
+
+def test_get_min():
+    assert get_min(result_demo, "SLMLoss")["SLMLoss"] == 0.19859076581378765
 
 
 def test_cli(tmp_path):
@@ -39,3 +43,11 @@ def test_cli(tmp_path):
     select_max(tmp_file, "auc", "prf:1:f1")
     select_max(tmp_file, "auc", "prf:1:f1", with_all=True)
     select_max(tmp_file, "auc", "prf:1:f1", with_keys="Epoch;train_time")
+
+    arg_select_min("train_time", "SLMLoss", src=tmp_file)
+    arg_select_min("train_time", "SLMLoss", src=tmp_file, with_all=True)
+    arg_select_min("train_time", "SLMLoss", src=tmp_file, with_keys="Epoch;auc")
+
+    select_min(tmp_file, "train_time", "SLMLoss")
+    select_min(tmp_file, "train_time", "SLMLoss", with_all=True)
+    select_min(tmp_file, "train_time", "SLMLoss", with_keys="Epoch;auc")
