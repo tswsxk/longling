@@ -95,6 +95,7 @@ def test_read_write(tmp_path):
             for line in f:
                 assert line == "hello world\n"
 
+    # Exception Test
     with pytest.raises(ValueError):
         with as_io(tmp_file, mode="unk"):
             pass
