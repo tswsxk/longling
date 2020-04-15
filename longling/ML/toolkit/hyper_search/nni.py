@@ -22,7 +22,7 @@ def _key(x):
 
 def show(key, exp_id=None, res_dir="./", nni_dir=path_append(os.environ.get("HOME", "./"), "nni/experiments"),
          only_final=False,
-         with_keys=None, with_all=False):
+         with_keys=None, with_all=False):  # pragma: no cover
     """
     cli alias: ``nni show``
 
@@ -67,7 +67,8 @@ def show(key, exp_id=None, res_dir="./", nni_dir=path_append(os.environ.get("HOM
     return result
 
 
-def show_top_k(k, exp_id=None, exp_dir=path_append(os.environ.get("HOME", "./"), "nni/experiments")):
+def show_top_k(k, exp_id=None,
+               exp_dir=path_append(os.environ.get("HOME", "./"), "nni/experiments")):  # pragma: no cover
     """
     cli alias: ``nni k-best``
 
