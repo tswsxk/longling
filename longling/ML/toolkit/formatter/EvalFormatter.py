@@ -1,6 +1,7 @@
 # coding: utf-8
 # created by tongshiwei on 18-2-5
 
+import warnings
 import codecs
 import json
 import logging
@@ -34,6 +35,7 @@ class EvalFormatter(object):
 
     def __init__(self, logger=logging.getLogger(), dump_file: (str, None) = None, col: (int, None) = None, **kwargs):
 
+        warnings.warn("This class is deprecated 1.3.13, use EvalFMT instead")
         self.logger = logger
         if dump_file is not None and isinstance(dump_file, str):
             # clean file
@@ -185,6 +187,7 @@ class MultiClassEvalFormatter(EvalFormatter):
     """
 
     def eval_format(self, eval_name_value: dict):
+        warnings.warn("This class is deprecated from 1.3.13, use EvalFMT instead")
         data = {}
 
         multi_class_pattern = re.compile(r".+_\d+")
