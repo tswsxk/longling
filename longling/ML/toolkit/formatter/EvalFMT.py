@@ -8,6 +8,7 @@ import json
 from longling.lib.stream import wf_open, as_out_io
 from collections import OrderedDict
 from longling.lib.formatter import table_format, series_format
+from longling.lib.candylib import as_list
 
 
 def _to_dict(name_value: (dict, tuple)) -> dict:
@@ -60,8 +61,7 @@ class EvalFMT(object):
                  iteration=None, train_time=None, loss_name_value=None,
                  eval_name_value: dict = None,
                  extra_info=None,
-                 dump=True,
-                 *args, **kwargs):
+                 dump=True, keep: (set, str) = None, *args, **kwargs):
         msg = []
         data = {}
 
@@ -127,7 +127,16 @@ class EvalFMT(object):
                         print(json.dumps(data, ensure_ascii=False), file=wf)
                 except Exception as e:
                     logger.warning(e)
-        return msg, data
+
+        if keep is None:
+            return msg
+        elif isinstance(keep, str):
+            keep = set(as_list(keep))
+
+        if "msg" in keep:
+            return msg
+        if "data" in keep:
+            return data
 
 
 def result_format(data: dict):
