@@ -8,6 +8,7 @@ import zipfile
 import rarfile
 
 from longling import flush_print
+from longling.lib.candylib import format_byte_sizeof
 
 __all__ = ["decompress", "get_path", "un_zip", "un_rar", "un_tar", "reporthook4urlretrieve"]
 
@@ -83,4 +84,9 @@ def reporthook4urlretrieve(blocknum, bs, size):
     per = 100.0 * (blocknum * bs) / size
     if per > 100:
         per = 100
-    flush_print('Downloading %.2f%% : %dB | %dB' % (per, blocknum * bs, size))
+    flush_print(
+        'Downloading %.2f%% : %s | %s' % (
+            per,
+            format_byte_sizeof(blocknum * bs),
+            format_byte_sizeof(size)
+        ))
