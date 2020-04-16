@@ -1,7 +1,6 @@
 # coding: utf-8
 # 2020/4/15 @ tongshiwei
 
-import pytest
 import numpy as np
 from longling.ML.metrics import classification_report, regression_report
 
