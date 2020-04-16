@@ -3,8 +3,7 @@
 
 import pytest
 import numpy as np
-from longling.ML.metrics import classification_report
-from longling.ML.toolkit.formatter import EvalFMT
+from longling.ML.metrics import classification_report, regression_report
 
 
 def test_classification():
@@ -18,16 +17,16 @@ def test_classification():
     y_true = np.array([0, 0, 1, 1])
     y_score = np.array([0.1, 0.4, 0.35, 0.8])
     result = classification_report(y_true, y_score=y_score, metrics=["auc", "poauc"])
-    assert result["macro auc"] == 0.75
+    assert result["macro_auc"] == 0.75
 
     y_true = np.array([0, 0, 1, 1])
     y_pred = [0, 0, 0, 1]
     y_score = np.array([0.1, 0.4, 0.35, 0.8])
     result = classification_report(y_true, y_pred, y_score=y_score)
 
-    assert result["macro avg"]["recall"] == 0.75
-    assert result["macro auc"] == 0.75
-    assert "%.2f" % result["macro aupoc"] == "0.83"
+    assert result["macro_avg"]["recall"] == 0.75
+    assert result["macro_auc"] == 0.75
+    assert "%.2f" % result["macro_aupoc"] == "0.83"
 
     # for multiclass
     y_true = [0, 1, 2, 2, 2]
@@ -85,23 +84,23 @@ def test_classification():
     )
 
 
-if __name__ == '__main__':
-    y_true = np.array([0, 1, 1, 1, 2, 1])
-    y_pred = np.array([2, 1, 0, 2, 1, 0])
-    y_score = np.array([
-        [0.45, 0.4, 0.15],
-        [0.1, 0.9, 0.0],
-        [0.33333, 0.333333, 0.333333],
-        [0.15, 0.4, 0.45],
-        [0.1, 0.9, 0.0],
-        [0.33333, 0.333333, 0.333333]
-    ])
+def test_regression():
+    y_true = [3, -0.5, 2, 7]
+    y_pred = [2.5, 0.0, 2, 8]
+    result = regression_report(y_true, y_pred)
+    assert result["mae"] == 0.5
+    assert result["mse"] == 0.375
 
-    result = classification_report(
-        y_true, y_pred,
-        y_score,
-        labels=[0, 1],
-        multiclass_to_multilabel=True,
-    )
+    result = regression_report(y_true, y_pred, metrics=["rmse"])
+    assert "%.3f" % result["rmse"] == "0.612"
 
-    print(EvalFMT.format(eval_name_value=result)[0])
+    y_true = [[0.5, 1], [-1, 1], [7, -6]]
+    y_pred = [[0, 2], [-1, 2], [8, -5]]
+
+    result = regression_report(y_true, y_pred, multioutput="variance_weighted")
+    assert "%.3f" % result["r2"] == "0.938"
+    assert "%.3f" % result["evar"] == "0.983"
+
+    result = regression_report(y_true, y_pred, multioutput=[0.3, 0.7])
+    assert "%.3f" % result["r2"] == "0.925"
+    assert "%.3f" % result["evar"] == "0.990"
