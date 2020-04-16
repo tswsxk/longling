@@ -14,6 +14,14 @@ import os
 
 
 def _key(x):
+    """
+    Examples
+    --------
+    >>> _key(123)
+    123.0
+    >>> _key('{"default": 123}')
+    123.0
+    """
     try:
         return float(x)
     except ValueError:
