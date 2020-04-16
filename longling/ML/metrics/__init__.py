@@ -3,3 +3,4 @@
 
 
 from .classification import classification_report
+from .regression import regression_report
