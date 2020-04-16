@@ -1,73 +1,51 @@
 # coding: utf-8
 # 2019/10/12 @ tongshiwei
 
-import json
-from longling.lib.candylib import as_list
-from .select import get_max
+from longling.lib.formatter import pandas_format, dict_format
+from .select import get_max, get_min
 
 __all__ = ["select_max", "arg_select_max"]
 
 
-def key_parser(key):
-    if ":" in key:
-        # prf:0:f1
-        return key.split(":")
-    return key
-
-
-def get_by_key(data, parsed_key):
-    _key = key_parser(parsed_key)
-    _data = data
-    if isinstance(_key, list):
-        for k in _key:
-            _data = _data[k]
+def _select(src, *keys, with_keys: (str, None) = None, with_all=False, func=None, **kwargs):
+    res = func(src, *keys, with_keys=with_keys, with_all=with_all)
+    if with_keys or with_all:
+        print(pandas_format(res, **kwargs))
     else:
-        _data = _data[_key]
-    return _data
+        print(dict_format(res, **kwargs))
 
 
-def _select_max(src, *keys, with_keys: (str, None) = None, with_all=False):
-    result, result_appendix = get_max(src, *keys, with_keys=with_keys, with_all=with_all)
-
-    for item in result.items():
-        print(item, end='')
-        if result_appendix[item[0]]:
-            print(" ", result_appendix[item[0]])
-        else:
-            print()
+def _select_max(src, *keys, with_keys: (str, None) = None, with_all=False, **kwargs):
+    _select(src, *keys, with_keys=with_keys, with_all=with_all, func=get_max, **kwargs)
 
 
-def arg_select_max(*keys, src, with_keys=None, with_all=False):
+def _select_min(src, *keys, with_keys: (str, None) = None, with_all=False, **kwargs):
+    _select(src, *keys, with_keys=with_keys, with_all=with_all, func=get_min, **kwargs)
+
+
+def arg_select_max(*keys, src, with_keys=None, with_all=False, **kwargs):
     """
     cli alias: ``amax``
-
-    Parameters
-    ----------
-    keys
-    src
-    with_keys
-    with_all
-
-    Returns
-    -------
-
     """
-    _select_max(src, *keys, with_keys=with_keys, with_all=with_all)
+    _select_max(src, *keys, with_keys=with_keys, with_all=with_all, **kwargs)
 
 
-def select_max(src, *keys, with_keys=None, with_all=False):
+def select_max(src, *keys, with_keys=None, with_all=False, **kwargs):
     """
     cli alias: ``max``
-
-    Parameters
-    ----------
-    src
-    keys
-    with_keys
-    with_all
-
-    Returns
-    -------
-
     """
-    _select_max(src, *keys, with_keys=with_keys, with_all=with_all)
+    _select_max(src, *keys, with_keys=with_keys, with_all=with_all, **kwargs)
+
+
+def arg_select_min(*keys, src, with_keys=None, with_all=False, **kwargs):
+    """
+    cli alias: ``amin``
+    """
+    _select_min(src, *keys, with_keys=with_keys, with_all=with_all, **kwargs)
+
+
+def select_min(src, *keys, with_keys=None, with_all=False, **kwargs):
+    """
+    cli alias: ``min``
+    """
+    _select_min(src, *keys, with_keys=with_keys, with_all=with_all, **kwargs)
