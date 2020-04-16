@@ -1,7 +1,7 @@
 # coding: utf-8
 # create by tongshiwei on 2019/4/8
 
-__all__ = ["AttrDict"]
+__all__ = ["AttrDict", "nested_update"]
 
 
 class AttrDict(dict):
@@ -56,3 +56,28 @@ class AttrDict(dict):
     def __delitem__(self, key):
         super(AttrDict, self).__delitem__(key)
         del self.__dict__[key]
+
+
+def nested_update(src: dict, update: dict):
+    """
+    Examples
+    -------
+    >>> nested_update({"a": {"x": 1}}, {"a": {"y": 2}})
+    {'a': {'x': 1, 'y': 2}}
+    >>> nested_update({"a": {"x": 1}}, {"a": {"x": 2}})
+    {'a': {'x': 2}}
+    >>> nested_update({"a": {"x": 1}}, {"b": {"y": 2}})
+    {'a': {'x': 1}, 'b': {'y': 2}}
+    >>> nested_update({"a": {"x": 1}}, {"a": 2})
+    {'a': 2}
+    """
+    if isinstance(update, dict):
+        for key, value in update.items():
+            if key in src and isinstance(src[key], dict):
+                if isinstance(value, dict):
+                    nested_update(src[key], value)
+                else:
+                    src[key] = value
+            else:
+                src[key] = value
+    return src
