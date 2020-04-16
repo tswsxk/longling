@@ -173,7 +173,7 @@ class AsyncLoopIter(LoopIter):
             self.produce(False)
         if self.queue is not None:
             item = self.queue.get()
-        else:
+        else:  # pragma: no cover
             raise StopIteration
         if isinstance(item, Exception):
             if isinstance(item, StopIteration):
