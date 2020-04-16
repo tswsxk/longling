@@ -67,8 +67,8 @@ def classification_report(y_true, y_pred=None, y_score=None, labels=None, metric
     assert y_pred is not None or y_score is not None
 
     average_options = set(as_list(average_options) if average_options else ["macro"])
-    average_label_fmt = "{average} avg"
-    average_metric_fmt = "{average} {metric}"
+    average_label_fmt = "{average}_avg"
+    average_metric_fmt = "{average}_{metric}"
 
     if y_pred is not None:
         _unique_labels = unique_labels(y_true, y_pred)
@@ -115,8 +115,10 @@ def classification_report(y_true, y_pred=None, y_score=None, labels=None, metric
 
         for average in ["micro", "macro", "samples", "weighted"]:
             _label = average_label_fmt.format(average=average)
-            if _label in ret and _label.split(" ")[0] not in average_options:
-                ret.pop(_label)
+            __label = " ".join(_label.split("_"))
+            _prefix = __label.split(" ")[0]
+            if _prefix in average_options:
+                ret[_label] = ret.pop(__label)
 
     if "auc" in _metrics:
         logger.info("evaluate auc")
