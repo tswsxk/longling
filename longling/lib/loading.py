@@ -224,10 +224,11 @@ def loading(src: (PATH_IO_TYPE, ...), src_type=None):
     """
     if isinstance(src, PATH_TYPE):
         suffix = pathlib.PurePath(src).suffix[1:]
-        if suffix == "csv" or src_type == "csv":
+        src_type = src_type if src_type is not None else suffix
+        if src_type in {"csv", ".csv"}:
             return load_csv(src)
-        elif suffix in {"json", "jsonl"} or src_type in {"json", "jsonl"}:
-            if suffix == "json" or src_type == "json":
+        elif src_type in {"json", "jsonl", ".json", ".jsonl"}:
+            if src_type == "json":
                 logger.info("detect source type as json, processed as jsonl format")
             return load_jsonl(src)
         else:
