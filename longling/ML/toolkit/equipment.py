@@ -1,6 +1,9 @@
 # coding: utf-8
 # 2019/12/20 @ tongshiwei
 
+import warnings
+
+warnings.warn("unstable, not use")
 """
 mem_info.total: 显卡总的显存大小
 mem_info.used: 使用显存大小
