@@ -13,6 +13,7 @@ from longling.lib.parser import *
 from longling.lib.candylib import *
 from longling.lib.loading import *
 from longling.lib.iterator import *
+from longling.lib.concurrency import *
 from longling.lib.structure.dict import nested_update
 
 from longling.lib import clock
