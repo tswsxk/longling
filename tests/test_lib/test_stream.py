@@ -1,6 +1,7 @@
 # coding: utf-8
 # create by tongshiwei on 2019/6/27
 
+from pathlib import PurePath
 import sys
 import json
 import pickle
@@ -108,12 +109,52 @@ def test_read_write(tmp_path):
         close_io("123")
 
 
+def test_group_io(tmpdir):
+    filenames = [path_append(tmpdir, "%s.txt" % i) for i in range(4)]
+
+    with as_out_io_group(*filenames) as wfs:
+        for i in range(4):
+            print(i, file=wfs[i])
+
+    with as_io_group(*filenames) as fs:
+        for i in range(4):
+            assert "%s" % i == fs[i].readline().strip()
+
+    wfs = wf_group_open(*filenames)
+    for i in range(4):
+        print(i, file=wfs[i])
+    close_io(wfs)
+
+    fs = rf_group_open(*filenames)
+    for i in range(4):
+        assert "%s" % i == fs[i].readline().strip()
+    close_io(fs)
+
+
+def test_io_type(tmp_path):
+    with pytest.raises(TypeError):
+        wf_open(12345)
+
+    with pytest.raises(TypeError):
+        rf_open(12345)
+
+    with as_out_io(path_append(tmp_path, "test_out")) as wf:
+        with as_out_io(wf):
+            pass
+
+    with as_io(path_append(tmp_path, "test_out")) as f:
+        with rf_open(f):
+            pass
+
+
 def test_add(capsys, tmp_path):
-    tmp_file = path_append(tmp_path, "test add", to_str=True)
+    tmp_file = path_append(tmp_path, "test_add", to_str=True)
 
     wf = wf_open(tmp_file)
 
     output_flow = AddPrinter(wf)
+
+    assert PurePath(output_flow.name).name == "test_add"
 
     for i in range(10):
         output_flow.add(i)
@@ -133,7 +174,16 @@ def test_add(capsys, tmp_path):
         captured = capsys.readouterr()
         assert captured.out == "%s\n" % i
 
-    close_io(wf)
+    output_flow.close()
+
+    with AddPrinter(tmp_file) as a:
+        for i in range(10):
+            a.add(i)
+
+    with open(tmp_file) as f:
+        for i, line in enumerate(f):
+            if line.strip():
+                assert int(line.strip()) == i
 
 
 def test_encode(tmpdir):
