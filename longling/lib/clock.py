@@ -13,7 +13,7 @@ __all__ = ["Clock", "print_time"]
 
 
 @contextmanager
-def print_time(tips: str, logger=_logger):
+def print_time(tips: str="", logger=_logger):
     """
     统计并打印脚本运行时间， 秒为单位
 
