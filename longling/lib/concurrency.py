@@ -11,7 +11,11 @@ THREAD_LEVEL = 2
 COROUTINE = 3
 
 _LEVEL = dict(
+    d=SERIAL_LEVEL,
+    debug=SERIAL_LEVEL,
+    n=SERIAL_LEVEL,
     s=SERIAL_LEVEL,
+    serial=SERIAL_LEVEL,
     t=THREAD_LEVEL,
     thread=THREAD_LEVEL,
     threading=THREAD_LEVEL,
