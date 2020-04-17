@@ -5,11 +5,13 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor as StdTPE
 from multiprocessing.pool import Pool
 
-PROCESS_LEVEL = 0
-THREAD_LEVEL = 1
-COROUTINE = 2
+SERIAL_LEVEL = 0
+PROCESS_LEVEL = 1
+THREAD_LEVEL = 2
+COROUTINE = 3
 
 _LEVEL = dict(
+    s=SERIAL_LEVEL,
     t=THREAD_LEVEL,
     thread=THREAD_LEVEL,
     threading=THREAD_LEVEL,
@@ -62,9 +64,10 @@ class ProcessPool(Pool):
         return _result
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.ret is not None:
-            for r in self._result:
-                self.ret.append(r.get())
+        for r in self._result:
+            _r = r.get()
+            if self.ret is not None:
+                self.ret.append(_r)
         super(ProcessPool, self).__exit__(exc_type, exc_val, exc_tb)
 
 
@@ -90,7 +93,25 @@ class CoroutinePool(object):
         return self.pools.append([func, args, kwargs])
 
 
+class SerialPool(object):
+    def __init__(self, *args, ret=None, **kwargs):
+        self.ret = ret
+
+    def __enter__(self):
+        return self
+
+    def submit(self, fn, *args, **kwargs):
+        r = fn(*args, **kwargs)
+        if self.ret is not None:
+            self.ret.append(r)
+        return r
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+
+
 LEVEL_CLASS = {
+    SERIAL_LEVEL: SerialPool,
     PROCESS_LEVEL: ProcessPool,
     THREAD_LEVEL: ThreadPoolExecutor,
     COROUTINE: CoroutinePool,
