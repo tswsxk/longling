@@ -5,7 +5,7 @@ import functools
 import fire
 
 from longling.lib.stream import encode
-from longling.ML.toolkit.dataset import train_valid_test, train_test, train_valid, kfold
+from longling.ML.toolkit.dataset import train_valid_test, train_test, kfold
 from longling.ML.toolkit.analyser.cli import select_max, arg_select_max, select_min, arg_select_min
 from longling.ML.toolkit.hyper_search.nni import show_top_k, show
 from longling.toolbox import toc
@@ -23,7 +23,6 @@ def cli():  # pragma: no cover
         {
             "train_valid_test": train_valid_test,
             "train_test": train_test,
-            "train_valid": train_valid,
             "kfold": kfold,
             "toc": toc,
             "arch": arch,
