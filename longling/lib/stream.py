@@ -18,7 +18,9 @@ from pathlib import PurePath
 import fileinput
 from typing import BinaryIO, TextIO
 
-__all__ = ['to_io', 'as_io', 'as_out_io', 'rf_open', 'wf_open', 'close_io', 'flush_print', 'build_dir', 'json_load',
+__all__ = ['to_io', 'as_io', 'as_out_io', 'rf_open', 'wf_open', 'rf_group_open', 'wf_group_open', 'close_io',
+           'flush_print', 'build_dir', 'json_load',
+           'as_io_group', 'as_out_io_group',
            'pickle_load', 'AddPrinter', 'AddObject', 'StreamError', 'check_file',
            'PATH_TYPE', 'encode', 'IO_TYPE', 'tmpfile', "PATH_IO_TYPE"
            ]
@@ -76,20 +78,28 @@ def check_file(path, size=None):
     return False
 
 
-def rf_open(filename: (TextIO, BinaryIO, PATH_TYPE, list, None) = None, encoding='utf-8', **kwargs):
-    if filename is None:
+def rf_open(stream_name: (PATH_IO_TYPE, list, None) = None, encoding='utf-8', **kwargs):
+    if stream_name is None:
         return sys.stdin
-    if isinstance(filename, list):
+    if isinstance(stream_name, list):
         if encoding is None:
-            return fileinput.input(files=filename, **kwargs)
+            return fileinput.input(files=stream_name, **kwargs)
         else:
             return fileinput.input(
-                files=filename,
+                files=stream_name,
                 openhook=fileinput.hook_encoded(encoding)
             )
+    elif isinstance(stream_name, IO_TYPE):
+        return stream_name
+    elif isinstance(stream_name, PATH_TYPE):
+        encoding = None if kwargs.get("mode") == "rb" else encoding
+        return open(stream_name, encoding=encoding, **kwargs)
+    else:
+        raise TypeError("unknown type: %s(%s)" % (stream_name, type(stream_name)))
 
-    encoding = None if kwargs.get("mode") == "rb" else encoding
-    return open(filename, encoding=encoding, **kwargs)
+
+def rf_group_open(*files, encoding="utf-8", **kwargs):
+    return [rf_open(_file, encoding=encoding, **kwargs) for _file in files]
 
 
 def json_load(fp: (IO_TYPE, PurePath), **kwargs):
@@ -108,7 +118,7 @@ def pickle_load(fp, encoding='utf-8', mode='rb', **kwargs):
         return pickle.load(fp, encoding=encoding, **kwargs)
 
 
-def wf_open(stream_name: (PATH_TYPE, None) = None, mode="w", encoding="utf-8", **kwargs):
+def wf_open(stream_name: (PATH_IO_TYPE, None) = None, mode="w", encoding="utf-8", **kwargs):
     r"""
     Simple wrapper to codecs for writing.
 
@@ -134,7 +144,7 @@ def wf_open(stream_name: (PATH_TYPE, None) = None, mode="w", encoding="utf-8", *
     >>> print("hello world", file=wf)
     hello world
     """
-    if not stream_name:
+    if stream_name is None:
         if stream_name is None and mode in {"w", "wb", "a", "ab"}:
             return sys.stdout
         elif mode == "stdout":
@@ -148,8 +158,14 @@ def wf_open(stream_name: (PATH_TYPE, None) = None, mode="w", encoding="utf-8", *
         if mode == "wb":
             return open(stream_name, mode=mode, **kwargs)
         return codecs.open(stream_name, mode=mode, encoding=encoding, **kwargs)
+    elif isinstance(stream_name, IO_TYPE):
+        return stream_name
     else:
         raise TypeError("unknown type: %s(%s)" % (stream_name, type(stream_name)))
+
+
+def wf_group_open(*files, encoding="utf-8", **kwargs):
+    return [wf_open(_file, encoding=encoding, **kwargs) for _file in files]
 
 
 def to_io(stream: (TextIOWrapper, TextIO, BinaryIO, PATH_TYPE, list, None) = None, mode='r', encoding='utf-8',
@@ -177,9 +193,16 @@ def to_io(stream: (TextIOWrapper, TextIO, BinaryIO, PATH_TYPE, list, None) = Non
         raise ValueError("cannot handle the mode %s" % mode)
 
 
+def to_io_group(*streams, mode='r', encoding='utf-8', **kwargs):
+    return [to_io(stream, mode, encoding, **kwargs) for stream in streams]
+
+
 def close_io(stream):
     """关闭文件流，忽略 sys.stdin, sys.stdout, sys.stderr"""
-    if stream in {sys.stdin, sys.stdout, sys.stderr}:
+    if isinstance(stream, list):
+        for _stream in stream:
+            close_io(_stream)
+    elif stream in {sys.stdin, sys.stdout, sys.stderr}:
         pass
     else:
         try:
@@ -224,6 +247,13 @@ def as_io(src: (TextIOWrapper, TextIO, BinaryIO, PATH_TYPE, list, None) = None, 
 
 
 @contextmanager
+def as_io_group(*src, mode='r', encoding='utf-8', **kwargs):
+    ios = to_io_group(*src, mode=mode, encoding=encoding, **kwargs)
+    yield ios
+    close_io(ios)
+
+
+@contextmanager
 def as_out_io(tar: (TextIOWrapper, TextIO, BinaryIO, PATH_TYPE, list, None) = None, mode='w', encoding='utf-8',
               **kwargs):
     """
@@ -252,6 +282,13 @@ def as_out_io(tar: (TextIOWrapper, TextIO, BinaryIO, PATH_TYPE, list, None) = No
     """
     with as_io(tar, mode, encoding, **kwargs) as out_io:
         yield out_io
+
+
+@contextmanager
+def as_out_io_group(*src, mode='w', encoding='utf-8', **kwargs):
+    out_ios = to_io_group(*src, mode=mode, encoding=encoding, **kwargs)
+    yield out_ios
+    close_io(out_ios)
 
 
 def encode(src, src_encoding, tar, tar_encoding):
@@ -286,19 +323,32 @@ class AddPrinter(AddObject):
     Examples
     --------
     >>> import sys
-    >>> printer = AddPrinter(sys.stdout)
+    >>> printer = AddPrinter(sys.stdout, ensure_io=True)
     >>> printer.add("hello world")
     hello world
     """
 
-    def __init__(self, fp, values_wrapper=lambda x: x, **kwargs):
+    def __init__(self, fp, values_wrapper=lambda x: x, to_io_params=None, ensure_io=False, **kwargs):
         super(AddPrinter, self).__init__()
-        self.fp = fp
+        self.fp = wf_open(fp, **to_io_params if to_io_params is not None else {}) if not ensure_io else fp
         self.value_wrapper = values_wrapper
         self.kwargs = kwargs
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
     def add(self, value):
         print(self.value_wrapper(value), file=self.fp, **self.kwargs)
+
+    def close(self):
+        close_io(self.fp)
+
+    @property
+    def name(self):
+        return self.fp.name
 
 
 @contextmanager
