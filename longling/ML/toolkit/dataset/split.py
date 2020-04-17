@@ -1,17 +1,19 @@
 # coding: utf-8
 # 2020/4/16 @ tongshiwei
 
+import functools
 from pathlib import PurePath
 import json
 import math
 import numpy as np
-from longling import loading, as_out_io, PATH_TYPE, json_load, close_io
+from longling import loading as _loading, as_out_io, PATH_TYPE, json_load, close_io
 from longling import AddPrinter, type_from_name, config_logging
 from sklearn.utils.validation import check_random_state
 from sklearn.model_selection import KFold
 from longling import concurrent_pool
 
 _logger = config_logging(logger="dataset", console_log_level="info")
+loading = functools.partial(_loading, src_type="text")
 
 
 def _get_s_points(length: int, ratio: list) -> list:
@@ -134,15 +136,24 @@ def _dump_file(srcs, s_indices: list, tars_list: list, logger=_logger):
             pool.submit(__dump_file, src, s_indices, tars, logger)
 
 
-def _target_files(*files, target_names=None, suffix):
-    return [
-        [
-            AddPrinter("%s%s" % (PurePath(_file).with_suffix(_suffix), type_from_name(_file))) if type_from_name(
-                _file) in {".jsonl"}
-            else AddPrinter("%s%s" % (PurePath(_file).with_suffix(_suffix), type_from_name(_file)), end='')
-            for _suffix in suffix
-        ] for _file in files
-    ] if target_names is None else target_names
+def _target_files(*files, target_names=None, suffix, prefix=""):
+    if target_names is not None:
+        return target_names
+    elif not prefix:
+        return [
+            [
+                AddPrinter("%s%s" % (PurePath(_file).with_suffix(_suffix), type_from_name(_file)), end='')
+                for _suffix in suffix
+            ] for _file in files
+        ]
+    else:
+        return [
+            [
+                AddPrinter("%s%s%s" % (prefix, PurePath(_file).with_suffix(_suffix).name, type_from_name(_file)),
+                           end='')
+                for _suffix in suffix
+            ] for _file in files
+        ]
 
 
 def _get_target_file_names(printers):
@@ -178,7 +189,7 @@ def file_split(*files, ratio: (str, list) = None, target_files: list, index_file
 
 def train_test(*files, train_size: (float, int) = 0.8, test_size: (float, int, None) = None, random_state=None,
                shuffle=True, target_names=None,
-               suffix: list = None, **kwargs):
+               suffix: list = None, prefix="", logger=_logger, **kwargs):
     """
 
     Parameters
@@ -198,11 +209,12 @@ def train_test(*files, train_size: (float, int) = 0.8, test_size: (float, int, N
     suffix: list
     kwargs
     """
+    logger.info("train_test start")
     suffix = [".train", ".test"] if suffix is None else suffix
 
     assert len(suffix) == 2
 
-    target_files = _target_files(*files, target_names=target_names, suffix=suffix)
+    target_files = _target_files(*files, target_names=target_names, suffix=suffix, prefix=prefix)
 
     ratio = "%s:" % train_size
 
@@ -214,6 +226,7 @@ def train_test(*files, train_size: (float, int) = 0.8, test_size: (float, int, N
 
     ratio += test_size
 
+    _src2tar_tips(files, target_files, "train_valid_test: ", logger=logger)
     file_split(
         *files,
         ratio=ratio,
@@ -223,6 +236,7 @@ def train_test(*files, train_size: (float, int) = 0.8, test_size: (float, int, N
         **kwargs
     )
     close_io([[printer for printer in printers] for printers in target_files])
+    logger.info("train_test end")
 
 
 def train_valid_test(*files,
@@ -230,7 +244,7 @@ def train_valid_test(*files,
                      test_size: (float, int, None) = None,
                      random_state=None,
                      shuffle=True, target_names=None,
-                     suffix: list = None, logger=_logger, **kwargs):
+                     suffix: list = None, logger=_logger, prefix="", **kwargs):
     """
 
     Parameters
@@ -252,11 +266,12 @@ def train_valid_test(*files,
     suffix: list
     kwargs
     """
+    logger.info("train_valid_test start")
     suffix = [".train", ".valid", ".test"] if suffix is None else suffix
 
     assert len(suffix) == 3
 
-    target_files = _target_files(*files, target_names=target_names, suffix=suffix)
+    target_files = _target_files(*files, target_names=target_names, suffix=suffix, prefix=prefix)
 
     ratio = "%s:%s:" % (train_size, valid_size)
 
@@ -267,7 +282,7 @@ def train_valid_test(*files,
         test_size = "%s" % test_size
 
     ratio += test_size
-
+    _src2tar_tips(files, target_files, "train_valid_test: ", logger=logger)
     file_split(
         *files,
         ratio=ratio,
@@ -277,21 +292,22 @@ def train_valid_test(*files,
         **kwargs
     )
     close_io([[printer for printer in printers] for printers in target_files])
+    logger.info("train_valid_test end")
 
 
-def _kfold(*files, idx, indices, suffix, logger=_logger):
+def _kfold(*files, idx, indices, suffix, logger=_logger, prefix=""):
     logger.info("kfold %s start" % idx)
     s_indices = [set(_indices.tolist()) for _indices in indices]
     target_files = _target_files(
-        *files, target_names=None, suffix=[".%s" % idx + _suffix for _suffix in suffix]
+        *files, target_names=None, suffix=[".%s" % idx + _suffix for _suffix in suffix], prefix=prefix
     )
-    _src2tar_tips(files, target_files, "kfold %s: " % idx)
+    _src2tar_tips(files, target_files, "kfold %s: " % idx, logger=logger)
     file_split(*files, s_indices=s_indices, target_files=target_files, logger=logger)
     close_io([[printer for printer in printers] for printers in target_files])
     logger.info("kfold %s end" % idx)
 
 
-def kfold(*files, n_splits=5, shuffle=False, random_state=None, suffix=None, logger=_logger):
+def kfold(*files, n_splits=5, shuffle=False, random_state=None, suffix=None, logger=_logger, prefix=""):
     splitter = KFold(n_splits=n_splits, shuffle=shuffle, random_state=random_state)
     suffix = [".train", ".test"] if suffix is None else suffix
 
@@ -304,4 +320,5 @@ def kfold(*files, n_splits=5, shuffle=False, random_state=None, suffix=None, log
                 indices=indices,
                 suffix=suffix,
                 logger=logger,
+                prefix=prefix
             )
