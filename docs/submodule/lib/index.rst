@@ -46,6 +46,16 @@ For path
    longling.lib.stream.flush_print
 
 
+并发
+
+.. autosummary::
+   longling.lib.concurrency.concurrent_pool
+
+
+测试
+
+.. autosummary::
+   longling.lib.testing.simulate_stdin
 
 candylib
 -------------
@@ -56,6 +66,19 @@ candylib
 clock
 -------------
 .. automodule:: longling.lib.clock
+   :members:
+   :imported-members:
+
+concurrency
+-----------
+.. automodule:: longling.lib.concurrency
+   :members:
+   :imported-members:
+
+
+formatter
+-----------
+.. automodule:: longling.lib.formatter
    :members:
    :imported-members:
 
@@ -147,6 +170,12 @@ stream
 structure
 -------------
 .. automodule:: longling.lib.structure
+   :members:
+   :imported-members:
+
+testing
+-------
+.. automodule:: longling.lib.testing
    :members:
    :imported-members:
 
