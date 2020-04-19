@@ -35,9 +35,6 @@ Architecture
    longling.Architecture.install_file.gitlab_ci
    longling.Architecture.install_file.chart
 
-Specials
-^^^^^^^^
-
 
 Model Selection
 ---------------
@@ -47,7 +44,6 @@ Split dataset to train, valid and test or apply kfold.
 
 .. autosummary::
    longling.ML.toolkit.dataset.train_valid_test
-   longling.ML.toolkit.dataset.train_valid
    longling.ML.toolkit.dataset.train_test
    longling.ML.toolkit.dataset.kfold
 
