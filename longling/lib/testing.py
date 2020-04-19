@@ -2,10 +2,13 @@
 # 2020/4/14 @ tongshiwei
 from contextlib import contextmanager
 
+__all__ = ["simulate_stdin"]
+
 
 @contextmanager
 def simulate_stdin(*inputs):
     """
+    测试中模拟标准输入
 
     Parameters
     ----------
