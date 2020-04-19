@@ -67,14 +67,14 @@ class Clock(object):
 
     """
 
-    def __init__(self, store_dict: (dict, None) = None, logger: (logging.Logger, None) = None, tips=''):
+    def __init__(self, store_dict: (dict, None) = None, logger: (logging.Logger, None) = _logger, tips=''):
         assert store_dict is None or type(store_dict) is dict
         self.process_st = 0
         self.process_et = 0
         self.wall_st = 0
         self.wall_et = 0
         self.store_dict = store_dict
-        self.logger = logger if logger is not None else _logger
+        self.logger = logger
         self.tips = tips
 
     def start(self):
@@ -82,6 +82,9 @@ class Clock(object):
         self.process_st = time.process_time()
         self.wall_st = time.time()
         return self.process_st
+
+    def time(self):
+        return time.time() - self.wall_st
 
     def end(self, wall=True):
         """计时结束，返回间隔时间"""
@@ -104,16 +107,18 @@ class Clock(object):
 
     def __enter__(self):
         if self.tips:
-            self.logger.info(self.tips)
+            if self.logger is not None:
+                self.logger.info(self.tips)
         self.start()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.logger.info(
-            '%ss' % self.end() if not self.tips else '%s %ss' % (
-                self.tips, self.end()
+        if self.logger is not None:
+            self.logger.info(
+                '%ss' % self.end() if not self.tips else '%s %ss' % (
+                    self.tips, self.end()
+                )
             )
-        )
         if self.store_dict is not None:
             self.store_dict['wall_time'] = self.wall_time
             self.store_dict['process_time'] = self.process_time
