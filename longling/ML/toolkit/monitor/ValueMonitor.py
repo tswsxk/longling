@@ -6,10 +6,10 @@ import math
 
 try:
     NAN = math.nan
-except (AttributeError, ImportError):
+except (AttributeError, ImportError):  # pragma: no cover
     NAN = float('nan')
 
-__all__ = ["ValueMonitor", "MovingValue"]
+__all__ = ["ValueMonitor", "EMAValue"]
 
 
 class ValueMonitor(object):
@@ -21,11 +21,17 @@ class ValueMonitor(object):
 
     """
 
-    def __init__(self, value_function_names, *args, **kwargs):
+    def __init__(self, value_function_names: list, *args, **kwargs):
         self._values = {name: NAN for name in value_function_names}
 
     def __str__(self):
         return str(self._values)
+
+    def __call__(self, *args, **kwargs):
+        self.update(*args, **kwargs)
+
+    def __getitem__(self, item):
+        return self._values[item]
 
     def update(self, *args, **kwargs):
         raise NotImplementedError
@@ -41,18 +47,54 @@ class ValueMonitor(object):
         return self._values.items()
 
     def keys(self):
-        raise self._values.keys()
+        return self._values.keys()
 
 
-class MovingValue(ValueMonitor):
+class EMAValue(ValueMonitor):
+    """
+    Exponential moving average: smoothing to give progressively lower
+    weights to older values.
+
+    ..math:
+        losses[name] = 1 - c \times previous_value + c \times loss_value
+
+    >>> ema = EMAValue(["l2"])
+    >>> ema["l2"]
+    nan
+    >>> ema("l2", 100)
+    >>> ema("l2", 1)
+    >>> ema["l2"]
+    99.01
+    >>> list(ema.values())
+    [99.01]
+    >>> list(ema.keys())
+    ['l2']
+    >>> list(ema.items())
+    [('l2', 99.01)]
+    >>> ema.reset()
+    >>> ema["l2"]
+    nan
+    """
     def __init__(self, value_function_names, smoothing_constant=0.01):
-        super(MovingValue, self).__init__(value_function_names)
+        """
+        Parameters
+        ----------
+        value_function_names
+        smoothing_constant: float, optional
+            Smoothing factor in range [0, 1], [default: 0.01].
+            Increase to give more weight to recent values.
+        """
+        super(EMAValue, self).__init__(value_function_names)
         self.smoothing_constant = smoothing_constant
 
-    def update(self, name, value):
+    def update(self, name: str, value: (float, int)):
         """
-        ..math:
-        losses[name] = 1 - c \times loss_value + c \times loss_value
+        Parameters
+        ----------
+        name: str
+            The name of the value to be updated
+        value  : int or float
+            New value to include in EMA.
         """
         self._values[name] = (
             value if math.isnan(self._values[name])
