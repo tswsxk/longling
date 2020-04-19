@@ -5,7 +5,7 @@
 
 import logging
 import json
-from longling.lib.stream import wf_open, as_out_io
+from longling.lib.stream import wf_open, as_out_io, PATH_IO_TYPE
 from collections import OrderedDict
 from longling.lib.formatter import table_format, series_format
 from longling.lib.candylib import as_list
@@ -17,12 +17,13 @@ def _to_dict(name_value: (dict, tuple)) -> dict:
 
 
 class EvalFMT(object):
-    def __init__(self, logger=logging.getLogger(), dump_file: (str, None) = False,
+    def __init__(self, logger=logging.getLogger(), dump_file: (PATH_IO_TYPE, None) = False,
                  col: (int, None) = None, **kwargs):
         self.logger = logger
-        if dump_file is not None and isinstance(dump_file, str):
+        if dump_file is not False:
             # clean file
-            wf_open(dump_file, **kwargs).close()
+            with as_out_io(dump_file):
+                pass
         self.log_f = dump_file
         self.col = col
 
@@ -37,16 +38,17 @@ class EvalFMT(object):
         return msg, loss_name_value
 
     @classmethod
-    def format(cls, tips=None,
-               iteration=None, train_time=None, loss_name_value=None,
+    def format(cls, tips: str=None,
+               iteration: int=None, train_time: float=None, loss_name_value: dict=None,
                eval_name_value: dict = None,
-               extra_info=None,
-               dump=True, logger=logging.getLogger(), dump_file: (str, None) = False,
+               extra_info: (dict, tuple)=None, keep: (set, str) = None,
+               logger=logging.getLogger(), dump_file: (PATH_IO_TYPE, None) = False,
                col: (int, None) = None,
                *args, **kwargs):
         return cls(logger=logger, dump_file=dump_file, col=col)(
             tips=tips, iteration=iteration, train_time=train_time, loss_name_value=loss_name_value,
-            eval_name_value=eval_name_value, dump=dump
+            eval_name_value=eval_name_value, extra_info=extra_info,
+            dump=dump_file is not False, keep=keep, *args, **kwargs
         )
 
     @property
@@ -57,11 +59,11 @@ class EvalFMT(object):
     def iteration_fmt(self):
         return self.iteration_name + " [{:d}]"
 
-    def __call__(self, tips=None,
-                 iteration=None, train_time=None, loss_name_value=None,
+    def __call__(self, tips: str = None,
+                 iteration: int = None, train_time: float = None, loss_name_value: dict = None,
                  eval_name_value: dict = None,
-                 extra_info=None,
-                 dump=True, keep: (set, str) = None, *args, **kwargs):
+                 extra_info: (dict, tuple) = None,
+                 dump: bool=True, keep: (set, str) = None, *args, **kwargs):
         msg = []
         data = {}
 
@@ -97,7 +99,7 @@ class EvalFMT(object):
                 extra_info, dict
             ), "extra_info should be None, dict or tuple, " \
                "now is %s" % type(extra_info)
-            msg.append(extra_info.items())
+            msg.append(str(extra_info))
             data.update(extra_info)
 
         msg = ["\t".join([m for m in msg if m])]
@@ -125,7 +127,7 @@ class EvalFMT(object):
                 try:
                     with as_out_io(log_f, "a") as wf:
                         print(json.dumps(data, ensure_ascii=False), file=wf)
-                except Exception as e:
+                except Exception as e:  # pragma: no cover
                     logger.warning(e)
 
         if keep is None:
@@ -133,9 +135,11 @@ class EvalFMT(object):
         elif isinstance(keep, str):
             keep = set(as_list(keep))
 
-        if "msg" in keep:
+        if "msg" in keep and "data" in keep:
+            return msg, data
+        elif "msg" in keep:
             return msg
-        if "data" in keep:
+        elif "data" in keep:
             return data
 
 
@@ -155,6 +159,21 @@ def result_format(data: dict):
         _ret.append(series_format(series))
 
     return "\n".join(_ret)
+
+
+eval_format = EvalFMT.format
+
+
+class EpochEvalFMT(EvalFMT):
+    @property
+    def iteration_name(self):
+        return "Epoch"
+
+
+class EpisodeEvalFMT(EvalFMT):
+    @property
+    def iteration_name(self):
+        return "Episode"
 
 
 if __name__ == '__main__':
