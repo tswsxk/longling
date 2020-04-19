@@ -21,6 +21,7 @@ dev_deps = test_deps + [
 ]
 
 ml_base_deps = [
+    "pandas",
     "numpy",
     "scipy",
     "scikit-learn>=0.22.2",
