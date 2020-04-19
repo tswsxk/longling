@@ -125,7 +125,7 @@ def __dump_file(src, s_indices: list, tars: list, logger=_logger):
             if i in values:
                 tars[j].add(elem)
                 break
-        else:
+        else:  # pragma: no cover
             raise ValueError()
     logger.debug("split and dump %s: end" % src)
 
@@ -136,24 +136,50 @@ def _dump_file(srcs, s_indices: list, tars_list: list, logger=_logger):
             pool.submit(__dump_file, src, s_indices, tars, logger)
 
 
-def _target_files(*files, target_names=None, suffix, prefix=""):
-    if target_names is not None:
-        return target_names
-    elif not prefix:
-        return [
-            [
-                AddPrinter("%s%s" % (PurePath(_file).with_suffix(_suffix), type_from_name(_file)), end='')
-                for _suffix in suffix
-            ] for _file in files
-        ]
+def to_add_printer(targets_list):
+    return [
+        [
+            target if isinstance(target, AddPrinter) else AddPrinter(target, end='')
+            for target in targets
+        ] for targets in targets_list
+    ]
+
+
+def _target_names(*files, target_names=None, suffix, prefix=""):
+    """
+
+    Examples
+    --------
+    >>> files = ["x.txt"]
+    >>> _target_names(*files, suffix=[".train", ".test"])
+    [['x.train.txt', 'x.test.txt']]
+    >>> _target_names(*files, suffix=[".train", ".test"], prefix="data/")
+    [['data/x.train.txt', 'data/x.test.txt']]
+    >>> _target_names(*files, suffix=[".train", ".test"], target_names=[["train.txt", "test.txt"]])
+    [['train.txt', 'test.txt']]
+    """
+    if target_names is None:
+        if not prefix:
+            return [
+                [
+                    "%s%s" % (PurePath(_file).with_suffix(_suffix), type_from_name(_file))
+                    for _suffix in suffix
+                ] for _file in files
+            ]
+        else:
+            return [
+                [
+                    "%s%s%s" % (prefix, PurePath(_file).with_suffix(_suffix).name, type_from_name(_file))
+                    for _suffix in suffix
+                ] for _file in files
+            ]
     else:
-        return [
-            [
-                AddPrinter("%s%s%s" % (prefix, PurePath(_file).with_suffix(_suffix).name, type_from_name(_file)),
-                           end='')
-                for _suffix in suffix
-            ] for _file in files
-        ]
+        return target_names
+
+
+def _target_files(*files, target_names=None, suffix, prefix=""):
+    target_names = _target_names(*files, target_names=target_names, suffix=suffix, prefix=prefix)
+    return to_add_printer(target_names)
 
 
 def _get_target_file_names(printers):
@@ -187,8 +213,8 @@ def file_split(*files, ratio: (str, list) = None, target_files: list, index_file
     _dump_file(files, s_indices, target_files, logger=logger)
 
 
-def train_test(*files, train_size: (float, int) = 0.8, test_size: (float, int, None) = None, random_state=None,
-               shuffle=True, target_names=None,
+def train_test(*files, train_size: (float, int) = 0.8, test_size: (float, int, None) = None, ratio=None,
+               random_state=None, shuffle=True, target_names=None,
                suffix: list = None, prefix="", logger=_logger, **kwargs):
     """
 
@@ -216,15 +242,16 @@ def train_test(*files, train_size: (float, int) = 0.8, test_size: (float, int, N
 
     target_files = _target_files(*files, target_names=target_names, suffix=suffix, prefix=prefix)
 
-    ratio = "%s:" % train_size
+    if ratio is None:
+        ratio = "%s:" % train_size
 
-    if test_size is None:
-        assert 0 <= train_size <= 1
-        test_size = "%s" % (1 - train_size)
-    else:
-        test_size = "%s" % test_size
+        if test_size is None:
+            assert 0 <= train_size <= 1
+            test_size = "%s" % (1 - train_size)
+        else:
+            test_size = "%s" % test_size
 
-    ratio += test_size
+        ratio += test_size
 
     _src2tar_tips(files, target_files, "train_valid_test: ", logger=logger)
     file_split(
@@ -241,7 +268,7 @@ def train_test(*files, train_size: (float, int) = 0.8, test_size: (float, int, N
 
 def train_valid_test(*files,
                      train_size: (float, int) = 0.8, valid_size: (float, int) = 0.1,
-                     test_size: (float, int, None) = None,
+                     test_size: (float, int, None) = None, ratio=None,
                      random_state=None,
                      shuffle=True, target_names=None,
                      suffix: list = None, logger=_logger, prefix="", **kwargs):
@@ -273,15 +300,17 @@ def train_valid_test(*files,
 
     target_files = _target_files(*files, target_names=target_names, suffix=suffix, prefix=prefix)
 
-    ratio = "%s:%s:" % (train_size, valid_size)
+    if ratio is None:
+        ratio = "%s:%s:" % (train_size, valid_size)
 
-    if test_size is None:
-        assert 0 <= train_size + valid_size <= 1
-        test_size = "%s" % (1 - train_size - valid_size)
-    else:
-        test_size = "%s" % test_size
+        if test_size is None:
+            assert 0 <= train_size + valid_size <= 1
+            test_size = "%s" % (1 - train_size - valid_size)
+        else:
+            test_size = "%s" % test_size
 
-    ratio += test_size
+        ratio += test_size
+
     _src2tar_tips(files, target_files, "train_valid_test: ", logger=logger)
     file_split(
         *files,
