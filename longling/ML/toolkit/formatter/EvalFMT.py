@@ -38,10 +38,10 @@ class EvalFMT(object):
         return msg, loss_name_value
 
     @classmethod
-    def format(cls, tips: str=None,
-               iteration: int=None, train_time: float=None, loss_name_value: dict=None,
+    def format(cls, tips: str = None,
+               iteration: int = None, train_time: float = None, loss_name_value: dict = None,
                eval_name_value: dict = None,
-               extra_info: (dict, tuple)=None, keep: (set, str) = None,
+               extra_info: (dict, tuple) = None, keep: (set, str) = None,
                logger=logging.getLogger(), dump_file: (PATH_IO_TYPE, None) = False,
                col: (int, None) = None,
                *args, **kwargs):
@@ -63,7 +63,7 @@ class EvalFMT(object):
                  iteration: int = None, train_time: float = None, loss_name_value: dict = None,
                  eval_name_value: dict = None,
                  extra_info: (dict, tuple) = None,
-                 dump: bool=True, keep: (set, str) = None, *args, **kwargs):
+                 dump: bool = True, keep: (set, str) = None, *args, **kwargs):
         msg = []
         data = {}
 
