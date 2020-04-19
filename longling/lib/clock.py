@@ -9,7 +9,7 @@ from longling.lib.utilog import config_logging
 
 _logger = config_logging(logger="clock", console_log_level=logging.INFO)
 
-__all__ = ["Clock", "print_time"]
+__all__ = ["Clock", "print_time", "Timer"]
 
 
 @contextmanager
@@ -117,3 +117,6 @@ class Clock(object):
         if self.store_dict is not None:
             self.store_dict['wall_time'] = self.wall_time
             self.store_dict['process_time'] = self.process_time
+
+
+Timer = Clock
