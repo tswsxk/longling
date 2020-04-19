@@ -37,9 +37,9 @@ PATH_IO_TYPE = (PATH_TYPE, IO_TYPE)
 
 def flush_print(*values, **kwargs):
     """刷新打印函数"""
-    sep = kwargs.get('sep', "")
-    end = kwargs.get('end', "")
-    print('\r', *values, sep=sep, end=end, flush=True)
+    sep = kwargs.pop('sep', "")
+    end = kwargs.pop('end', "")
+    print('\r', *values, sep=sep, end=end, flush=True, **kwargs)
 
 
 def build_dir(path, mode=0o775):
