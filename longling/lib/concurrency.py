@@ -5,6 +5,8 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor as StdTPE
 from multiprocessing.pool import Pool
 
+__all__ = ["concurrent_pool", "ThreadPool", "ProcessPool", "CoroutinePool"]
+
 SERIAL_LEVEL = 0
 PROCESS_LEVEL = 1
 THREAD_LEVEL = 2
@@ -28,7 +30,7 @@ _LEVEL = dict(
 )
 
 
-class ThreadPoolExecutor(StdTPE):
+class ThreadPool(StdTPE):
     def __init__(self, max_workers=None, thread_name_prefix='', ret: list = None):
         """Initializes a new ThreadPoolExecutor instance.
 
@@ -37,12 +39,12 @@ class ThreadPoolExecutor(StdTPE):
                 execute the given calls.
             thread_name_prefix: An optional name prefix to give our threads.
         """
-        super(ThreadPoolExecutor, self).__init__(max_workers=max_workers, thread_name_prefix=thread_name_prefix)
+        super(ThreadPool, self).__init__(max_workers=max_workers, thread_name_prefix=thread_name_prefix)
         self._result = []
         self.ret = ret
 
     def submit(self, fn, *args, **kwargs):
-        _result = super(ThreadPoolExecutor, self).submit(fn, *args, **kwargs)
+        _result = super(ThreadPool, self).submit(fn, *args, **kwargs)
         self._result.append(_result)
         return _result
 
@@ -53,7 +55,7 @@ class ThreadPoolExecutor(StdTPE):
             elif self.ret is not None:
                 self.ret.append(r.result())
 
-        super(ThreadPoolExecutor, self).__exit__(exc_type, exc_val, exc_tb)
+        super(ThreadPool, self).__exit__(exc_type, exc_val, exc_tb)
 
 
 class ProcessPool(Pool):
@@ -117,7 +119,7 @@ class SerialPool(object):
 LEVEL_CLASS = {
     SERIAL_LEVEL: SerialPool,
     PROCESS_LEVEL: ProcessPool,
-    THREAD_LEVEL: ThreadPoolExecutor,
+    THREAD_LEVEL: ThreadPool,
     COROUTINE: CoroutinePool,
 }
 
