@@ -70,7 +70,7 @@ class ConsoleProgressMonitorPlayer(object):
     @property
     def progress(self):
         elapsed = self.timer.time()
-        if not elapsed:
+        if not elapsed:  # pragma: no cover
             return ""
         rate = self.n / elapsed
         elapsed = self.format_interval(int(elapsed))
