@@ -31,6 +31,13 @@ def test_exception():
 
 def test_concurrency():
     ret = []
+    with concurrent_pool("s", ret=ret) as c:
+        for i in range(4):
+            c.submit(fn, i, bias=1)
+
+    assert list(sorted(ret)) == [1, 2, 3, 4]
+
+    ret = []
     with concurrent_pool("c", ret=ret) as c:
         for i in range(4):
             c.submit(async_fn, i, bias=1)
