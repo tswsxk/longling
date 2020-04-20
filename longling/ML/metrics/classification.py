@@ -119,6 +119,8 @@ def classification_report(y_true, y_pred=None, y_score=None, labels=None, metric
             _prefix = __label.split(" ")[0]
             if _prefix in average_options:
                 ret[_label] = ret.pop(__label)
+            elif __label in ret:
+                ret.pop(__label)
 
     if "auc" in _metrics:
         logger.info("evaluate auc")

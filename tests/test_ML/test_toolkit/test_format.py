@@ -7,11 +7,10 @@ from longling.ML.toolkit.formatter import eval_format, EpochEvalFMT, EpisodeEval
 
 a = """
 test_eval_format	Iteration [10]	Train Time-137.123s	Loss - loss: 2.59	{'a': 123}
-              precision    recall        f1  support
-0              0.666667  0.666667  0.666667        3
-1              0.500000  0.500000  0.500000        2
-macro_avg      0.583333  0.583333  0.583333        5
-weighted avg   0.600000  0.600000  0.600000        5
+           precision    recall        f1  support
+0           0.666667  0.666667  0.666667        3
+1           0.500000  0.500000  0.500000        2
+macro_avg   0.583333  0.583333  0.583333        5
 accuracy: 0.600000
 """
 b = """
