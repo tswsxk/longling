@@ -26,7 +26,7 @@ ml_base_deps = [
     "scipy",
     "scikit-learn>=0.22.2",
     "matplotlib",
-    "nvidia-ml-py3",
+    "nni"
 ]
 
 try:
