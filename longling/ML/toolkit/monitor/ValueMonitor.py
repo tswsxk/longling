@@ -21,7 +21,7 @@ class ValueMonitor(object):
 
     """
 
-    def __init__(self, value_function_names: list, *args, **kwargs):
+    def __init__(self, value_function_names: (list, dict), *args, **kwargs):
         self._values = {name: NAN for name in value_function_names}
 
     def __str__(self):
@@ -49,6 +49,10 @@ class ValueMonitor(object):
     def keys(self):
         return self._values.keys()
 
+    @property
+    def value(self):
+        return self._values
+
 
 class EMAValue(ValueMonitor):
     """
@@ -75,7 +79,8 @@ class EMAValue(ValueMonitor):
     >>> ema["l2"]
     nan
     """
-    def __init__(self, value_function_names, smoothing_constant=0.01):
+
+    def __init__(self, value_function_names: (list, dict), smoothing_constant=0.01):
         """
         Parameters
         ----------

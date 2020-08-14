@@ -240,6 +240,20 @@ PLAYER_TYPE = {
 class ConsoleProgressMonitor(ProgressMonitor):
     def __init__(self, indexes: (dict, OrderedDict), values: (dict, None) = None,
                  total=NAN, silent=False, player_type='default', *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        indexes: dict of list of str
+
+        values: dict of dict of value
+
+        total
+        silent
+        player_type
+        args
+        kwargs
+        """
         super(ConsoleProgressMonitor, self).__init__(
             player=PLAYER_TYPE[player_type](
                 indexes=indexes,
