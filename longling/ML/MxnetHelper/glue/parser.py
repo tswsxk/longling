@@ -14,8 +14,8 @@ __all__ = [
 ]
 
 
-def eval_var(var):
-    return eval(var)
+def eval_var(variable):
+    return eval(variable)
 
 
 class MXCtx(object):
@@ -60,22 +60,22 @@ class Configuration(Params):
         """
         return get_parsable_var(
             self,
-            parse_exclude={'logger'},
+            parse_exclude=None,
             dump_parse_functions={'ctx': MXCtx.dump}
         )
 
     @staticmethod
-    def load_cfg(cfg_path, **kwargs):
-        with open(cfg_path) as f:
+    def load_cfg(params_json, **kwargs):
+        with open(params_json) as f:
             params = load_configuration_json(
                 f, load_parse_function={"ctx": MXCtx.load}
             )
         params.update(kwargs)
         return params
 
-    @staticmethod
-    def load(cfg_path, **kwargs):
-        Configuration(Configuration.load_cfg(cfg_path, **kwargs))
+    @classmethod
+    def load(cls, cfg_path, **kwargs):
+        cls(cls.load_cfg(cfg_path, **kwargs))
 
 
 if __name__ == '__main__':

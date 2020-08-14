@@ -1,0 +1,27 @@
+review:
+  stage: review
+  image: $IMAGE_NAME
+  before_script:
+  - helm repo add stable http://mirror.azure.cn/kubernetes/charts
+  script:
+  - export DOCKER_REGISTRY_IMAGE=$DOCKER_REGISTRY_IMAGE
+  # build image
+  - docker login -u gitlab-ci-token -p ${CI_BUILD_TOKEN} ${CI_REGISTRY}
+  - docker build -t ${DOCKER_REGISTRY_IMAGE} .
+  - docker push ${DOCKER_REGISTRY_IMAGE}
+  - docker login -u $CI_DEPLOY_USER -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
+  # configure deployment
+
+production:
+  stage: production
+  image: $IMAGE_NAME
+  before_script:
+  - helm repo add stable http://mirror.azure.cn/kubernetes/charts
+  script:
+  - export DOCKER_REGISTRY_IMAGE=$DOCKER_REGISTRY_IMAGE
+  # build image
+  - docker login -u gitlab-ci-token -p ${CI_BUILD_TOKEN} ${CI_REGISTRY}
+  - docker build -t ${DOCKER_REGISTRY_IMAGE} .
+  - docker push ${DOCKER_REGISTRY_IMAGE}
+  - docker login -u $CI_DEPLOY_USER -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
+  # configure deployment

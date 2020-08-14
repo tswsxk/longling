@@ -1,16 +1,15 @@
 # coding: utf-8
 # Copyright @tongshiwei
-import os
-
+from longling.ML import DL
 import mxnet as mx
 
 try:
     from .Module import *
-except (SystemError, ModuleNotFoundError):
+except (SystemError, ModuleNotFoundError):  # pragma: no cover
     from Module import *
 
 
-class ModelName(object):
+class ModelName(DL.CliServiceModule):
     def __init__(
             self, load_epoch=None, cfg=None, toolbox_init=False, **kwargs
     ):
@@ -31,8 +30,7 @@ class ModelName(object):
         """
         # 1 配置参数初始化
         # todo 到Configuration处定义相关参数
-        cfg = self.config(cfg, **kwargs)
-        self.mod = self.get_module(cfg)
+        super(ModelName, self).__init__(cfg, **kwargs)
 
         # 2 todo 定义网络结构
         # 2.1 重新生成
@@ -56,10 +54,14 @@ class ModelName(object):
         self.trainer = None
 
         if toolbox_init:
-            self.toolbox_init()
+            self.toolbox_init(**self.mod.cfg.toolbox_params)
 
     @staticmethod
-    def config(cfg=None, **kwargs):
+    def get_configuration_cls():
+        return Configuration
+
+    @classmethod
+    def config(cls, cfg=None, **kwargs):
         """
         配置初始化
 
@@ -71,16 +73,18 @@ class ModelName(object):
         kwargs
             参数配置可选参数
         """
-        cfg = Configuration(
+        configuration_cls = cls.get_configuration_cls()
+
+        cfg = configuration_cls(
             **kwargs
         ) if cfg is None else cfg
-        if not isinstance(cfg, Configuration):
-            cfg = Configuration.load_cfg(cfg, **kwargs)
+        if not isinstance(cfg, configuration_cls):
+            cfg = configuration_cls.load_cfg(cfg, **kwargs)
         cfg.dump(override=True)
         return cfg
 
-    @staticmethod
-    def get_module(cfg):
+    @classmethod
+    def get_module(cls, cfg):
         """
         根据配置，生成模型模块
 
@@ -93,23 +97,16 @@ class ModelName(object):
         mod: Module
             模型模块
         """
-        mod = Module(cfg)
+        module_cls = cls.get_module_cls()
+
+        mod = module_cls(cfg)
         mod.logger.info(str(mod))
         filename = mod.cfg.cfg_path
         mod.logger.info("parameters saved to %s" % filename)
         return mod
 
-    def viz(self):
-        """可视化网络"""
-        mod = self.mod
-        net = self.net
-
-        # optional 3 可视化检查网络
-        mod.logger.info("visualizing symbol")
-        net_viz(net, mod.cfg)
-
     def set_loss(self, bp_loss_f=None, loss_function=None):
-        bp_loss_f = BP_LOSS_F if bp_loss_f is None else bp_loss_f
+        bp_loss_f = get_bp_loss(**self.mod.cfg.loss_params) if bp_loss_f is None else bp_loss_f
 
         assert bp_loss_f is not None and len(bp_loss_f) == 1
 
@@ -121,18 +118,27 @@ class ModelName(object):
         self.bp_loss_f = bp_loss_f
         self.loss_function = loss_function
 
+    def viz(self):
+        """可视化网络"""
+        mod = self.mod
+        net = self.net
+
+        # optional 3 可视化检查网络
+        mod.logger.info("visualizing symbol")
+        net_viz(net, mod.cfg)
+
     def toolbox_init(
             self,
             evaluation_formatter_parameters=None,
             validation_logger_mode="w",
-            informer_silent=False,
+            silent=False,
     ):
 
+        from longling import path_append
         from longling.lib.clock import Clock
         from longling.lib.utilog import config_logging
-        from longling.ML.toolkit.formatter import EvalFormatter as Formatter
-        from longling.ML.toolkit.monitor import MovingLoss, \
-            ConsoleProgressMonitor as ProgressMonitor
+        from longling.ML.toolkit import EvalFormatter as Formatter
+        from longling.ML.toolkit import MovingLoss, ConsoleProgressMonitor as ProgressMonitor
 
         self.toolbox = {
             "monitor": dict(),
@@ -155,13 +161,18 @@ class ModelName(object):
         timer = Clock()
 
         progress_monitor = ProgressMonitor(
-            loss_index=[name for name in self.loss_function],
+            indexes={
+                "Loss": [name for name in self.loss_function]
+            },
+            values={
+                "Loss": loss_monitor.losses
+            },
             end_epoch=cfg.end_epoch - 1,
-            silent=informer_silent
+            silent=silent
         )
 
         validation_logger = config_logging(
-            filename=os.path.join(cfg.model_dir, "result.log"),
+            filename=path_append(cfg.model_dir, "result.log"),
             logger="%s-validation" % cfg.model_name,
             mode=validation_logger_mode,
             log_format="%(message)s",
@@ -212,7 +223,7 @@ class ModelName(object):
         except FileExistsError:
             if allow_reinit:
                 mod.logger.info("model doesn't exist, initializing")
-                Module.net_initialize(net, cfg.ctx)
+                mod.net_initialize(net, cfg.ctx)
             else:
                 mod.logger.info(
                     "model doesn't exist, target file: %s" % model_file
@@ -226,7 +237,7 @@ class ModelName(object):
         # # suggestion: annotate this until your process worked
         # net.hybridize()
 
-        self.trainer = Module.get_trainer(
+        self.trainer = mod.get_trainer(
             net, optimizer=cfg.optimizer,
             optimizer_params=cfg.optimizer_params,
             lr_params=cfg.lr_params,
@@ -334,28 +345,41 @@ class ModelName(object):
     def transform(self, data):
         return transform(data, self.mod.cfg)
 
-    def etl(self, cfg=None):
+    def etl(self, data_src, cfg=None):
         mod = self.mod
         cfg = mod.cfg if cfg is None else cfg
 
         # 4.2 todo 定义数据加载
         mod.logger.info("loading data")
-        data = etl(params=cfg)
+        data = etl(cfg.var2val(data_src), params=cfg)
 
         return data
 
-    def _train(self):
-        train_data = self.etl()
-        valid_data = self.etl()
+    def _train(self, train, valid):
+        train_data = self.etl(train)
+        valid_data = self.etl(valid)
         self.train_net(train_data, valid_data)
 
-    @staticmethod
-    def test(test_epoch, dump_file=None, **kwargs):
+    @classmethod
+    def train(cls, *args, cfg=None, **kwargs):
+        module = cls(cfg=cfg, **kwargs)
+        module.set_loss()
+        # module.viz()
+
+        module.toolbox_init()
+        module.model_init(**kwargs)
+
+        module._train(*args)
+
+        return module
+
+    @classmethod
+    def test(cls, test_filename, test_epoch, dump_file=None, **kwargs):
         from longling.ML.toolkit.formatter import EvalFormatter
         formatter = EvalFormatter(dump_file=dump_file)
-        module = ModelName.load(test_epoch, **kwargs)
+        module = cls.load(test_epoch, **kwargs)
 
-        test_data = module.etl()
+        test_data = module.etl(test_filename)
         eval_result = module.mod.eval(module.net, test_data)
         formatter(
             tips="test",
@@ -363,54 +387,40 @@ class ModelName(object):
         )
         return eval_result
 
-    @staticmethod
-    def inc_train(init_model_file, validation_logger_mode="w", **kwargs):
+    @classmethod
+    def inc_train(cls, init_model_file, *args, validation_logger_mode="w", **kwargs):
         # 增量学习，从某一轮参数继续训练
-        module = ModelName(**kwargs)
+        module = cls(**kwargs)
         module.toolbox_init(validation_logger_mode=validation_logger_mode)
         module.model_init(init_model_file=init_model_file)
 
-        module._train()
+        module._train(*args)
 
-    @staticmethod
-    def train(cfg=None, **kwargs):
-        module = ModelName(cfg=cfg, **kwargs)
-        module.set_loss()
-        # module.viz()
+    @classmethod
+    def dump_configuration(cls, **kwargs):
+        cls.get_module(**kwargs)
 
-        module.toolbox_init()
-        module.model_init(**kwargs)
-
-        module._train()
-
-    @staticmethod
-    def dump_configuration(**kwargs):
-        ModelName.get_module(**kwargs)
-
-    @staticmethod
-    def load(load_epoch=None, **kwargs):
-        module = ModelName(**kwargs)
+    @classmethod
+    def load(cls, load_epoch=None, **kwargs):
+        module = cls(**kwargs)
         load_epoch = module.mod.cfg.end_epoch if load_epoch is None \
             else load_epoch
         module.model_init(load_epoch, **kwargs)
         return module
 
+    # ################### config cli ######################
     @staticmethod
-    def run(default_entry="train"):
-        cfg_parser = ConfigurationParser(Configuration)
-        cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.config))
-        cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.inc_train))
-        cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.train))
-        cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.test))
-        cfg_parser.add_subcommand(cfg_parser.func_spec(ModelName.load))
-        cfg_kwargs = cfg_parser()
+    def get_configuration_parser_cls():
+        return ConfigurationParser
 
-        if "subcommand" in cfg_kwargs:
-            subcommand = cfg_kwargs["subcommand"]
-            del cfg_kwargs["subcommand"]
-        else:
-            subcommand = default_entry
-        eval("%s.%s" % (ModelName.__name__, subcommand))(**cfg_kwargs)
+    @classmethod
+    def cli_commands(cls):
+        return [
+            cls.config,
+            cls.train,
+            cls.test,
+            cls.inc_train,
+        ]
 
 
 if __name__ == '__main__':

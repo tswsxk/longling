@@ -6,9 +6,3 @@ Image
 recommonmark
 ipython
 m2r
-scipy
-sklearn
-matplotlib
-tqdm
-mxnet
-numpy

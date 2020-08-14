@@ -6,27 +6,12 @@ import re
 import mxnet as mx
 from mxnet import gluon, nd
 
+from longling.ML import DL
+
 __all__ = ["Module"]
 
 
-class Module(object):
-    def __init__(self, parameters):
-        self.cfg = parameters
-
-    def __str__(self):
-        """
-        显示模块参数
-        Display the necessary params of this Module
-
-        Returns
-        -------
-
-        """
-        string = ["Params"]
-        for k, v in vars(self.cfg).items():
-            string.append("%s: %s" % (k, v))
-        return "\n".join(string)
-
+class Module(DL.Module):
     @staticmethod
     def load_net(filename, net, ctx=mx.cpu(), allow_missing=False,
                  ignore_extra=False):
@@ -51,7 +36,7 @@ class Module(object):
         """
         # 根据文件名装载已有的网络参数
         if not os.path.isfile(filename):
-            raise FileExistsError
+            raise FileExistsError("%s does not exist" % filename)
         net.load_parameters(filename, ctx, allow_missing=allow_missing,
                             ignore_extra=ignore_extra)
         return net
@@ -89,7 +74,7 @@ class Module(object):
 
     @staticmethod
     def net_initialize(
-            net, model_ctx, initializer=mx.init.Normal(sigma=.1), select=None
+            net, model_ctx, initializer=mx.init.Xavier(), select=None
     ):
         """初始化网络参数"""
         net.collect_params(select).initialize(initializer, ctx=model_ctx)

@@ -49,14 +49,21 @@ And in ModelName(Model), there are one template file named ModelName.py
 and a directory containing four sub-template files.
 
 The directory tree is like:
-```
-ModelName(Model) 
-    ---- ModelName(Model)
-    ---- Module
-            ---- configuration.py
-            ---- etl.py
-            ---- module.py
-            ---- sym.py
+```text
+ModelName/
+├── __init__.py
+├── ModelName.py
+└── Module/
+    ├── __init__.py
+    ├── configuration.py
+    ├── etl.py
+    ├── module.py
+    ├── run.py
+    └── sym/
+        ├── __init__.py
+        ├── fit_eval.py
+        ├── net.py
+        └── viz.py
 ```
 * The [configuration.py]() defines the all parameters should be configured, 
 like where to store the model parameters and configuration parameters, 
@@ -73,9 +80,9 @@ for simplification and modulation, which are defined in module.py.
 #### Data Stream
 * extract: extract the data from data src
 ```python
-# load data from file, the data format is looked like:
-# feature, label
 def extract(data_src):
+    # load data from file, the data format is looked like:
+    # feature, label
     features = []
     labels = []
     with open(data_src) as f:

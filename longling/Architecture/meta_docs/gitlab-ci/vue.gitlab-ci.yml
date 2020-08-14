@@ -1,0 +1,40 @@
+cache:
+  paths:
+    - node_modules/
+
+stages:
+  - build
+  - test
+  - staging
+  - production
+
+build:
+  image: $IMAGE_NAME
+  stage: build
+  script:
+    - npm config set unsafe-perm true
+    - npm install -g cnpm --registry=https://registry.npm.taobao.org
+    - cnpm install
+    # code style check
+    - npm run lint
+    #####
+    # build scripts (such as webpack) goes here
+    ###
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+
+test:
+  image: $IMAGE_NAME
+  stage: test
+  script:
+    # - sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
+    # - apk add openjdk8-jre
+    - npm config set unsafe-perm true
+    - npm install -g cnpm --registry=https://registry.npm.taobao.org
+    - cnpm install -D
+    #####
+    # test scripts (such as jest) goes here
+    ###
+    - npm run unit

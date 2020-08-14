@@ -6,11 +6,15 @@
 """
 import math
 import re
+import warnings
 from collections import defaultdict
 
 import matplotlib.pyplot as plt
 
 __all__ = ["ResultAnalyser"]
+
+warnings.warn("do not use this package, unstable")
+warnings.warn("do not use this package, deprecated")
 
 
 class ResultAnalyser(object):
@@ -382,7 +386,7 @@ def recall_group(result):
     result: ResultAnalyser
 
     """
-    evaluation_group(result, "prf_\d+_precision")
+    evaluation_group(result, r"prf_\d+_precision")
 
 
 def f1_group(result):
@@ -393,7 +397,7 @@ def f1_group(result):
     result: ResultAnalyser
 
     """
-    evaluation_group(result, "prf_\d+_f1")
+    evaluation_group(result, r"prf_\d+_f1")
 
 
 def pandas_api(result):

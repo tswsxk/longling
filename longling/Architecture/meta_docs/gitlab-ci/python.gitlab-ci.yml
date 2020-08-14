@@ -1,0 +1,49 @@
+# Change pip's cache directory to be inside the project directory since we can
+# only cache local items.
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+  - .cache/pip
+  - venv/
+
+test:
+  stage: test
+  image: $IMAGE_NAME
+  before_script:
+  - python -V && pip -V
+  - pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+  - pip install virtualenv
+  - virtualenv --system-site-packages venv
+  - source venv/bin/activate
+  - pip install -e .[test]
+  script:
+  #####
+  # test code here
+  ###
+  - pytest --version
+  - pytest
+
+docs:
+  stage: docs
+  image: $IMAGE_NAME
+  before_script:
+  - apk add make && apk add python3
+  - pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple -r docs/requirements.txt
+  - docker login -u gitlab-ci-token -p ${CI_BUILD_TOKEN} ${CI_REGISTRY}
+  - helm repo add stable http://mirror.azure.cn/kubernetes/charts
+  - helm version
+  script:
+  - export DOCKER_REGISTRY_IMAGE=$DOCKER_REGISTRY_IMAGE
+  # build
+  - cd docs
+  - make html
+  - docker login -u gitlab-ci-token -p ${CI_BUILD_TOKEN} ${CI_REGISTRY}
+  - docker build -t ${DOCKER_REGISTRY_IMAGE} .
+  - docker push ${DOCKER_REGISTRY_IMAGE}
+  - docker login -u $CI_DEPLOY_USER -p $CI_DEPLOY_PASSWORD $CI_REGISTRY
+  - cd ..
+  # configure deployment
+
+

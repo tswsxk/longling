@@ -1,19 +1,22 @@
 # coding: utf-8
 # Copyright @tongshiwei
-
 from __future__ import absolute_import
 from __future__ import print_function
+
+__all__ = ["Configuration", "ConfigurationParser"]
 
 import datetime
 import pathlib
 
 from mxnet import cpu
 
-import longling.ML.MxnetHelper.glue.parser as parser
-from longling.ML.MxnetHelper.glue.parser import path_append, var2exp, eval_var
+from longling import path_append
+from longling.ML.MxnetHelper.glue import parser
+from longling.ML.MxnetHelper.glue.parser import eval_var
 from longling.ML.MxnetHelper.toolkit.optimizer_cfg import get_optimizer_cfg, \
     get_update_steps
 from longling.ML.MxnetHelper.toolkit.select_exp import all_params as _select
+from longling.lib.parser import var2exp
 from longling.lib.utilog import config_logging, LogLevel
 
 
@@ -26,11 +29,11 @@ class Configuration(parser.Configuration):
     timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     workspace = ""
 
-    root_data_dir = "$root/data/$dataset" if dataset else "$root/data"
-    data_dir = "$root_data_dir/data"
-    root_model_dir = "$root_data_dir/model/$model_name"
-    model_dir = "$root_model_dir/$workspace" if workspace else root_model_dir
-    cfg_path = "$model_dir/configuration.json"
+    root_data_dir = path_append("$root", "data", "$dataset") if dataset else path_append("$root", "data")
+    data_dir = path_append("$root_data_dir", "data")
+    root_model_dir = path_append("$root_data_dir", "model", "$model_name")
+    model_dir = path_append("$root_model_dir", "$workspace") if workspace else root_model_dir
+    cfg_path = path_append("$model_dir", "configuration.json")
 
     root = str(root)
     root_data_dir = str(root_data_dir)
@@ -45,6 +48,7 @@ class Configuration(parser.Configuration):
     # 优化器设置
     optimizer, optimizer_params = get_optimizer_cfg(name="base")
     lr_params = {
+        "learning_rate": optimizer_params["learning_rate"],
         "step": 100,
         "max_update_steps": get_update_steps(
             update_epoch=10,
@@ -59,9 +63,14 @@ class Configuration(parser.Configuration):
     # 运行设备
     ctx = cpu()
 
+    # 工具包参数
+    toolbox_params = {}
+
     # 用户变量
-    # 超参数
+    # 网络超参数
     hyper_params = {}
+    # 损失函数超参数
+    loss_params = {}
 
     # 说明
     caption = ""
@@ -81,7 +90,7 @@ class Configuration(parser.Configuration):
         ----------
         params_json: str
             The path to configuration file which is in json format
-        kwargs: dict
+        kwargs:
             Parameters to be reset.
         """
         super(Configuration, self).__init__(
@@ -93,18 +102,30 @@ class Configuration(parser.Configuration):
 
         params = self.class_var
         if params_json:
-            params.update(self.load_cfg(cfg_path=params_json))
+            params.update(self.load_cfg(params_json=params_json))
         params.update(**kwargs)
+
+        # path_override_check
+        path_check_list = ["dataset", "root_data_dir", "workspace", "root_model_dir", "model_dir"]
+        _overridden = {}
+        for path_check in path_check_list:
+            if kwargs.get(path_check) is None or kwargs[path_check] == getattr(self, "%s" % path_check):
+                _overridden[path_check] = False
+            else:
+                _overridden[path_check] = True
 
         for param, value in params.items():
             setattr(self, "%s" % param, value)
 
+        def is_overridden(varname):
+            return _overridden["%s" % varname]
+
         # set dataset
-        if kwargs.get("dataset"):
-            kwargs["root_data_dir"] = "$root/data/$dataset"
+        if is_overridden("dataset") and not is_overridden("root_data_dir"):
+            kwargs["root_data_dir"] = path_append("$root", "data", "$dataset")
         # set workspace
-        if kwargs.get("workspace"):
-            kwargs["model_dir"] = "$root_model_dir/$workspace"
+        if (is_overridden("workspace") or is_overridden("root_model_dir")) and not is_overridden("model_dir"):
+            kwargs["model_dir"] = path_append("$root_model_dir", "workspace")
 
         # rebuild relevant directory or file path according to the kwargs
         _dirs = [
@@ -139,9 +160,11 @@ class Configuration(parser.Configuration):
         cfg_path = self.cfg_path if cfg_path is None else cfg_path
         super(Configuration, self).dump(cfg_path, override)
 
-    @staticmethod
-    def load(cfg_path, **kwargs):
-        return Configuration(Configuration.load_cfg(cfg_path, **kwargs))
+    def var2val(self, var):
+        return eval(var2exp(
+            var,
+            env_wrap=lambda x: "self.%s" % x
+        ))
 
 
 class ConfigurationParser(parser.ConfigurationParser):

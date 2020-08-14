@@ -1,5 +1,6 @@
 # coding: utf-8
 # created by tongshiwei on 17-12-17
+import logging
 import io
 import os
 import re
@@ -10,17 +11,62 @@ from setuptools import find_packages
 test_deps = [
     'pytest>=4',
     'pytest-cov>=2.6.0',
-    'pytest-pep8>=1',
+    'pytest-flake8',
 ]
-doc_deps = [
-    'sphinx',
-    'sphinx-rtd-theme',
-    'recommonmark'
-]
-dev_deps = test_deps + doc_deps + [
+
+
+dev_deps = test_deps + [
     'setuptools>=40',
     'wheel'
 ]
+
+ml_base_deps = [
+    "pandas",
+    "numpy",
+    "scipy",
+    "scikit-learn>=0.22.2",
+    "matplotlib",
+    "nni"
+]
+
+try:
+    import mxnet
+
+    mxnet_requires = []
+except ModuleNotFoundError:
+    mxnet_requires = ["mxnet"]
+except Exception as e:
+    mxnet_requires = []
+    logging.error(e)
+
+try:
+    import torch
+
+    ml_pytorch_deps = []
+except ModuleNotFoundError:
+    import sys
+
+    if 5 <= sys.version_info[1] <= 7:
+        ml_pytorch_deps = ["torch"]
+    else:
+        ml_pytorch_deps = []
+        logging.warning("Current python version %s is not supported by pytorch", str(sys.version_info[:2]))
+except Exception as e:
+    ml_pytorch_deps = []
+    logging.error(e)
+
+ml_mx_deps = ["gluonnlp"] + mxnet_requires
+
+spider_deps = [
+    "requests",
+    "rarfile",
+    "bs4",
+    "lxml"
+]
+
+ml_full_deps = ml_base_deps + ml_mx_deps + ml_pytorch_deps
+
+full_deps = ml_full_deps + spider_deps
 
 
 def read(*names, **kwargs):
@@ -48,13 +94,19 @@ setup(
     author='Sherlock, Shiwei Tong',
     author_email='tongsw@mail.ustc.edu.cn',
     include_package_data=True,
+    python_requires='>=3.6',
     packages=find_packages(
         include=[
             "longling",
+            "*.toolbox", "*.toolbox.*",
             "*.lib", "*.lib.*",
+            "*.spider", "*.spider.*",
+            "*.Architecture", "*.Architecture.*",
             "*.ML",
+            "*.ML.DL*",
             "*.ML.MxnetHelper*",
-            "*.ML.toolkit*"
+            "*.ML.PytorchHelper*",
+            "*.ML.toolkit*",
         ],
         exclude=[
             "*.mx_example", "*.gluon_example*", "*.gluon_exp*",
@@ -64,20 +116,26 @@ setup(
     entry_points={
         "console_scripts": [
             "glue = longling.ML.MxnetHelper.glue.glue:cli",
-            "longling_install = longling.dependency:cli"
+            "longling = longling.main:cli"
         ],
     },
     url='https://gitlab.com/tswsxk/longling.git',
     license='LICENSE.txt',
-    description='handy wrapper for many libs',
-    long_description=open('README.md').read(),
+    description='This project aims to provide some handy toolkit functions to help construct the architecture.',
+    long_description=open('README.txt', encoding="utf-8").read(),
     install_requires=[
-        "pip"
+        "pip",
+        "tqdm",
+        "fire",
+        "PyYAML",
     ],
     extras_require={
         'test': test_deps,
-        'doc': doc_deps,
-        'dev': dev_deps
+        'dev': dev_deps,
+        'ml': ml_base_deps,
+        'ml-full': ml_full_deps,
+        "spider": spider_deps,
+        "full": full_deps
     },
     classifiers=[
         "Programming Language :: Python :: 3",

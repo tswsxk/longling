@@ -1,0 +1,3 @@
+{
+  "learning_rate":{"_type":"quniform","_value":[0, 1, 0.0001]}
+}

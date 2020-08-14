@@ -9,50 +9,65 @@ from longling.lib.utilog import config_logging
 
 _logger = config_logging(logger="clock", console_log_level=logging.INFO)
 
-__all__ = ["Clock", "print_time"]
+__all__ = ["Clock", "print_time", "Timer"]
 
 
 @contextmanager
-def print_time(task, logger=_logger):
+def print_time(tips: str = "", logger=_logger):
     """
+    统计并打印脚本运行时间， 秒为单位
 
     Parameters
     ----------
-    task: str
+    tips: str
     logger: logging.Logger
 
     Examples
     --------
-    >>> with print_time("task_name"):
-    ...     a = 1 + 1
+    >>> with print_time("tips"):
+    ...     a = 1 + 1  # The code you want to test
 
     """
     start_time = time.time()
-    logger.info('Starting to %s', task)
+    logger.info('Starting to %s', tips)
     yield
     logger.info('Finished to {} in {:.6f} seconds'.format(
-        task,
+        tips,
         time.time() - start_time)
     )
 
 
 class Clock(object):
     r"""
-    计时器
+    计时器。
+    包含两种时间：wall_time 和 process_time
+
+    * wall_time: 包括等待时间在内的程序运行时间
+    * process_time: 不包括等待时间在内的程序运行时间
 
     Parameters
     ----------
     store_dict: dict or None
+        with closure 中存储运行时间
     logger: logging.logger
+        日志
     tips: str
+        提示前缀
 
     Examples
     --------
-    >>> with Clock():
-    ...     a = 1 + 1
+    .. code-block :: python
+
+        with Clock():
+            a = 1 + 1
+        clock = Clock()
+        clock.start()
+        # some code
+        clock.end(wall=True) # default to return the wall_time, to get process_time, set wall=False
+
     """
 
-    def __init__(self, store_dict=None, logger=_logger, tips=''):
+    def __init__(self, store_dict: (dict, None) = None, logger: (logging.Logger, None) = _logger, tips=''):
         assert store_dict is None or type(store_dict) is dict
         self.process_st = 0
         self.process_et = 0
@@ -63,29 +78,17 @@ class Clock(object):
         self.tips = tips
 
     def start(self):
-        """
-        开始计时
-        Returns
-        -------
-
-        """
-        self.process_st = time.clock()
+        """开始计时"""
+        self.process_st = time.process_time()
         self.wall_st = time.time()
         return self.process_st
 
-    def end(self, wall=False):
-        """
-        计时结束，返回间隔时间
+    def time(self):
+        return time.time() - self.wall_st
 
-        Parameters
-        ----------
-        wall
-
-        Returns
-        -------
-
-        """
-        self.process_et = time.clock()
+    def end(self, wall=True):
+        """计时结束，返回间隔时间"""
+        self.process_et = time.process_time()
         self.wall_et = time.time()
         if wall:
             return self.wall_time
@@ -94,42 +97,31 @@ class Clock(object):
 
     @property
     def wall_time(self):
-        """
-        获取程序运行时间（包括等待时间）
-
-        Returns
-        -------
-
-        """
+        """获取程序运行时间（包括等待时间）"""
         return self.wall_et - self.wall_st
 
     @property
     def process_time(self):
-        """
-        获取程序运行时间（不包括等待时间）
-        Returns
-        -------
-
-        """
+        """获取程序运行时间（不包括等待时间）"""
         return self.process_et - self.process_st
 
     def __enter__(self):
         if self.tips:
-            self.logger.info(self.tips)
+            if self.logger is not None:
+                self.logger.info(self.tips)
         self.start()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.logger.info(
-            '%ss' % self.end() if not self.tips else '%s %ss' % (
-                self.tips, self.end()
+        if self.logger is not None:
+            self.logger.info(
+                '%ss' % self.end() if not self.tips else '%s %ss' % (
+                    self.tips, self.end()
+                )
             )
-        )
         if self.store_dict is not None:
             self.store_dict['wall_time'] = self.wall_time
             self.store_dict['process_time'] = self.process_time
 
 
-if __name__ == '__main__':
-    with Clock():
-        time.sleep(1)
+Timer = Clock

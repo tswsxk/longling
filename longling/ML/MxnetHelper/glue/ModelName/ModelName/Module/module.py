@@ -5,12 +5,10 @@ from __future__ import absolute_import
 import os
 
 import mxnet as mx
-from mxnet import autograd
 
 from longling.ML.MxnetHelper.glue import module
-from longling.ML.MxnetHelper.toolkit.ctx import split_and_load
 from .configuration import Configuration
-from .sym import NetName, fit_f, eval_f
+from .sym import get_net, fit_f, eval_f
 
 __all__ = ["Module"]
 
@@ -67,7 +65,8 @@ class Module(module.Module):
         )
         self.logger = configuration.logger
 
-        self.sym_gen = NetName
+        self.sym_gen = get_net
+        self.fit_f = fit_f
 
     def dump_configuration(self, filename=None):
         filename = filename if filename is not None \
@@ -246,8 +245,7 @@ class Module(module.Module):
 
             # todo 定义模型保存方案
             if kwargs.get('prefix') and (
-                    epoch % kwargs.get('save_epoch', 1) == 0 or
-                    end_epoch - 10 <= epoch <= end_epoch - 1
+                    epoch % kwargs.get('save_epoch', 1) == 0 or end_epoch - 10 <= epoch <= end_epoch - 1
             ):
                 self.save_params(
                     kwargs['prefix'] + "-%04d.parmas" % (epoch + 1), net
@@ -303,10 +301,7 @@ class Module(module.Module):
                 loss_monitor = monitor.get("loss")
                 progress_monitor = monitor.get("progress")
 
-        if progress_monitor is not None:
-            progress_monitor.batch_start(epoch)
-
-        for i, batch_data in enumerate(train_data):
+        for i, batch_data in progress_monitor(enumerate(train_data), epoch):
             self.fit_f(
                 net=net, batch_size=batch_size, batch_data=batch_data,
                 trainer=trainer, bp_loss_f=bp_loss_f,
@@ -314,10 +309,6 @@ class Module(module.Module):
                 loss_monitor=loss_monitor,
                 ctx=ctx,
             )
-            if progress_monitor is not None:
-                loss_values = [loss for loss in loss_monitor.values()]
-                progress_monitor(i, loss_value=loss_values)
-        progress_monitor.batch_end()
         loss_values = {
             name: loss for name, loss in loss_monitor.items()
         }
@@ -340,57 +331,3 @@ class Module(module.Module):
 
         """
         return eval_f(net, test_data, ctx)
-
-    @staticmethod
-    def fit_f(net, batch_size, batch_data,
-              trainer, bp_loss_f, loss_function, loss_monitor=None,
-              ctx=mx.cpu()
-              ):
-        """
-        Defined how each step of batch train goes
-
-        Parameters
-        ----------
-        net: HybridBlock
-            The network which has been initialized
-            or loaded from the existed model
-        batch_size: int
-                The size of each batch
-        batch_data: Iterable
-            The batch data for train
-        trainer:
-            The trainer used to update the parameters of the net
-        bp_loss_f: dict with only one value and one key
-            The function to compute the loss for the procession
-            of back propagation
-        loss_function: dict of function
-            Some other measurement in addition to bp_loss_f
-        loss_monitor: LossMonitor
-            Default to ``None``
-        ctx: Context or list of Context
-            Defaults to ``mx.cpu()``.
-
-        Returns
-        -------
-
-        """
-        # 此函数定义训练过程
-        ctx_data = Module.split_and_load(
-            ctx, *batch_data,
-            even_split=False
-        )
-
-        bp_loss = None
-        with autograd.record():
-            # todo modify the component extracted from ctx_data
-            for _data in ctx_data:
-                bp_loss = fit_f(
-                    net, _data, bp_loss_f, loss_function, loss_monitor
-                )
-            assert bp_loss is not None
-            bp_loss.backward()
-        trainer.step(batch_size)
-
-    @staticmethod
-    def split_and_load(ctx, *args, **kwargs):
-        return split_and_load(ctx, *args, **kwargs)

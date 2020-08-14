@@ -3,5 +3,4 @@
 
 from __future__ import absolute_import
 
-from . import MxnetHelper
 from . import toolkit

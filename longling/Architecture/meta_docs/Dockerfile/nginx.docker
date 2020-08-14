@@ -1,0 +1,2 @@
+FROM $IMAGE_NAME
+COPY $PATH_TO_HTML /usr/share/nginx/html
