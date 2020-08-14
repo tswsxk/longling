@@ -3,4 +3,4 @@
 
 from .ecli import cli as ecli
 from .module import Module
-from .service import CliServiceModule
+from .service import CliServiceModule, service_wrapper

@@ -253,7 +253,7 @@ def train_test(*files, train_size: (float, int) = 0.8, test_size: (float, int, N
 
         ratio += test_size
 
-    _src2tar_tips(files, target_files, "train_valid_test: ", logger=logger)
+    _src2tar_tips(files, target_files, "train_test: ", logger=logger)
     file_split(
         *files,
         ratio=ratio,

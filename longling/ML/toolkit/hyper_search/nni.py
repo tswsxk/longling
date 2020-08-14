@@ -172,7 +172,7 @@ def get_params(received_params: dict, cfg_cls: (Configuration, type(Configuratio
 def prepare_hyper_search(cfg_kwargs: dict, cfg_cls: (Configuration, type(Configuration)),
                          reporthook=None, final_reporthook=None,
                          primary_key=None, max_key=True, reporter_cls=None, with_keys: (list, str, None) = None,
-                         dump=False):
+                         dump=False, disable=False):
     """
     从 nni package 中获取超参，更新配置文件参数。当 nni 不可用或不是 nni 搜索模式时，参数将不会改变。
 
@@ -258,6 +258,8 @@ def prepare_hyper_search(cfg_kwargs: dict, cfg_cls: (Configuration, type(Configu
 
     one of the return cfg_kwargs is ``{'hyper_params': {'hidden_num': 50}, 'learning_rate': 0.1}``
     """
+    if disable:
+        return cfg_kwargs, None, None, None
     try:
         import nni
         from nni import get_next_parameter, report_intermediate_result, report_final_result

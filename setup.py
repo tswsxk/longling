@@ -14,7 +14,6 @@ test_deps = [
     'pytest-flake8',
 ]
 
-
 dev_deps = test_deps + [
     'setuptools>=40',
     'wheel'
@@ -26,7 +25,8 @@ ml_base_deps = [
     "scipy",
     "scikit-learn>=0.22.2",
     "matplotlib",
-    "nni"
+    "tensorboardx",
+    "tensorboard"
 ]
 
 try:
@@ -64,7 +64,9 @@ spider_deps = [
     "lxml"
 ]
 
-ml_full_deps = ml_base_deps + ml_mx_deps + ml_pytorch_deps
+dl_deps = ml_mx_deps + ml_pytorch_deps
+
+ml_full_deps = ml_base_deps + dl_deps + ["nni"]
 
 full_deps = ml_full_deps + spider_deps
 
@@ -133,6 +135,9 @@ setup(
         'test': test_deps,
         'dev': dev_deps,
         'ml': ml_base_deps,
+        'mx': ml_mx_deps,
+        'torch': ml_pytorch_deps,
+        'dl': dl_deps,
         'ml-full': ml_full_deps,
         "spider": spider_deps,
         "full": full_deps

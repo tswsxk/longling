@@ -65,8 +65,13 @@ class Module(module.Module):
         )
         self.logger = configuration.logger
 
-        self.sym_gen = get_net
-        self.fit_f = fit_f
+    @property
+    def fit_f(self):
+        return fit_f
+
+    @property
+    def sym_gen(self):
+        return get_net
 
     def dump_configuration(self, filename=None):
         filename = filename if filename is not None \
@@ -83,12 +88,8 @@ class Module(module.Module):
             net, optimizer='sgd', optimizer_params=None, lr_params=None,
             select=Configuration.train_select
     ):
-        if lr_params is not None:
-            from longling.ML.MxnetHelper.toolkit.optimizer_cfg import \
-                get_lr_scheduler
-            optimizer_params["lr_scheduler"] = get_lr_scheduler(**lr_params)
         return module.Module.get_trainer(
-            net, optimizer, optimizer_params, select
+            net, optimizer, optimizer_params, lr_params, select
         )
 
     def save_params(self, filename, net):
@@ -204,15 +205,11 @@ class Module(module.Module):
         # 参数修改时需要同步修改 fit 函数中的参数
         # 定义轮次训练过程
         if toolbox is not None:
-            epoch_timer = toolbox.get('timer')
             formatter = toolbox.get('formatter')
         else:
-            epoch_timer = None
             formatter = None
 
         for epoch in range(begin_epoch, end_epoch):
-            if epoch_timer:
-                epoch_timer.start()
 
             loss_values = self.batch_loop(
                 net=net, epoch=epoch, batch_size=batch_size,
@@ -223,7 +220,10 @@ class Module(module.Module):
                 toolbox=toolbox,
             )
 
-            train_time = epoch_timer.end(wall=True) if epoch_timer else None
+            try:
+                train_time = toolbox["monitor"]["progress"].iteration_time
+            except (KeyError, TypeError):
+                train_time = None
 
             # # todo 定义每一轮结束后的模型评估方法
             evaluation_result = Module.eval(
@@ -245,7 +245,7 @@ class Module(module.Module):
 
             # todo 定义模型保存方案
             if kwargs.get('prefix') and (
-                    epoch % kwargs.get('save_epoch', 1) == 0 or end_epoch - 10 <= epoch <= end_epoch - 1
+                                epoch % kwargs.get('save_epoch', 1) == 0 or end_epoch - 10 <= epoch <= end_epoch - 1
             ):
                 self.save_params(
                     kwargs['prefix'] + "-%04d.parmas" % (epoch + 1), net

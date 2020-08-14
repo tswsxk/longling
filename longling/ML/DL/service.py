@@ -65,7 +65,6 @@ class ServiceModule(object):
 
 
 class CliServiceModule(ServiceModule):
-
     @staticmethod
     def get_configuration_cls():
         raise NotImplementedError
@@ -105,3 +104,33 @@ class CliServiceModule(ServiceModule):
         del cfg_kwargs["subcommand"]
 
         eval("%s.%s" % (cls.__name__, subcommand))(**cfg_kwargs)
+
+
+def service_wrapper(
+        meta_model_cls: type(CliServiceModule),
+        configuration_cls=None,
+        configuration_parser_cls=None,
+        module_cls=None):
+    class MetaModel(meta_model_cls):
+        @staticmethod
+        def get_configuration_cls():
+            if configuration_cls is not None:
+                return configuration_cls
+            else:
+                return meta_model_cls.get_configuration_cls()
+
+        @staticmethod
+        def get_module_cls():
+            if module_cls is not None:
+                return module_cls
+            else:
+                return meta_model_cls.get_module_cls()
+
+        @staticmethod
+        def get_configuration_parser_cls():
+            if configuration_parser_cls is not None:
+                return configuration_parser_cls
+            else:
+                return meta_model_cls.get_configuration_parser_cls()
+
+    return MetaModel

@@ -1,10 +1,11 @@
 # coding: utf-8
 # 2019/12/10 @ tongshiwei
 
+import pytest
 import json
 from longling import path_append, wf_open
 from longling.ML.toolkit.analyser.cli import select_max, arg_select_max, select_min, arg_select_min
-from longling.ML.toolkit.analyser import get_max, get_min
+from longling.ML.toolkit.analyser import get_max, get_min, to_board
 
 result_demo = [
     {"Epoch": 0, "train_time": 283.87022066116333, "SLMLoss": 0.27298363054701535, "auc": 0.6983898502363638,
@@ -22,6 +23,16 @@ result_demo = [
 ]
 
 
+@pytest.fixture(scope="module")
+def result_file(tmp_path_factory):
+    tmp_path = tmp_path_factory.mktemp("result")
+    tmp_file = path_append(tmp_path, "result.json", to_str=True)
+    with wf_open(tmp_file) as wf:
+        for r in result_demo:
+            print(json.dumps(r), file=wf)
+    return tmp_file
+
+
 def test_get_max():
     assert get_max(result_demo, "prf:0:f1")["prf:0:f1"] == 0.8026803636198995
 
@@ -30,24 +41,23 @@ def test_get_min():
     assert get_min(result_demo, "SLMLoss")["SLMLoss"] == 0.19859076581378765
 
 
-def test_cli(tmp_path):
-    tmp_file = path_append(tmp_path, "result.json", to_str=True)
-    with wf_open(tmp_file) as wf:
-        for r in result_demo:
-            print(json.dumps(r), file=wf)
+def test_cli(result_file):
+    arg_select_max("auc", "prf:1:f1", src=result_file)
+    arg_select_max("auc", "prf:1:f1", src=result_file, with_all=True)
+    arg_select_max("auc", "prf:1:f1", src=result_file, with_keys="Epoch;train_time")
 
-    arg_select_max("auc", "prf:1:f1", src=tmp_file)
-    arg_select_max("auc", "prf:1:f1", src=tmp_file, with_all=True)
-    arg_select_max("auc", "prf:1:f1", src=tmp_file, with_keys="Epoch;train_time")
+    select_max(result_file, "auc", "prf:1:f1")
+    select_max(result_file, "auc", "prf:1:f1", with_all=True)
+    select_max(result_file, "auc", "prf:1:f1", with_keys="Epoch;train_time")
 
-    select_max(tmp_file, "auc", "prf:1:f1")
-    select_max(tmp_file, "auc", "prf:1:f1", with_all=True)
-    select_max(tmp_file, "auc", "prf:1:f1", with_keys="Epoch;train_time")
+    arg_select_min("train_time", "SLMLoss", src=result_file)
+    arg_select_min("train_time", "SLMLoss", src=result_file, with_all=True)
+    arg_select_min("train_time", "SLMLoss", src=result_file, with_keys="Epoch;auc")
 
-    arg_select_min("train_time", "SLMLoss", src=tmp_file)
-    arg_select_min("train_time", "SLMLoss", src=tmp_file, with_all=True)
-    arg_select_min("train_time", "SLMLoss", src=tmp_file, with_keys="Epoch;auc")
+    select_min(result_file, "train_time", "SLMLoss")
+    select_min(result_file, "train_time", "SLMLoss", with_all=True)
+    select_min(result_file, "train_time", "SLMLoss", with_keys="Epoch;auc")
 
-    select_min(tmp_file, "train_time", "SLMLoss")
-    select_min(tmp_file, "train_time", "SLMLoss", with_all=True)
-    select_min(tmp_file, "train_time", "SLMLoss", with_keys="Epoch;auc")
+
+def test_to_board(result_file, tmp_path):
+    to_board(result_file, tmp_path, "Epoch", "prf:1:f1")
