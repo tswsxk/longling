@@ -26,7 +26,7 @@ def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_resul
     loss_function.update(bp_loss_f)
 
     from longling.ML.MxnetHelper.glue import module
-    from longling.ML.toolkit import EvalFormatter as Formatter
+    from longling.ML.toolkit import EpochEvalFMT as Formatter
     from longling.ML.toolkit import MovingLoss
     from tqdm import tqdm
 
@@ -71,6 +71,7 @@ def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_resul
                 eval_name_value=eval_f(_net, test_data, ctx=ctx),
                 extra_info=None,
                 dump=dump_result,
+                keep="data"
             )
             if reporthook is not None:
                 reporthook(data)

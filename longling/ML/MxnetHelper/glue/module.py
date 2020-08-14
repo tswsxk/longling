@@ -12,6 +12,14 @@ __all__ = ["Module"]
 
 
 class Module(DL.Module):
+    @property
+    def fit_f(self):
+        raise NotImplementedError
+
+    @property
+    def sym_gen(self):
+        raise NotImplementedError
+
     @staticmethod
     def load_net(filename, net, ctx=mx.cpu(), allow_missing=False,
                  ignore_extra=False):
@@ -80,8 +88,12 @@ class Module(DL.Module):
         net.collect_params(select).initialize(initializer, ctx=model_ctx)
 
     @staticmethod
-    def get_trainer(net, optimizer='sgd', optimizer_params=None, select=None):
+    def get_trainer(net, optimizer='sgd', optimizer_params=None, lr_params=None, select=None):
         """把优化器安装到网络上"""
+        if lr_params is not None:
+            from longling.ML.MxnetHelper.toolkit.optimizer_cfg import get_lr_scheduler
+            optimizer_params["lr_scheduler"] = get_lr_scheduler(**lr_params)
+
         trainer = gluon.Trainer(
             net.collect_params(select), optimizer, optimizer_params
         )
@@ -96,3 +108,28 @@ class Module(DL.Module):
                       pattern.match(name)}
         arg_dict = {key: val._reduce() for key, val in params.items()}
         nd.save(filename, arg_dict)
+
+
+def module_wrapper(
+        module_cls: type(Module),
+        net_gen_func,
+        fit_func, configuration_cls=None):
+    _select = configuration_cls.train_select if configuration_cls is not None else None
+
+    class MetaModule(module_cls):
+        @property
+        def sym_gen(self):
+            return net_gen_func
+
+        @property
+        def fit_func(self):
+            return fit_func
+
+        @staticmethod
+        def get_trainer(net, optimizer='sgd', optimizer_params=None, lr_params=None, select=_select):
+            """把优化器安装到网络上"""
+            return module_cls.get_trainer(
+                net, optimizer, optimizer_params, lr_params, select
+            )
+
+    return MetaModule
