@@ -83,6 +83,8 @@ def classification_report(y_true, y_pred=None, y_score=None, labels=None, metric
             metrics = [
                 "accuracy", "precision", "recall", "f1",
             ]
+        else:
+            metrics = []
         if y_score is not None:
             metrics += [
                 "auc", "aupoc",

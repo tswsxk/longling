@@ -5,10 +5,12 @@
 
 import logging
 import json
-from longling.lib.stream import wf_open, as_out_io, PATH_IO_TYPE
+from longling.lib.stream import as_out_io, PATH_IO_TYPE
 from collections import OrderedDict
 from longling.lib.formatter import table_format, series_format
 from longling.lib.candylib import as_list
+
+__all__ = ["eval_format", "EvalFMT", "EpochEvalFMT", "EpisodeEvalFMT"]
 
 
 def _to_dict(name_value: (dict, tuple)) -> dict:
@@ -41,7 +43,7 @@ class EvalFMT(object):
     def format(cls, tips: str = None,
                iteration: int = None, train_time: float = None, loss_name_value: dict = None,
                eval_name_value: dict = None,
-               extra_info: (dict, tuple) = None, keep: (set, str) = None,
+               extra_info: (dict, tuple) = None, keep: (set, str) = "msg",
                logger=logging.getLogger(), dump_file: (PATH_IO_TYPE, None) = False,
                col: (int, None) = None,
                *args, **kwargs):
@@ -63,7 +65,7 @@ class EvalFMT(object):
                  iteration: int = None, train_time: float = None, loss_name_value: dict = None,
                  eval_name_value: dict = None,
                  extra_info: (dict, tuple) = None,
-                 dump: bool = True, keep: (set, str) = None, *args, **kwargs):
+                 dump: bool = True, keep: (set, str) = "data", *args, **kwargs):
         msg = []
         data = {}
 
@@ -111,7 +113,7 @@ class EvalFMT(object):
             ), "eval_name_value should be None, dict or tuple, " \
                "now is %s" % type(eval_name_value)
             msg.append(
-                result_format(eval_name_value)
+                result_format(eval_name_value, col=self.col)
             )
             data.update(
                 eval_name_value
@@ -143,7 +145,7 @@ class EvalFMT(object):
             return data
 
 
-def result_format(data: dict):
+def result_format(data: dict, col=None):
     table = OrderedDict()
     series = OrderedDict()
     for key, value in data.items():
@@ -156,7 +158,7 @@ def result_format(data: dict):
     if table:
         _ret.append(table_format(table))
     if series:
-        _ret.append(series_format(series))
+        _ret.append(series_format(series, col=col))
 
     return "\n".join(_ret)
 
