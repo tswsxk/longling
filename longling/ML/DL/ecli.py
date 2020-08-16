@@ -86,9 +86,9 @@ def new_model(model_name, source_dir, directory=None, level="project", skip_exis
     return True
 
 
-def cli(source_dir, model_name="longling"):
+def cli(source_dir, model_name=None):
     parser = argparse.ArgumentParser()
-    if model_name:
+    if model_name is not None:
         parser.add_argument(
             "--model_name", default="%s" % model_name,
             help="set the model name, default is %s" % model_name
