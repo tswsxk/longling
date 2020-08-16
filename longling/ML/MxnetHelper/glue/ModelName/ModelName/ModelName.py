@@ -197,7 +197,7 @@ class ModelName(DL.CliServiceModule):
     def model_init(
             self,
             load_epoch=None, force_init=False, cfg=None,
-            allow_reinit=True, trainer=None,
+            allow_reinit=True, trainer=None, net_kwargs=None,
             **kwargs
     ):
         mod = self.mod
@@ -205,29 +205,19 @@ class ModelName(DL.CliServiceModule):
         cfg = mod.cfg if cfg is None else cfg
         begin_epoch = cfg.begin_epoch
 
-        if self.initialized and not force_init:
-            mod.logger.warning("model has been initialized, skip model_init")
-
         load_epoch = load_epoch if load_epoch is not None else begin_epoch
 
         # 5 todo 初始化模型
         model_file = kwargs.get(
             "init_model_file", mod.epoch_params_filename(load_epoch)
         )
-        try:
-            net = mod.load(net, load_epoch, cfg.ctx)
-            mod.logger.info(
-                "load params from existing model file "
-                "%s" % model_file
-            )
-        except FileExistsError:
-            if allow_reinit:
-                mod.logger.info("model doesn't exist, initializing")
-                mod.net_initialize(net, cfg.ctx)
-            else:
-                mod.logger.info(
-                    "model doesn't exist, target file: %s" % model_file
-                )
+        mod.net_initialize(
+            net,
+            force_init=force_init, cfg=cfg,
+            allow_reinit=allow_reinit, logger=mod.logger,
+            initialized=self.initialized, model_file=model_file,
+            net_kwargs=net_kwargs, **kwargs
+        )
 
         self.initialized = True
 

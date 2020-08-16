@@ -7,6 +7,7 @@ import mxnet as mx
 from mxnet import gluon, nd
 
 from longling.ML import DL
+from longling.ML.MxnetHelper.toolkit.init import load_net
 
 __all__ = ["Module"]
 
@@ -19,35 +20,6 @@ class Module(DL.Module):
     @property
     def sym_gen(self):
         raise NotImplementedError
-
-    @staticmethod
-    def load_net(filename, net, ctx=mx.cpu(), allow_missing=False,
-                 ignore_extra=False):
-        """
-        Load the existing net parameters
-
-        Parameters
-        ----------
-        filename: str
-            The model file
-        net: HybridBlock
-            The network which has been initialized or
-            loaded from the existed model
-        ctx: Context or list of Context
-                Defaults to ``mx.cpu()``.
-        allow_missing: bool
-        ignore_extra: bool
-
-        Returns
-        -------
-        The initialized net
-        """
-        # 根据文件名装载已有的网络参数
-        if not os.path.isfile(filename):
-            raise FileExistsError("%s does not exist" % filename)
-        net.load_parameters(filename, ctx, allow_missing=allow_missing,
-                            ignore_extra=ignore_extra)
-        return net
 
     def load(self, net, epoch, ctx=mx.cpu(), allow_missing=False,
              ignore_extra=False):
@@ -72,7 +44,7 @@ class Module(DL.Module):
         """
         # 根据起始轮次装载已有的网络参数
         filename = self.epoch_params_filename(epoch)
-        return self.load_net(
+        return load_net(
             filename, net, ctx, allow_missing=allow_missing,
             ignore_extra=ignore_extra
         )
@@ -80,12 +52,10 @@ class Module(DL.Module):
     def epoch_params_filename(self, epoch):
         raise NotImplementedError
 
-    @staticmethod
-    def net_initialize(
-            net, model_ctx, initializer=mx.init.Xavier(), select=None
-    ):
+    @property
+    def net_initialize(self):
         """初始化网络参数"""
-        net.collect_params(select).initialize(initializer, ctx=model_ctx)
+        raise NotImplementedError
 
     @staticmethod
     def get_trainer(net, optimizer='sgd', optimizer_params=None, lr_params=None, select=None):

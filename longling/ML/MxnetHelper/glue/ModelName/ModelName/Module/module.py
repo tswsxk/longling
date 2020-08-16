@@ -8,7 +8,7 @@ import mxnet as mx
 
 from longling.ML.MxnetHelper.glue import module
 from .configuration import Configuration
-from .sym import get_net, fit_f, eval_f
+from .sym import get_net, fit_f, eval_f, net_init
 
 __all__ = ["Module"]
 
@@ -72,6 +72,10 @@ class Module(module.Module):
     @property
     def sym_gen(self):
         return get_net
+
+    @property
+    def net_initialize(self):
+        return net_init
 
     def dump_configuration(self, filename=None):
         filename = filename if filename is not None \

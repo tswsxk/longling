@@ -4,12 +4,12 @@ from longling import path_append
 
 try:
     # for python module
-    from .sym import get_net, get_bp_loss, fit_f, eval_f, net_viz
+    from .sym import get_net, get_bp_loss, fit_f, eval_f, net_viz, net_init
     from .etl import transform, etl, pseudo_data_iter
     from .configuration import Configuration, ConfigurationParser
 except (ImportError, SystemError):  # pragma: no cover
     # for python script
-    from sym import get_net, get_bp_loss, fit_f, eval_f, net_viz
+    from sym import get_net, get_bp_loss, fit_f, eval_f, net_viz, net_init
     from etl import transform, etl, pseudo_data_iter
     from configuration import Configuration, ConfigurationParser
 
@@ -18,8 +18,6 @@ def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_resul
                     reporthook=None, final_reporthook=None):  # pragma: no cover
     ctx = _cfg.ctx
     batch_size = _cfg.batch_size
-
-    _net.initialize(ctx=ctx)
 
     bp_loss_f = get_bp_loss(**_cfg.loss_params)
     loss_function = {}
@@ -94,6 +92,7 @@ def train(train_fn, test_fn, reporthook=None, final_reporthook=None, **cfg_kwarg
 
     _cfg = Configuration(**cfg_kwargs)
     _net = get_net(**_cfg.hyper_params)
+    net_init(_net, cfg=_cfg)
 
     train_data = etl(_cfg.var2val(train_fn), params=_cfg)
     test_data = etl(_cfg.var2val(test_fn), params=_cfg)
