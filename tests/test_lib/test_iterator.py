@@ -5,7 +5,6 @@ import pytest
 import random
 from longling import BaseIter, LoopIter, AsyncLoopIter, AsyncIter, CacheAsyncLoopIter
 from longling import iterwrap, path_append
-from functools import partial
 
 
 def etl():
@@ -13,7 +12,7 @@ def etl():
         yield [random.random() * 5 for _ in range(20)]
 
 
-@pytest.mark.parametrize("iter_params", [(BaseIter, {}), (AsyncIter, {}), (AsyncIter, {"prefetch": False})])
+@pytest.mark.parametrize("iter_params", [(BaseIter, {}), (AsyncIter, {}), (AsyncIter, {"level": "t"})])
 def test_base(iter_params):
     Iter, params = iter_params
 
@@ -54,9 +53,12 @@ def test_base(iter_params):
 def test_loop(tmpdir):
     test_iter = {
         LoopIter: [{}],
-        AsyncLoopIter: [{}, dict(prefetch=False)],
+        AsyncLoopIter: [
+            {},
+            # dict(level="p")
+        ],
         CacheAsyncLoopIter: [
-            dict(cache_file=path_append(tmpdir, "test.jsonl"), prefetch=False),
+            # dict(cache_file=path_append(tmpdir, "test.jsonl"), level="p"),
             dict(cache_file=path_append(tmpdir, "test.jsonl"), rerun=False)
         ]
     }
@@ -97,3 +99,20 @@ def test_iterwrap():
         @iterwrap("a wrong case")
         def etl_loop():
             return etl()
+
+
+@iterwrap(level="p")
+def etl_p():
+    for _ in range(100):
+        yield [1, 1, 1]
+
+
+def test_process_level():
+    """waiting for testing"""
+    data = etl_p()
+    for _ in range(3):
+        tag = False
+        for _ in data:
+            tag = True
+        else:
+            assert tag
