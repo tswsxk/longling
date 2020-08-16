@@ -5,7 +5,7 @@ from collections import OrderedDict
 from longling.lib.candylib import as_list
 from longling import PATH_TYPE, loading
 
-__all__ = ["get_max", "key_parser", "get_by_key"]
+__all__ = ["get_max", "get_by_key"]
 
 from .utils import get_by_key
 
