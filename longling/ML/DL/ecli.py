@@ -16,7 +16,7 @@ logger = config_logging(
 )
 
 
-def new_model(model_name, source_dir, directory=None, level="project"):
+def new_model(model_name, source_dir, directory=None, level="project", skip_existing=False):
     target_dir = os.path.join(
         directory, model_name
     ) if directory is not None else model_name
@@ -72,14 +72,17 @@ def new_model(model_name, source_dir, directory=None, level="project"):
             target_file = os.path.abspath(
                 os.path.join(dirname, name_replace(filename)))
             logger.debug(source_file + ' -> ' + target_file)
-            with open(source_file, encoding="utf-8") as f, wf_open(
-                    target_file) as wf:
-                try:
-                    for line in f:
-                        print(name_replace(line), end="", file=wf)
-                except UnicodeDecodeError:
-                    print(source_file, line)
-                    raise UnicodeDecodeError
+            if os.path.exists(target_file) and skip_existing:
+                pass
+            else:
+                with open(source_file, encoding="utf-8") as f, wf_open(
+                        target_file) as wf:
+                    try:
+                        for line in f:
+                            print(name_replace(line), end="", file=wf)
+                    except UnicodeDecodeError:
+                        print(source_file, line)
+                        raise UnicodeDecodeError
     return True
 
 
@@ -106,12 +109,17 @@ def cli(source_dir, model_name="longling"):
         help="the level",
         default="model",
     )
+    parser.add_argument(
+        "--no-skip-existing",
+        help="override the existing files",
+        action="store_false"
+    )
 
     args = parser.parse_args()
 
     if new_model(
             model_name=args.model_name, source_dir=source_dir,
-            directory=args.directory, level=args.level
+            directory=args.directory, level=args.level, skip_existing=not args.no_skip_existing,
     ):
         logger.info("success")
     else:
