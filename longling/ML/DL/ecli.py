@@ -16,15 +16,24 @@ logger = config_logging(
 )
 
 
-def new_model(model_name, source_dir, directory=None, skip_top=True):
+def new_model(model_name, source_dir, directory=None, level="project"):
     target_dir = os.path.join(
         directory, model_name
     ) if directory is not None else model_name
 
     target_dir = os.path.abspath(target_dir)
-    source_dir = source_dir if skip_top is False else path_append(
-        source_dir, "ModelName", to_str=True
-    )
+    if level == "project":
+        pass
+    elif level == "model":
+        source_dir = path_append(
+            source_dir, "ModelName", to_str=True,
+        )
+    elif level == "module":
+        source_dir = path_append(
+            source_dir, "ModelName", "Module", to_str=True,
+        )
+    else:
+        raise ValueError("unknown level: %s" % level)
     if not os.path.exists(source_dir):
         logger.error(
             "template files does not exist, process aborted, "
@@ -93,16 +102,16 @@ def cli(source_dir, model_name="longling"):
         help="set the directory, default is None"
     )
     parser.add_argument(
-        "--skip_top",
-        help="whether to skip the top files, like docs",
-        action='store_true',
+        "--level", choices={"project", "model", "module"},
+        help="the level",
+        default="model",
     )
 
     args = parser.parse_args()
 
     if new_model(
             model_name=args.model_name, source_dir=source_dir,
-            directory=args.directory, skip_top=args.skip_top
+            directory=args.directory, level=args.level
     ):
         logger.info("success")
     else:
