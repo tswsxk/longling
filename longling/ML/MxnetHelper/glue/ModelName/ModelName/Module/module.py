@@ -244,7 +244,7 @@ class Module(module.Module):
                             eval_name_value=evaluation_result,
                             extra_info=None,
                             dump=True,
-                        )[0]
+                        )
                     )
 
             # todo 定义模型保存方案
