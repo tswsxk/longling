@@ -47,14 +47,17 @@ class Configuration(parser.Configuration):
 
     # 优化器设置
     optimizer, optimizer_params = get_optimizer_cfg(name="base")
-    lr_params = {
-        "learning_rate": optimizer_params["learning_rate"],
-        "step": 100,
-        "max_update_steps": get_update_steps(
-            update_epoch=10,
-            batches_per_epoch=1000,
-        ),
-    }
+    # lr_params = {
+    #     "learning_rate": optimizer_params["learning_rate"],
+    #     "step": 100,
+    #     "max_update_steps": get_update_steps(
+    #         update_epoch=10,
+    #         batches_per_epoch=1000,
+    #     ),
+    # }
+    lr_params = {}
+    # lr_lazy 为 True 时，学习率衰减方式运行时确定
+    lr_lazy = False
 
     # 更新保存参数，一般需要保持一致
     train_select = _select

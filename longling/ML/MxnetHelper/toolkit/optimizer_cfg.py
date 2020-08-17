@@ -43,6 +43,17 @@ optimizers = {
 }
 
 
+def get_lr_params(batches_per_epoch, lr, update_epoch, *args, **kwargs):
+    return {
+        "learning_rate": lr,
+        "step": batches_per_epoch,
+        "max_update_steps": get_update_steps(
+            update_epoch=update_epoch,
+            batches_per_epoch=batches_per_epoch,
+        ),
+    }
+
+
 def get_update_steps(update_epoch, batches_per_epoch):
     return update_epoch * batches_per_epoch
 

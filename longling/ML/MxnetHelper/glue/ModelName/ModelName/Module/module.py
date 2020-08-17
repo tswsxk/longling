@@ -215,7 +215,7 @@ class Module(module.Module):
 
         for epoch in range(begin_epoch, end_epoch):
 
-            loss_values = self.batch_loop(
+            batch_num, loss_values = self.batch_loop(
                 net=net, epoch=epoch, batch_size=batch_size,
                 train_data=train_data,
                 trainer=trainer, bp_loss_f=bp_loss_f,
@@ -223,6 +223,20 @@ class Module(module.Module):
                 ctx=ctx,
                 toolbox=toolbox,
             )
+            if self.cfg.lr_lazy:
+                from longling.ML.MxnetHelper.toolkit.optimizer_cfg import get_lr_params
+                trainer = module.Module.get_trainer(
+                    net, optimizer=self.cfg.optimizer,
+                    optimizer_params=self.cfg.optimizer_params,
+                    lr_params=get_lr_params(
+                        batches_per_epoch=batch_num,
+                        lr=self.cfg.optimizer_params["learning_rate"],
+                        update_epoch=self.cfg.lr_params.get(
+                            "update_epoch", self.cfg.end_epoch - self.cfg.begin_epoch - 1
+                        )
+                    ),
+                    select=self.cfg.train_select
+                )
 
             try:
                 train_time = toolbox["monitor"]["progress"].iteration_time
@@ -313,10 +327,11 @@ class Module(module.Module):
                 loss_monitor=loss_monitor,
                 ctx=ctx,
             )
+
         loss_values = {
             name: loss for name, loss in loss_monitor.items()
         }
-        return loss_values
+        return i, loss_values
 
     @staticmethod
     def eval(net, test_data, ctx=mx.cpu()):

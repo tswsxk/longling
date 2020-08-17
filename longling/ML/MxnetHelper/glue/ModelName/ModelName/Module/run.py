@@ -1,6 +1,7 @@
 # coding: utf-8
 # create by tongshiwei on 2019-9-1
 from longling import path_append
+from longling.ML.MxnetHelper.toolkit.optimizer_cfg import get_lr_params
 
 try:
     # for python module
@@ -53,7 +54,7 @@ def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_resul
     )
 
     for epoch in range(_cfg.begin_epoch, _cfg.end_epoch):
-        for batch_data in progress_monitor(train_data, "Epoch: %s" % epoch):
+        for i, batch_data in enumerate(progress_monitor(train_data, "Epoch: %s" % epoch)):
             fit_f(
                 net=_net, batch_size=batch_size, batch_data=batch_data,
                 trainer=trainer, bp_loss_f=bp_loss_f,
@@ -61,6 +62,22 @@ def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_resul
                 loss_monitor=loss_monitor,
                 ctx=ctx,
             )
+
+        if _cfg.lr_lazy:
+            print("reset trainer, batches per epoch: %s" % (i + 1))
+            lr_params = get_lr_params(
+                batches_per_epoch=i + 1,
+                lr=_cfg.optimizer_params["learning_rate"],
+                update_epoch=_cfg.lr_params.get("update_epoch", _cfg.end_epoch - _cfg.begin_epoch - 1)
+            )
+            print(lr_params)
+            trainer = module.Module.get_trainer(
+                _net, optimizer=_cfg.optimizer,
+                optimizer_params=_cfg.optimizer_params,
+                lr_params=lr_params,
+                select=_cfg.train_select
+            )
+            _cfg.lr_lazy = False
 
         if epoch % 1 == 0:
             msg, data = evaluation_formatter(
