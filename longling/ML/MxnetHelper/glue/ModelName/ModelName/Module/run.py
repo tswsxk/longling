@@ -115,6 +115,7 @@ def sym_run(stage: (int, str) = "viz"):  # pragma: no cover
             hyper_params={}
         )
         net = get_net(**cfg.hyper_params)
+        net.initialize()
 
         if stage == 0:
             # ############################## Net Visualization ###########################
