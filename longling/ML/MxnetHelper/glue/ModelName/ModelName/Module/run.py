@@ -63,14 +63,14 @@ def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_resul
             )
 
         if epoch % 1 == 0:
-            data = evaluation_formatter(
+            msg, data = evaluation_formatter(
                 epoch=epoch,
                 loss_name_value=dict(loss_monitor.items()),
                 eval_name_value=eval_f(_net, test_data, ctx=ctx),
                 extra_info=None,
                 dump=dump_result,
-                keep="data"
             )
+            print(data)
             if reporthook is not None:
                 reporthook(data)
 
@@ -87,7 +87,7 @@ def train(train_fn, test_fn, reporthook=None, final_reporthook=None, **cfg_kwarg
     from longling.ML.toolkit.hyper_search import prepare_hyper_search
 
     cfg_kwargs, reporthook, final_reporthook, tag = prepare_hyper_search(
-        cfg_kwargs, Configuration, reporthook, final_reporthook, primary_key="prf:avg:f1"
+        cfg_kwargs, Configuration, reporthook, final_reporthook, primary_key="macro avg:f1"
     )
 
     _cfg = Configuration(**cfg_kwargs)
