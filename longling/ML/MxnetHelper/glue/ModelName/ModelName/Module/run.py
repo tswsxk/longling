@@ -69,6 +69,7 @@ def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_resul
                 eval_name_value=eval_f(_net, test_data, ctx=ctx),
                 extra_info=None,
                 dump=dump_result,
+                keep={"msg", "data"}
             )
             print(data)
             if reporthook is not None:
