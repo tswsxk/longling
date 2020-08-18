@@ -9,7 +9,7 @@ def net_init(
         net, cfg=None,
         force_init=False,
         allow_reinit=True, logger=logging, initialized=False, model_file=None,
-        net_kwargs=None, **kwargs
+        initializer_kwargs=None, **kwargs
 ):
     if initialized and not force_init:
         logger.warning("model has been initialized, skip model_init")
@@ -26,8 +26,8 @@ def net_init(
     except FileExistsError:
         if allow_reinit:
             logger.info("model doesn't exist, initializing")
-            net_kwargs = {} if net_kwargs is None else net_kwargs
-            net_initialize(net, cfg.ctx, **net_kwargs)
+            initializer_kwargs = {} if initializer_kwargs is None else initializer_kwargs
+            net_initialize(net, cfg.ctx, **initializer_kwargs)
         else:
             logger.info(
                 "model doesn't exist, target file: %s" % model_file
