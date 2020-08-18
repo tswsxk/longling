@@ -113,7 +113,7 @@ def train(train_fn, test_fn, reporthook=None, final_reporthook=None, **cfg_kwarg
 
     _cfg = Configuration(**cfg_kwargs)
     _net = get_net(**_cfg.hyper_params)
-    net_init(_net, cfg=_cfg)
+    net_init(_net, cfg=_cfg, **_cfg.init_params)
 
     train_data = etl(_cfg.var2val(train_fn), params=_cfg)
     test_data = etl(_cfg.var2val(test_fn), params=_cfg)

@@ -72,6 +72,9 @@ class Configuration(parser.Configuration):
     # 用户变量
     # 网络超参数
     hyper_params = {}
+    # 网络初始化参数
+    init_params = {
+    }
     # 损失函数超参数
     loss_params = {}
 
