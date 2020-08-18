@@ -68,7 +68,10 @@ def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_resul
             lr_params = get_lr_params(
                 batches_per_epoch=i + 1,
                 lr=_cfg.optimizer_params["learning_rate"],
-                update_epoch=_cfg.lr_params.get("update_epoch", _cfg.end_epoch - _cfg.begin_epoch - 1)
+                update_epoch=_cfg.lr_params.get(
+                    "update_epoch",
+                    _cfg.end_epoch - _cfg.begin_epoch - 1 - _cfg.lr_params.get("static_epoch", 0)
+                ),
             )
             print(lr_params)
             trainer = module.Module.get_trainer(
