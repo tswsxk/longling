@@ -17,7 +17,7 @@ def net_initialize(
             "xaiver": Xavier(),
             "uniform": Uniform(),
             "normal": Normal()
-        }
+        }[initializer]
     elif initializer is None or isinstance(initializer, Initializer):
         pass
     else:
