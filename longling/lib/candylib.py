@@ -3,7 +3,7 @@ __all__ = ['as_list', 'dict2pv', 'list2dict', 'get_dict_by_path', 'format_byte_s
 from collections import OrderedDict
 
 
-def as_list(obj):
+def as_list(obj) -> list:
     r"""A utility function that converts the argument to a list
     if it is not already.
 
