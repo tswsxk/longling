@@ -7,10 +7,11 @@ import functools
 import queue
 import threading
 import multiprocessing as mp
+from tqdm import tqdm
 
 from longling import wf_open, loading
 
-__all__ = ["BaseIter", "LoopIter", "AsyncLoopIter", "AsyncIter", "CacheAsyncLoopIter", "iterwrap"]
+__all__ = ["BaseIter", "MemoryIter", "LoopIter", "AsyncLoopIter", "AsyncIter", "CacheAsyncLoopIter", "iterwrap"]
 
 
 class Register(dict):  # pragma: no cover
@@ -120,6 +121,51 @@ class BaseIter(object):
             return cls(functools.partial(f, *args, **kwargs))
 
         return _f
+
+
+@register.add
+class MemoryIter(BaseIter):
+    """
+    内存迭代器
+
+    会将所有迭代器内容装载入内存
+    """
+
+    def __init__(self, src, length=None, prefetch=False, *args, **kwargs):
+        self._memory_data = []
+        self._in_memory = True
+        super(MemoryIter, self).__init__(src, length)
+        self.prefetch = prefetch
+        if self.prefetch:
+            self._prefetch()
+
+    def _prefetch(self):
+        for _data in tqdm(self._data, "prefetching data"):
+            self._count += 1
+            self._memory_data.append(_data)
+        self._set_length()
+        self._in_memory = False
+        self._data = iter(self._memory_data)
+
+    def __next__(self):
+        try:
+            self._count += 1
+            elem = next(self._data)
+            if self._in_memory is True:
+                self._memory_data.append(elem)
+            return elem
+        except StopIteration:
+            self._count -= 1
+            self.reset()
+            self._in_memory = False
+            raise StopIteration
+
+    def reset(self):
+        if not self._memory_data:
+            super(MemoryIter, self).reset()
+        else:
+            self._data = iter(self._memory_data)
+            self._set_length()
 
 
 @register.add

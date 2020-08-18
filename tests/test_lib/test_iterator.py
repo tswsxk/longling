@@ -3,7 +3,7 @@
 
 import pytest
 import random
-from longling import BaseIter, LoopIter, AsyncLoopIter, AsyncIter, CacheAsyncLoopIter
+from longling import BaseIter, MemoryIter, LoopIter, AsyncLoopIter, AsyncIter, CacheAsyncLoopIter
 from longling import iterwrap, path_append
 
 
@@ -56,6 +56,10 @@ def test_loop(tmpdir):
         AsyncLoopIter: [
             {},
             # dict(level="p")
+        ],
+        MemoryIter: [
+            {},
+            dict(prefetch=True),
         ],
         CacheAsyncLoopIter: [
             # dict(cache_file=path_append(tmpdir, "test.jsonl"), level="p"),
