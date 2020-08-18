@@ -111,6 +111,10 @@ class Configuration(parser.Configuration):
             params.update(self.load_cfg(params_json=params_json))
         params.update(**kwargs)
 
+        for key in params:
+            if key.endswith("_params") and key + "_update" in params:
+                params[key].update(params[key + "_update"])
+
         # path_override_check
         path_check_list = ["dataset", "root_data_dir", "workspace", "root_model_dir", "model_dir"]
         _overridden = {}
