@@ -91,7 +91,7 @@ def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_resul
                 dump=dump_result,
                 keep={"msg", "data"}
             )
-            print(data)
+            print(msg)
             if reporthook is not None:
                 reporthook(data)
 
