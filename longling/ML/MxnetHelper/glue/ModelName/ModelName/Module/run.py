@@ -84,7 +84,7 @@ def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_resul
 
         if epoch % 1 == 0:
             msg, data = evaluation_formatter(
-                epoch=epoch,
+                iteration=epoch,
                 loss_name_value=dict(loss_monitor.items()),
                 eval_name_value=eval_f(_net, test_data, ctx=ctx),
                 extra_info=None,
