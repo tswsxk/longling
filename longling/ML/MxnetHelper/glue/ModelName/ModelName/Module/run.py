@@ -112,6 +112,7 @@ def train(train_fn, test_fn, reporthook=None, final_reporthook=None, **cfg_kwarg
     )
 
     _cfg = Configuration(**cfg_kwargs)
+    print(_cfg)
     _net = get_net(**_cfg.hyper_params)
     net_init(_net, cfg=_cfg, **_cfg.init_params)
 
