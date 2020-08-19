@@ -227,10 +227,15 @@ class ModelName(DL.CliServiceModule):
         # # suggestion: annotate this until your process worked
         # net.hybridize()
 
+        if cfg.lr_lazy:
+            lr_params = None
+        else:
+            lr_params = cfg.lr_params
+
         self.trainer = mod.get_trainer(
             net, optimizer=cfg.optimizer,
             optimizer_params=cfg.optimizer_params,
-            lr_params=cfg.lr_params,
+            lr_params=lr_params,
             select=cfg.train_select
         ) if trainer is None else trainer
 

@@ -224,17 +224,20 @@ class Module(module.Module):
                 toolbox=toolbox,
             )
             if self.cfg.lr_lazy:
-                from longling.ML.MxnetHelper.toolkit.optimizer_cfg import get_lr_params
+                lr_params = dict(
+                    batches_per_epoch=batch_num,
+                    lr=self.cfg.optimizer_params["learning_rate"],
+                    update_epoch=self.cfg.lr_params.get(
+                        "update_epoch",
+                        self.cfg.end_epoch - self.cfg.begin_epoch - 1
+                    )
+                )
+                lr_params.update(self.cfg.lr_params)
+
                 trainer = module.Module.get_trainer(
                     net, optimizer=self.cfg.optimizer,
                     optimizer_params=self.cfg.optimizer_params,
-                    lr_params=get_lr_params(
-                        batches_per_epoch=batch_num,
-                        lr=self.cfg.optimizer_params["learning_rate"],
-                        update_epoch=self.cfg.lr_params.get(
-                            "update_epoch", self.cfg.end_epoch - self.cfg.begin_epoch - 1
-                        )
-                    ),
+                    lr_params=lr_params,
                     select=self.cfg.train_select
                 )
 
