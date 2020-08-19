@@ -80,7 +80,8 @@ class _FactorScheduler(FactorScheduler, _LRScheduler):
         kwargs = super(_FactorScheduler, cls).init(
             base_lr,
             warmup_epoch=warmup_epoch,
-            batches_per_epoch=batches_per_epoch
+            batches_per_epoch=batches_per_epoch,
+            discount=discount
         )
 
         if batches_per_epoch and update_epoch:
@@ -116,7 +117,8 @@ class _PolyScheduler(PolyScheduler, _LRScheduler):
         kwargs = super(_PolyScheduler, cls).init(
             base_lr,
             warmup_epoch=warmup_epoch,
-            batches_per_epoch=batches_per_epoch
+            batches_per_epoch=batches_per_epoch,
+            discount=discount
         )
 
         if batches_per_epoch and update_epoch:
@@ -145,7 +147,8 @@ class _CosineScheduler(CosineScheduler, _LRScheduler):
         kwargs = super(_CosineScheduler, cls).init(
             base_lr,
             warmup_epoch=warmup_epoch,
-            batches_per_epoch=batches_per_epoch
+            batches_per_epoch=batches_per_epoch,
+            discount=discount
         )
 
         if batches_per_epoch and update_epoch:
@@ -172,7 +175,8 @@ class _MultiFactorScheduler(MultiFactorScheduler, _LRScheduler):
         kwargs = super(_MultiFactorScheduler, cls).init(
             base_lr,
             warmup_epoch=warmup_epoch,
-            batches_per_epoch=batches_per_epoch
+            batches_per_epoch=batches_per_epoch,
+            discount=discount
         )
         return cls(base_lr=base_lr, **kwargs)
 
@@ -217,7 +221,8 @@ class _LinearScheduler(LinearScheduler, _LRScheduler):
         kwargs = super(_LinearScheduler, cls).init(
             base_lr,
             warmup_epoch=warmup_epoch,
-            batches_per_epoch=batches_per_epoch
+            batches_per_epoch=batches_per_epoch,
+            discount=discount
         )
         if batches_per_epoch and update_epoch:
             max_update = batches_per_epoch * update_epoch * epoch_update_freq + kwargs.get("warmup_steps", 0)
