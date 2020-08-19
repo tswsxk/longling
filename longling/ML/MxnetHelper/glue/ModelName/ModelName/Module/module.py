@@ -238,7 +238,8 @@ class Module(module.Module):
                     net, optimizer=self.cfg.optimizer,
                     optimizer_params=self.cfg.optimizer_params,
                     lr_params=lr_params,
-                    select=self.cfg.train_select
+                    select=self.cfg.train_select,
+                    logger=self.cfg.logger
                 )
 
             try:

@@ -65,20 +65,21 @@ def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_resul
 
         if _cfg.lr_lazy:
             print("reset trainer, batches per epoch: %s" % (i + 1))
-            lr_params = get_lr_params(
+            lr_params = dict(
                 batches_per_epoch=i + 1,
-                lr=_cfg.optimizer_params["learning_rate"],
+                base_lr=_cfg.optimizer_params["learning_rate"],
                 update_epoch=_cfg.lr_params.get(
                     "update_epoch",
                     _cfg.end_epoch - _cfg.begin_epoch - 1 - _cfg.lr_params.get("static_epoch", 0)
                 ),
             )
-            print(lr_params)
+            lr_params.update(_cfg.lr_params)
             trainer = module.Module.get_trainer(
                 _net, optimizer=_cfg.optimizer,
                 optimizer_params=_cfg.optimizer_params,
                 lr_params=lr_params,
-                select=_cfg.train_select
+                select=_cfg.train_select,
+                logger=_cfg.logger
             )
             _cfg.lr_lazy = False
 
