@@ -322,7 +322,7 @@ SCHEDULERS = {
 }
 
 
-def get_lr_scheduler(scheduler: (str, LRScheduler) = "factor", logger=logging, **kwargs):
+def get_lr_scheduler(scheduler: (str, LRScheduler) = "cosine", logger=logging, **kwargs):
     if isinstance(scheduler, str):
         scheduler = SCHEDULERS[scheduler].init(**kwargs)
 
@@ -347,7 +347,7 @@ def plot_schedule(schedule_fn, iterations=1500):
 if __name__ == '__main__':
     logging.getLogger().setLevel(logging.INFO)
     _scheduler = get_lr_scheduler(
-        "cosine", base_lr=1, discount=0.01,
-        batches_per_epoch=100, update_epoch=10,
+        "norm", base_lr=1, discount=0.01, lr_loc=0.02,
+        batches_per_epoch=100, update_epoch=10, epoch_update_freq=10,
     )
     plot_schedule(_scheduler)
