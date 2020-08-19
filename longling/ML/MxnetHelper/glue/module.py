@@ -1,6 +1,6 @@
 # coding: utf-8
 # create by tongshiwei on 2019/4/12
-import os
+import logging
 import re
 
 import mxnet as mx
@@ -58,11 +58,11 @@ class Module(DL.Module):
         raise NotImplementedError
 
     @staticmethod
-    def get_trainer(net, optimizer='sgd', optimizer_params=None, lr_params=None, select=None):
+    def get_trainer(net, optimizer='sgd', optimizer_params=None, lr_params=None, select=None, logger=logging):
         """把优化器安装到网络上"""
         if lr_params is not None:
-            from longling.ML.MxnetHelper.toolkit.optimizer_cfg import get_lr_scheduler
-            optimizer_params["lr_scheduler"] = get_lr_scheduler(**lr_params)
+            from longling.ML.MxnetHelper.toolkit import get_lr_scheduler
+            optimizer_params["lr_scheduler"] = get_lr_scheduler(logger=logger, **lr_params)
 
         trainer = gluon.Trainer(
             net.collect_params(select), optimizer, optimizer_params
