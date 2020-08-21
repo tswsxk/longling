@@ -223,21 +223,23 @@ class Module(module.Module):
                 ctx=ctx,
                 toolbox=toolbox,
             )
-            if self.cfg.lr_lazy:
-                lr_params = dict(
+            if self.cfg.lr_params and "update_params" in self.cfg.lr_params:
+                self.cfg.logger.info("reset trainer")
+                lr_params = self.cfg.lr_params.pop("update_params")
+                lr_update_params = dict(
                     batches_per_epoch=batch_num,
                     lr=self.cfg.optimizer_params["learning_rate"],
-                    update_epoch=self.cfg.lr_params.get(
+                    update_epoch=lr_params.get(
                         "update_epoch",
                         self.cfg.end_epoch - self.cfg.begin_epoch - 1
                     )
                 )
-                lr_params.update(self.cfg.lr_params)
+                lr_update_params.update(lr_params)
 
                 trainer = module.Module.get_trainer(
                     net, optimizer=self.cfg.optimizer,
                     optimizer_params=self.cfg.optimizer_params,
-                    lr_params=lr_params,
+                    lr_params=lr_update_params,
                     select=self.cfg.train_select,
                     logger=self.cfg.logger
                 )

@@ -144,12 +144,12 @@ class _CosineScheduler(CosineScheduler, _LRScheduler):
     @classmethod
     def init(cls, base_lr, batches_per_epoch=None, update_epoch=None, epoch_update_freq=1, warmup_epoch=0,
              discount=None, *args, **kwargs):
-        kwargs = super(_CosineScheduler, cls).init(
+        kwargs.update(super(_CosineScheduler, cls).init(
             base_lr,
             warmup_epoch=warmup_epoch,
             batches_per_epoch=batches_per_epoch,
             discount=discount
-        )
+        ))
 
         if batches_per_epoch and update_epoch:
             max_update = batches_per_epoch * update_epoch * epoch_update_freq + kwargs.get("warmup_steps", 0)
@@ -322,7 +322,11 @@ SCHEDULERS = {
 }
 
 
-def get_lr_scheduler(scheduler: (str, LRScheduler) = "cosine", logger=logging, **kwargs):
+def get_lr_scheduler(scheduler: (str, LRScheduler) = "cosine", logger=logging, update_params=None, **kwargs):
+    for key in {"learning_rate", "lr"}:
+        if key in kwargs:
+            kwargs["base_lr"] = kwargs.pop(key)
+
     if isinstance(scheduler, str):
         scheduler = SCHEDULERS[scheduler].init(**kwargs)
 

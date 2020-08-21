@@ -54,9 +54,8 @@ class Configuration(parser.Configuration):
     #         batches_per_epoch=1000,
     #     ),
     # }
+    # lr_params 中包含 update_params 时，学习率衰减方式运行时确定
     lr_params = {}
-    # lr_lazy 为 True 时，学习率衰减方式运行时确定
-    lr_lazy = False
 
     # 更新保存参数，一般需要保持一致
     train_select = _select
@@ -72,8 +71,7 @@ class Configuration(parser.Configuration):
     # 网络超参数
     hyper_params = {}
     # 网络初始化参数
-    init_params = {
-    }
+    init_params = {}
     # 损失函数超参数
     loss_params = {}
 
