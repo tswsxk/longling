@@ -66,6 +66,7 @@ class _FactorScheduler(FactorScheduler, _LRScheduler):
     @property
     def state_dict(self):
         return {
+            "scheduler": "FactorScheduler",
             "base_lr": self.base_lr,
             "step": self.step,
             "stop_factor_lr": self.stop_factor_lr,
@@ -102,6 +103,7 @@ class _PolyScheduler(PolyScheduler, _LRScheduler):
     @property
     def state_dict(self):
         return {
+            "scheduler": "PolyScheduler",
             "base_lr": self.base_lr,
             "step": 1,
             "max_steps": self.max_steps,
@@ -132,6 +134,7 @@ class _CosineScheduler(CosineScheduler, _LRScheduler):
     @property
     def state_dict(self):
         return {
+            "scheduler": "CosineScheduler",
             "base_lr": self.base_lr,
             "step": 1,
             "max_steps": self.max_steps,
@@ -162,6 +165,7 @@ class _MultiFactorScheduler(MultiFactorScheduler, _LRScheduler):
     @property
     def state_dict(self):
         return {
+            "scheduler": "MultiFactorScheduler",
             "base_lr": self.base_lr,
             "max_steps": self.step,
             "warmup_mode": self.warmup_mode,
@@ -208,6 +212,7 @@ class _LinearScheduler(LinearScheduler, _LRScheduler):
     @property
     def state_dict(self):
         return {
+            "scheduler": "LinearScheduler",
             "base_lr": self.base_lr,
             "max_steps": self.max_steps,
             "warmup_mode": self.warmup_mode,
@@ -287,6 +292,7 @@ class _NormScheduler(NormScheduler, _LRScheduler):
     @property
     def state_dict(self):
         return {
+            "scheduler": "NormScheduler",
             "lr_loc": self.lr_loc,
             "step": self.step,
             "max_lr": self.max_lr,
