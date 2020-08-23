@@ -8,8 +8,9 @@ import bisect
 
 class SortedList(list):
     """
-    A custom key function can be supplied to customize the sort order, and the
-    reverse flag can be set to request the result in descending order.
+    A list maintaining the element in an ascending order.
+
+    A custom key function can be supplied to customize the sort order.
 
 
     Examples
