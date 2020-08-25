@@ -6,8 +6,6 @@
 from __future__ import print_function
 
 import json
-import uuid
-import tempfile
 from _io import TextIOWrapper
 from contextlib import contextmanager
 from tqdm import tqdm
