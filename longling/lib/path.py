@@ -2,7 +2,7 @@
 # create by tongshiwei on 2019/7/2
 # PYTEST_DONT_REWRITE
 
-__all__ = ["path_append", "file_exist", "abs_current_dir", "type_from_name"]
+__all__ = ["path_append", "file_exist", "abs_current_dir", "type_from_name", "tmpfile"]
 
 import os
 from pathlib import PurePath
@@ -65,3 +65,25 @@ def abs_current_dir(file_path):
 
     """
     return os.path.abspath(os.path.dirname(file_path))
+
+
+
+@contextmanager
+def tmpfile(suffix=None, prefix=None, dir=None):
+    """
+    Create a temporary file, which will automatically cleaned after used (outside "with" closure).
+
+    Examples
+    --------
+
+    .. code-block ::
+
+        with tmpfile("test_tmp") as tmp:
+            print(tmp)
+            with open(tmp, mode="w") as wf:
+                print("hello world", file=wf)
+    """
+    prefix = prefix if prefix is not None else tempfile.gettempprefix() + str(uuid.uuid4())[:6]
+    filename = prefix + suffix if suffix is not None else prefix
+    with tempfile.TemporaryDirectory(dir=dir) as tmpdir:
+        yield os.path.join(tmpdir, filename)
