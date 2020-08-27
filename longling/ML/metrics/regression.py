@@ -12,7 +12,7 @@ def regression_report(
         metrics=None,
         sample_weight=None, multioutput="uniform_average", average_options=None,
         key_prefix="", key_suffix="",
-        verbose=False,
+        verbose=True,
 ):
     """
 
@@ -133,13 +133,13 @@ if __name__ == '__main__':
     # y_pred = [[0, 2], [-1, 2], [8, -5]]
     y_true = [[0.5, 1, 1], [-1, 1, 1], [7, -6, 1]]
     y_pred = [[0, 2, 1], [-1, 2, 1], [8, -5, 1]]
-    print(EvalFMT.format(eval_name_value=regression_report(y_true, y_pred, multioutput="variance_weighted")))
-    print(EvalFMT.format(eval_name_value=regression_report(y_true, y_pred)))
-    print(EvalFMT.format(eval_name_value=regression_report(y_true, y_pred, multioutput=[0.3, 0.6, 0.1])))
+    print(EvalFMT.format(
+        eval_name_value=regression_report(y_true, y_pred, multioutput="variance_weighted", verbose=False)))
+    print(EvalFMT.format(eval_name_value=regression_report(y_true, y_pred, verbose=False)))
+    print(EvalFMT.format(eval_name_value=regression_report(y_true, y_pred, multioutput=[0.3, 0.6, 0.1]), verbose=False))
     print(EvalFMT.format(eval_name_value=regression_report(y_true, y_pred, verbose=True)))
     print(EvalFMT.format(
         eval_name_value=regression_report(
             y_true, y_pred, verbose=True, average_options=["macro", "vw", [0.3, 0.6, 0.1]]
         )
     ))
-
