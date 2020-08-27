@@ -10,7 +10,7 @@ from collections import OrderedDict
 from longling.lib.formatter import table_format, series_format
 from longling.lib.candylib import as_list
 
-__all__ = ["eval_format", "EvalFMT", "EpochEvalFMT", "EpisodeEvalFMT"]
+__all__ = ["eval_format", "EvalFMT", "EpochEvalFMT", "EpisodeEvalFMT", "result_format"]
 
 
 def _to_dict(name_value: (dict, tuple)) -> dict:
