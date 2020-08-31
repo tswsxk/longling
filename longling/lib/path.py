@@ -51,12 +51,12 @@ def path_append(path, *addition, to_str=False):
     return path
 
 
-def file_exist(file_path):
+def file_exist(filepath):
     """判断文件是否存在"""
-    return os.path.isfile(file_path)
+    return os.path.isfile(filepath)
 
 
-def abs_current_dir(file_path):
+def abs_current_dir(filepath):
     """
     获取文件所在目录的绝对路径
 
@@ -67,7 +67,7 @@ def abs_current_dir(file_path):
         abs_current_dir(__file__)
 
     """
-    return os.path.abspath(os.path.dirname(file_path))
+    return os.path.abspath(os.path.dirname(filepath))
 
 
 @contextmanager
