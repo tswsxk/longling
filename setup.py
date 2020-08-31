@@ -74,7 +74,7 @@ spider_deps = [
 
 dl_deps = ml_mx_deps + ml_pytorch_deps
 
-ml_full_deps = ml_base_deps + dl_deps + ["nni>=1.7.1"]
+ml_full_deps = ml_base_deps + dl_deps + ["nni>=1.8"]
 
 full_deps = ml_full_deps + spider_deps
 
