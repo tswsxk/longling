@@ -63,3 +63,9 @@ https://zhuanlan.zhihu.com/p/42715527
 11. 训练
 12. 预测
 13. 评估
+
+## todo
+* Apiori Alogorithm
+* Equivalence Classification Algorithm (Eclat)
+* PrefixSpan
+* FP-Growth
