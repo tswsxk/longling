@@ -19,6 +19,13 @@ dev_deps = test_deps + [
     'wheel'
 ]
 
+dm_base_deps = [
+    "pandas",
+    "numpy",
+    "matplotlib",
+]
+
+
 ml_base_deps = [
     "pandas",
     "numpy",
@@ -135,6 +142,7 @@ setup(
     extras_require={
         'test': test_deps,
         'dev': dev_deps,
+        'dm': dm_base_deps,
         'ml': ml_base_deps,
         'mx': ml_mx_deps,
         'torch': ml_pytorch_deps,
