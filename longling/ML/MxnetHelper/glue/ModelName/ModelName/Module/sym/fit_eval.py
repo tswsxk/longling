@@ -31,7 +31,7 @@ def eval_f(_net, test_data, ctx=mx.cpu()):
     prediction = []
 
     def evaluation_function(y_true, y_pred):
-        return 0
+        return {"evaluation_name": 0}
 
     for batch_data in tqdm(test_data, "evaluating"):
         ctx_data = split_and_load(
@@ -44,9 +44,7 @@ def eval_f(_net, test_data, ctx=mx.cpu()):
             ground_truth.extend(label.asnumpy().tolist())
             prediction.extend(pred.asnumpy().tolist())
 
-    return {
-        "evaluation_name": evaluation_function(ground_truth, prediction)
-    }
+    return evaluation_function(ground_truth, prediction)
 
 
 def fit_f(net, batch_size, batch_data,

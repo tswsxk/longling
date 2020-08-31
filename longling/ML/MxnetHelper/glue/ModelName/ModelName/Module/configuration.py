@@ -13,8 +13,7 @@ from mxnet import cpu
 from longling import path_append
 from longling.ML.MxnetHelper.glue import parser
 from longling.ML.MxnetHelper.glue.parser import eval_var
-from longling.ML.MxnetHelper.toolkit.optimizer_cfg import get_optimizer_cfg, \
-    get_update_steps
+from longling.ML.MxnetHelper.toolkit import get_optimizer_cfg
 from longling.ML.MxnetHelper.toolkit.select_exp import all_params as _select
 from longling.lib.parser import var2exp
 from longling.lib.utilog import config_logging, LogLevel
@@ -47,14 +46,16 @@ class Configuration(parser.Configuration):
 
     # 优化器设置
     optimizer, optimizer_params = get_optimizer_cfg(name="base")
-    lr_params = {
-        "learning_rate": optimizer_params["learning_rate"],
-        "step": 100,
-        "max_update_steps": get_update_steps(
-            update_epoch=10,
-            batches_per_epoch=1000,
-        ),
-    }
+    # lr_params = {
+    #     "learning_rate": optimizer_params["learning_rate"],
+    #     "step": 100,
+    #     "max_update_steps": get_update_steps(
+    #         update_epoch=10,
+    #         batches_per_epoch=1000,
+    #     ),
+    # }
+    # lr_params 中包含 update_params 时，学习率衰减方式运行时确定
+    lr_params = {}
 
     # 更新保存参数，一般需要保持一致
     train_select = _select
@@ -69,6 +70,8 @@ class Configuration(parser.Configuration):
     # 用户变量
     # 网络超参数
     hyper_params = {}
+    # 网络初始化参数
+    init_params = {}
     # 损失函数超参数
     loss_params = {}
 
@@ -104,6 +107,10 @@ class Configuration(parser.Configuration):
         if params_json:
             params.update(self.load_cfg(params_json=params_json))
         params.update(**kwargs)
+
+        for key in params:
+            if key.endswith("_params") and key + "_update" in params:
+                params[key].update(params[key + "_update"])
 
         # path_override_check
         path_check_list = ["dataset", "root_data_dir", "workspace", "root_model_dir", "model_dir"]
@@ -172,34 +179,36 @@ class ConfigurationParser(parser.ConfigurationParser):
 
 
 def directory_check(class_obj):
-    print("data_dir", class_obj.data_dir)
-    print("model_dir", class_obj.model_dir)
+    import os
+    print("root", os.path.abspath(class_obj.root))
 
 
 if __name__ == '__main__':
     # Advise: firstly checkout whether the directory is correctly (step 1) and
     # then generate the paramters configuation file
     # to check the details (step 2)
-
+    stage = 1
     # step 1
     directory_check(Configuration)
 
-    # 命令行参数配置
-    _kwargs = ConfigurationParser.get_cli_cfg(Configuration)
+    if stage > 1:
+        # 命令行参数配置
+        _kwargs = ConfigurationParser.get_cli_cfg(Configuration)
 
-    cfg = Configuration(
-        **_kwargs
-    )
-    print(_kwargs)
-    print(cfg)
+        cfg = Configuration(
+            **_kwargs
+        )
+        print(_kwargs)
+        print(cfg)
 
-    # # step 2
-    cfg.dump(override=True)
-    try:
-        logger = cfg.logger
-        cfg.load_cfg(cfg.cfg_path)
-        cfg.logger = logger
-        cfg.logger.info('format check done')
-    except Exception as e:
-        print("parameters format error, may contain illegal data type")
-        raise e
+        if stage > 2:
+            # # step 2
+            cfg.dump(override=True)
+            try:
+                logger = cfg.logger
+                cfg.load_cfg(cfg.cfg_path)
+                cfg.logger = logger
+                cfg.logger.info('format check done')
+            except Exception as e:
+                print("parameters format error, may contain illegal data type")
+                raise e

@@ -8,7 +8,7 @@ import mxnet as mx
 
 from longling.ML.MxnetHelper.glue import module
 from .configuration import Configuration
-from .sym import get_net, fit_f, eval_f
+from .sym import get_net, fit_f, eval_f, net_init
 
 __all__ = ["Module"]
 
@@ -72,6 +72,10 @@ class Module(module.Module):
     @property
     def sym_gen(self):
         return get_net
+
+    @property
+    def net_initialize(self):
+        return net_init
 
     def dump_configuration(self, filename=None):
         filename = filename if filename is not None \
@@ -211,7 +215,7 @@ class Module(module.Module):
 
         for epoch in range(begin_epoch, end_epoch):
 
-            loss_values = self.batch_loop(
+            batch_num, loss_values = self.batch_loop(
                 net=net, epoch=epoch, batch_size=batch_size,
                 train_data=train_data,
                 trainer=trainer, bp_loss_f=bp_loss_f,
@@ -219,6 +223,26 @@ class Module(module.Module):
                 ctx=ctx,
                 toolbox=toolbox,
             )
+            if self.cfg.lr_params and "update_params" in self.cfg.lr_params:
+                self.cfg.logger.info("reset trainer")
+                lr_params = self.cfg.lr_params.pop("update_params")
+                lr_update_params = dict(
+                    batches_per_epoch=batch_num,
+                    lr=self.cfg.optimizer_params["learning_rate"],
+                    update_epoch=lr_params.get(
+                        "update_epoch",
+                        self.cfg.end_epoch - self.cfg.begin_epoch - 1
+                    )
+                )
+                lr_update_params.update(lr_params)
+
+                trainer = module.Module.get_trainer(
+                    net, optimizer=self.cfg.optimizer,
+                    optimizer_params=self.cfg.optimizer_params,
+                    lr_params=lr_update_params,
+                    select=self.cfg.train_select,
+                    logger=self.cfg.logger
+                )
 
             try:
                 train_time = toolbox["monitor"]["progress"].iteration_time
@@ -240,13 +264,13 @@ class Module(module.Module):
                             eval_name_value=evaluation_result,
                             extra_info=None,
                             dump=True,
-                        )[0]
+                            keep={"msg"},
+                        )
                     )
 
             # todo 定义模型保存方案
-            if kwargs.get('prefix') and (
-                                epoch % kwargs.get('save_epoch', 1) == 0 or end_epoch - 10 <= epoch <= end_epoch - 1
-            ):
+            if kwargs.get('prefix') and (epoch % kwargs.get('save_epoch', 1) == 0 or
+                                         end_epoch - 10 <= epoch <= end_epoch - 1):
                 self.save_params(
                     kwargs['prefix'] + "-%04d.parmas" % (epoch + 1), net
                 )
@@ -309,10 +333,11 @@ class Module(module.Module):
                 loss_monitor=loss_monitor,
                 ctx=ctx,
             )
+
         loss_values = {
             name: loss for name, loss in loss_monitor.items()
         }
-        return loss_values
+        return i, loss_values
 
     @staticmethod
     def eval(net, test_data, ctx=mx.cpu()):

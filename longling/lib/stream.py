@@ -6,8 +6,6 @@
 from __future__ import print_function
 
 import json
-import uuid
-import tempfile
 from _io import TextIOWrapper
 from contextlib import contextmanager
 from tqdm import tqdm
@@ -22,7 +20,7 @@ __all__ = ['to_io', 'as_io', 'as_out_io', 'rf_open', 'wf_open', 'rf_group_open',
            'flush_print', 'build_dir', 'json_load',
            'as_io_group', 'as_out_io_group',
            'pickle_load', 'AddPrinter', 'AddObject', 'StreamError', 'check_file',
-           'PATH_TYPE', 'encode', 'IO_TYPE', 'tmpfile', "PATH_IO_TYPE"
+           'PATH_TYPE', 'encode', 'IO_TYPE', "PATH_IO_TYPE"
            ]
 
 
@@ -349,24 +347,3 @@ class AddPrinter(AddObject):
     @property
     def name(self):
         return self.fp.name
-
-
-@contextmanager
-def tmpfile(suffix=None, prefix=None):
-    """
-    Create a temporary file, which will automatically cleaned after used (outside "with" closure).
-
-    Examples
-    --------
-
-    .. code-block ::
-
-        with tmpfile("test_tmp") as tmp:
-            print(tmp)
-            with open(tmp, mode="w") as wf:
-                print("hello world", file=wf)
-    """
-    prefix = prefix if prefix is not None else tempfile.gettempprefix() + str(uuid.uuid4())[:6]
-    filename = prefix + suffix if suffix is not None else prefix
-    with tempfile.TemporaryDirectory() as tmpdir:
-        yield os.path.join(tmpdir, filename)

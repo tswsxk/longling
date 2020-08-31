@@ -5,7 +5,7 @@ from collections import OrderedDict
 from longling.lib.candylib import as_list
 from longling import PATH_TYPE, loading
 
-__all__ = ["get_max", "key_parser", "get_by_key"]
+__all__ = ["get_max", "get_by_key"]
 
 from .utils import get_by_key
 
@@ -26,13 +26,13 @@ def get_best(src: (PATH_TYPE, list), *keys, with_keys: (str, None) = None, with_
 
     for data in loading(src):
         for key in result:
-            _data = get_by_key(data, parsed_key=key_parser(key))
+            _data = get_by_key(data, parsed_key=key)
             if result[key] is None or cmp(_data, result[key]):
                 result[key] = _data
                 if with_all:
                     result_appendix[key] = data
                 elif with_keys:
-                    result_appendix[key] = {_key: get_by_key(data, key_parser(_key)) for _key in with_keys}
+                    result_appendix[key] = {_key: get_by_key(data, _key) for _key in with_keys}
 
     if merge:
         return _merge(result, result_appendix if with_all or with_keys else None)

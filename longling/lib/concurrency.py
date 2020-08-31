@@ -124,7 +124,7 @@ LEVEL_CLASS = {
 }
 
 
-def concurrent_pool(level, pool_size=None, ret=None):
+def concurrent_pool(level: str, pool_size: int = None, ret: list = None):
     """
     Simple api for start completely independent concurrent programs:
     * thread

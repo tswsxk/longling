@@ -16,15 +16,24 @@ logger = config_logging(
 )
 
 
-def new_model(model_name, source_dir, directory=None, skip_top=True):
+def new_model(model_name, source_dir, directory=None, level="project", skip_existing=False):
     target_dir = os.path.join(
         directory, model_name
     ) if directory is not None else model_name
 
     target_dir = os.path.abspath(target_dir)
-    source_dir = source_dir if skip_top is False else path_append(
-        source_dir, "ModelName", to_str=True
-    )
+    if level == "project":
+        pass
+    elif level == "model":
+        source_dir = path_append(
+            source_dir, "ModelName", to_str=True,
+        )
+    elif level == "module":
+        source_dir = path_append(
+            source_dir, "ModelName", "Module", to_str=True,
+        )
+    else:
+        raise ValueError("unknown level: %s" % level)
     if not os.path.exists(source_dir):
         logger.error(
             "template files does not exist, process aborted, "
@@ -63,20 +72,23 @@ def new_model(model_name, source_dir, directory=None, skip_top=True):
             target_file = os.path.abspath(
                 os.path.join(dirname, name_replace(filename)))
             logger.debug(source_file + ' -> ' + target_file)
-            with open(source_file, encoding="utf-8") as f, wf_open(
-                    target_file) as wf:
-                try:
-                    for line in f:
-                        print(name_replace(line), end="", file=wf)
-                except UnicodeDecodeError:
-                    print(source_file, line)
-                    raise UnicodeDecodeError
+            if os.path.exists(target_file) and skip_existing:
+                pass
+            else:
+                with open(source_file, encoding="utf-8") as f, wf_open(
+                        target_file) as wf:
+                    try:
+                        for line in f:
+                            print(name_replace(line), end="", file=wf)
+                    except UnicodeDecodeError:
+                        print(source_file, line)
+                        raise UnicodeDecodeError
     return True
 
 
-def cli(source_dir, model_name="longling"):
+def cli(source_dir, model_name=None):
     parser = argparse.ArgumentParser()
-    if model_name:
+    if model_name is not None:
         parser.add_argument(
             "--model_name", default="%s" % model_name,
             help="set the model name, default is %s" % model_name
@@ -93,16 +105,21 @@ def cli(source_dir, model_name="longling"):
         help="set the directory, default is None"
     )
     parser.add_argument(
-        "--skip_top",
-        help="whether to skip the top files, like docs",
-        action='store_true',
+        "--level", choices={"project", "model", "module"},
+        help="the level",
+        default="model",
+    )
+    parser.add_argument(
+        "--no-skip-existing",
+        help="override the existing files",
+        action="store_false"
     )
 
     args = parser.parse_args()
 
     if new_model(
             model_name=args.model_name, source_dir=source_dir,
-            directory=args.directory, skip_top=args.skip_top
+            directory=args.directory, level=args.level, skip_existing=not args.no_skip_existing,
     ):
         logger.info("success")
     else:

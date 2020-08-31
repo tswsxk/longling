@@ -402,7 +402,7 @@ def _gitlab_ci(commands: dict, stage, image_name, private=True, on_stop=None, ma
             path_to_api = "${API_VERSION}(/|$)(.*)"
         else:
             path_to_api = ""
-            kwargs.update({"host": "${$KUBE_NAMESPACE}-%s" % "${API_VERSION}"})
+            kwargs.update({"host": "${KUBE_NAMESPACE}-%s" % "${API_VERSION}"})
 
         script.append(helm_service(name=name, private=private, path_to_api=path_to_api, image_tag=image_tag, **kwargs))
 

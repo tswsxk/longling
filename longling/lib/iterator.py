@@ -6,10 +6,12 @@ import warnings
 import functools
 import queue
 import threading
+import multiprocessing as mp
+from tqdm import tqdm
 
 from longling import wf_open, loading
 
-__all__ = ["BaseIter", "LoopIter", "AsyncLoopIter", "AsyncIter", "CacheAsyncLoopIter", "iterwrap"]
+__all__ = ["BaseIter", "MemoryIter", "LoopIter", "AsyncLoopIter", "AsyncIter", "CacheAsyncLoopIter", "iterwrap"]
 
 
 class Register(dict):  # pragma: no cover
@@ -122,6 +124,51 @@ class BaseIter(object):
 
 
 @register.add
+class MemoryIter(BaseIter):
+    """
+    内存迭代器
+
+    会将所有迭代器内容装载入内存
+    """
+
+    def __init__(self, src, length=None, prefetch=False, *args, **kwargs):
+        self._memory_data = []
+        self._in_memory = True
+        super(MemoryIter, self).__init__(src, length)
+        self.prefetch = prefetch
+        if self.prefetch:
+            self._prefetch()
+
+    def _prefetch(self):
+        for _data in tqdm(self._data, "prefetching data"):
+            self._count += 1
+            self._memory_data.append(_data)
+        self._set_length()
+        self._in_memory = False
+        self._data = iter(self._memory_data)
+
+    def __next__(self):
+        try:
+            self._count += 1
+            elem = next(self._data)
+            if self._in_memory is True:
+                self._memory_data.append(elem)
+            return elem
+        except StopIteration:
+            self._count -= 1
+            self.reset()
+            self._in_memory = False
+            raise StopIteration
+
+    def reset(self):
+        if not self._memory_data:
+            super(MemoryIter, self).reset()
+        else:
+            self._data = iter(self._memory_data)
+            self._set_length()
+
+
+@register.add
 class LoopIter(BaseIter):
     """
     循环迭代器
@@ -142,6 +189,24 @@ class LoopIter(BaseIter):
             raise StopIteration
 
 
+def produce(data, produce_queue):
+    _stop = False
+    try:
+        for _data in data:
+            produce_queue.put(_data)
+        raise StopIteration
+
+    except StopIteration as e:
+        if not _stop:
+            _stop = True
+            produce_queue.put(e)
+
+    except Exception as e:  # pragma: no cover
+        if not _stop:
+            _stop = True
+            produce_queue.put(e)
+
+
 @register.add
 class AsyncLoopIter(LoopIter):
     """
@@ -150,27 +215,43 @@ class AsyncLoopIter(LoopIter):
     数据的读入和数据的使用迭代是异步的。reset() 之后会进行数据预取
     """
 
-    def __init__(self, src, prefetch=True, tank_size=8, timeout=None):
-        self.prefetch = prefetch
+    def __init__(self, src, tank_size=8, timeout=None, level="t"):
         self.thread = None
         self._size = tank_size
-        self.queue = queue.Queue(self._size)
-        self._stop = False
+        self.mode = self._mode_map(level)
+        if self.mode == "t":
+            self.queue_cls = queue.Queue
+            self.thread_cls = threading.Thread
+        elif self.mode == "p":
+            self.queue_cls = mp.Queue
+            self.thread_cls = mp.Process
+        else:  # pragma: no cover
+            raise TypeError("unknown mode: %s" % self.mode)
+        self.queue = self.queue_cls(self._size)
         self._timeout = timeout
         super(AsyncLoopIter, self).__init__(src)
+
+    @classmethod
+    def _mode_map(cls, mode):
+        map_dict = {
+            "p": "p", "processing": "p", "multiprocessing": "p",
+            "t": "t", "thread": "t", "threading": "t",
+        }
+        return map_dict[mode]
 
     def reset(self):
         super(AsyncLoopIter, self).reset()
         if self.thread is not None:
             self.thread.join()
-        self._stop = False
-        if self.prefetch:
-            self.thread = threading.Thread(target=self.produce, daemon=True)
-            self.thread.start()
+
+        self.thread = self.thread_cls(
+            target=produce,
+            kwargs=dict(data=self._data, produce_queue=self.queue),
+            daemon=True
+        )
+        self.thread.start()
 
     def __next__(self):
-        if not self.prefetch:
-            self.produce(False)
         if self.queue is not None:
             item = self.queue.get()
         else:  # pragma: no cover
@@ -182,25 +263,8 @@ class AsyncLoopIter(LoopIter):
             else:  # pragma: no cover
                 raise item
         else:
+            self._count += 1
             return item
-
-    def produce(self, daemon=True):
-        try:
-            for _data in self._data:
-                self._count += 1
-                self.queue.put(_data)
-                if daemon is False:
-                    return
-            raise StopIteration
-        except StopIteration as e:
-            if not self._stop:
-                self.queue.put(e)
-                self._stop = True
-
-        except Exception as e:  # pragma: no cover
-            if not self._stop:
-                self._stop = True
-                self.queue.put(e)
 
 
 @register.add
@@ -219,8 +283,6 @@ class AsyncIter(AsyncLoopIter):
         super(AsyncIter, self).reset()
 
     def __next__(self):
-        if not self.prefetch:
-            self.produce(False)
         if self.queue is not None:
             item = self.queue.get()
         else:
@@ -234,6 +296,7 @@ class AsyncIter(AsyncLoopIter):
             else:  # pragma: no cover
                 raise item
         else:
+            self._count += 1
             return item
 
 
@@ -247,7 +310,7 @@ class CacheAsyncLoopIter(AsyncLoopIter):
     将异步加载中处理的预处理数据放到指定的缓冲文件中
     """
 
-    def __init__(self, src, cache_file, rerun=True, prefetch=True, tank_size=8, timeout=None):
+    def __init__(self, src, cache_file, rerun=True, tank_size=8, timeout=None, level="t"):
         self.cache_file = cache_file
         self.cache_queue = None
         self.cache_thread = None
@@ -264,7 +327,7 @@ class CacheAsyncLoopIter(AsyncLoopIter):
             self.cache_thread = threading.Thread(target=self.cached, daemon=False)
             self.cache_thread.start()
             self._cache_stop = False
-        super(CacheAsyncLoopIter, self).__init__(src, prefetch, tank_size, timeout)
+        super(CacheAsyncLoopIter, self).__init__(src, tank_size, timeout, level)
 
     def init(self):
         super(CacheAsyncLoopIter, self).reset()
@@ -278,8 +341,6 @@ class CacheAsyncLoopIter(AsyncLoopIter):
         super(CacheAsyncLoopIter, self).reset()
 
     def __next__(self):
-        if not self.prefetch:
-            self.produce(False)
         item = self.queue.get()
         if self.cache_queue is not None:
             self.cache_queue.put(item)
@@ -290,6 +351,7 @@ class CacheAsyncLoopIter(AsyncLoopIter):
             else:  # pragma: no cover
                 raise item
         else:
+            self._count += 1
             return item
 
     def cached(self):

@@ -55,6 +55,13 @@ def classification_report(y_true, y_pred=None, y_score=None, labels=None, metric
     sample_weight : array-like of shape = [n_samples], optional
         Sample weights.
 
+    average_options: str or list
+        default to macro, choices (one or many): "micro", "macro", "samples", "weighted"
+
+    multiclass_to_multilabel: bool
+
+    logger
+
     Returns
     -------
 

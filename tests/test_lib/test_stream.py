@@ -6,7 +6,7 @@ import sys
 import json
 import pickle
 import pytest
-from longling import path_append
+from longling import path_append, tmpfile
 from longling.lib.stream import *
 
 

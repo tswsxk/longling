@@ -8,6 +8,7 @@ from longling.lib.stream import encode
 from longling.ML.toolkit.dataset import train_valid_test, train_test, kfold
 from longling.ML.toolkit.analyser.cli import select_max, arg_select_max, select_min, arg_select_min
 from longling.ML.toolkit.hyper_search.nni import show_top_k, show
+from longling.ML.toolkit.analyser.to_board import to_board
 from longling.toolbox import toc
 from longling.Architecture.cli import cli as arch
 from longling import Architecture as arch_cli
@@ -42,7 +43,8 @@ def cli():  # pragma: no cover
             },
             "install": {
                 "nni": install_nni,
-            }
+            },
+            "to_board": to_board,
         }
     )
 

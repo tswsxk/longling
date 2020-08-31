@@ -1,15 +1,16 @@
 # coding: utf-8
 # create by tongshiwei on 2019-9-1
 from longling import path_append
+from longling.ML.MxnetHelper.toolkit.optimizer_cfg import get_lr_params
 
 try:
     # for python module
-    from .sym import get_net, get_bp_loss, fit_f, eval_f, net_viz
+    from .sym import get_net, get_bp_loss, fit_f, eval_f, net_viz, net_init
     from .etl import transform, etl, pseudo_data_iter
     from .configuration import Configuration, ConfigurationParser
 except (ImportError, SystemError):  # pragma: no cover
     # for python script
-    from sym import get_net, get_bp_loss, fit_f, eval_f, net_viz
+    from sym import get_net, get_bp_loss, fit_f, eval_f, net_viz, net_init
     from etl import transform, etl, pseudo_data_iter
     from configuration import Configuration, ConfigurationParser
 
@@ -18,8 +19,6 @@ def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_resul
                     reporthook=None, final_reporthook=None):  # pragma: no cover
     ctx = _cfg.ctx
     batch_size = _cfg.batch_size
-
-    _net.initialize(ctx=ctx)
 
     bp_loss_f = get_bp_loss(**_cfg.loss_params)
     loss_function = {}
@@ -51,11 +50,12 @@ def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_resul
     trainer = module.Module.get_trainer(
         _net, optimizer=_cfg.optimizer,
         optimizer_params=_cfg.optimizer_params,
-        select=_cfg.train_select
+        select=_cfg.train_select,
+        lr_params=_cfg.lr_params
     )
 
     for epoch in range(_cfg.begin_epoch, _cfg.end_epoch):
-        for batch_data in progress_monitor(train_data, "Epoch: %s" % epoch):
+        for i, batch_data in enumerate(progress_monitor(train_data, "Epoch: %s" % epoch)):
             fit_f(
                 net=_net, batch_size=batch_size, batch_data=batch_data,
                 trainer=trainer, bp_loss_f=bp_loss_f,
@@ -63,16 +63,37 @@ def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_resul
                 loss_monitor=loss_monitor,
                 ctx=ctx,
             )
+        if _cfg.lr_params and "update_params" in _cfg.lr_params:
+            _cfg.logger.info("reset trainer")
+            lr_params = _cfg.lr_params.pop("update_params")
+            lr_update_params = dict(
+                batches_per_epoch=i + 1,
+                lr=_cfg.optimizer_params["learning_rate"],
+                update_epoch=lr_params.get(
+                    "update_epoch",
+                    _cfg.end_epoch - _cfg.begin_epoch - 1
+                )
+            )
+            lr_update_params.update(lr_params)
+
+            trainer = module.Module.get_trainer(
+                _net, optimizer=_cfg.optimizer,
+                optimizer_params=_cfg.optimizer_params,
+                lr_params=lr_update_params,
+                select=_cfg.train_select,
+                logger=_cfg.logger
+            )
 
         if epoch % 1 == 0:
-            data = evaluation_formatter(
-                epoch=epoch,
+            msg, data = evaluation_formatter(
+                iteration=epoch,
                 loss_name_value=dict(loss_monitor.items()),
                 eval_name_value=eval_f(_net, test_data, ctx=ctx),
                 extra_info=None,
                 dump=dump_result,
-                keep="data"
+                keep={"msg", "data"}
             )
+            print(msg)
             if reporthook is not None:
                 reporthook(data)
 
@@ -89,11 +110,13 @@ def train(train_fn, test_fn, reporthook=None, final_reporthook=None, **cfg_kwarg
     from longling.ML.toolkit.hyper_search import prepare_hyper_search
 
     cfg_kwargs, reporthook, final_reporthook, tag = prepare_hyper_search(
-        cfg_kwargs, Configuration, reporthook, final_reporthook, primary_key="prf:avg:f1"
+        cfg_kwargs, Configuration, reporthook, final_reporthook, primary_key="macro_avg:f1"
     )
 
     _cfg = Configuration(**cfg_kwargs)
+    print(_cfg)
     _net = get_net(**_cfg.hyper_params)
+    net_init(_net, cfg=_cfg, **_cfg.init_params)
 
     train_data = etl(_cfg.var2val(train_fn), params=_cfg)
     test_data = etl(_cfg.var2val(test_fn), params=_cfg)
@@ -116,6 +139,7 @@ def sym_run(stage: (int, str) = "viz"):  # pragma: no cover
             hyper_params={}
         )
         net = get_net(**cfg.hyper_params)
+        net.initialize()
 
         if stage == 0:
             # ############################## Net Visualization ###########################

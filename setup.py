@@ -61,12 +61,13 @@ spider_deps = [
     "requests",
     "rarfile",
     "bs4",
-    "lxml"
+    "lxml",
+    "urllib3"
 ]
 
 dl_deps = ml_mx_deps + ml_pytorch_deps
 
-ml_full_deps = ml_base_deps + dl_deps + ["nni"]
+ml_full_deps = ml_base_deps + dl_deps + ["nni>=1.7.1"]
 
 full_deps = ml_full_deps + spider_deps
 
