@@ -40,7 +40,7 @@ def flush_print(*values, **kwargs):
     print('\r', *values, sep=sep, end=end, flush=True, **kwargs)
 
 
-def build_dir(path, mode=0o775):
+def build_dir(path, mode=0o775, parse_dir=False):
     """
     创建目录，从path中解析出目录路径，如果目录不存在，创建目录
 
@@ -48,22 +48,27 @@ def build_dir(path, mode=0o775):
     ----------
     path: str
     mode: int
+    parse_dir: bool
 
     """
-    dirname = os.path.dirname(path)
+    if os.path.isfile(path) or parse_dir:
+        dirname = os.path.dirname(path)
+    else:
+        assert os.path.isdir(path)
+        dirname = path
     if not dirname or os.path.exists(dirname):
         return path
     os.makedirs(dirname, mode)
     return path
 
 
-def check_file(path, size=None):
+def check_file(filepath, size=None):
     """
     检查文件是否存在，size给定时，检查文件大小是否一致
 
     Parameters
     ----------
-    path: str
+    filepath: str
     size: int
 
     Returns
@@ -71,8 +76,8 @@ def check_file(path, size=None):
     file exist or not: bool
 
     """
-    if os.path.exists(path):
-        return size == os.path.getsize(path) if size is not None else True
+    if os.path.exists(filepath):
+        return size == os.path.getsize(filepath) if size is not None else True
     return False
 
 
