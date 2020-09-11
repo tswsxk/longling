@@ -7,7 +7,7 @@ import json
 import math
 import numpy as np
 from longling import loading as _loading, as_out_io, PATH_TYPE, json_load, close_io
-from longling import AddPrinter, type_from_name, config_logging
+from longling import AddPrinter, type_from_name, config_logging, as_list
 from sklearn.utils.validation import check_random_state
 from sklearn.model_selection import KFold
 from longling import concurrent_pool
@@ -174,7 +174,7 @@ def _target_names(*files, target_names=None, suffix, prefix=""):
                 ] for _file in files
             ]
     else:
-        return target_names
+        return as_list(target_names)
 
 
 def _target_files(*files, target_names=None, suffix, prefix=""):
