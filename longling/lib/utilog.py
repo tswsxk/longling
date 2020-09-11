@@ -7,7 +7,7 @@ import logging
 from longling.lib.stream import build_dir
 from longling.lib.time import get_current_timestamp as default_timestamp
 
-__all__ = ["LogLevel", "config_logging", "default_timestamp"]
+__all__ = ["LogLevel", "config_logging", "default_timestamp", "set_logging_info"]
 
 
 class LogLevel(object):
@@ -208,3 +208,7 @@ def config_logging(filename=None,
         logger.addHandler(ch)
 
     return logger
+
+
+def set_logging_info():
+    logging.getLogger().setLevel(logging.INFO)
