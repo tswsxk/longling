@@ -36,6 +36,8 @@ def ema(x, mu=None, alpha=0.3):
 
 def smooth(array: list, smooth_weight: float) -> list:
     """
+    smooth the list
+
     Examples
     --------
     >>> smooth([0, 1, 2, 3, 4], 0)
@@ -52,6 +54,8 @@ def smooth(array: list, smooth_weight: float) -> list:
 
 def choice(obj) -> int:
     """
+    weighted choice
+
     Examples
     --------
     >>> random.seed(10)
