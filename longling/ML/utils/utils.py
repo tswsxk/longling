@@ -1,7 +1,8 @@
 # coding: utf-8
 # 2020/4/19 @ tongshiwei
-import random
 import itertools
+import math
+import random
 
 ___all__ = ["ema", "choice"]
 
@@ -81,3 +82,23 @@ def choice(obj) -> int:
             raise ValueError("the sum of obj should be 1, now is %s" % sum(values))
     else:
         raise TypeError("obj should be either list or dict, now is %s" % type(obj))
+
+
+def embedding_dim(embedding_size):
+    """
+
+    Parameters
+    ----------
+    embedding_size
+
+    Returns
+    -------
+
+    Examples
+    --------
+    >>> embedding_dim(10e4)
+    96
+    """
+    _constant = 8.33
+    n = _constant * math.log(embedding_size)
+    return int(math.ceil(n))
