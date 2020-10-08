@@ -19,11 +19,12 @@ pip install longling
 ```
 
 ### source
-clone the repository and then run `python setup.py install`:
+clone the repository and then run `pip install .`:
 
 ```shell
 git clone https://github.com/tswsxk/longling.git
-python setup.py install
+cd longling
+pip install .
 ```
 
 ### Notation
