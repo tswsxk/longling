@@ -95,8 +95,9 @@ def _colored(fmt, fg=None, bg=None, style=None):
     --------
     >>> _colored("info")
     'info'
-    >>> _colored("info", "b", "r")
-    '\x1b[34;41minfo\x1b[0m'
+    >>> ass_str = r'\x1b[34;41minfo\x1b[0m'
+    >>> ass_str == _colored("info", "b", "r")
+    True
     """
 
     colcode = {
