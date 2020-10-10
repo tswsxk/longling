@@ -80,11 +80,23 @@ def _colored(fmt, fg=None, bg=None, style=None):
         - f:   faint
         - h:   hide
 
-    Args:
-        fmt (str): string to be colored
-        fg (str): foreground color
-        bg (str): background color
-        style (str): text style
+    Parameters
+    ----------
+    fmt : str
+        string to be colored
+    fg : str
+        foreground color
+    bg : str
+        background color
+    style : str
+        text style
+
+    Examples
+    --------
+    >>> _colored("info")
+    'info'
+    >>> _colored("info", "b", "r")
+    '\x1b[34;41minfo\x1b[0m'
     """
 
     colcode = {
