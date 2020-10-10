@@ -2,6 +2,7 @@
 # 2020/4/17 @ tongshiwei
 
 import numpy as np
+
 from longling.ML.metrics import classification_report, regression_report
 from longling.ML.toolkit.formatter import eval_format, EpochEvalFMT, EpisodeEvalFMT
 
@@ -14,7 +15,7 @@ macro_avg   0.583333  0.583333  0.583333        5
 accuracy: 0.600000
 """
 b = """
-evar: 0.957173	mse: 0.375000	mae: 0.500000	r2: 0.948608
+evar: 0.957173	mse: 0.375000	rmse: 0.612372	mae: 0.500000	r2: 0.948608
 """
 
 

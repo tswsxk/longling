@@ -1,9 +1,11 @@
 # coding: utf-8
 # 2020/4/16 @ tongshiwei
 
-import numpy as np
 from collections import OrderedDict
+
+import numpy as np
 from sklearn.metrics import explained_variance_score, mean_absolute_error, mean_squared_error, r2_score
+
 from longling import as_list
 
 
@@ -33,6 +35,7 @@ def regression_report(
     multioutput : string in ['raw_values', 'uniform_average', 'variance_weighted'], list
         or array-like of shape (n_outputs)
         Defines aggregating of multiple output values.
+        Disabled when verbose is True.
         Array-like value defines weights used to average errors.
         'raw_values' :
             Returns a full set of errors in case of multioutput input.
@@ -54,7 +57,7 @@ def regression_report(
     -------
 
     """
-    legal_metrics = ["evar", "mse", "mae", "r2"]
+    legal_metrics = ["evar", "rmse", "mse", "mae", "r2"]
     if not metrics:
         metrics = legal_metrics
 
@@ -134,7 +137,8 @@ if __name__ == '__main__':
     y_true = [[0.5, 1, 1], [-1, 1, 1], [7, -6, 1]]
     y_pred = [[0, 2, 1], [-1, 2, 1], [8, -5, 1]]
     print(EvalFMT.format(
-        eval_name_value=regression_report(y_true, y_pred, multioutput="variance_weighted", verbose=False)))
+        eval_name_value=regression_report(y_true, y_pred, multioutput="variance_weighted", verbose=False))
+    )
     print(EvalFMT.format(eval_name_value=regression_report(y_true, y_pred, verbose=False)))
     print(EvalFMT.format(eval_name_value=regression_report(y_true, y_pred, multioutput=[0.3, 0.6, 0.1]), verbose=False))
     print(EvalFMT.format(eval_name_value=regression_report(y_true, y_pred, verbose=True)))
