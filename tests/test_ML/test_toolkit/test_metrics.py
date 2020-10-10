@@ -96,10 +96,10 @@ def test_regression():
     y_true = [[0.5, 1], [-1, 1], [7, -6]]
     y_pred = [[0, 2], [-1, 2], [8, -5]]
 
-    result = regression_report(y_true, y_pred, multioutput="variance_weighted")
-    assert "%.3f" % result["r2"] == "0.938"
-    assert "%.3f" % result["evar"] == "0.983"
+    result = regression_report(y_true, y_pred, average_options="variance_weighted")
+    assert "%.3f" % result["variance_weighted"]["r2"] == "0.938"
+    assert "%.3f" % result["variance_weighted"]["evar"] == "0.983"
 
-    result = regression_report(y_true, y_pred, multioutput=[0.3, 0.7])
-    assert "%.3f" % result["r2"] == "0.925"
-    assert "%.3f" % result["evar"] == "0.990"
+    result = regression_report(y_true, y_pred, average_options=[[0.3, 0.7]])
+    assert "%.3f" % result["weighted"]["r2"] == "0.925"
+    assert "%.3f" % result["weighted"]["evar"] == "0.990"
