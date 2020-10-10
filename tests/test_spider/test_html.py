@@ -6,4 +6,4 @@ from longling.spider.lib import get_html_code
 
 
 def test_get_html_code():
-    assert get_html_code("https://tswsxk.github.io")
+    assert get_html_code("https://ustc.edu.cn/")
