@@ -64,22 +64,31 @@ def choice(obj) -> int:
     2
     >>> choice({1: 0.1, 2: 0.9})
     2
+    >>> choice({1: 1 / 3, 2: 0.66666})
+    2
     """
     r = random.random()
+
     if isinstance(obj, list):
+        assert obj
+        if round(sum(obj), 2) != 1:
+            raise ValueError("the sum of obj should be 1, now is %s" % sum(obj))
         for i, value in enumerate(itertools.accumulate(obj)):
             if r < value:
                 return i
-        else:
-            raise ValueError("the sum of obj should be 1, now is %s" % sum(obj))
+        else:  # pragma: no cover
+            return obj[-1]
     elif isinstance(obj, dict):
+        assert obj
         keys = obj.keys()
         values = itertools.accumulate(obj.values())
+        if round(sum(obj.values()), 2) != 1:
+            raise ValueError("the sum of obj should be 1, now is %s" % sum(obj.values()))
         for key, value in zip(keys, values):
             if r < value:
                 return key
-        else:
-            raise ValueError("the sum of obj should be 1, now is %s" % sum(values))
+        else:  # pragma: no cover
+            return key
     else:
         raise TypeError("obj should be either list or dict, now is %s" % type(obj))
 
