@@ -304,10 +304,10 @@ if __name__ == '__main__':
     #             time.sleep(0.05)
     #
     #         print(cp.iteration_time)
-    values = {
+    _values = {
         "Loss": {"l2": 0}
     }
-    player = ConsoleProgressMonitorPlayer({"Loss": ["l2"]}, values=values)
+    player = ConsoleProgressMonitorPlayer({"Loss": ["l2"]}, values=_values)
     with player.watching():
         for i in range(100):
             player(i, Loss={"l2": 1})
