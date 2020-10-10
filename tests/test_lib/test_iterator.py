@@ -1,10 +1,20 @@
 # coding: utf-8
 # 2020/1/13 @ tongshiwei
 
-import pytest
+import platform
 import random
+
+import pytest
+
 from longling import BaseIter, MemoryIter, LoopIter, AsyncLoopIter, AsyncIter, CacheAsyncLoopIter
 from longling import iterwrap, path_append
+
+
+def _skip_windows():
+    if platform.system() == "Windows":
+        return True
+    else:
+        return False
 
 
 def etl():
@@ -14,6 +24,9 @@ def etl():
 
 @pytest.mark.parametrize("iter_params", [(BaseIter, {}), (AsyncIter, {}), (AsyncIter, {"level": "t"})])
 def test_base(iter_params):
+    if _skip_windows():
+        return
+
     Iter, params = iter_params
 
     @Iter.wrap
@@ -51,6 +64,9 @@ def test_base(iter_params):
 
 
 def test_loop(tmpdir):
+    if _skip_windows():
+        return
+
     test_iter = {
         LoopIter: [{}],
         AsyncLoopIter: [
@@ -99,6 +115,9 @@ def test_loop(tmpdir):
 
 
 def test_iterwrap():
+    if _skip_windows():
+        return
+
     with pytest.raises(TypeError):
         @iterwrap("a wrong case")
         def etl_loop():
@@ -113,6 +132,9 @@ def etl_p():
 
 def test_process_level():
     """waiting for testing"""
+    if _skip_windows():
+        return
+
     data = etl_p()
     for _ in range(3):
         tag = False
