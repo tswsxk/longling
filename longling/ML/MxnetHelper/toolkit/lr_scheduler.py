@@ -2,7 +2,6 @@
 # 2020/8/18 @ tongshiwei
 
 import logging
-import logging
 import numpy as np
 import scipy.stats as st
 from mxnet.lr_scheduler import LRScheduler, FactorScheduler, PolyScheduler, MultiFactorScheduler, CosineScheduler

@@ -19,8 +19,8 @@ def length2mask(length, max_len, valid_mask_val, invalid_mask_val):
     if isinstance(length, Tensor):
         length = tensor2list(length)
 
-    for l in length:
-        mask.append([valid_mask_val] * l + [invalid_mask_val] * (max_len - l))
+    for _len in length:
+        mask.append([valid_mask_val] * _len + [invalid_mask_val] * (max_len - _len))
 
     return torch.tensor(mask)
 
