@@ -19,6 +19,11 @@ class ValueMonitor(object):
     几个重要的函数：
     * update: 定义损失函数的如何累加更新
 
+    Examples
+    --------
+    >>> vm = ValueMonitor(["m1", "m2"])
+    >>> vm.value
+    {'m1': nan, 'm2': nan}
     """
 
     def __init__(self, value_function_names: (list, dict), *args, **kwargs):
