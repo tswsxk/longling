@@ -15,7 +15,7 @@ try:
 except (AttributeError, ImportError):  # pragma: no cover
     NAN = float('nan')
 
-__all__ = ["ConsoleProgressMonitor"]
+__all__ = ["ConsoleProgressMonitor", "ConsoleProgressMonitorPlayer"]
 
 
 class ConsoleProgressMonitorPlayer(object):
