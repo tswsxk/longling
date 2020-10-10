@@ -46,6 +46,12 @@ def test_eval_format():
     assert eval_format(
         eval_name_value=result,
         dump_file=None,
+        keep=None
+    ) == b.strip()
+
+    assert eval_format(
+        eval_name_value=result,
+        dump_file=None,
         keep={"msg", "data"}
     )[0] == b.strip()
 
