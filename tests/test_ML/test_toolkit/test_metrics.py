@@ -2,6 +2,7 @@
 # 2020/4/15 @ tongshiwei
 
 import numpy as np
+
 from longling.ML.metrics import classification_report, regression_report
 
 
@@ -15,7 +16,7 @@ def test_classification():
 
     y_true = np.array([0, 0, 1, 1])
     y_score = np.array([0.1, 0.4, 0.35, 0.8])
-    result = classification_report(y_true, y_score=y_score, metrics=["auc", "poauc"])
+    result = classification_report(y_true, y_score=y_score)
     assert result["macro_auc"] == 0.75
 
     y_true = np.array([0, 0, 1, 1])
