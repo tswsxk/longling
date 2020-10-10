@@ -147,6 +147,8 @@ def format_sizeof(num, suffix='', divisor=1000):
 
     Examples
     --------
+    >>> format_sizeof(800000)
+    '800K'
     >>> format_sizeof(40000000000000)
     '40.0T'
     >>> format_sizeof(1000000000000000000000000000)
