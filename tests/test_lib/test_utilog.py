@@ -2,11 +2,21 @@
 # 2019/11/28 @ tongshiwei
 
 import json
-from longling import path_append, config_logging
+import logging
+
+from longling import path_append, config_logging, set_logging_info
 
 
 def test_root_logger():
-    logger = config_logging(level="info", console_log_level="info")
+    set_logging_info()
+    logging.info("test_log")
+
+    logger = config_logging(
+        level="info",
+        console_log_level="info",
+        datefmt="default",
+        enable_colored=True
+    )
     logger.info("test_log")
 
 
