@@ -1,13 +1,21 @@
 # coding: utf-8
 # create by tongshiwei on 2019/6/27
 
-from pathlib import PurePath
-import sys
 import json
 import pickle
+import sys
+from pathlib import PurePath
+
 import pytest
+
 from longling import path_append, tmpfile
 from longling.lib.stream import *
+
+
+def test_build_dir(tmp_path_factory):
+    root_dir = tmp_path_factory.mktemp("test_stream_build_dir")
+    build_dir(path_append(root_dir, "new_directory", to_str=True), parse_dir=False)
+    build_dir(path_append(root_dir, "new_directory/1.txt", to_str=False))
 
 
 def test_flush_print(capsys):
