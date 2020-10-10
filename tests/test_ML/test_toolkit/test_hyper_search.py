@@ -11,6 +11,11 @@ def test_hyper_search():
         learning_rate = 0.001
         workspace = ""
 
+    cfg_kwargs, _, _, _ = prepare_hyper_search(
+        {"learning_rate": 0.1}, CFG, primary_key="macro_avg:f1", with_keys="accuracy", disable=True
+    )
+    assert cfg_kwargs == {"learning_rate": 0.1}
+
     cfg_kwargs, reporthook, final_reporthook, dump = prepare_hyper_search(
         {"learning_rate": 0.1}, CFG, primary_key="macro_avg:f1", with_keys="accuracy"
     )
