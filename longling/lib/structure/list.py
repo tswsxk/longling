@@ -40,6 +40,9 @@ class SortedList(list):
     >>> sl.add(("jack", -1), key=lambda x: x[1])
     >>> sl
     [('jack', -1), ('tom', 0), ('harry', 1)]
+    >>> sl.add(("ada", 2))
+    >>> sl
+    [('jack', -1), ('tom', 0), ('harry', 1), ('ada', 2)]
     """
 
     def __init__(self, iterable: Iterable = (), key=None):
