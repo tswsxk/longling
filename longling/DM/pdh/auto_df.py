@@ -2,11 +2,13 @@
 # 2020/8/25 @ tongshiwei
 
 import functools
-from collections import Iterable
-import re
 import logging
-from tqdm import tqdm
+import re
+from collections import Iterable
+
 import pandas as pd
+from tqdm import tqdm
+
 from longling import as_list
 
 __all__ = ["auto_fti", "auto_types", "category2codes", "columns_to_category", "numeric_fill_na", "RegexDict"]
@@ -93,8 +95,8 @@ class _Regex(object):
                 else:
                     self.regex_include_columns.append(re.compile(_pattern_str))
         assert not (
-                (self.exact_include_columns or self.regex_include_columns) and
-                (self.exact_exclude_columns or self.regex_exclude_columns)
+                (self.exact_include_columns or self.regex_include_columns
+                 ) and (self.exact_exclude_columns or self.regex_exclude_columns)
         ), "include mode and exclude mode are exclusive"
 
         self._mode = "include" if self.exact_include_columns or self.regex_include_columns else "exclude"
