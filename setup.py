@@ -30,7 +30,7 @@ ml_base_deps = [
     "pandas",
     "numpy",
     "scipy",
-    "scikit-learn>=0.22.2",
+    "scikit-learn>=0.23.2",
     "matplotlib",
     "tensorboardx",
     "tensorboard"
@@ -141,7 +141,7 @@ setup(
     ],
     extras_require={
         'test': test_deps,
-        'dev': dev_deps,
+        'dev': dev_deps + full_deps,
         'dm': dm_base_deps,
         'ml': ml_base_deps,
         'mx': ml_mx_deps,
