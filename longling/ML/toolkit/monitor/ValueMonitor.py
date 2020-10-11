@@ -74,7 +74,7 @@ class EMAValue(ValueMonitor):
     >>> ema("l2", 1)
     >>> ema["l2"]
     99.01
-    >>> list(ema._values())
+    >>> list(ema.values())
     [99.01]
     >>> list(ema.keys())
     ['l2']
