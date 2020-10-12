@@ -24,6 +24,19 @@ def _get_log_f(verbose=False, logger=logging, level=logging.INFO, **kwargs):
 
 
 class RegexDict(dict):
+    """
+    Examples
+    --------
+    >>> rd = RegexDict({"[a-z]1$": 1, "[a-z]2$": 3}, default_value=5)
+    >>> rd["x1"]
+    1
+    >>> rd["y1"]
+    1
+    >>> rd["z2"]
+    3
+    >>> rd["z3"]
+    5
+    """
     def __init__(self, *args, default_value=None, **kwargs):
         super(RegexDict, self).__init__(*args, **kwargs)
         self._default_value = default_value
@@ -75,7 +88,7 @@ class _Regex(object):
 
     def add(self, *columns):
         for column in as_list(columns):
-            if column is None:
+            if column is None:  # pragma: no cover
                 continue
 
             _match = self._pattern.match(column)
@@ -128,11 +141,11 @@ class _Regex(object):
                 if not _exclude:
                     ret.append(column)
             return ret
-        else:
+        else:  # pragma: no cover
             raise ValueError("mode type should be either include or exclude")
 
 
-def _as_regex(pattern: (str, _Regex, Iterable)):
+def _as_regex(pattern: (str, _Regex, Iterable)):  # pragma: no cover
     if isinstance(pattern, _Regex):
         return pattern
     else:
@@ -164,6 +177,24 @@ def auto_types(df: pd.DataFrame, excluded: (str, Iterable) = None, verbose=False
     Returns
     -------
 
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> df = pd.DataFrame({"a": [1, 2, 3, 4, 5], "b": [0.1, 0.2, 0.3, 0.4, 0.5], "c": ["a", "b", "c", "d", "e"]})
+    >>> df = auto_types(df)
+    >>> df.dtypes
+    a       int64
+    b     float64
+    c    category
+    dtype: object
+    >>> df = pd.DataFrame({"a": [1, 2, 3, 4, 5], "b": [0.1, 0.2, 0.3, 0.4, 0.5], "c": ["a", "b", "c", "d", "e"]})
+    >>> df = auto_types(df, excluded=["c"])
+    >>> df.dtypes
+    a      int64
+    b    float64
+    c     object
+    dtype: object
     """
     __log = _get_log_f(verbose=verbose, **kwargs)
     if excluded:
@@ -202,7 +233,8 @@ def columns_to_datetime(
     Parameters
     ----------
     df
-    columns
+    columns: str or list
+        The columns to be interpreted as datetime
     datetime_format
     pattern_mode: bool
         When pattern mode is set as True,
@@ -212,7 +244,50 @@ def columns_to_datetime(
     Returns
     -------
 
-
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> df = pd.DataFrame({"id": [1, 2, 3], "t": ["1931-09-18", "1949-10-01", "2020-10-12"]})
+    >>> df = columns_to_datetime(df, "t")
+    >>> df.dtypes
+    id             int64
+    t     datetime64[ns]
+    dtype: object
+    >>> df = pd.DataFrame({"t1": ["1931-09-18", "1949-10-01", "unknown"], "t2": ["20201012", "20201013", "unknown"]})
+    >>> df = columns_to_datetime(df, ["t1", "t2"])
+    >>> df.dtypes
+    t1    datetime64[ns]
+    t2    datetime64[ns]
+    dtype: object
+    >>> df
+              t1         t2
+    0 1931-09-18 2020-10-12
+    1 1949-10-01 2020-10-13
+    2        NaT        NaT
+    >>> df = pd.DataFrame({
+    ...     "t1": ["1931-09-18:023358", "1949-10-01:040909"],
+    ...     "t2": ["20201012-011203", "20201013-070301"]
+    ... })
+    >>> df = columns_to_datetime(
+    ...     df, ["t1", "t2"],
+    ...     datetime_format=["%Y-%m-%d:%H%M%S", "%Y%m%d-%H%M%S"]
+    ... )
+    >>> df
+                       t1                  t2
+    0 1931-09-18 02:33:58 2020-10-12 01:12:03
+    1 1949-10-01 04:09:09 2020-10-13 07:03:01
+    >>> df = pd.DataFrame({
+    ...     "t1": ["1931-09-18:023358", "1949-10-01:040909"],
+    ...     "t2": ["20201012-011203", "20201013-070301"]
+    ... })
+    >>> df = columns_to_datetime(
+    ...     df, ["t1", "t2"],
+    ...     datetime_format={"t1": "%Y-%m-%d:%H%M%S", "t2": "%Y%m%d-%H%M%S"}
+    ... )
+    >>> df
+                       t1                  t2
+    0 1931-09-18 02:33:58 2020-10-12 01:12:03
+    1 1949-10-01 04:09:09 2020-10-13 07:03:01
     """
     __log = _get_log_f(verbose=verbose, **kwargs)
 
@@ -230,7 +305,7 @@ def columns_to_datetime(
             __log("datetime format is %s" % datetime_format)
             datetime_format = [datetime_format] * len(columns)
     elif isinstance(datetime_format, dict):
-        assert pattern_mode is True, "set pattern mode as True when datetime_format is dict"
+        # assert pattern_mode is True, "set pattern mode as True when datetime_format is dict"
         columns = _filter_columns(columns, df.columns)
         datetime_format = [
             datetime_format[column] for column in columns
@@ -500,28 +575,3 @@ def auto_fti(df: pd.DataFrame,
         )
 
     return df
-
-
-if __name__ == '__main__':
-    import numpy as np
-
-    logging.getLogger().setLevel(logging.INFO)
-    a = pd.DataFrame([
-        {"a": 1, "b": "2008-03-03", "c": 0.0, "d1": np.nan, "d2": "x", "e": "h", "f": 5},
-        {"a": 1, "b": "2008-03-04", "c": 1.0, "d1": "0"},
-        {"a": 3, "b": "2008-03-05", "c": 3.0, "d1": "1", "f": 3},
-        {"a": 3, "b": "2008-03-06", "c": 3.0, "d1": "1"},
-        {"a": np.nan, "b": "2008-03-07", "c": 4.0, "d1": "2", "d2": "y", "e": "p"},
-    ])
-    a.info()
-    auto_fti(
-        a,
-        category_columns=["d1"],
-        columns_to_code=["$regex:d", "e"],
-        category_code_offset=RegexDict({"^d1$": 1, "^d2$": 3}, default_value=5),
-        datetime_columns=["b"],
-        na_fill_mode="mode",
-        verbose=True
-    )
-    a.info()
-    print(a)
