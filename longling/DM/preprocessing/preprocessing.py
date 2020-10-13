@@ -1,14 +1,15 @@
 # coding: utf-8
 # 2020/8/14 @ tongshiwei
-import numpy as np
 from collections import Counter, OrderedDict
+
+import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils import check_array
 
-__all__ = ["RankGaussianNormalizer"]
+__all__ = ["RankGaussianNormalizer", "rank_gaussian_normalize"]
 
 
-class NPRankGaussianNormalizer(BaseEstimator, TransformerMixin):
+class NPRankGaussianNormalizer(BaseEstimator, TransformerMixin):  # pragma: no cover
     """
     Rank Gaussian Normalization
 
@@ -125,9 +126,19 @@ class NPRankGaussianNormalizer(BaseEstimator, TransformerMixin):
 class RankGaussianNormalizer(BaseEstimator, TransformerMixin):
     """
     Rank Gaussian Normalization
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> array = [0, 2, 1, 3]
+    >>> rgn = RankGaussianNormalizer()
+    >>> np.around(rgn.fit_transform(array), 3)
+    array([-1.623,  0.541,  0.07 ,  1.012], dtype=float32)
+    >>> np.around(rgn.transform([0, 1, 2, 3]), 3)
+    array([-1.623,  0.07 ,  0.541,  1.012], dtype=float32)
     """
 
-    def __init__(self, data=None, precision=np.float32):
+    def __init__(self, precision=np.float32):
         # data: 1D array or list
         self.precision = precision
         self._trans_map = None
@@ -144,6 +155,21 @@ class RankGaussianNormalizer(BaseEstimator, TransformerMixin):
 
     @staticmethod
     def _binary_search(keys, val):
+        """
+
+        Parameters
+        ----------
+        keys
+        val
+
+        Returns
+        -------
+
+        Examples
+        --------
+        >>> RankGaussianNormalizer._binary_search([1, 2, 3, 4, 5], 3)
+        (3, 4)
+        """
         start, end = 0, len(keys) - 1
         while start + 1 < end:
             mid = (start + end) // 2
@@ -161,7 +187,7 @@ class RankGaussianNormalizer(BaseEstimator, TransformerMixin):
 
     def _normal_cdf_inverse(self, p: float) -> float:
         if p <= 0.0 or p >= 1.0:
-            raise Exception('0 < p < 1. The value of p was: {}'.format(p))
+            raise ValueError('0 < p < 1. The value of p was: {}'.format(p))
         if p < 0.5:
             return -self._rational_approximation(np.sqrt(-2.0 * np.log(p)))
         return self._rational_approximation(np.sqrt(-2.0 * np.log(1 - p)))
@@ -236,6 +262,40 @@ class RankGaussianNormalizer(BaseEstimator, TransformerMixin):
             data_out.append(trans_val)
         data_out = np.asarray(data_out, dtype=self.precision)
         return data_out
+
+
+def rank_gaussian_normalize(array, y=None):
+    """
+
+    Parameters
+    ----------
+    array
+    y
+
+    Returns
+    -------
+
+    Examples
+    --------
+    >>> array = [
+    ...     -19.9378, 10.5341, -32.4515, 33.0969, 24.3530, -1.1830, -1.4106, -4.9431,
+    ...     14.2153, 26.3700, -7.6760, 60.3346, 36.2992, -126.8806, 14.2488, -5.0821,
+    ...     1.6958, -21.2168, -49.1075, -8.3084, -1.5748, 3.7900, -2.1561, 4.0756,
+    ...     -9.0289, -13.9533, -9.8466, 79.5876, -13.3332, -111.9568, -24.2531, 120.1174
+    ... ]
+    >>> import numpy as np
+    >>> np.around(rank_gaussian_normalize(array), 3)
+    array([-0.552,  0.409, -0.852,  0.773,  0.61 ,  0.177,  0.122, -0.042,
+            0.472,  0.687, -0.155,  0.987,  0.87 , -2.096,  0.538, -0.098,
+            0.233, -0.637, -1.002, -0.213,  0.068,  0.29 ,  0.013,  0.348,
+           -0.274, -0.474, -0.337,  1.137, -0.403, -1.227, -0.735,  1.363],
+          dtype=float32)
+    >>> np.around(rank_gaussian_normalize([1]), 3)
+    array([0.], dtype=float32)
+    >>> np.around(rank_gaussian_normalize([1, 2]), 3)
+    array([0., 1.], dtype=float32)
+    """
+    return RankGaussianNormalizer().fit_transform(array, y)
 
 
 if __name__ == '__main__':
