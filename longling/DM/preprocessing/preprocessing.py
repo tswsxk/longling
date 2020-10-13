@@ -241,22 +241,22 @@ class RankGaussianNormalizer(BaseEstimator, TransformerMixin):
         # X = check_array(X)
 
         data_out = []
-        trafo_map = self._trans_map
-        keys = list(trafo_map.keys())
+        transform_map = self._trans_map
+        keys = list(transform_map.keys())
         if len(keys) == 0:
-            raise Exception('No transfermation map')
+            raise Exception('No transformation map')
         for i in range(len(X)):
             val = X[i]
             if val <= keys[0]:
-                trans_val = trafo_map[keys[0]]
+                trans_val = transform_map[keys[0]]
             elif val >= keys[-1]:
-                trans_val = trafo_map[keys[-1]]
-            elif val in trafo_map:
-                trans_val = trafo_map[val]
+                trans_val = transform_map[keys[-1]]
+            elif val in transform_map:
+                trans_val = transform_map[val]
             else:
                 lower_key, upper_key = self._binary_search(keys, val)
-                x1, y1 = lower_key, trafo_map[lower_key]
-                x2, y2 = upper_key, trafo_map[upper_key]
+                x1, y1 = lower_key, transform_map[lower_key]
+                x2, y2 = upper_key, transform_map[upper_key]
 
                 trans_val = y1 + (val - x1) * (y2 - y1) / (x2 - x1)
             data_out.append(trans_val)
