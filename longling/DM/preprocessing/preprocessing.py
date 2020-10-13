@@ -136,6 +136,8 @@ class RankGaussianNormalizer(BaseEstimator, TransformerMixin):
     array([-1.623,  0.541,  0.07 ,  1.012], dtype=float32)
     >>> np.around(rgn.transform([0, 1, 2, 3]), 3)
     array([-1.623,  0.07 ,  0.541,  1.012], dtype=float32)
+    >>> np.around(rgn.transform([1.5, 2.5]), 3)
+    array([0.305, 0.776], dtype=float32)
     """
 
     def __init__(self, precision=np.float32):
@@ -243,7 +245,7 @@ class RankGaussianNormalizer(BaseEstimator, TransformerMixin):
         data_out = []
         transform_map = self._trans_map
         keys = list(transform_map.keys())
-        if len(keys) == 0:
+        if len(keys) == 0:  # pragma: no cover
             raise Exception('No transformation map')
         for i in range(len(X)):
             val = X[i]
