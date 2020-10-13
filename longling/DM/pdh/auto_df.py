@@ -11,7 +11,8 @@ from tqdm import tqdm
 
 from longling import as_list
 
-__all__ = ["auto_fti", "auto_types", "category2codes", "columns_to_category", "numeric_fill_na", "RegexDict"]
+__all__ = ["auto_fti", "auto_types", "category2codes", "columns_to_datetime", "columns_to_category", "numeric_fill_na",
+           "RegexDict"]
 
 
 def _log(msg, *args, logger=logging, verbose=False, level=logging.INFO, **kwargs):
@@ -37,6 +38,7 @@ class RegexDict(dict):
     >>> rd["z3"]
     5
     """
+
     def __init__(self, *args, default_value=None, **kwargs):
         super(RegexDict, self).__init__(*args, **kwargs)
         self._default_value = default_value
@@ -72,6 +74,9 @@ class _Regex(object):
     >>> include_regex.add("abc", "$regex:id")
     >>> include_regex(["abc", "subject_id", "bbc"])
     ['abc', 'subject_id']
+    >>> include_regex = _Regex(["$regex:.*"])
+    >>> include_regex(["abc", "subject_id", "bbc"])
+    ['abc', 'subject_id', 'bbc']
     """
 
     def __init__(self, columns: Iterable = None):
@@ -325,6 +330,7 @@ def columns_to_category(df: pd.DataFrame,
                         pattern_mode=True,
                         code_pattern_mode=None,
                         verbose=False,
+                        inplace=True,
                         *args, **kwargs):
     """
     transfer the specified columns into category type
@@ -342,13 +348,51 @@ def columns_to_category(df: pd.DataFrame,
         When pattern mode is set as True,
         matching columns will be inferred using regex pattern, which is time consuming
     verbose
+    inplace
     args
     kwargs
 
     Returns
     -------
 
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> df = pd.DataFrame({"a": [1, 2, 300, 4, 5], "b": [0.1, 0.2, 0.3, 0.4, 0.5], "a2": ["a", "b", "c", "d", "e"]})
+    >>> df.dtypes
+    a       int64
+    b     float64
+    a2     object
+    dtype: object
+    >>> df = columns_to_category(df, ["a2"])
+    >>> df.dtypes
+    a        int64
+    b      float64
+    a2    category
+    dtype: object
+    >>> columns_to_category(df, ["a2"], to_codes=True, columns_to_codes=["a2"])
+         a    b  a2
+    0    1  0.1   1
+    1    2  0.2   2
+    2  300  0.3   3
+    3    4  0.4   4
+    4    5  0.5   5
+    >>> columns_to_category(df, ["a", "b"], to_codes=True, offset=0, inplace=False)
+       a  b  a2
+    0  0  0   1
+    1  1  1   2
+    2  4  2   3
+    3  2  3   4
+    4  3  4   5
+    >>> columns_to_category(df, ["a"], to_codes=True, offset=2, inplace=False)
+       a    b  a2
+    0  2  0.1   1
+    1  3  0.2   2
+    2  6  0.3   3
+    3  4  0.4   4
+    4  5  0.5   5
     """
+    df = df if inplace else df.copy()
     __log = _get_log_f(verbose=verbose, **kwargs)
 
     columns = as_list(columns)
@@ -364,6 +408,7 @@ def columns_to_category(df: pd.DataFrame,
             "category",
         )
     if to_codes:
+        columns_to_codes = columns if not columns_to_codes else columns_to_codes
         code_pattern_mode = pattern_mode if code_pattern_mode is None else code_pattern_mode
         columns = _filter_columns(columns_to_codes, columns) if code_pattern_mode else as_list(columns_to_codes)
         category2codes(df, columns=columns, verbose=verbose, pattern_mode=False, **kwargs)
@@ -373,7 +418,7 @@ def columns_to_category(df: pd.DataFrame,
 
 def category2codes(
         df: pd.DataFrame, offset: (int, list, dict) = 1, columns: (str, Iterable) = None,
-        pattern_mode=True, verbose=False,
+        pattern_mode=True, verbose=False, inplace=True,
         **kwargs):
     """
     numerically encoding the categorical columns
@@ -381,17 +426,59 @@ def category2codes(
     Parameters
     ----------
     df: pd.DataFrame
-    offset: (int, list, dict)
+    offset: int, list, dict
         0 or 1, default to 1 for the situation where exception or nan exists.
     columns: str or Iterable
         categorical column to transfer to codes
-    pattern_mode
+    pattern_mode: bool
+        When pattern mode is set as True,
+        matching columns will be inferred using regex pattern, which is time consuming
     verbose
+    inplace
 
     Returns
     -------
 
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> df = pd.DataFrame({"a1": [1, 2, 300], "a2": [0.1, 0.2, 0.3], "b": ["a", "c", "d"]})
+    >>> df.dtypes
+    a1      int64
+    a2    float64
+    b      object
+    dtype: object
+    >>> df = columns_to_category(df, ["a1", "a2", "b"])
+    >>> df.dtypes
+    a1    category
+    a2    category
+    b     category
+    dtype: object
+    >>> category2codes(df, offset=[0, 1, 2], inplace=False)
+       a1  a2  b
+    0   0   1  2
+    1   1   2  3
+    2   2   3  4
+    >>> category2codes(df, offset=0, columns=["$regex:^a.*$"], pattern_mode=True, inplace=False)
+       a1  a2  b
+    0   0   0  a
+    1   1   1  c
+    2   2   2  d
+    >>> category2codes(df, offset={"a1": 0, "a2": 1, "b": 0}, inplace=False)
+       a1  a2  b
+    0   0   1  0
+    1   1   2  1
+    2   2   3  2
+    >>> from collections import defaultdict
+    >>> d_offset = defaultdict(int)
+    >>> d_offset.update({"a1": 2, "a2": 1})
+    >>> category2codes(df, offset=d_offset, inplace=False)
+       a1  a2  b
+    0   2   1  0
+    1   3   2  1
+    2   4   3  2
     """
+    df = df if inplace else df.copy()
     __log = _get_log_f(verbose=verbose, **kwargs)
 
     columns = as_list(columns) if columns else df.select_dtypes(include=["category"]).columns.values.tolist()
@@ -408,7 +495,7 @@ def category2codes(
             __log("offset is %s" % offset)
             offset = [offset] * len(columns)
     elif isinstance(offset, dict):
-        assert pattern_mode is True, "set pattern mode as True when offset is dict"
+        # assert pattern_mode is True, "set pattern mode as True when offset is dict"
         columns = _filter_columns(columns, df.columns)
         offset = [
             offset[column] for column in columns
@@ -426,7 +513,7 @@ def category2codes(
 def numeric_fill_na(
         df: pd.DataFrame, columns: (str, Iterable) = None,
         mode: (str, dict, Iterable) = "mean", pattern_mode=False, verbose=False,
-        errors="raise",
+        errors="raise", inplace=True,
         *args, **kwargs):
     """
 
@@ -434,17 +521,55 @@ def numeric_fill_na(
     ----------
     df
     columns
-    mode
+    mode: str, list, dict
     pattern_mode
     verbose
     errors
+    inplace
     args
     kwargs
 
     Returns
     -------
 
+    Examples
+    --------
+    >>> import pandas as pd, numpy as np
+    >>> df = pd.DataFrame({"a1": [1, np.nan, 300], "a2": [0.1, 0.2, np.nan], "b": [np.nan, 3, 5]})
+    >>> numeric_fill_na(df, inplace=False)
+          a1    a2    b
+    0    1.0  0.10  4.0
+    1  150.5  0.20  3.0
+    2  300.0  0.15  5.0
+    >>> numeric_fill_na(df, mode="max", inplace=False)
+          a1   a2    b
+    0    1.0  0.1  5.0
+    1  300.0  0.2  3.0
+    2  300.0  0.2  5.0
+    >>> numeric_fill_na(df, mode=["min", "max", "mean"], inplace=False)
+          a1   a2    b
+    0    1.0  0.1  4.0
+    1    1.0  0.2  3.0
+    2  300.0  0.2  5.0
+    >>> from collections import defaultdict
+    >>> d_mode = defaultdict(lambda : "mean", {"a1": "min", "a2": "max"})
+    >>> numeric_fill_na(df, mode=d_mode, inplace=False)
+          a1   a2    b
+    0    1.0  0.1  4.0
+    1    1.0  0.2  3.0
+    2  300.0  0.2  5.0
+    >>> numeric_fill_na(df, mode="error", inplace=False, errors="zero")
+          a1   a2    b
+    0    1.0  0.1  0.0
+    1    0.0  0.2  3.0
+    2  300.0  0.0  5.0
+    >>> numeric_fill_na(df, mode="error", inplace=False, errors="ignore")
+          a1   a2    b
+    0    1.0  0.1  NaN
+    1    NaN  0.2  3.0
+    2  300.0  NaN  5.0
     """
+    df = df if inplace else df.copy()
     __log = _get_log_f(verbose=verbose, **kwargs)
 
     df_columns = df.select_dtypes(include=['float64', 'int64']).columns.values.tolist()
@@ -462,7 +587,7 @@ def numeric_fill_na(
             __log("mode is %s" % mode)
             mode = [mode] * len(columns)
     elif isinstance(mode, dict):
-        assert pattern_mode is True, "set pattern mode as True when mode is dict"
+        # assert pattern_mode is True, "set pattern mode as True when mode is dict"
         columns = _filter_columns(columns, df.columns)
         mode = [
             mode[column] for column in columns
@@ -500,7 +625,7 @@ def auto_fti(df: pd.DataFrame,
              category_code_offset: (int, list, dict) = 1,
              datetime_columns: (str, Iterable) = None, datetime_format: (str, Iterable) = None,
              auto_na_fill: bool = True, columns_to_fill_na: (str, Iterable) = None, na_fill_mode="mean",
-             verbose=False,
+             verbose=False, inplace=True,
              **kwargs):
     """
     automatically feature typing and imputation
@@ -519,6 +644,7 @@ def auto_fti(df: pd.DataFrame,
     columns_to_fill_na
     na_fill_mode
     verbose
+    inplace
 
     kwargs
 
@@ -528,9 +654,35 @@ def auto_fti(df: pd.DataFrame,
 
     Examples
     --------
-
-
+    >>> import pandas as pd, numpy as np
+    >>> from collections import defaultdict
+    >>> df = pd.DataFrame({
+    ...     "id": [3, 100, 931],
+    ...     "age": [18, 17, 13],
+    ...     "birthday": ["20020103", "20010907", "unknown"],
+    ...     "score": [90, 35, np.nan],
+    ...     "gender": ["man", "woman", "unknown"],
+    ... })
+    >>> df = auto_fti(
+    ...     df,
+    ...     datetime_columns=["birthday"],
+    ...     category_columns=["id", "gender"],
+    ...     category_code_offset=defaultdict(lambda : 1, {"gender": 0})
+    ... )
+    >>> df.dtypes
+    id                    int8
+    age                  int64
+    birthday    datetime64[ns]
+    score              float64
+    gender                int8
+    dtype: object
+    >>> df
+       id  age   birthday  score  gender
+    0   1   18 2002-01-03   90.0       0
+    1   2   17 2001-09-07   35.0       2
+    2   3   13        NaT   62.5       1
     """
+    df = df if inplace else df.copy()
     __log = _get_log_f(verbose=verbose, **kwargs)
 
     if type_inference:
