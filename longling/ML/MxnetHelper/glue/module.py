@@ -13,11 +13,9 @@ __all__ = ["Module"]
 
 
 class Module(DL.Module):
-    @property
     def fit_f(self):
         raise NotImplementedError
 
-    @property
     def sym_gen(self):
         raise NotImplementedError
 
@@ -52,8 +50,7 @@ class Module(DL.Module):
     def epoch_params_filename(self, epoch):
         raise NotImplementedError
 
-    @property
-    def net_initialize(self):
+    def net_initialize(self, *args, **kwargs):
         """初始化网络参数"""
         raise NotImplementedError
 
