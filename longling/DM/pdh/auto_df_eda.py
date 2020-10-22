@@ -22,5 +22,5 @@ def plot_numeric(df: pd.DataFrame, plt_show=False, include: list = None, max_col
     df_num = df.select_dtypes(include=include)
     df_num.hist(figsize=(16, 20), bins=50, xlabelsize=8, ylabelsize=8)
 
-    if plt_show:
+    if plt_show:  # pragma: no cover
         plt.show()

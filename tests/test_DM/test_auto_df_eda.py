@@ -3,7 +3,7 @@
 
 import pandas as pd
 
-from longling.DM import quick_glance
+from longling.DM import quick_glance, plot_numeric
 
 
 def test_auto_df_eda():
@@ -13,3 +13,5 @@ def test_auto_df_eda():
     })
 
     quick_glance(df)
+
+    plot_numeric(df, max_column_num=1)

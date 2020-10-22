@@ -140,8 +140,8 @@ setup(
         "PyYAML",
     ],
     extras_require={
-        'test': test_deps,
-        'dev': dev_deps + full_deps,
+        'test': test_deps + full_deps,
+        'dev': dev_deps,
         'dm': dm_base_deps,
         'ml': ml_base_deps,
         'mx': ml_mx_deps,

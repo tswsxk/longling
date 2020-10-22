@@ -1,7 +1,9 @@
 # coding: utf-8
 # 2020/4/19 @ tongshiwei
 
+import time
 import pytest
+
 from longling.ML.toolkit.monitor.ProgressMonitor import ConsoleProgressMonitor, ConsoleProgressMonitorPlayer
 
 
@@ -12,6 +14,7 @@ def test_monitor_player():
     player = ConsoleProgressMonitorPlayer({"Loss": ["l2"]}, values=values)
     with player.watching():
         for i in range(100):
+            time.sleep(0.00001)
             player(i, Loss={"l2": 1})
     print(player.time)
 
