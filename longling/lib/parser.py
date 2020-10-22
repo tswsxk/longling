@@ -143,6 +143,19 @@ def var2exp(var_str, env_wrap=lambda x: x):
     return exp
 
 
+def is_classmethod(method):
+    bound_to = getattr(method, '__self__', None)
+    if not isinstance(bound_to, type):
+        # must be bound to a class
+        return False
+    name = method.__name__
+    for cls in bound_to.__mro__:
+        descriptor = vars(cls).get(name)
+        if descriptor is not None:
+            return isinstance(descriptor, classmethod)
+    return False
+
+
 class Configuration(object):
     """自定义的配置文件基类"""
 
@@ -519,8 +532,10 @@ class ConfigurationParser(argparse.ArgumentParser):
     def func_spec(f):
         """获取函数参数表"""
         argspec = inspect.getfullargspec(f)
+        argspec_args = argspec.args[1:] if is_classmethod(f) else argspec.args[1:]
+
         return f.__name__, args_zips(
-            argspec.args, argspec.defaults
+            argspec_args, argspec.defaults
         ) + args_zips(
             argspec.kwonlyargs,
             argspec.kwonlydefaults.values() if argspec.kwonlydefaults else []
@@ -647,3 +662,17 @@ class Formatter(object):
     def format(*format_string, formatter=None):
         formatter = Formatter(formatter)
         return formatter(*format_string)
+
+
+if __name__ == '__main__':
+    class TestCls(Configuration):
+        a = 1
+
+        @classmethod
+        def cls_m(cls, new_a):
+            cls.a = new_a
+
+
+    parser = ConfigurationParser(TestCls)
+    parser.add_command(TestCls.cls_m)
+    print(parser("cls_m 1"))
