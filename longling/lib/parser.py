@@ -171,6 +171,10 @@ def is_classmethod(method):
     False
     >>> is_classmethod(obj.c)
     True
+    >>> def fun():
+    ...     pass
+    >>> is_classmethod(fun)
+    False
     """
     bound_to = getattr(method, '__self__', None)
     if not isinstance(bound_to, type):
