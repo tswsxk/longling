@@ -16,7 +16,8 @@ test_deps = [
 
 dev_deps = test_deps + [
     'setuptools>=40',
-    'wheel'
+    'wheel',
+    'twine'
 ]
 
 dm_base_deps = [
