@@ -144,6 +144,34 @@ def var2exp(var_str, env_wrap=lambda x: x):
 
 
 def is_classmethod(method):
+    """
+
+    Parameters
+    ----------
+    method
+
+    Returns
+    -------
+
+    Examples
+    --------
+    >>> class A:
+    ...     def a(self):
+    ...         pass
+    ...     @staticmethod
+    ...     def b():
+    ...         pass
+    ...     @classmethod
+    ...     def c(cls):
+    ...         pass
+    >>> obj = A()
+    >>> is_classmethod(obj.a)
+    False
+    >>> is_classmethod(obj.b)
+    False
+    >>> is_classmethod(obj.c)
+    True
+    """
     bound_to = getattr(method, '__self__', None)
     if not isinstance(bound_to, type):
         # must be bound to a class
@@ -419,6 +447,21 @@ class ConfigurationParser(argparse.ArgumentParser):
     >>> parser = ConfigurationParser(TestCC)
     >>> parser("--c _c=int(3);_d=float(0.3)")
     {'c': {'_c': 3, '_d': 0.3}}
+    >>> class TestCls:
+    ...     def a(self, a=1):
+    ...         return a
+    ...     @staticmethod
+    ...     def b(b=2):
+    ...         return b
+    ...     @classmethod
+    ...     def c(cls, c=3):
+    ...         return c
+    >>> parser = ConfigurationParser(TestCls, commands=[TestCls.b, TestCls.c])
+    >>> parser("b")
+    {'b': 2, 'subcommand': 'b'}
+    >>> parser("c")
+    {'c': 3, 'subcommand': 'c'}
+
     """
 
     def __init__(self, class_type, excluded_names: (set, None) = None, commands=None, *args, **kwargs):
