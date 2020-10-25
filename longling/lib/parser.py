@@ -532,7 +532,7 @@ class ConfigurationParser(argparse.ArgumentParser):
     def func_spec(f):
         """获取函数参数表"""
         argspec = inspect.getfullargspec(f)
-        argspec_args = argspec.args[1:] if is_classmethod(f) else argspec.args[1:]
+        argspec_args = argspec.args[1:] if is_classmethod(f) else argspec.args
 
         return f.__name__, args_zips(
             argspec_args, argspec.defaults
