@@ -52,11 +52,10 @@ version: .build
 	@echo $(VERSION)
 
 release: test, build
-	@echo "publish to pypi and release in github"
+	@echo "publish to pypi"
 	@echo "version $(VERSION)"
 
 	-@twine upload dist/* && git tag "v$(VERSION)"
-	git push && git push --tags
 
 release_test: test, build
 	@echo "publish to test pypi"
