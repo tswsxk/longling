@@ -20,14 +20,9 @@ def describe(array, op: (str, list) = None):
 
     Examples
     ---------
-    >>> import random
     >>> a = range(10)
     >>> describe(a)
-
-    >>> random.seed(10)
-    >>> a = [random.uniform(0, 1) for _ in range(100)]
-    >>> describe(a)
-
+    {'mean': 4.5, 'min': 0, 'max': 9, 'var': 9.166666666666666, 'skew': 0.0, 'kurtosis': -1.2242424242424244}
     """
     result = {}
 
@@ -47,6 +42,5 @@ def describe(array, op: (str, list) = None):
     })
 
     res = pd.Series(array).describe()
-    print(res)
 
     return result
