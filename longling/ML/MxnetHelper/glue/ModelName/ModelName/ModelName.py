@@ -137,7 +137,7 @@ class ModelName(DL.CliServiceModule):
         from longling import path_append
         from longling.lib.clock import Clock
         from longling.lib.utilog import config_logging
-        from longling.ML.toolkit import EvalFormatter as Formatter
+        from longling.ML.toolkit import EpochEvalFMT as Formatter
         from longling.ML.toolkit import MovingLoss, ConsoleProgressMonitor as ProgressMonitor
 
         self.toolbox = {
