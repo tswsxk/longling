@@ -55,7 +55,7 @@ release: test, build
 	@echo "publish to pypi"
 	@echo "version $(VERSION)"
 
-	-@twine upload dist/* && git tag "v$(VERSION)"
+	-@twine upload dist/*
 
 release_test: test, build
 	@echo "publish to test pypi"
