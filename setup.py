@@ -118,6 +118,7 @@ setup(
             "*.ML.MxnetHelper*",
             "*.ML.PytorchHelper*",
             "*.ML.toolkit*",
+            "*.ML.utils*",
         ],
         exclude=[
             "*.mx_example", "*.gluon_example*", "*.gluon_exp*",
