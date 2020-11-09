@@ -1,7 +1,8 @@
 # coding: utf-8
 # Copyright @tongshiwei
-from longling.ML import DL
 import mxnet as mx
+
+from longling.ML import DL
 
 try:
     from .Module import *
