@@ -12,7 +12,8 @@ except (SystemError, ModuleNotFoundError):  # pragma: no cover
 
 class ModelName(DL.CliServiceModule):
     def __init__(
-            self, load_epoch=None, cfg=None, toolbox_init=False, **kwargs
+            self,
+            load_epoch=None, cfg=None, toolbox_init=False, **kwargs
     ):
         """
         模型初始化
@@ -28,6 +29,7 @@ class ModelName(DL.CliServiceModule):
             默认为 False，是否初始化工具包
         kwargs
             参数配置可选参数
+            init_model_file: 初始化模型参数路径
         """
         # 1 配置参数初始化
         # todo 到Configuration处定义相关参数
@@ -56,6 +58,10 @@ class ModelName(DL.CliServiceModule):
 
         if toolbox_init:
             self.toolbox_init(**self.mod.cfg.toolbox_params)
+
+    @staticmethod
+    def get_module_cls():
+        return Module
 
     @staticmethod
     def get_configuration_cls():
