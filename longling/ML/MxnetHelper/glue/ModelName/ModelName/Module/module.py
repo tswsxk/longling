@@ -2,6 +2,7 @@
 # Copyright @tongshiwei
 from __future__ import absolute_import
 
+import logging
 import os
 
 import mxnet as mx
@@ -87,10 +88,17 @@ class Module(module.Module):
     @staticmethod
     def get_trainer(
             net, optimizer='sgd', optimizer_params=None, lr_params=None,
-            select=Configuration.train_select
+            select=Configuration.train_select, logger=logging, *args, **kwargs
     ):
         return module.Module.get_trainer(
-            net, optimizer, optimizer_params, lr_params, select
+            net=net,
+            optimizer=optimizer,
+            optimizer_params=optimizer_params,
+            lr_params=lr_params,
+            select=select,
+            logger=logger,
+            *args,
+            **kwargs,
         )
 
     def save_params(self, filename, net):
