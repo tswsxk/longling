@@ -55,7 +55,8 @@ class Module(DL.Module):
         raise NotImplementedError
 
     @staticmethod
-    def get_trainer(net, optimizer='sgd', optimizer_params=None, lr_params=None, select=None, logger=logging):
+    def get_trainer(net, optimizer='sgd', optimizer_params=None, lr_params=None, select=None, logger=logging,
+                    *args, **kwargs):
         """把优化器安装到网络上"""
         if lr_params:
             if "update_params" in lr_params and len(lr_params) == 1:
