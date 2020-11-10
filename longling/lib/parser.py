@@ -135,7 +135,7 @@ def var2exp(var_str, env_wrap=lambda x: x):
 
     env_vars = pattern.findall(var_str)
 
-    exp = """str("%s").format(%s)""" % (
+    exp = """str(r"%s").format(%s)""" % (
         re.sub(r"\$\w+", "{}", var_str), ",".join(
             [env_wrap(env_var) for env_var in env_vars]
         )
