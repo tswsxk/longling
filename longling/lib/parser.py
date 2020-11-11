@@ -263,11 +263,15 @@ class Configuration(object):
         )
 
     @classmethod
+    def load_parse_function(cls):
+        return None
+
+    @classmethod
     def load_cfg(cls, cfg_path, file_format="json", **kwargs):
         """从配置文件中装载配置参数"""
         with open(cfg_path) as f:
             params = load_configuration(
-                f, file_format=file_format, load_parse_function=None
+                f, file_format=file_format, load_parse_function=cls.load_parse_function()
             )
         params.update(kwargs)
         return params
