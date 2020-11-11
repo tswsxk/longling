@@ -267,8 +267,14 @@ class Configuration(object):
         return None
 
     @classmethod
-    def load_cfg(cls, cfg_path, file_format="json", **kwargs):
+    def default_file_format(cls):
+        return "json"
+
+    @classmethod
+    def load_cfg(cls, cfg_path, file_format=None, **kwargs):
         """从配置文件中装载配置参数"""
+        file_format = file_format if file_format is not None else cls.default_file_format()
+
         with open(cfg_path) as f:
             params = load_configuration(
                 f, file_format=file_format, load_parse_function=cls.load_parse_function()
@@ -277,15 +283,16 @@ class Configuration(object):
         return params
 
     @classmethod
-    def load(cls, cfg_path, file_format="json", **kwargs):
+    def load(cls, cfg_path, file_format=None, **kwargs):
         """
         从配置文件中装载配置类
 
         Updated in version 1.3.16
         """
+        file_format = file_format if file_format is not None else cls.default_file_format()
         return cls(**cls.load_cfg(cfg_path, file_format=file_format, **kwargs))
 
-    def dump(self, cfg_path: str, override=False, file_format="json"):
+    def dump(self, cfg_path: str, override=False, file_format=None):
         """
         将配置参数写入文件
 
@@ -305,6 +312,8 @@ class Configuration(object):
         self.logger.info(
             "writing configuration parameters to %s" % os.path.abspath(cfg_path)
         )
+        file_format = file_format if file_format is not None else self.default_file_format()
+
         with wf_open(cfg_path) as wf:
             if file_format == "json":
                 json.dump(self.parsable_var, wf, indent=2)
