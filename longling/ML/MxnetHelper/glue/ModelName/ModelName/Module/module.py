@@ -2,6 +2,7 @@
 # Copyright @tongshiwei
 from __future__ import absolute_import
 
+import functools
 import logging
 import os
 
@@ -66,12 +67,15 @@ class Module(module.Module):
         )
         self.logger = configuration.logger
 
+    @functools.wraps(fit_f)
     def fit_f(self, *args, **kwargs):
         return fit_f(*args, **kwargs)
 
+    @functools.wraps(get_net)
     def sym_gen(self, *args, **kwargs):
         return get_net(*args, **kwargs)
 
+    @functools.wraps(net_init)
     def net_initialize(self, *args, **kwargs):
         return net_init(*args, **kwargs)
 
@@ -86,6 +90,7 @@ class Module(module.Module):
 
     # 部分定义训练相关的方法
     @staticmethod
+    @functools.wraps(module.Module.get_trainer)
     def get_trainer(
             net, optimizer='sgd', optimizer_params=None, lr_params=None,
             select=Configuration.train_select, logger=logging, *args, **kwargs
