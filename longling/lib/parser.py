@@ -263,19 +263,23 @@ class Configuration(object):
         )
 
     @classmethod
-    def load_cfg(params_path, cfg_path, file_format="json", **kwargs):
+    def load_cfg(cls, cfg_path, file_format="json", **kwargs):
         """从配置文件中装载配置参数"""
         with open(cfg_path) as f:
             params = load_configuration(
-                f, load_parse_function=None
+                f, file_format=file_format, load_parse_function=None
             )
         params.update(kwargs)
         return params
 
     @classmethod
-    def load(cls, cfg_path, **kwargs):
-        """从配置文件中装载配置类"""
-        return cls(**cls.load_cfg(cfg_path, **kwargs))
+    def load(cls, cfg_path, file_format="json", **kwargs):
+        """
+        从配置文件中装载配置类
+
+        Updated in version 1.3.16
+        """
+        return cls(**cls.load_cfg(cfg_path, file_format=file_format, **kwargs))
 
     def dump(self, cfg_path: str, override=False, file_format="json"):
         """
