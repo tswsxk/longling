@@ -135,6 +135,7 @@ setup(
         "tqdm",
         "fire",
         "PyYAML",
+        "toml",
     ],
     extras_require={
         'test': test_deps + full_deps,

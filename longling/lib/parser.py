@@ -11,15 +11,18 @@ import json
 import logging
 import os
 import re
-from collections import Iterable
 import sys
+from collections import Iterable
+
+import toml
+import yaml
 
 from longling import wf_open
 from longling.lib.path import path_append
 
 __all__ = [
     "CLASS_EXCLUDE_NAMES", "get_class_var",
-    "get_parsable_var", "load_configuration_json",
+    "get_parsable_var", "load_configuration",
     "var2exp", "path_append",
     "Configuration", "ConfigurationParser",
     "Formatter"
@@ -107,9 +110,27 @@ def get_parsable_var(class_obj, parse_exclude: set = None, dump_parse_functions=
     return parse_params(params, dump_parse_functions)
 
 
-def load_configuration_json(fp, load_parse_function=None):
-    """装载配置文件"""
-    params = json.load(fp)
+def load_configuration(fp, file_format="json", load_parse_function=None):
+    """
+    装载配置文件
+
+    Updated in version 1.3.16
+
+    Parameters
+    ----------
+    fp
+    file_format
+    load_parse_function
+
+    """
+    if file_format == "json":
+        params = json.load(fp)
+    elif file_format == "toml":
+        params = toml.load(fp)
+    elif file_format == "yaml":
+        params = yaml.load(fp)
+    else:
+        raise TypeError("Unsupported file format: %s, only `json`, `toml` and `yaml` are supported" % file_format)
     return parse_params(params, load_parse_function)
 
 
@@ -241,11 +262,11 @@ class Configuration(object):
             dump_parse_functions=None,
         )
 
-    @staticmethod
-    def load_cfg(params_json, **kwargs):
+    @classmethod
+    def load_cfg(params_path, cfg_path, file_format="json", **kwargs):
         """从配置文件中装载配置参数"""
-        with open(params_json) as f:
-            params = load_configuration_json(
+        with open(cfg_path) as f:
+            params = load_configuration(
                 f, load_parse_function=None
             )
         params.update(kwargs)
@@ -256,14 +277,37 @@ class Configuration(object):
         """从配置文件中装载配置类"""
         return cls(**cls.load_cfg(cfg_path, **kwargs))
 
-    def dump(self, cfg_json: str, override=False):
-        """将配置参数写入文件"""
-        if os.path.isfile(cfg_json) and not override:
-            self.logger.warning("file %s existed, dump aborted" % cfg_json)
+    def dump(self, cfg_path: str, override=False, file_format="json"):
+        """
+        将配置参数写入文件
+
+        Updated in version 1.3.16
+
+        Parameters
+        ----------
+        cfg_path: str
+        override: bool
+        file_format: str
+        """
+        if os.path.isfile(cfg_path) and not override:
+            self.logger.warning(
+                "file %s existed, dump aborted" % os.path.abspath(cfg_path)
+            )
             return
-        self.logger.info("writing configuration parameters to %s" % cfg_json)
-        with wf_open(cfg_json) as wf:
-            json.dump(self.parsable_var, wf, indent=4)
+        self.logger.info(
+            "writing configuration parameters to %s" % os.path.abspath(cfg_path)
+        )
+        with wf_open(cfg_path) as wf:
+            if file_format == "json":
+                json.dump(self.parsable_var, wf, indent=2)
+            elif file_format == "toml":
+                toml.dump(self.parsable_var, wf)
+            elif file_format == "yaml":
+                yaml.dump(self.parsable_var, wf)
+            else:
+                raise TypeError(
+                    "Unsupported file format: %s, only `json`, `toml` and `yaml` are supported" % file_format
+                )
 
     def __str__(self):
         string = []
@@ -718,6 +762,7 @@ if __name__ == '__main__':
         @classmethod
         def cls_m(cls, new_a):
             cls.a = new_a
+
 
     parser = ConfigurationParser(TestCls)
     parser.add_command(TestCls.cls_m)
