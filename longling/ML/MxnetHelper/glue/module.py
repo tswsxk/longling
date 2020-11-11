@@ -3,20 +3,21 @@
 import logging
 import re
 
+import functools
 import mxnet as mx
 from mxnet import gluon, nd
 
 from longling.ML import DL
 from longling.ML.MxnetHelper.toolkit.init import load_net
 
-__all__ = ["Module"]
+__all__ = ["Module", "module_wrapper"]
 
 
 class Module(DL.Module):
-    def fit_f(self):
+    def fit_f(self, *args, **kwargs):
         raise NotImplementedError
 
-    def sym_gen(self):
+    def sym_gen(self, *args, **kwargs):
         raise NotImplementedError
 
     def load(self, net, epoch, ctx=mx.cpu(), allow_missing=False,
@@ -83,24 +84,37 @@ class Module(DL.Module):
 
 def module_wrapper(
         module_cls: type(Module),
-        net_gen_func,
-        fit_func, configuration_cls=None):
-    _select = configuration_cls.train_select if configuration_cls is not None else None
+        net_gen_func=None,
+        fit_func=None,
+        net_init_func=None):
+    """
+
+    Parameters
+    ----------
+    module_cls
+    net_gen_func
+    fit_func
+    net_init_func
+
+    Returns
+    -------
+
+    """
+    net_gen_func = module_cls.sym_gen if net_gen_func is None else net_gen_func
+    fit_func = module_cls.fit_f if fit_func is None else fit_func
+    net_init_func = module_cls.net_initialize if net_init_func is None else net_init_func
 
     class MetaModule(module_cls):
-        @property
-        def sym_gen(self):
-            return net_gen_func
+        @functools.wraps(net_gen_func)
+        def sym_gen(self, *args, **kwargs):
+            return net_gen_func(*args, **kwargs)
 
-        @property
-        def fit_func(self):
-            return fit_func
+        @functools.wraps(fit_func)
+        def fit_f(self, *args, **kwargs):
+            return fit_func(*args, **kwargs)
 
-        @staticmethod
-        def get_trainer(net, optimizer='sgd', optimizer_params=None, lr_params=None, select=_select):
-            """把优化器安装到网络上"""
-            return module_cls.get_trainer(
-                net, optimizer, optimizer_params, lr_params, select
-            )
+        @functools.wraps(net_init_func)
+        def net_initialize(self, *args, **kwargs):
+            return net_init_func(*args, **kwargs)
 
     return MetaModule
