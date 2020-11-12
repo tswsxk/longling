@@ -1,15 +1,12 @@
 # coding: utf-8
 # create by tongshiwei on 2019/4/12
-import logging
-import re
-
 import functools
+import logging
+
 import mxnet as mx
-from mxnet import gluon, nd
 
 from longling.ML import DL
-from longling.ML.MxnetHelper.toolkit.init import load_net
-from longling.ML.MxnetHelper.toolkit import get_trainer
+from longling.ML.MxnetHelper.toolkit import get_trainer, load_net, save_params
 
 __all__ = ["Module", "module_wrapper"]
 
@@ -66,21 +63,9 @@ class Module(DL.Module):
         )
 
     @staticmethod
+    @functools.wraps(save_params)
     def save_params(filename, net, select):
-        """
-        Notes
-        ------
-        Q: Why not use the `save_parameters` in `mxnet.gluon`.
-        A: Because we want to use the `select` argument to only preserve those parameters we want
-        (i.e., excluding those unnecessary parameters such as pretrained embedding).
-        """
-        params = net._collect_params_with_prefix()
-        if select:
-            pattern = re.compile(select)
-            params = {name: value for name, value in params.items() if
-                      pattern.match(name)}
-        arg_dict = {key: val._reduce() for key, val in params.items()}
-        nd.save(filename, arg_dict)
+        save_params(filename=filename, net=net, select=select)
 
 
 def module_wrapper(
