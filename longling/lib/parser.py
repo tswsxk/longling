@@ -341,8 +341,12 @@ class Configuration(object):
     def items(self):
         return {k: v for k, v in self.parsable_var.items()}
 
-    @staticmethod
-    def excluded_names():
+    @classmethod
+    def run_time_variables(cls):
+        return {'logger'}
+
+    @classmethod
+    def excluded_names(cls):
         """
         获取非参变量集
 
@@ -353,7 +357,7 @@ class Configuration(object):
         """
         return CLASS_EXCLUDE_NAMES | {
             'class_var', 'parsable_var', 'items', 'load', 'dump'
-        } | {'logger'}
+        } | cls.run_time_variables()
 
 
 def value_parse(value):
