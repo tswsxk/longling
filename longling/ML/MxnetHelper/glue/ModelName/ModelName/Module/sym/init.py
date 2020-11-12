@@ -2,7 +2,7 @@
 # 2020/8/16 @ tongshiwei
 
 import logging
-from longling.ML.MxnetHelper.toolkit.init import net_initialize, load_net
+from longling.ML.MxnetHelper.toolkit import net_initialize, load_net
 
 
 def net_init(
