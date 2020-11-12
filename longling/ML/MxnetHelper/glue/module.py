@@ -73,6 +73,13 @@ class Module(DL.Module):
 
     @staticmethod
     def save_params(filename, net, select):
+        """
+        Notes
+        ------
+        Q: Why not use the `save_parameters` in `mxnet.gluon`.
+        A: Because we want to use the `select` argument to only preserve those parameters we want
+        (i.e., excluding those unnecessary parameters such as pretrained embedding).
+        """
         params = net._collect_params_with_prefix()
         if select:
             pattern = re.compile(select)
