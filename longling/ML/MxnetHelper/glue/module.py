@@ -9,6 +9,7 @@ from mxnet import gluon, nd
 
 from longling.ML import DL
 from longling.ML.MxnetHelper.toolkit.init import load_net
+from longling.ML.MxnetHelper.toolkit import get_trainer
 
 __all__ = ["Module", "module_wrapper"]
 
@@ -56,20 +57,13 @@ class Module(DL.Module):
         raise NotImplementedError
 
     @staticmethod
+    @functools.wraps(get_trainer)
     def get_trainer(net, optimizer='sgd', optimizer_params=None, lr_params=None, select=None, logger=logging,
                     *args, **kwargs):
-        """把优化器安装到网络上"""
-        if lr_params:
-            if "update_params" in lr_params and len(lr_params) == 1:
-                pass
-            else:
-                from longling.ML.MxnetHelper.toolkit import get_lr_scheduler
-                optimizer_params["lr_scheduler"] = get_lr_scheduler(logger=logger, **lr_params)
-
-        trainer = gluon.Trainer(
-            net.collect_params(select), optimizer, optimizer_params
+        return get_trainer(
+            net=net, optimizer=optimizer, optimizer_params=optimizer_params,
+            lr_params=lr_params, select=select, logger=logger, *args, **kwargs
         )
-        return trainer
 
     @staticmethod
     def save_params(filename, net, select):
