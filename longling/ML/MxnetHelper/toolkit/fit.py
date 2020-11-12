@@ -40,6 +40,8 @@ def fit_wrapper(_fit_f):
         -------
 
         """
+        batch_size = batch_size if batch_size is not None else len(batch_data[0])
+
         ctx_data = split_and_load(
             ctx, *batch_data,
             even_split=False
@@ -52,7 +54,7 @@ def fit_wrapper(_fit_f):
                 )
                 assert bp_loss is not None
                 bp_loss.backward()
-        # todo: confirm whether the train step is equal to batch_size
+
         trainer.step(batch_size)
 
     return fit_f
