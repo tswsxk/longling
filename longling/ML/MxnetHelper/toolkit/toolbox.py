@@ -15,6 +15,10 @@ def get_default_toolbox(
 ):
     """
     New in version 1.3.16
+
+    Notice
+    ------
+    The developer who modify this document should simultaneously modify the related function in glue
     """
 
     from longling import path_append
@@ -33,7 +37,6 @@ def get_default_toolbox(
 
     loss_monitor = MovingLoss(loss_function) if loss_function else None
 
-    # 4.1 todo 初始化一些训练过程中的交互信息
     timer = Clock()
 
     progress_monitor = ProgressMonitor(
