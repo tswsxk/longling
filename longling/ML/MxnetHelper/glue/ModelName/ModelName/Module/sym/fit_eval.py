@@ -4,10 +4,9 @@ __all__ = ["fit_f", "eval_f"]
 
 import mxnet as mx
 import mxnet.ndarray as nd
+from longling.ML.MxnetHelper.toolkit.ctx import split_and_load
 from mxnet import autograd
 from tqdm import tqdm
-
-from longling.ML.MxnetHelper.toolkit.ctx import split_and_load
 
 
 def _fit_f(_net, _data, bp_loss_f, loss_function, loss_monitor):
@@ -49,7 +48,7 @@ def eval_f(_net, test_data, ctx=mx.cpu()):
 
 def fit_f(net, batch_size, batch_data,
           trainer, bp_loss_f, loss_function, loss_monitor=None,
-          ctx=mx.cpu()):
+          ctx=mx.cpu(), fit_step_func=_fit_f):
     """
     Defined how each step of batch train goes
 
@@ -73,6 +72,7 @@ def fit_f(net, batch_size, batch_data,
         Default to ``None``
     ctx: Context or list of Context
         Defaults to ``mx.cpu()``.
+    fit_step_func: function
 
     Returns
     -------
@@ -85,10 +85,14 @@ def fit_f(net, batch_size, batch_data,
 
     with autograd.record():
         for _data in ctx_data:
-            bp_loss = _fit_f(
+            bp_loss = fit_step_func(
                 net, _data, bp_loss_f, loss_function, loss_monitor
             )
             assert bp_loss is not None
             bp_loss.backward()
+
     # todo: confirm whether the train step is equal to batch_size
-    trainer.step(batch_size)
+    if batch_size is not None:
+        trainer.step(batch_size)
+    else:
+        trainer.step(len(batch_data[0]))

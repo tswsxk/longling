@@ -1,7 +1,8 @@
 # coding: utf-8
 # 2020/8/16 @ tongshiwei
-
+import logging
 import os
+
 import mxnet as mx
 from mxnet.initializer import Initializer, Xavier, Uniform, Normal
 
@@ -9,9 +10,16 @@ from mxnet.initializer import Initializer, Xavier, Uniform, Normal
 def net_initialize(
         net, model_ctx,
         initializer: (str, Initializer) = mx.init.Xavier(),
-        select=None
+        select=None, logger=logging
 ):
-    """初始化网络参数"""
+    """
+    初始化网络参数
+
+    Notice
+    ------
+    The developer who modify this document should simultaneously modify the related function in glue
+
+    """
     if isinstance(initializer, str):
         initializer = {
             "xaiver": Xavier(),
@@ -22,6 +30,8 @@ def net_initialize(
         pass
     else:
         raise TypeError("initializer should be either str or Initializer, now is", type(initializer))
+
+    logger.info("initializer: %s, select: %s, ctx: %s" % (initializer, select, model_ctx))
     net.collect_params(select).initialize(initializer, ctx=model_ctx)
 
 

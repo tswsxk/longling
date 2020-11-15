@@ -1,22 +1,20 @@
 # coding: utf-8
 # create by tongshiwei on 2019/4/12
+import functools
 import logging
-import re
 
 import mxnet as mx
-from mxnet import gluon, nd
-
 from longling.ML import DL
-from longling.ML.MxnetHelper.toolkit.init import load_net
+from longling.ML.MxnetHelper.toolkit import get_trainer, load_net, save_params
 
 __all__ = ["Module"]
 
 
 class Module(DL.Module):
-    def fit_f(self):
+    def fit_f(self, *args, **kwargs):
         raise NotImplementedError
 
-    def sym_gen(self):
+    def sym_gen(self, *args, **kwargs):
         raise NotImplementedError
 
     def load(self, net, epoch, ctx=mx.cpu(), allow_missing=False,
@@ -55,51 +53,19 @@ class Module(DL.Module):
         raise NotImplementedError
 
     @staticmethod
-    def get_trainer(net, optimizer='sgd', optimizer_params=None, lr_params=None, select=None, logger=logging):
-        """把优化器安装到网络上"""
-        if lr_params:
-            if "update_params" in lr_params and len(lr_params) == 1:
-                pass
-            else:
-                from longling.ML.MxnetHelper.toolkit import get_lr_scheduler
-                optimizer_params["lr_scheduler"] = get_lr_scheduler(logger=logger, **lr_params)
-
-        trainer = gluon.Trainer(
-            net.collect_params(select), optimizer, optimizer_params
+    @functools.wraps(get_trainer)
+    def get_trainer(net, optimizer='sgd', optimizer_params=None, lr_params=None, select=None, logger=logging,
+                    *args, **kwargs):
+        return get_trainer(
+            net=net, optimizer=optimizer, optimizer_params=optimizer_params,
+            lr_params=lr_params, select=select, logger=logger, *args, **kwargs
         )
-        return trainer
 
     @staticmethod
+    @functools.wraps(save_params)
     def save_params(filename, net, select):
-        params = net._collect_params_with_prefix()
-        if select:
-            pattern = re.compile(select)
-            params = {name: value for name, value in params.items() if
-                      pattern.match(name)}
-        arg_dict = {key: val._reduce() for key, val in params.items()}
-        nd.save(filename, arg_dict)
+        save_params(filename=filename, net=net, select=select)
 
-
-def module_wrapper(
-        module_cls: type(Module),
-        net_gen_func,
-        fit_func, configuration_cls=None):
-    _select = configuration_cls.train_select if configuration_cls is not None else None
-
-    class MetaModule(module_cls):
-        @property
-        def sym_gen(self):
-            return net_gen_func
-
-        @property
-        def fit_func(self):
-            return fit_func
-
-        @staticmethod
-        def get_trainer(net, optimizer='sgd', optimizer_params=None, lr_params=None, select=_select):
-            """把优化器安装到网络上"""
-            return module_cls.get_trainer(
-                net, optimizer, optimizer_params, lr_params, select
-            )
-
-    return MetaModule
+    @staticmethod
+    def eval(*args, **kwargs):
+        raise NotImplementedError

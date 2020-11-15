@@ -1,7 +1,8 @@
 # coding: utf-8
 # Copyright @tongshiwei
-from longling.ML import DL
 import mxnet as mx
+
+from longling.ML import DL
 
 try:
     from .Module import *
@@ -11,7 +12,8 @@ except (SystemError, ModuleNotFoundError):  # pragma: no cover
 
 class ModelName(DL.CliServiceModule):
     def __init__(
-            self, load_epoch=None, cfg=None, toolbox_init=False, **kwargs
+            self,
+            load_epoch=None, cfg=None, toolbox_init=False, **kwargs
     ):
         """
         模型初始化
@@ -27,6 +29,7 @@ class ModelName(DL.CliServiceModule):
             默认为 False，是否初始化工具包
         kwargs
             参数配置可选参数
+            init_model_file: 初始化模型参数路径
         """
         # 1 配置参数初始化
         # todo 到Configuration处定义相关参数
@@ -55,6 +58,10 @@ class ModelName(DL.CliServiceModule):
 
         if toolbox_init:
             self.toolbox_init(**self.mod.cfg.toolbox_params)
+
+    @staticmethod
+    def get_module_cls():
+        return Module
 
     @staticmethod
     def get_configuration_cls():
@@ -106,6 +113,9 @@ class ModelName(DL.CliServiceModule):
         return mod
 
     def set_loss(self, bp_loss_f=None, loss_function=None):
+        # 4.1 todo 定义损失函数
+        # bp_loss_f 定义了用来进行 back propagation 的损失函数，
+
         bp_loss_f = get_bp_loss(**self.mod.cfg.loss_params) if bp_loss_f is None else bp_loss_f
 
         assert bp_loss_f is not None and len(bp_loss_f) == 1
@@ -149,10 +159,6 @@ class ModelName(DL.CliServiceModule):
         mod = self.mod
         cfg = self.mod.cfg
 
-        # 4.1 todo 定义损失函数
-        # bp_loss_f 定义了用来进行 back propagation 的损失函数，
-        # 有且只能有一个，命名中不能为 *_\d+ 型
-
         assert self.loss_function is not None
 
         loss_monitor = MovingLoss(self.loss_function)
@@ -167,8 +173,9 @@ class ModelName(DL.CliServiceModule):
             values={
                 "Loss": loss_monitor.losses
             },
-            end_epoch=cfg.end_epoch - 1,
-            silent=silent
+            silent=silent,
+            player_type="epoch",
+            total_epoch=cfg.end_epoch - 1
         )
 
         validation_logger = config_logging(

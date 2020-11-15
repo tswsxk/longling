@@ -78,7 +78,7 @@ class Configuration(parser.Configuration):
     # 说明
     caption = ""
 
-    def __init__(self, params_json=None, **kwargs):
+    def __init__(self, params_path=None, **kwargs):
         """
         Configuration File, including categories:
 
@@ -91,7 +91,7 @@ class Configuration(parser.Configuration):
 
         Parameters
         ----------
-        params_json: str
+        params_path: str
             The path to configuration file which is in json format
         kwargs:
             Parameters to be reset.
@@ -104,8 +104,8 @@ class Configuration(parser.Configuration):
         )
 
         params = self.class_var
-        if params_json:
-            params.update(self.load_cfg(params_json=params_json))
+        if params_path:
+            params.update(self.load_cfg(cfg_path=params_path))
         params.update(**kwargs)
 
         for key in params:
@@ -163,9 +163,9 @@ class Configuration(parser.Configuration):
             self.model_dir, "configuration.json", to_str=True
         )
 
-    def dump(self, cfg_path=None, override=False):
+    def dump(self, cfg_path, override=True, file_format=None):
         cfg_path = self.cfg_path if cfg_path is None else cfg_path
-        super(Configuration, self).dump(cfg_path, override)
+        super(Configuration, self).dump(cfg_path, override, file_format=file_format)
 
     def var2val(self, var):
         return eval(var2exp(

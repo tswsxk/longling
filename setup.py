@@ -113,11 +113,7 @@ setup(
             "*.lib", "*.lib.*",
             "*.spider", "*.spider.*",
             "*.Architecture", "*.Architecture.*",
-            "*.ML",
-            "*.ML.DL*",
-            "*.ML.MxnetHelper*",
-            "*.ML.PytorchHelper*",
-            "*.ML.toolkit*",
+            "*.ML*",
         ],
         exclude=[
             "*.mx_example", "*.gluon_example*", "*.gluon_exp*",
@@ -139,6 +135,7 @@ setup(
         "tqdm",
         "fire",
         "PyYAML",
+        "toml",
     ],
     extras_require={
         'test': test_deps + full_deps,

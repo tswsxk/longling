@@ -3,8 +3,7 @@
 from mxnet import Context, cpu, gpu
 
 from longling.lib.candylib import as_list
-from longling.lib.parser import get_parsable_var, load_configuration_json, \
-    var2exp, path_append, Configuration as Params, ConfigurationParser
+from longling.lib.parser import get_parsable_var, var2exp, path_append, Configuration as Params, ConfigurationParser
 
 __all__ = [
     "MXCtx", "Configuration",
@@ -64,18 +63,9 @@ class Configuration(Params):
             dump_parse_functions={'ctx': MXCtx.dump}
         )
 
-    @staticmethod
-    def load_cfg(params_json, **kwargs):
-        with open(params_json) as f:
-            params = load_configuration_json(
-                f, load_parse_function={"ctx": MXCtx.load}
-            )
-        params.update(kwargs)
-        return params
-
     @classmethod
-    def load(cls, cfg_path, **kwargs):
-        cls(cls.load_cfg(cfg_path, **kwargs))
+    def load_parse_function(cls):
+        return {"ctx": MXCtx.load}
 
 
 if __name__ == '__main__':

@@ -22,7 +22,7 @@ help:
 
 	@echo "install              install longling"
 	@echo "test                 run test"
-	@echo "release              publish to PyPI and release in github"
+	@echo "release              publish to PyPI"
 	@echo "release_test         publish to TestPyPI"
 	@echo "clean                remove all build, test, coverage and Python artifacts"
 	@echo "clean-build          remove build artifacts"
@@ -55,7 +55,7 @@ release: test, build
 	@echo "publish to pypi"
 	@echo "version $(VERSION)"
 
-	-@twine upload dist/* && git tag "v$(VERSION)"
+	-@twine upload dist/*
 
 release_test: test, build
 	@echo "publish to test pypi"

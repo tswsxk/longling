@@ -8,8 +8,8 @@ __all__ = ["get_net", "get_bp_loss"]
 from mxnet import gluon
 
 
-def get_net(**kwargs):
-    return NetName(**kwargs)
+def get_net(*args, **kwargs):
+    return NetName(*args, **kwargs)
 
 
 def get_bp_loss(**kwargs):

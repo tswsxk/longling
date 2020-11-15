@@ -2,7 +2,24 @@
 # create by tongshiwei on 2019-9-4
 
 
+__all__ = ["Module"]
+
+
 class Module(object):
+    """
+    Examples
+    --------
+    >>> class Params:
+    ...     def __init__(self):
+    ...         self.a = 1
+    ...         self.b = 2
+    >>> params = Params()
+    >>> print(Module(params))
+    Params
+    a: 1
+    b: 2
+    """
+
     def __init__(self, parameters):
         self.cfg = parameters
 
