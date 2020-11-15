@@ -4,11 +4,10 @@ import functools
 import logging
 
 import mxnet as mx
-
 from longling.ML import DL
 from longling.ML.MxnetHelper.toolkit import get_trainer, load_net, save_params
 
-__all__ = ["Module", "module_wrapper"]
+__all__ = ["Module"]
 
 
 class Module(DL.Module):
@@ -67,40 +66,6 @@ class Module(DL.Module):
     def save_params(filename, net, select):
         save_params(filename=filename, net=net, select=select)
 
-
-def module_wrapper(
-        module_cls: type(Module),
-        net_gen_func=None,
-        fit_func=None,
-        net_init_func=None):
-    """
-
-    Parameters
-    ----------
-    module_cls
-    net_gen_func
-    fit_func
-    net_init_func
-
-    Returns
-    -------
-
-    """
-    net_gen_func = module_cls.sym_gen if net_gen_func is None else net_gen_func
-    fit_func = module_cls.fit_f if fit_func is None else fit_func
-    net_init_func = module_cls.net_initialize if net_init_func is None else net_init_func
-
-    class MetaModule(module_cls):
-        @functools.wraps(net_gen_func)
-        def sym_gen(self, *args, **kwargs):
-            return net_gen_func(*args, **kwargs)
-
-        @functools.wraps(fit_func)
-        def fit_f(self, *args, **kwargs):
-            return fit_func(*args, **kwargs)
-
-        @functools.wraps(net_init_func)
-        def net_initialize(self, *args, **kwargs):
-            return net_init_func(*args, **kwargs)
-
-    return MetaModule
+    @staticmethod
+    def eval(*args, **kwargs):
+        raise NotImplementedError
