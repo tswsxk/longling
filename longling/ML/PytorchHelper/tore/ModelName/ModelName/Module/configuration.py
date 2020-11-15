@@ -103,7 +103,7 @@ class Configuration(parser.Configuration):
 
         params = self.class_var
         if params_json:
-            params.update(self.load_cfg(params_json=params_json))
+            params.update(self.load_cfg(params_path=params_json))
         params.update(**kwargs)
 
         # path_override_check

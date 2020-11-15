@@ -1,7 +1,7 @@
 # coding: utf-8
 # create by tongshiwei on 2019-9-6
 
-from longling.lib.parser import get_parsable_var, load_configuration_json, \
+from longling.lib.parser import get_parsable_var, load_configuration, \
     var2exp, path_append, Configuration as Params, ConfigurationParser
 
 __all__ = [
@@ -32,9 +32,9 @@ class Configuration(Params):
         )
 
     @staticmethod
-    def load_cfg(params_json, **kwargs):
-        with open(params_json) as f:
-            params = load_configuration_json(
+    def load_cfg(params_path, **kwargs):
+        with open(params_path) as f:
+            params = load_configuration(
                 f,
             )
         params.update(kwargs)
