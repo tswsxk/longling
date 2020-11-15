@@ -52,8 +52,8 @@ def test_configuration(tmpdir, file_format):
     filename = path_append(tmpdir, "test_config.%s" % file_format, to_str=True)
 
     _config.b = 4
-    _config.dump(filename, file_format=file_format, override=True)
-    _config.dump(filename, file_format=file_format)
+    _config.dump(filename, override=True, file_format=file_format)
+    _config.dump(filename, override=False, file_format=file_format)
 
     _config = DemoConfiguration.load(filename, file_format=file_format)
 
