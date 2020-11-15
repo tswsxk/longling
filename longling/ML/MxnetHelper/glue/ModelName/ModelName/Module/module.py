@@ -7,8 +7,9 @@ import logging
 import os
 
 import mxnet as mx
-
 from longling.ML.MxnetHelper.glue import module
+from longling.ML.toolkit import EpochEvalFMT as Formatter
+
 from .configuration import Configuration
 from .sym import get_net, fit_f, eval_f, net_init
 
@@ -64,7 +65,7 @@ class Module(module.Module):
         self.cfg = configuration
         self.prefix = os.path.join(
             self.cfg.model_dir, self.cfg.model_name
-        )
+        ) if hasattr(self.cfg, "model_dir") and hasattr(self.cfg, "model_name") else "model"
         self.logger = configuration.logger
 
     @functools.wraps(fit_f)
@@ -180,6 +181,8 @@ class Module(module.Module):
             test_data=None,
             ctx=mx.cpu(),
             toolbox=None,
+            save_model=True,
+            eval_every_n_epoch=1,
             **kwargs
     ):
         """
@@ -214,6 +217,9 @@ class Module(module.Module):
             Defaults to ``mx.cpu()``.
         toolbox: Toolbox
             Default to ``None``
+        save_model: bool
+            Whether save model
+        eval_every_n_epoch: int
         kwargs
         """
         # 参数修改时需要同步修改 fit 函数中的参数
@@ -224,7 +230,6 @@ class Module(module.Module):
             formatter = None
 
         for epoch in range(begin_epoch, end_epoch):
-
             batch_num, loss_values = self.batch_loop(
                 net=net, epoch=epoch, batch_size=batch_size,
                 train_data=train_data,
@@ -233,7 +238,7 @@ class Module(module.Module):
                 ctx=ctx,
                 toolbox=toolbox,
             )
-            if self.cfg.lr_params and "update_params" in self.cfg.lr_params:
+            if hasattr(self.cfg, "lr_params") and self.cfg.lr_params and "update_params" in self.cfg.lr_params:
                 self.cfg.logger.info("reset trainer")
                 lr_params = self.cfg.lr_params.pop("update_params")
                 lr_update_params = dict(
@@ -259,31 +264,33 @@ class Module(module.Module):
             except (KeyError, TypeError):
                 train_time = None
 
-            # # todo 定义每一轮结束后的模型评估方法
-            evaluation_result = Module.eval(
-                net, test_data, ctx=ctx
-            )
-            if formatter:
-                evaluation_formatter = formatter.get('evaluation')
-                if evaluation_formatter:
-                    print(
-                        evaluation_formatter(
-                            epoch=epoch,
-                            train_time=train_time,
-                            loss_name_value=loss_values,
-                            eval_name_value=evaluation_result,
-                            extra_info=None,
-                            dump=True,
-                            keep={"msg"},
-                        )
+            if (epoch - 1) % eval_every_n_epoch == 0 or epoch == end_epoch - 1:
+                # # todo 定义每一轮结束后的模型评估方法
+                evaluation_result = self.eval(
+                    net, test_data, ctx=ctx
+                )
+
+                evaluation_formatter = formatter.get('evaluation', Formatter()) if formatter else Formatter()
+
+                print(
+                    evaluation_formatter(
+                        iteration=epoch,
+                        train_time=train_time,
+                        loss_name_value=loss_values,
+                        eval_name_value=evaluation_result,
+                        extra_info=None,
+                        dump=True,
+                        keep="msg",
                     )
+                )
 
             # todo 定义模型保存方案
-            if kwargs.get('prefix') and (
-                    epoch % kwargs.get('save_epoch', 1) == 0 or end_epoch - 10 <= epoch <= end_epoch - 1):
-                self.save_params(
-                    kwargs['prefix'] + "-%04d.parmas" % (epoch + 1), net
-                )
+            if save_model:
+                if kwargs.get('prefix') and (
+                        epoch % kwargs.get('save_epoch', 1) == 0 or end_epoch - 10 <= epoch <= end_epoch - 1):
+                    self.save_params(
+                        kwargs['prefix'] + "-%04d.parmas" % (epoch + 1), net
+                    )
 
     def batch_loop(
             self,
@@ -334,6 +341,9 @@ class Module(module.Module):
             if monitor is not None:
                 loss_monitor = monitor.get("loss")
                 progress_monitor = monitor.get("progress")
+            if progress_monitor is None:
+                from tqdm import tqdm
+                progress_monitor = lambda x, y: tqdm(x, "[%s]" % y)
 
         for i, batch_data in progress_monitor(enumerate(train_data), epoch):
             self.fit_f(
@@ -346,7 +356,7 @@ class Module(module.Module):
 
         loss_values = {
             name: loss for name, loss in loss_monitor.items()
-        }
+        } if loss_monitor is not None else {}
         return i, loss_values
 
     @staticmethod
