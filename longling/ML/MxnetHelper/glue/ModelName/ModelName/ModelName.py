@@ -113,6 +113,9 @@ class ModelName(DL.CliServiceModule):
         return mod
 
     def set_loss(self, bp_loss_f=None, loss_function=None):
+        # 4.1 todo 定义损失函数
+        # bp_loss_f 定义了用来进行 back propagation 的损失函数，
+
         bp_loss_f = get_bp_loss(**self.mod.cfg.loss_params) if bp_loss_f is None else bp_loss_f
 
         assert bp_loss_f is not None and len(bp_loss_f) == 1
@@ -144,7 +147,7 @@ class ModelName(DL.CliServiceModule):
         from longling import path_append
         from longling.lib.clock import Clock
         from longling.lib.utilog import config_logging
-        from longling.ML.toolkit import EvalFormatter as Formatter
+        from longling.ML.toolkit import EpochEvalFMT as Formatter
         from longling.ML.toolkit import MovingLoss, ConsoleProgressMonitor as ProgressMonitor
 
         self.toolbox = {
@@ -155,10 +158,6 @@ class ModelName(DL.CliServiceModule):
 
         mod = self.mod
         cfg = self.mod.cfg
-
-        # 4.1 todo 定义损失函数
-        # bp_loss_f 定义了用来进行 back propagation 的损失函数，
-        # 有且只能有一个，命名中不能为 *_\d+ 型
 
         assert self.loss_function is not None
 
@@ -174,8 +173,9 @@ class ModelName(DL.CliServiceModule):
             values={
                 "Loss": loss_monitor.losses
             },
-            end_epoch=cfg.end_epoch - 1,
-            silent=silent
+            silent=silent,
+            player_type="epoch",
+            total_epoch=cfg.end_epoch - 1
         )
 
         validation_logger = config_logging(
