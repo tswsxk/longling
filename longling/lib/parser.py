@@ -292,7 +292,7 @@ class Configuration(object):
         file_format = file_format if file_format is not None else cls.default_file_format()
         return cls(**cls.load_cfg(cfg_path, file_format=file_format, **kwargs))
 
-    def dump(self, cfg_path: str, override=False, file_format=None):
+    def dump(self, cfg_path: str, override=True, file_format=None):
         """
         将配置参数写入文件
 
