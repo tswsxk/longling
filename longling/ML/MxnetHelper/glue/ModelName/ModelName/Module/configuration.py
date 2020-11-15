@@ -163,7 +163,7 @@ class Configuration(parser.Configuration):
             self.model_dir, "configuration.json", to_str=True
         )
 
-    def dump(self, cfg_path=None, override=False, file_format=None):
+    def dump(self, cfg_path, override=True, file_format=None):
         cfg_path = self.cfg_path if cfg_path is None else cfg_path
         super(Configuration, self).dump(cfg_path, override, file_format=file_format)
 
