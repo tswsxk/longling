@@ -9,7 +9,7 @@ def net_init(
         net, cfg=None,
         force_init=False,
         allow_reinit=True, logger=logging, initialized=False, model_file=None,
-        initializer_kwargs=None, **kwargs
+        initializer_kwargs=None, *args, **kwargs
 ):
     if initialized and not force_init:
         logger.warning("model has been initialized, skip model_init")
