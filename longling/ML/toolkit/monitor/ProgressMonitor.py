@@ -1,11 +1,11 @@
 # coding: utf-8
 # created by tongshiwei on 18-2-5
 import math
+import sys
 import warnings
 from collections import OrderedDict
 from contextlib import contextmanager
 
-import sys
 from longling import Timer
 from longling.lib import ProgressMonitor, IterableMIcing
 from longling.lib.stream import flush_print
@@ -231,7 +231,9 @@ class EpisodeCPMP(ConsoleProgressMonitorPlayer):
 
 
 PLAYER_TYPE = {
+    None: ConsoleProgressMonitorPlayer,
     "default": ConsoleProgressMonitorPlayer,
+    "simple": ConsoleProgressMonitorPlayer,
     "epoch": EBCPMP,
     "episode": EpisodeCPMP,
 }
