@@ -9,7 +9,7 @@ __all__ = ["LossMonitor", "MovingLoss"]
 class LossMonitor(ValueMonitor):
     @property
     def losses(self):
-        return self._values
+        return self.value
 
 
 class MovingLoss(EMAValue, LossMonitor):
