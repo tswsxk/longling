@@ -185,7 +185,7 @@ def directory_check(class_obj):
 
 if __name__ == '__main__':
     # Advise: firstly checkout whether the directory is correctly (step 1) and
-    # then generate the paramters configuation file
+    # then generate the parameters configuration file
     # to check the details (step 2)
     stage = 1
     # step 1
