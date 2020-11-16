@@ -1,11 +1,11 @@
 # coding: utf-8
 # create by tongshiwei on 2020-11-16
 
+from longling import ConfigurationParser
 
 __all__ = ["Configuration", "ConfigurationParser", "directory_check"]
 
 import datetime
-import pathlib
 
 from longling import path_append
 from longling.lib import parser
@@ -15,7 +15,7 @@ from longling.lib.utilog import config_logging, LogLevel
 
 class Configuration(parser.Configuration):
     # 目录配置
-    model_name = str(pathlib.Path(__file__).parents[1].name)
+    model_name = "MLModel"
 
     root = "./"
     dataset = ""
@@ -120,10 +120,6 @@ class Configuration(parser.Configuration):
             var,
             env_wrap=lambda x: "self.%s" % x
         ))
-
-
-class ConfigurationParser(parser.ConfigurationParser):
-    pass
 
 
 def directory_check(class_obj):
