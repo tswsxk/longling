@@ -20,7 +20,7 @@ def print_time(tips: str = "", logger=_logger):
     Parameters
     ----------
     tips: str
-    logger: logging.Logger
+    logger: logging.Logger or logging
 
     Examples
     --------
