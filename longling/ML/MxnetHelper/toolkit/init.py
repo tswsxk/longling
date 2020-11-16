@@ -4,7 +4,7 @@ import logging
 import os
 
 import mxnet as mx
-from mxnet.initializer import Initializer, Xavier, Uniform, Normal
+from mxnet.initializer import Initializer, Xavier, Uniform, Normal, Mixed
 
 
 def net_initialize(
@@ -26,7 +26,7 @@ def net_initialize(
             "uniform": Uniform(),
             "normal": Normal()
         }[initializer]
-    elif initializer is None or isinstance(initializer, Initializer):
+    elif initializer is None or isinstance(initializer, (Initializer, Mixed)):
         pass
     else:
         raise TypeError("initializer should be either str or Initializer, now is", type(initializer))
