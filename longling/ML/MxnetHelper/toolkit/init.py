@@ -4,12 +4,12 @@ import logging
 import os
 
 import mxnet as mx
-from mxnet.initializer import Initializer, Xavier, Uniform, Normal, Mixed
+from mxnet.initializer import Initializer, Xavier, Uniform, Normal
 
 
 def net_initialize(
         net, model_ctx,
-        initializer: (str, Initializer) = mx.init.Xavier(),
+        initializer: (str, Initializer, dict, list) = mx.init.Xavier(),
         select=None, logger=logging
 ):
     """
@@ -26,7 +26,20 @@ def net_initialize(
             "uniform": Uniform(),
             "normal": Normal()
         }[initializer]
-    elif initializer is None or isinstance(initializer, (Initializer, Mixed)):
+    elif isinstance(initializer, dict):
+        for _select, _initializer in initializer.items():
+            net_initialize(net, model_ctx=model_ctx, initializer=_initializer, select=_select, logger=logger)
+        return
+    elif isinstance(initializer, list):
+        if select is not None:
+            assert len(select) == len(initializer)
+            for _select, _initializer in zip(select, initializer):
+                net_initialize(net, model_ctx=model_ctx, initializer=_initializer, select=_select, logger=logger)
+        else:
+            for _select, _initializer in initializer:
+                net_initialize(net, model_ctx=model_ctx, initializer=_initializer, select=_select, logger=logger)
+        return
+    elif initializer is None or isinstance(initializer, Initializer):
         pass
     else:
         raise TypeError("initializer should be either str or Initializer, now is", type(initializer))
