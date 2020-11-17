@@ -3,6 +3,17 @@ __all__ = ['as_list', 'dict2pv', 'list2dict', 'get_dict_by_path', 'format_byte_s
 from collections import OrderedDict
 
 
+def group_by_n(obj: list, n: int) -> list:
+    """
+    Examples
+    --------
+    >>> list_obj = [1, 2, 3, 4, 5, 6]
+    >>> group_by_n(list_obj, 3)
+    [[1, 2, 3], [4, 5, 6]]
+    """
+    return [obj[i: i + n] for i in range(0, len(obj), n)]
+
+
 def as_list(obj) -> list:
     r"""A utility function that converts the argument to a list
     if it is not already.
