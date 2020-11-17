@@ -1,7 +1,8 @@
 # coding: utf-8
 # create by tongshiwei on 2019-9-1
 from longling import path_append
-from longling.ML.MxnetHelper.toolkit.optimizer_cfg import get_lr_params
+from longling.ML import get_epoch_params_filepath
+from longling.ML.MxnetHelper import save_params
 
 try:
     # for python module
@@ -16,7 +17,7 @@ except (ImportError, SystemError):  # pragma: no cover
 
 
 def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_result=False,
-                    reporthook=None, final_reporthook=None):  # pragma: no cover
+                    reporthook=None, final_reporthook=None, params_save=False):  # pragma: no cover
     ctx = _cfg.ctx
     batch_size = _cfg.batch_size
 
@@ -96,6 +97,10 @@ def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_resul
             print(msg)
             if reporthook is not None:
                 reporthook(data)
+
+        if params_save and (epoch % _cfg.save_epoch or epoch == _cfg.end_epoch - 1):
+            params_path = get_epoch_params_filepath(_cfg.model_name, epoch, _cfg.model_dir)
+            save_params(params_path, _net, select=_cfg.save_select)
 
     if final_reporthook is not None:
         final_reporthook()
