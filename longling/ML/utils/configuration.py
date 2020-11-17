@@ -52,6 +52,10 @@ class Configuration(parser.Configuration):
             The path to configuration file which is in json format
         kwargs:
             Parameters to be reset.
+
+        Notes
+        -----
+        Developers modifying this code should simultaneously modify the relevant codes in glue and tore
         """
         super(Configuration, self).__init__(
             logger=config_logging(
