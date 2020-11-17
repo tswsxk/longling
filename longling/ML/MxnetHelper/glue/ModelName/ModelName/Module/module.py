@@ -7,9 +7,9 @@ import logging
 import os
 
 import mxnet as mx
+
 from longling.ML.MxnetHelper.glue import module
 from longling.ML.toolkit import EpochEvalFMT as Formatter
-
 from .configuration import Configuration
 from .sym import get_net, fit_f, eval_f, net_init
 
@@ -343,7 +343,9 @@ class Module(module.Module):
                 progress_monitor = monitor.get("progress")
             if progress_monitor is None:
                 from tqdm import tqdm
-                progress_monitor = lambda x, y: tqdm(x, "[%s]" % y)
+                
+                def progress_monitor(x, y):
+                    return tqdm(x, "[%s]" % y)
 
         for i, batch_data in progress_monitor(enumerate(train_data), epoch):
             self.fit_f(
