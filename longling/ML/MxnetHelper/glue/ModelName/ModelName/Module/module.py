@@ -7,6 +7,7 @@ import logging
 import os
 
 import mxnet as mx
+from tqdm import tqdm
 
 from longling.ML.MxnetHelper.glue import module
 from longling.ML.toolkit import EpochEvalFMT as Formatter
@@ -342,8 +343,6 @@ class Module(module.Module):
                 loss_monitor = monitor.get("loss")
                 progress_monitor = monitor.get("progress")
             if progress_monitor is None:
-                from tqdm import tqdm
-                
                 def progress_monitor(x, y):
                     return tqdm(x, "[%s]" % y)
 
