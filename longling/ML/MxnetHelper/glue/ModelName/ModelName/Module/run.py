@@ -165,9 +165,10 @@ def sym_run(stage: (int, str) = "viz"):  # pragma: no cover
             optimizer_params={
                 "learning_rate": 0.001
             },
-            hyper_params={
+            hyper_params_update={
             },
             batch_size=16,
+            params_save=False
         )
 
     elif stage == 3:
