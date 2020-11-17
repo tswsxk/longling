@@ -11,4 +11,4 @@ def epoch_params_filename(model_name: str, epoch: int):
 
 
 def get_epoch_params_filepath(model_name: str, epoch: int, model_dir: str = "./"):
-    return path_append(model_dir, epoch_params_filename(model_name, epoch))
+    return path_append(model_dir, epoch_params_filename(model_name, epoch), to_str=True)
