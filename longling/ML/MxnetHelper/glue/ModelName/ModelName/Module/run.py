@@ -112,7 +112,7 @@ def pseudo_numerical_check(_net, _cfg):  # pragma: no cover
 
 
 def train(train_fn, test_fn, reporthook=None, final_reporthook=None,
-          primary_key="macro_avg:f1", **cfg_kwargs):  # pragma: no cover
+          primary_key="macro_avg:f1", params_save=False, **cfg_kwargs):  # pragma: no cover
     from longling.ML.toolkit.hyper_search import prepare_hyper_search
 
     cfg_kwargs, reporthook, final_reporthook, tag = prepare_hyper_search(
@@ -128,7 +128,7 @@ def train(train_fn, test_fn, reporthook=None, final_reporthook=None,
     test_data = etl(_cfg.var2val(test_fn), params=_cfg)
 
     numerical_check(_net, _cfg, train_data, test_data, dump_result=not tag, reporthook=reporthook,
-                    final_reporthook=final_reporthook)
+                    final_reporthook=final_reporthook, params_save=params_save)
 
 
 def sym_run(stage: (int, str) = "viz"):  # pragma: no cover
