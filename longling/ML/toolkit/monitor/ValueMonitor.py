@@ -25,6 +25,14 @@ class ValueMonitor(object):
     >>> vm = ValueMonitor(["m1", "m2"])
     >>> vm.value
     {'m1': nan, 'm2': nan}
+    >>> "m1" in vm
+    True
+    >>> vm.monitor_off("m1")
+    >>> "m1" in vm
+    False
+    >>> vm.monitor_on("m1")
+    >>> "m1" in vm
+    True
     """
 
     def __init__(self, value_function_names: (list, dict), digits=None, *args, **kwargs):
@@ -39,6 +47,15 @@ class ValueMonitor(object):
 
     def __getitem__(self, item):
         return self._values[item]
+
+    def __contains__(self, name):
+        return name in self._values
+
+    def monitor_on(self, name):
+        self._values[name] = NAN
+
+    def monitor_off(self, name):
+        del self._values[name]
 
     def update(self, *args, **kwargs):
         raise NotImplementedError
