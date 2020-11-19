@@ -62,7 +62,8 @@ def fit_f(net, batch_size, batch_data,
     trainer:
         The trainer used to update the parameters of the net
     loss_function: dict of function
-        Some other measurement in addition to bp_loss_f
+        The functions to compute the loss for the procession
+        of back propagation
     loss_monitor: LossMonitor
         Default to ``None``
     ctx: Context or list of Context
@@ -83,7 +84,6 @@ def fit_f(net, batch_size, batch_data,
             bp_loss = fit_step_func(
                 net, _data, loss_function, loss_monitor
             )
-            assert bp_loss is not None
             bp_loss.backward()
 
     # todo: confirm whether the train step is equal to batch_size
