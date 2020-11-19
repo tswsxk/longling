@@ -86,10 +86,7 @@ class ValueMonitor(object):
 
     @property
     def value(self):
-        if self._digits:
-            return {key: round(value, self._digits) for key, value in self._values.items()}
-        else:
-            return self._values
+        return self._values
 
     def round(self, value):
         return round(value, self._digits) if self._digits else value
