@@ -16,7 +16,6 @@ from collections import Iterable
 
 import toml
 import yaml
-
 from longling import wf_open
 from longling.lib.path import path_append
 
@@ -33,7 +32,7 @@ CLASS_EXCLUDE_NAMES = set(vars(object).keys()) | {
 }
 
 
-def get_class_var(class_obj, exclude_names: (set, None) = None) -> dict:
+def get_class_var(class_obj, exclude_names: (set, None) = None, get_vars=True) -> dict:
     """
     获取某个类的所有属性的变量名及其值
 
@@ -61,6 +60,7 @@ def get_class_var(class_obj, exclude_names: (set, None) = None) -> dict:
         类或类实例。需要注意两者的区别。
     exclude_names:
         需要排除在外的变量名。也可以通过在类定义 excluded_names 方法来指定要排除的变量名。
+    get_vars
 
     Returns
     -------
@@ -74,10 +74,18 @@ def get_class_var(class_obj, exclude_names: (set, None) = None) -> dict:
         class_obj, "excluded_names"
     ) else class_obj.excluded_names() | default_excluded_names
 
-    variables = {
-        k: v for k, v in vars(class_obj).items() if
-        not inspect.isroutine(v) and k not in excluded_names
-    }
+    if get_vars:
+        variables = {
+            k: v for k, v in vars(class_obj).items() if
+            not inspect.isroutine(v) and k not in excluded_names
+        }
+    else:
+        variables = {}
+        for k in dir(class_obj):
+            if hasattr(class_obj, k):
+                v = getattr(class_obj, k)
+                if not inspect.isroutine(v) and k not in excluded_names:
+                    variables[k] = v
     return variables
 
 
@@ -104,9 +112,9 @@ def parse_params(params: dict, parse_functions: (dict, None) = None) -> dict:
     return params
 
 
-def get_parsable_var(class_obj, parse_exclude: set = None, dump_parse_functions=None):
+def get_parsable_var(class_obj, parse_exclude: set = None, dump_parse_functions=None, get_vars=True):
     """获取所有可以被解析的参数及其值，可以使用dump_parse_functions来对不可dump的值进行转换"""
-    params = get_class_var(class_obj, exclude_names=parse_exclude)
+    params = get_class_var(class_obj, exclude_names=parse_exclude, get_vars=get_vars)
     return parse_params(params, dump_parse_functions)
 
 
@@ -359,6 +367,28 @@ class Configuration(object):
             'class_var', 'parsable_var', 'items', 'load', 'dump'
         } | cls.run_time_variables()
 
+
+class InheritableConfiguration(Configuration):
+    @classmethod
+    def vars(cls):
+        return get_class_var(cls, get_vars=False)
+
+    @property
+    def parsable_var(self):
+        """
+        获取可以进行命令行设定的参数
+
+        Returns
+        -------
+        store_vars: dict
+            可以进行命令行设定的参数
+        """
+        return get_parsable_var(
+            self,
+            parse_exclude=None,
+            dump_parse_functions=None,
+            get_vars=False
+        )
 
 def value_parse(value):
     r"""
@@ -783,6 +813,7 @@ if __name__ == '__main__':
         @classmethod
         def cls_m(cls, new_a):
             cls.a = new_a
+
 
     parser = ConfigurationParser(TestCls)
     parser.add_command(TestCls.cls_m)
