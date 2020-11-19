@@ -10,7 +10,7 @@ __all__ = ["fit_wrapper"]
 
 def fit_wrapper(_fit_f):
     def fit_f(net, batch_size, batch_data,
-              trainer, bp_loss_f, loss_function, loss_monitor=None,
+              trainer, loss_function, loss_monitor=None,
               ctx=mx.cpu()):
         """
         Defined how each step of batch train goes
@@ -26,11 +26,9 @@ def fit_wrapper(_fit_f):
             The batch data for train
         trainer:
             The trainer used to update the parameters of the net
-        bp_loss_f: dict with only one value and one key
+        loss_function: dict of function
             The function to compute the loss for the procession
             of back propagation
-        loss_function: dict of function
-            Some other measurement in addition to bp_loss_f
         loss_monitor: LossMonitor
             Default to ``None``
         ctx: Context or list of Context
@@ -50,7 +48,7 @@ def fit_wrapper(_fit_f):
         with autograd.record():
             for _data in ctx_data:
                 bp_loss = _fit_f(
-                    net, _data, bp_loss_f, loss_function, loss_monitor
+                    net, _data, loss_function, loss_monitor
                 )
                 assert bp_loss is not None
                 bp_loss.backward()
