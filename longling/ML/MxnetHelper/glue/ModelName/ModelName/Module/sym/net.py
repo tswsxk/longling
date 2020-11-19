@@ -7,13 +7,17 @@ __all__ = ["get_net", "get_loss"]
 
 from mxnet import gluon
 
+from longling.ML.MxnetHelper.toolkit import loss_dict2tmt_mx_loss
+
 
 def get_net(*args, **kwargs):
     return NetName(*args, **kwargs)
 
 
 def get_loss(**kwargs):
-    return {"L2Loss": gluon.loss.L2Loss(**kwargs)}
+    return loss_dict2tmt_mx_loss({
+        "L2Loss": gluon.loss.L2Loss(**kwargs)
+    })
 
 
 class NetName(gluon.HybridBlock):

@@ -1,6 +1,7 @@
 # coding: utf-8
 # 2019/11/28 @ tongshiwei
 
+import functools
 import math
 from collections import Iterable
 
@@ -9,7 +10,7 @@ try:
 except (AttributeError, ImportError):  # pragma: no cover
     NAN = float('nan')
 
-__all__ = ["ValueMonitor", "EMAValue"]
+__all__ = ["ValueMonitor", "EMAValue", "tmt_value", "as_tmt_value"]
 
 
 class ValueMonitor(object):
@@ -37,6 +38,8 @@ class ValueMonitor(object):
     def __init__(self, value_function_names: (list, dict), digits=6, *args, **kwargs):
         self._values = {name: NAN for name in value_function_names}
         self._funcs = value_function_names if isinstance(value_function_names, dict) else {}
+        for name, func in self._funcs.items():
+            self.link(name, func)
         self._digits = digits
 
     def __str__(self):
@@ -90,6 +93,14 @@ class ValueMonitor(object):
 
     def round(self, value):
         return round(value, self._digits) if self._digits else value
+
+    def pipe_get(self, name, value):
+        if name in self._values:
+            self.update(name, value)
+
+    def link(self, name, obj):
+        if hasattr(obj, "pipe"):
+            obj.pipe.append(functools.partial(self.pipe_get, name))
 
 
 class EMAValue(ValueMonitor):
@@ -158,3 +169,46 @@ class EMAValue(ValueMonitor):
         pairs = pairs.items() if isinstance(pairs, dict) else pairs
         for name, value in pairs:
             self.update(name, value)
+
+
+class BaseTMTValue(object):
+    def __init__(self):
+        self.pipe = []
+
+    def pipe_put(self, loss_value, *args, **kwargs):
+        for _pipe in self.pipe:
+            _pipe(loss_value, *args, **kwargs)
+
+
+class TMTValue(BaseTMTValue):
+    def __init__(self, value_obj, transform=lambda x: x):
+        super(TMTValue, self).__init__()
+        self._value_obj = value_obj
+        self._transform = transform
+
+    def __call__(self, *args, **kwargs):
+        value = self._value_obj(*args, **kwargs)
+        super(TMTValue, self).pipe_put(self._transform(value))
+        return value
+
+
+def as_tmt_value(value_obj, transform=lambda x: x):
+    return TMTValue(value_obj, transform)
+
+
+def tmt_value(transform=lambda x: x):
+    def _tmt_value(class_type):
+        class _TMTValue(class_type, BaseTMTValue):
+            @functools.wraps(class_type.__call__)
+            def __call__(self, *args, **kwargs):
+                value = class_type.__call__(self, *args, **kwargs)
+                BaseTMTValue.pipe_put(self, self.transform(value))
+                return value
+
+            @staticmethod
+            def transform(loss):
+                return transform(loss)
+
+        return _TMTValue
+
+    return _tmt_value

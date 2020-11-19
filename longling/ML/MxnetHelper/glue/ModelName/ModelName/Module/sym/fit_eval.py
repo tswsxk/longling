@@ -4,12 +4,13 @@ __all__ = ["fit_f", "eval_f"]
 
 import mxnet as mx
 import mxnet.ndarray as nd
-from longling.ML.MxnetHelper.toolkit.ctx import split_and_load
 from mxnet import autograd
 from tqdm import tqdm
 
+from longling.ML.MxnetHelper.toolkit.ctx import split_and_load
 
-def _fit_f(_net, _data, loss_function, loss_monitor):
+
+def _fit_f(_net, _data, loss_function, loss_monitor=None):
     data, label = _data
     # todo modify the input to net
     output = _net(data)
@@ -17,9 +18,9 @@ def _fit_f(_net, _data, loss_function, loss_monitor):
     for name, func in loss_function.items():
         loss = func(output, label)
         loss_list.append(loss)
-        loss_value = nd.mean(loss).asscalar()
-        if loss_monitor:
-            loss_monitor.update(name, loss_value)
+        # loss_value = nd.mean(loss).asscalar()
+        # if loss_monitor:
+        #     loss_monitor.update(name, loss_value)
     return sum(loss_list)
 
 
