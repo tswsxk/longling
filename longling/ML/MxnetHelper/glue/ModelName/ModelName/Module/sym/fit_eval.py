@@ -9,20 +9,18 @@ from mxnet import autograd
 from tqdm import tqdm
 
 
-def _fit_f(_net, _data, bp_loss_f, loss_function, loss_monitor):
+def _fit_f(_net, _data, loss_function, loss_monitor):
     data, label = _data
     # todo modify the input to net
     output = _net(data)
-    bp_loss = None
+    loss_list = []
     for name, func in loss_function.items():
-        # todo modify the input to func
         loss = func(output, label)
-        if name in bp_loss_f:
-            bp_loss = loss
+        loss_list.append(loss)
         loss_value = nd.mean(loss).asscalar()
         if loss_monitor:
             loss_monitor.update(name, loss_value)
-    return bp_loss
+    return sum(loss_list)
 
 
 def eval_f(_net, test_data, ctx=mx.cpu()):
