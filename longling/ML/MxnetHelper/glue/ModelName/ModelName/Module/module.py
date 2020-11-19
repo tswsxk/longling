@@ -142,7 +142,8 @@ class Module(module.Module):
         trainer:
             The trainer used to update the parameters of the net
         loss_function: dict of function
-            Some other measurement in addition to bp_loss_f
+            The functions to compute the loss for the procession
+            of back propagation
         eval_data: Iterable
             The data used for the evaluation at the end of each epoch,
             NOTICE: should have been divided to batches
@@ -203,7 +204,8 @@ class Module(module.Module):
         trainer:
             The trainer used to update the parameters of the net
         loss_function: dict of function
-            Some other measurement in addition to bp_loss_f
+            The functions to compute the loss for the procession
+            of back propagation
         test_data: Iterable
             The data used for the evaluation at the end of each epoch,
             NOTICE: should have been divided to batches
@@ -314,7 +316,8 @@ class Module(module.Module):
         trainer:
             The trainer used to update the parameters of the net
         loss_function: dict of function
-            Some other measurement in addition to bp_loss_f
+            The functions to compute the loss for the procession
+            of back propagation
         ctx: Context or list of Context
             Defaults to ``mx.cpu()``.
         toolbox: dict
