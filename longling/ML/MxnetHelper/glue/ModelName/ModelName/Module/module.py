@@ -115,7 +115,7 @@ class Module(module.Module):
             self,
             net, begin_epoch, end_epoch, batch_size,
             train_data,
-            trainer, bp_loss_f,
+            trainer,
             loss_function,
             eval_data=None,
             ctx=mx.cpu(),
@@ -141,9 +141,6 @@ class Module(module.Module):
             NOTICE: should have been divided to batches
         trainer:
             The trainer used to update the parameters of the net
-        bp_loss_f: dict with only one value and one key
-            The function to compute the loss for the procession
-            of back propagation
         loss_function: dict of function
             Some other measurement in addition to bp_loss_f
         eval_data: Iterable
@@ -165,7 +162,7 @@ class Module(module.Module):
             net=net, begin_epoch=begin_epoch, end_epoch=end_epoch,
             batch_size=batch_size,
             train_data=train_data,
-            trainer=trainer, bp_loss_f=bp_loss_f,
+            trainer=trainer,
             loss_function=loss_function,
             test_data=eval_data,
             ctx=ctx,
@@ -178,7 +175,7 @@ class Module(module.Module):
             net, begin_epoch, end_epoch, batch_size,
             train_data,
             trainer,
-            bp_loss_f, loss_function,
+            loss_function,
             test_data=None,
             ctx=mx.cpu(),
             toolbox=None,
@@ -205,9 +202,6 @@ class Module(module.Module):
             NOTICE: should have been divided to batches
         trainer:
             The trainer used to update the parameters of the net
-        bp_loss_f: dict with only one value and one key
-            The function to compute the loss for the procession
-            of back propagation
         loss_function: dict of function
             Some other measurement in addition to bp_loss_f
         test_data: Iterable
@@ -234,7 +228,7 @@ class Module(module.Module):
             batch_num, loss_values = self.batch_loop(
                 net=net, epoch=epoch, batch_size=batch_size,
                 train_data=train_data,
-                trainer=trainer, bp_loss_f=bp_loss_f,
+                trainer=trainer,
                 loss_function=loss_function,
                 ctx=ctx,
                 toolbox=toolbox,
@@ -297,7 +291,7 @@ class Module(module.Module):
             self,
             net, epoch, batch_size,
             train_data,
-            trainer, bp_loss_f,
+            trainer,
             loss_function,
             ctx=mx.cpu(),
             toolbox=None,
@@ -319,9 +313,6 @@ class Module(module.Module):
             NOTICE: should have been divided to batches
         trainer:
             The trainer used to update the parameters of the net
-        bp_loss_f: dict with only one value and one key
-            The function to compute the loss for the procession
-            of back propagation
         loss_function: dict of function
             Some other measurement in addition to bp_loss_f
         ctx: Context or list of Context
@@ -349,7 +340,7 @@ class Module(module.Module):
         for i, batch_data in progress_monitor(enumerate(train_data), epoch):
             self.fit_f(
                 net=net, batch_size=batch_size, batch_data=batch_data,
-                trainer=trainer, bp_loss_f=bp_loss_f,
+                trainer=trainer,
                 loss_function=loss_function,
                 loss_monitor=loss_monitor,
                 ctx=ctx,

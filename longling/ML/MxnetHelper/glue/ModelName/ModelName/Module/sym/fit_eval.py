@@ -47,7 +47,7 @@ def eval_f(_net, test_data, ctx=mx.cpu()):
 
 
 def fit_f(net, batch_size, batch_data,
-          trainer, bp_loss_f, loss_function, loss_monitor=None,
+          trainer, loss_function, loss_monitor=None,
           ctx=mx.cpu(), fit_step_func=_fit_f):
     """
     Defined how each step of batch train goes
@@ -63,9 +63,6 @@ def fit_f(net, batch_size, batch_data,
         The batch data for train
     trainer:
         The trainer used to update the parameters of the net
-    bp_loss_f: dict with only one value and one key
-        The function to compute the loss for the procession
-        of back propagation
     loss_function: dict of function
         Some other measurement in addition to bp_loss_f
     loss_monitor: LossMonitor
@@ -86,7 +83,7 @@ def fit_f(net, batch_size, batch_data,
     with autograd.record():
         for _data in ctx_data:
             bp_loss = fit_step_func(
-                net, _data, bp_loss_f, loss_function, loss_monitor
+                net, _data, loss_function, loss_monitor
             )
             assert bp_loss is not None
             bp_loss.backward()

@@ -6,12 +6,12 @@ from longling.ML.MxnetHelper import save_params
 
 try:
     # for python module
-    from .sym import get_net, get_bp_loss, fit_f, eval_f, net_viz, net_init
+    from .sym import get_net, get_loss, fit_f, eval_f, net_viz, net_init
     from .etl import transform, etl, pseudo_data_iter
     from .configuration import Configuration, ConfigurationParser
 except (ImportError, SystemError):  # pragma: no cover
     # for python script
-    from sym import get_net, get_bp_loss, fit_f, eval_f, net_viz, net_init
+    from sym import get_net, get_loss, fit_f, eval_f, net_viz, net_init
     from etl import transform, etl, pseudo_data_iter
     from configuration import Configuration, ConfigurationParser
 
@@ -21,9 +21,7 @@ def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_resul
     ctx = _cfg.ctx
     batch_size = _cfg.batch_size
 
-    bp_loss_f = get_bp_loss(**_cfg.loss_params)
-    loss_function = {}
-    loss_function.update(bp_loss_f)
+    loss_function = get_loss(**_cfg.loss_params)
 
     from longling.ML.MxnetHelper.glue import module
     from longling.ML.toolkit import EpochEvalFMT as Formatter
@@ -59,7 +57,7 @@ def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_resul
         for i, batch_data in enumerate(progress_monitor(train_data, "Epoch: %s" % epoch)):
             fit_f(
                 net=_net, batch_size=batch_size, batch_data=batch_data,
-                trainer=trainer, bp_loss_f=bp_loss_f,
+                trainer=trainer,
                 loss_function=loss_function,
                 loss_monitor=loss_monitor,
                 ctx=ctx,

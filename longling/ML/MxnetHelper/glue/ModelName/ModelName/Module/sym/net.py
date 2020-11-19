@@ -1,7 +1,7 @@
 # coding: utf-8
 # create by tongshiwei on 2019-9-1
 
-__all__ = ["get_net", "get_bp_loss"]
+__all__ = ["get_net", "get_loss"]
 
 # todo: define your network symbol and back propagation loss function
 
@@ -12,7 +12,7 @@ def get_net(*args, **kwargs):
     return NetName(*args, **kwargs)
 
 
-def get_bp_loss(**kwargs):
+def get_loss(**kwargs):
     return {"L2Loss": gluon.loss.L2Loss(**kwargs)}
 
 

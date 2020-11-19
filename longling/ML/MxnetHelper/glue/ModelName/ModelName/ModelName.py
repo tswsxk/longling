@@ -51,7 +51,6 @@ class ModelName(DL.CliServiceModule):
         if load_epoch is not None:
             self.model_init(load_epoch, allow_reinit=False)
 
-        self.bp_loss_f = None
         self.loss_function = None
         self.toolbox = None
         self.trainer = None
@@ -112,20 +111,12 @@ class ModelName(DL.CliServiceModule):
         mod.logger.info("parameters saved to %s" % filename)
         return mod
 
-    def set_loss(self, bp_loss_f=None, loss_function=None):
+    def set_loss(self, loss_function=None):
         # 4.1 todo 定义损失函数
         # bp_loss_f 定义了用来进行 back propagation 的损失函数，
 
-        bp_loss_f = get_bp_loss(**self.mod.cfg.loss_params) if bp_loss_f is None else bp_loss_f
+        loss_function = get_loss(**self.mod.cfg.loss_params) if loss_function is None else loss_function
 
-        assert bp_loss_f is not None and len(bp_loss_f) == 1
-
-        loss_function = {
-
-        } if loss_function is None else loss_function
-        loss_function.update(bp_loss_f)
-
-        self.bp_loss_f = bp_loss_f
         self.loss_function = loss_function
 
     def viz(self):
