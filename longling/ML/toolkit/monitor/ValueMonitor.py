@@ -117,13 +117,13 @@ class EMAValue(ValueMonitor):
     >>> ema("l2", 100)
     >>> ema("l2", 1)
     >>> ema["l2"]
-    99.01
+    90.1
     >>> list(ema.values())
-    [99.01]
+    [90.1]
     >>> list(ema.keys())
     ['l2']
     >>> list(ema.items())
-    [('l2', 99.01)]
+    [('l2', 90.1)]
     >>> ema.reset()
     >>> ema["l2"]
     nan
@@ -133,12 +133,24 @@ class EMAValue(ValueMonitor):
     >>> ema.updates({"l1": 1, "l2": 10})
     >>> ema.updates({"l1": 10, "l2": 100})
     >>> ema["l1"]
-    1.09
+    1.9
     >>> ema["l2"]
-    10.9
+    19.0
+    >>> ema = EMAValue(["l1"], smoothing_constant=0.0)
+    >>> ema["l1"]
+    nan
+    >>> ema.updates({"l1": 1})
+    >>> ema.updates({"l1": 10})
+    >>> ema["l1"]
+    1.0
+    >>> ema = EMAValue(["l1"], smoothing_constant=1.0)
+    >>> ema.updates({"l1": 1})
+    >>> ema.updates({"l1": 10})
+    >>> ema["l1"]
+    10.0
     """
 
-    def __init__(self, value_function_names: (list, dict), smoothing_constant=0.01, *args, **kwargs):
+    def __init__(self, value_function_names: (list, dict), smoothing_constant=0.1, *args, **kwargs):
         """
         Parameters
         ----------
