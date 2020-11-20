@@ -5,7 +5,7 @@ __all__ = ["tmt_mx_loss", "as_tmt_mx_loss", "loss_dict2tmt_mx_loss"]
 
 import mxnet.ndarray as nd
 
-from longling.ML.toolkit import tmt_loss, as_tmt_loss
+from longling.ML.toolkit import tmt_loss, as_tmt_loss, loss_dict2tmt_loss
 
 
 def _loss2value(loss):
@@ -20,5 +20,5 @@ def as_tmt_mx_loss(loss_obj, loss2value=_loss2value):
     return as_tmt_loss(loss_obj, loss2value)
 
 
-def loss_dict2tmt_mx_loss(loss_dict, loss2value=_loss2value):
-    return {name: as_tmt_mx_loss(func, loss2value) for name, func in loss_dict.items()}
+def loss_dict2tmt_mx_loss(loss_dict, loss2value=_loss2value, exclude=None, include=None):
+    return loss_dict2tmt_loss(loss_dict, loss2value, exclude, include, as_loss=as_tmt_mx_loss)
