@@ -34,10 +34,10 @@ class EvalFMT(object):
         return "%s: %s" % (name, value)
 
     def loss_format(self, loss_name_value):
-        msg = "Loss - "
+        msg = []
         for name, value in loss_name_value.items():
-            msg += self._loss_format(name, value)
-        return msg, loss_name_value
+            msg.append("Loss - " + self._loss_format(name, value))
+        return " ".join(msg), loss_name_value
 
     @classmethod
     def format(cls, tips: str = None,
