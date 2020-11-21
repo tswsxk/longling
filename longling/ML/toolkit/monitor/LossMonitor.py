@@ -42,6 +42,6 @@ class MovingLoss(EMAValue, LossMonitor):
     >>> lm("l2", 100)
     >>> lm("l2", 1)
     >>> lm["l2"]
-    99.01
+    99.1
     """
     pass
