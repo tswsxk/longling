@@ -112,7 +112,7 @@ class ModelName(DL.CliServiceModule):
         return mod
 
     def set_loss(self, loss_function=None):
-        # 4.1 todo 定义损失函数
+        # 3 todo 定义损失函数
         # bp_loss_f 定义了用来进行 back propagation 的损失函数，
 
         loss_function = get_loss(**self.mod.cfg.loss_params) if loss_function is None else loss_function
@@ -154,7 +154,7 @@ class ModelName(DL.CliServiceModule):
 
         loss_monitor = MovingLoss(self.loss_function)
 
-        # 4.1 todo 初始化一些训练过程中的交互信息
+        # 4 todo 初始化一些训练过程中的交互信息
         timer = Clock()
 
         progress_monitor = ProgressMonitor(
@@ -237,7 +237,6 @@ class ModelName(DL.CliServiceModule):
         cfg = self.mod.cfg
         net = self.net
 
-        bp_loss_f = self.bp_loss_f
         loss_function = self.loss_function
         toolbox = self.toolbox
 
@@ -246,19 +245,14 @@ class ModelName(DL.CliServiceModule):
         end_epoch = mod.cfg.end_epoch
         ctx = mod.cfg.ctx
 
-        assert all([bp_loss_f, loss_function]), \
-            "make sure these variable have been initialized, " \
-            "check init method and " \
-            "make sure package_init method has been called"
-
-        # 6 todo 训练
+        # 6.2 todo 训练
         trainer = self.trainer if trainer is None else trainer
         mod.logger.info("start training")
         mod.fit(
             net=net, begin_epoch=begin_epoch, end_epoch=end_epoch,
             batch_size=batch_size,
             train_data=train_data,
-            trainer=trainer, bp_loss_f=bp_loss_f,
+            trainer=trainer,
             loss_function=loss_function,
             eval_data=eval_data,
             ctx=ctx,
@@ -337,7 +331,7 @@ class ModelName(DL.CliServiceModule):
         mod = self.mod
         cfg = mod.cfg if cfg is None else cfg
 
-        # 4.2 todo 定义数据加载
+        # 6.1 todo 定义数据加载
         mod.logger.info("loading data")
         data = etl(cfg.var2val(data_src), params=cfg)
 
