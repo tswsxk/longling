@@ -201,13 +201,10 @@ class ModelName(DL.CliServiceModule):
         mod = self.mod
         net = self.net
         cfg = mod.cfg if cfg is None else cfg
-        begin_epoch = cfg.begin_epoch
-
-        load_epoch = load_epoch if load_epoch is not None else begin_epoch
 
         # 5 todo 初始化模型
         model_file = kwargs.get(
-            "init_model_file", mod.epoch_params_filepath(load_epoch)
+            "init_model_file", mod.epoch_params_filepath(load_epoch) if load_epoch is not None else None
         )
         mod.net_initialize(
             net,
