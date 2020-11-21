@@ -4,7 +4,6 @@
 """
 自定义的配置文件及对应的解析工具包。目的是为了更方便、快速地进行文件参数配置与解析。
 """
-
 import argparse
 import inspect
 import json
@@ -13,6 +12,7 @@ import os
 import re
 import sys
 from collections import Iterable
+from copy import deepcopy
 
 import toml
 import yaml
@@ -228,7 +228,7 @@ class Configuration(object):
         params.update(**kwargs)
         for param, value in params.items():
             # all class variables will be contained in instance variables
-            setattr(self, "%s" % param, value)
+            setattr(self, "%s" % param, deepcopy(value))
 
     @classmethod
     def vars(cls):
@@ -389,6 +389,7 @@ class InheritableConfiguration(Configuration):
             dump_parse_functions=None,
             get_vars=False
         )
+
 
 def value_parse(value):
     r"""
