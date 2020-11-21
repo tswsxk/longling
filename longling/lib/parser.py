@@ -816,7 +816,6 @@ if __name__ == '__main__':
         def cls_m(cls, new_a):
             cls.a = new_a
 
-
     parser = ConfigurationParser(TestCls)
     parser.add_command(TestCls.cls_m)
     print(parser("cls_m 1"))
