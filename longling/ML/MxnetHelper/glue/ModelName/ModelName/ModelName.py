@@ -207,7 +207,7 @@ class ModelName(DL.CliServiceModule):
 
         # 5 todo 初始化模型
         model_file = kwargs.get(
-            "init_model_file", mod.epoch_params_filename(load_epoch)
+            "init_model_file", mod.epoch_params_filepath(load_epoch)
         )
         mod.net_initialize(
             net,

@@ -9,6 +9,7 @@ import os
 import mxnet as mx
 from tqdm import tqdm
 
+from longling.ML import get_epoch_params_filepath
 from longling.ML.MxnetHelper.glue import module
 from longling.ML.toolkit import EpochEvalFMT as Formatter
 from .configuration import Configuration
@@ -87,7 +88,7 @@ class Module(module.Module):
         self.cfg.dump(filename, override=True)
         return filename
 
-    def epoch_params_filename(self, epoch):
+    def epoch_params_filepath(self, epoch):
         return self.prefix + "-%04d.parmas" % epoch
 
     # 部分定义训练相关的方法
