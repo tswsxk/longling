@@ -4,10 +4,9 @@
 
 class ServiceModule(object):
     def __init__(self, cfg=None, **kwargs):
-        cfg = self.config(cfg, **kwargs)
-        self.mod = self.get_module(cfg)
+        self.cfg = self.config(cfg, **kwargs)
+        self.mod = self.get_module(self.cfg)
 
-        self.bp_loss_f = None
         self.loss_function = None
 
     @staticmethod
@@ -38,7 +37,6 @@ class ServiceModule(object):
         ) if cfg is None else cfg
         if not isinstance(cfg, configuration_cls):
             cfg = configuration_cls.load_cfg(cfg, **kwargs)
-        cfg.dump(override=True)
         return cfg
 
     @classmethod
@@ -103,7 +101,7 @@ class CliServiceModule(ServiceModule):
         subcommand = cfg_kwargs["subcommand"]
         del cfg_kwargs["subcommand"]
 
-        eval("%s.%s" % (cls.__name__, subcommand))(**cfg_kwargs)
+        eval("cls.%s" % subcommand)(**cfg_kwargs)
 
 
 def service_wrapper(
