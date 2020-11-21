@@ -235,7 +235,8 @@ class Module(module.Module):
                 ctx=ctx,
                 toolbox=toolbox,
             )
-            if hasattr(self.cfg, "lr_params") and self.cfg.lr_params and "update_params" in self.cfg.lr_params:
+            if hasattr(self.cfg, "lr_params") and self.cfg.lr_params \
+                    and "update_params" in self.cfg.lr_params and self.cfg.end_epoch - self.cfg.begin_epoch - 1 > 0:
                 self.cfg.logger.info("reset trainer")
                 lr_params = self.cfg.lr_params.pop("update_params")
                 lr_update_params = dict(

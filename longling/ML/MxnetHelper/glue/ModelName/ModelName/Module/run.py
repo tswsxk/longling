@@ -62,7 +62,7 @@ def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_resul
                 loss_monitor=loss_monitor,
                 ctx=ctx,
             )
-        if _cfg.lr_params and "update_params" in _cfg.lr_params:
+        if _cfg.lr_params and "update_params" in _cfg.lr_params and _cfg.end_epoch - _cfg.begin_epoch - 1 > 0:
             _cfg.logger.info("reset trainer")
             lr_params = _cfg.lr_params.pop("update_params")
             lr_update_params = dict(
