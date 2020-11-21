@@ -5,6 +5,7 @@
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/longling.svg)](https://pypi.python.org/pypi/longling)
 [![Build Status](https://www.travis-ci.org/tswsxk/longling.svg?branch=master)](https://www.travis-ci.org/tswsxk/longling)
 [![codecov](https://codecov.io/gh/tswsxk/longling/branch/master/graph/badge.svg)](https://codecov.io/gh/tswsxk/longling)
+[![Download](https://img.shields.io/pypi/dm/longling.svg?style=flat)](https://pypi.python.org/pypi/longling)
 
 This project aims to provide some handy toolkit functions to help construct the
 architecture. 
