@@ -50,7 +50,7 @@ class TripletPairSampler(Sampler):
             self.df.set_index(self.query_field, inplace=True)
 
     def __call__(self, query: (int, str, list), n=1, excluded_key=None, neg=True, implicit=False, padding=True,
-                 *args, verbose=True, **kwargs):
+                 *args, verbose=True, return_column=False, split_sample_to_column=False, **kwargs):
         if isinstance(query, (int, str)):
             sample = self.sample(
                 query=query,
@@ -70,10 +70,18 @@ class TripletPairSampler(Sampler):
         else:
             neg = neg if isinstance(neg, Iterable) else [neg] * len(query)
             excluded_key = excluded_key if isinstance(excluded_key, Iterable) else [excluded_key] * len(query)
-            return [
+            n_and_sample = [
                 self(_query, n, _excluded_key, _neg, implicit, padding, *args, **kwargs)
-                for _query, _excluded_key, _neg in tqdm(zip(query, excluded_key, neg), "sampling", disable=not verbose)
+                for _query, _excluded_key, _neg in tqdm(
+                    zip(query, excluded_key, neg), "sampling", disable=not verbose
+                )
             ]
+            if return_column:
+                n_sample, sample = zip(*n_and_sample)
+                if split_sample_to_column:
+                    return n_sample, list(zip(*sample))
+                return n_sample, sample
+            return n_and_sample
 
     def sample(self, query: (int, str, list), n=1, excluded_key=None, neg=True, *args, **kwargs):
         try:
@@ -178,6 +186,12 @@ class UITripletPairSampler(TripletPairSampler):
     >>> sampler(rating_matrix["user_id"], 2, neg=rating_matrix["score"],
     ...     excluded_key=rating_matrix["item_id"], pad_value=-1)
     [(0, [-1, -1]), (2, [0, 2]), (1, [3, -1]), (1, [3, -1]), (0, [-1, -1])]
+    >>> sampler(rating_matrix["user_id"], 2, neg=rating_matrix["score"],
+    ...     excluded_key=rating_matrix["item_id"], pad_value=-1, return_column=True)
+    ((0, 2, 1, 1, 0), ([-1, -1], [2, 0], [3, -1], [3, -1], [-1, -1]))
+    >>> sampler(rating_matrix["user_id"], 2, neg=rating_matrix["score"],
+    ...     excluded_key=rating_matrix["item_id"], pad_value=-1, return_column=True, split_sample_to_column=True)
+    ((0, 2, 1, 1, 0), [(-1, 0, 3, 3, -1), (-1, 2, -1, -1, -1)])
     """
 
     def __init__(self, triplet_df: pd.DataFrame,
