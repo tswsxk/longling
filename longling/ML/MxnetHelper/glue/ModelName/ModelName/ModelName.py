@@ -271,7 +271,6 @@ class ModelName(DL.CliServiceModule):
         mod = self.mod
         net = self.net
 
-        bp_loss_f = self.bp_loss_f
         loss_function = self.loss_function
 
         if loss_monitor is None:
@@ -286,7 +285,7 @@ class ModelName(DL.CliServiceModule):
         mod.fit_f(
             net=net, batch_size=batch_size, batch_data=batch_data,
             trainer=trainer,
-            bp_loss_f=bp_loss_f, loss_function=loss_function,
+            loss_function=loss_function,
             loss_monitor=loss_monitor,
             ctx=ctx,
         )
