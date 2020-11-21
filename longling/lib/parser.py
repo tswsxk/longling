@@ -228,11 +228,12 @@ class Configuration(object):
         params.update(**kwargs)
         for param, value in params.items():
             # all class variables will be contained in instance variables
-            setattr(self, "%s" % param, deepcopy(value))
+            setattr(self, "%s" % param, value)
 
     @classmethod
     def vars(cls):
-        return get_class_var(cls)
+        # todo: check why when deepcopy is missed, two instance will have same id for class_var
+        return deepcopy(get_class_var(cls))
 
     @property
     def class_var(self):
