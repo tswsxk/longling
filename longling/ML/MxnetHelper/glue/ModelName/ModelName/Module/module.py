@@ -7,11 +7,10 @@ import logging
 import os
 
 import mxnet as mx
-from tqdm import tqdm
-
-from longling.ML import get_epoch_params_filepath
 from longling.ML.MxnetHelper.glue import module
 from longling.ML.toolkit import EpochEvalFMT as Formatter
+from tqdm import tqdm
+
 from .configuration import Configuration
 from .sym import get_net, fit_f, eval_f, net_init
 
@@ -284,10 +283,9 @@ class Module(module.Module):
 
             # todo 定义模型保存方案
             if save_model:
-                if kwargs.get('prefix') and (
-                        epoch % kwargs.get('save_epoch', 1) == 0 or end_epoch - 10 <= epoch <= end_epoch - 1):
+                if epoch % kwargs.get('save_epoch', 1) == 0:
                     self.save_params(
-                        kwargs['prefix'] + "-%04d.parmas" % epoch, net
+                        self.epoch_params_filepath(epoch), net
                     )
 
     def batch_loop(
