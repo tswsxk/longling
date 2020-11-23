@@ -41,6 +41,13 @@ pip install longling --no-dependencies
 python setup.py install --no-dependencies
 ```
 
+### Help for windows user
+
+Due to the potential compile error in windows, some required package may not be installed as expected.
+To deal with this issue, pre-compiled binaries are advised.
+You can go to [lfd.uci.edu/~gohlke/pythonlibs](https://www.lfd.uci.edu/~gohlke/pythonlibs) 
+and download the required packages.
+
 ## Overview
 The project contains several modules for different purposes:
 
