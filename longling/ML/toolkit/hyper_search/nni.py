@@ -6,7 +6,7 @@ import warnings
 from heapq import nlargest
 from longling.ML.toolkit.analyser import get_max, get_min, get_by_key, key_parser
 from longling import Configuration, path_append
-from longling import dict2pv, list2dict, nested_update
+from longling import list2dict, nested_update
 
 import json
 import sqlite3
