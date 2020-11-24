@@ -6,7 +6,7 @@ import warnings
 from heapq import nlargest
 from longling.ML.toolkit.analyser import get_max, get_min, get_by_key, key_parser
 from longling import Configuration, path_append
-from longling import dict2pv, list2dict
+from longling import dict2pv, list2dict, nested_update
 
 import json
 import sqlite3
@@ -125,14 +125,12 @@ class BaseReporter(object):
         raise NotImplementedError
 
 
-def get_params(received_params: dict, cfg_cls: (Configuration, type(Configuration))):
+def get_params(received_params: dict):
     """
     Parameters
     ----------
     received_params: dict
         nni get_next_parameters() 得到的参数字典
-    cfg_cls: Configuration
-        配置文件实例
 
     Returns
     -------
@@ -143,30 +141,25 @@ def get_params(received_params: dict, cfg_cls: (Configuration, type(Configuratio
 
     Examples
     --------
-    >>> class CFG(Configuration):
-    ...     hyper_params = {"hidden_num": 100}
-    ...     learning_rate = 0.001
-    >>> cfg = CFG()
-    >>> get_params({"hidden_num": 50, "learning_rate": 0.1, "act": "relu"}, cfg)
-    ({'hyper_params': {'hidden_num': 50}, 'learning_rate': 0.1}, {'act': 'relu'})
+    >>> get_params({
+    ...     "hyper_params_update:hidden_num": 50,
+    ...     "hyper_params_update:alpha": 5,
+    ...     "learning_rate": 0.1
+    ... })
+    {'hyper_params_update': {'hidden_num': 50, 'alpha': 5}, 'learning_rate': 0.1}
     """
     cfg_params = {}
-    unk_params = {}
-
-    path, _ = dict2pv(cfg_cls.vars())
-
-    keys = {p[-1]: p for p in path}
 
     for k, v in received_params.items():
-        if k in cfg_cls.vars():
-            cfg_params[k] = v
+        if ":" in k:
+            k = k.split(":")
+            obj = list2dict(k, v)
         else:
-            if k in keys:
-                cfg_params.update(list2dict(keys[k], v))
-            else:
-                unk_params[k] = v
+            obj = {k: v}
 
-    return cfg_params, unk_params
+        nested_update(cfg_params, obj)
+
+    return cfg_params
 
 
 def prepare_hyper_search(cfg_kwargs: dict, cfg_cls: (Configuration, type(Configuration)),
@@ -213,6 +206,7 @@ def prepare_hyper_search(cfg_kwargs: dict, cfg_cls: (Configuration, type(Configu
     dump: bool
         为 True 时，会修改 配置文件 中 workspace 参数为 ``workspace/nni.get_experiment_id()/nni.get_trial_id()``
         使得 nni 的中间结果会被存储下来。
+    disable
 
     Returns
     -------
@@ -305,11 +299,9 @@ def prepare_hyper_search(cfg_kwargs: dict, cfg_cls: (Configuration, type(Configu
         rc = Reporter() if reporter_cls is None else reporter_cls
         reporthook = reporthook if reporthook is not None else rc.intermediate
         final_reporthook = final_reporthook if final_reporthook is not None else rc.final
-        cfg_cls_params, hyper_params = get_params(get_next_parameter(), cfg_cls)
-        using_nni_tag = True if cfg_cls_params or hyper_params else False
+        cfg_cls_params = get_params(get_next_parameter())
+        using_nni_tag = True if cfg_cls_params else False
         cfg_kwargs.update(cfg_cls_params)
-        if "hyper_params" in cfg_kwargs:  # pragma: no cover
-            cfg_kwargs["hyper_params"].update(hyper_params)
         if using_nni_tag is True and dump is True:  # pragma: no cover
             cfg_kwargs["workspace"] = cfg_kwargs.get("workspace", "") + path_append(
                 nni.get_experiment_id(), nni.get_trial_id(), to_str=True
