@@ -29,10 +29,12 @@ def _key(x):
 
 
 def show(key, max_key=True, exp_id=None, res_dir="./",
-         nni_dir=path_append(os.environ.get("HOME", "./"), "nni/experiments"),
+         nni_dir=path_append(os.environ.get("HOME", "./"), "nni-experiments"),
          only_final=False,
          with_keys=None, with_all=False):  # pragma: no cover
     """
+    Updated in v1.3.17
+
     cli alias: ``nni show``
 
     Parameters
@@ -84,8 +86,10 @@ def show(key, max_key=True, exp_id=None, res_dir="./",
 
 
 def show_top_k(k, exp_id=None,
-               exp_dir=path_append(os.environ.get("HOME", "./"), "nni/experiments")):  # pragma: no cover
+               exp_dir=path_append(os.environ.get("HOME", "./"), "nni-experiments")):  # pragma: no cover
     """
+    Updated in v1.3.17
+
     cli alias: ``nni k-best``
 
     Parameters
@@ -98,6 +102,9 @@ def show_top_k(k, exp_id=None,
     -------
 
     """
+    import warnings
+    warnings.warn("deprecated method")
+
     if exp_id:
         exp_dir = path_append(exp_dir, exp_id)
     sqlite_db = path_append(exp_dir, "db", "nni.sqlite", to_str=True)
@@ -127,6 +134,8 @@ class BaseReporter(object):
 
 def get_params(received_params: dict):
     """
+    Updated in v1.3.17
+
     Parameters
     ----------
     received_params: dict
@@ -167,6 +176,8 @@ def prepare_hyper_search(cfg_kwargs: dict, cfg_cls: (Configuration, type(Configu
                          primary_key=None, max_key=True, reporter_cls=None, with_keys: (list, str, None) = None,
                          dump=False, disable=False):
     """
+    Updated in v1.3.17
+
     从 nni package 中获取超参，更新配置文件参数。当 nni 不可用或不是 nni 搜索模式时，参数将不会改变。
 
     ..code-block :: python
