@@ -4,7 +4,7 @@
 from collections import OrderedDict
 from longling.lib.stream import as_out_io
 from longling.lib.path import path_append
-from longling.lib.yaml import dump_folded_yaml, ordered_yaml_load, FoldedString
+from longling.lib.yaml_helper import dump_folded_yaml, ordered_yaml_load, FoldedString
 
 
 def test_yaml(tmp_path):
