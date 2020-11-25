@@ -537,15 +537,6 @@ class ConfigurationParser(argparse.ArgumentParser):
     {'a': '1', 'b': 1}
     >>> parser(["--a", "1", "--b", "int(1)", "--kwargs", "c=int(3);d=None"])
     {'a': '1', 'b': 1, 'c': 3, 'd': None}
-    >>> parser.print_help()
-    usage: docrunner.py [-h] [--a A] [--b B] [--kwargs KWARGS]
-    <BLANKLINE>
-    optional arguments:
-      -h, --help       show this help message and exit
-      --a A            set a, default is 1
-      --b B            set b, default is 2
-      --kwargs KWARGS  add extra argument here, use format:
-                       <key>=<value>(;<key>=<value>)
     >>> parser.add_command(test_f1, test_f2, test_f3)
     >>> parser(["test_f1"])
     {'a': 1, 'b': 2, 'k': 1, 'subcommand': 'test_f1'}
@@ -556,43 +547,6 @@ class ConfigurationParser(argparse.ArgumentParser):
     >>> parser = ConfigurationParser(TestC, commands=[test_f1, test_f2])
     >>> parser(["test_f1"])
     {'a': 1, 'b': 2, 'k': 1, 'subcommand': 'test_f1'}
-    >>> parser.print_help()
-    usage: docrunner.py [-h] [--a A] [--b B] [--kwargs KWARGS]
-                        {test_f1,test_f2} ...
-    <BLANKLINE>
-    positional arguments:
-      {test_f1,test_f2}  help for sub-command
-        test_f1          test_f1
-        test_f2          test_f2
-    <BLANKLINE>
-    optional arguments:
-      -h, --help         show this help message and exit
-      --a A              set a, default is 1
-      --b B              set b, default is 2
-      --kwargs KWARGS    add extra argument here, use format:
-                         <key>=<value>(;<key>=<value>)
-    >>> class TestC1(TestC):
-    ...     @classmethod
-    ...     def help_info(cls):
-    ...         return {'a': 'Alpha'}
-    >>> ConfigurationParser(TestC1).print_help()
-    usage: docrunner.py [-h] [--a A] [--b B] [--kwargs KWARGS]
-    <BLANKLINE>
-    optional arguments:
-      -h, --help       show this help message and exit
-      --a A            Alpha, set a, default is 1
-      --b B            set b, default is 2
-      --kwargs KWARGS  add extra argument here, use format:
-                       <key>=<value>(;<key>=<value>)
-    >>> ConfigurationParser(TestC1, params_help={"a": "alpha"}).print_help()
-    usage: docrunner.py [-h] [--a A] [--b B] [--kwargs KWARGS]
-    <BLANKLINE>
-    optional arguments:
-      -h, --help       show this help message and exit
-      --a A            alpha, set a, default is 1
-      --b B            set b, default is 2
-      --kwargs KWARGS  add extra argument here, use format:
-                       <key>=<value>(;<key>=<value>)
     >>> class TestCC:
     ...     c = {"_c": 1, "_d": 0.1}
     >>> parser = ConfigurationParser(TestCC)
@@ -612,18 +566,6 @@ class ConfigurationParser(argparse.ArgumentParser):
     {'b': 2, 'subcommand': 'b'}
     >>> parser("c")
     {'c': 3, 'subcommand': 'c'}
-    >>> ConfigurationParser(TestCls, commands=[TestCls.b, TestCls.c], commands_help={"b": "b mode"}).print_help()
-    usage: docrunner.py [-h] [--kwargs KWARGS] {b,c} ...
-    <BLANKLINE>
-    positional arguments:
-      {b,c}            help for sub-command
-        b              b mode
-        c              c help
-    <BLANKLINE>
-    optional arguments:
-      -h, --help       show this help message and exit
-      --kwargs KWARGS  add extra argument here, use format:
-                       <key>=<value>(;<key>=<value>)
     """
 
     def __init__(self, class_type, excluded_names: (set, None) = None,
