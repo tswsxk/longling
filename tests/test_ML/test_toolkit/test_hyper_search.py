@@ -12,12 +12,12 @@ def test_hyper_search():
         workspace = ""
 
     cfg_kwargs, _, _, _ = prepare_hyper_search(
-        {"learning_rate": 0.1}, CFG, primary_key="macro_avg:f1", with_keys="accuracy", disable=True
+        {"learning_rate": 0.1}, primary_key="macro_avg:f1", with_keys="accuracy", disable=True
     )
     assert cfg_kwargs == {"learning_rate": 0.1}
 
     cfg_kwargs, reporthook, final_reporthook, dump = prepare_hyper_search(
-        {"learning_rate": 0.1}, CFG, primary_key="macro_avg:f1", with_keys="accuracy"
+        {"learning_rate": 0.1}, primary_key="macro_avg:f1", with_keys="accuracy"
     )
 
     assert cfg_kwargs == {'learning_rate': 0.1}
@@ -28,7 +28,7 @@ def test_hyper_search():
     final_reporthook()
 
     cfg_kwargs, reporthook, final_reporthook, dump = prepare_hyper_search(
-        {"learning_rate": 0.1}, CFG, primary_key="macro_avg:f1", with_keys="accuracy;macro_avg:precision"
+        {"learning_rate": 0.1}, primary_key="macro_avg:f1", with_keys="accuracy;macro_avg:precision"
     )
 
     reporthook({"macro_avg": {"f1": 0.5, "precision": 0.6}, "accuracy": 0.7})
@@ -37,7 +37,7 @@ def test_hyper_search():
     final_reporthook()
 
     cfg_kwargs, reporthook, final_reporthook, dump = prepare_hyper_search(
-        {"learning_rate": 0.1}, CFG, primary_key="macro_avg:f1"
+        {"learning_rate": 0.1}, primary_key="macro_avg:f1"
     )
 
     reporthook({"macro_avg": {"f1": 0.5, "precision": 0.6}, "accuracy": 0.7})
