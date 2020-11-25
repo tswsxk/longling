@@ -1,7 +1,6 @@
 # coding: utf-8
 # 2020/4/19 @ tongshiwei
 
-from longling import Configuration
 from longling.ML.toolkit.hyper_search import prepare_hyper_search
 
 
@@ -32,10 +31,10 @@ def test_hyper_search():
     final_reporthook()
 
     cfg_kwargs, reporthook, final_reporthook, dump = prepare_hyper_search(
-        {"learning_rate": 0.1}, primary_key="macro_avg:f1"
+        {"learning_rate": 0.1}, primary_key="macro_avg:f1;loss", final_keys="loss"
     )
 
-    reporthook({"macro_avg": {"f1": 0.5, "precision": 0.6}, "accuracy": 0.7})
-    reporthook({"macro_avg": {"f1": 0.5, "precision": 0.6}, "accuracy": 0.6})
+    reporthook({"macro_avg": {"f1": 0.5, "precision": 0.6}, "accuracy": 0.7, "loss": 0.5})
+    reporthook({"macro_avg": {"f1": 0.5, "precision": 0.6}, "accuracy": 0.6, "loss": 0.3})
 
     final_reporthook()
