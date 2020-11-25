@@ -34,6 +34,8 @@ CLASS_EXCLUDE_NAMES = set(vars(object).keys()) | {
 
 def get_class_var(class_obj, exclude_names: (set, None) = None, get_vars=None) -> dict:
     """
+    Update in v1.3.18
+
     获取某个类的所有属性的变量名及其值
 
     Examples
@@ -470,6 +472,8 @@ def args_zips(args=None, defaults=None):
 
 class ConfigurationParser(argparse.ArgumentParser):
     """
+    Update in v1.3.18
+
     配置文件解析类，可用于构建cli工具。该类首先读入所有目标配置文件类class_obj的所有类属性，解析后生成命令行。
     普通属性参数使用 "--att_name att_value" 来读入。另外提供一个额外参数标记 ‘--kwargs’ 来读入可选参数。
     可选参数格式为 ::
