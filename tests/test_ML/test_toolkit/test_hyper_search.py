@@ -31,7 +31,7 @@ def test_hyper_search():
     final_reporthook()
 
     cfg_kwargs, reporthook, final_reporthook, dump = prepare_hyper_search(
-        {"learning_rate": 0.1}, primary_key="macro_avg:f1;loss", final_keys="loss"
+        {"learning_rate": 0.1}, primary_key="macro_avg:f1", with_keys="macro_avg:precision;loss", final_keys="loss"
     )
 
     reporthook({"macro_avg": {"f1": 0.5, "precision": 0.6}, "accuracy": 0.7, "loss": 0.5})
