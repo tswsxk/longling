@@ -32,7 +32,7 @@ CLASS_EXCLUDE_NAMES = set(vars(object).keys()) | {
 }
 
 
-def get_class_var(class_obj, exclude_names: (set, None) = None, get_vars=True) -> dict:
+def get_class_var(class_obj, exclude_names: (set, None) = None, get_vars=None) -> dict:
     """
     获取某个类的所有属性的变量名及其值
 
@@ -74,13 +74,13 @@ def get_class_var(class_obj, exclude_names: (set, None) = None, get_vars=True) -
         class_obj, "excluded_names"
     ) else class_obj.excluded_names() | default_excluded_names
 
-    if get_vars:
-        variables = {
+    variables = {}
+    if get_vars is not False:  # True or None
+        variables.update({
             k: v for k, v in vars(class_obj).items() if
             not inspect.isroutine(v) and k not in excluded_names
-        }
-    else:
-        variables = {}
+        })
+    if get_vars is not True:  # False or None
         for k in dir(class_obj):
             if hasattr(class_obj, k):
                 v = getattr(class_obj, k)
@@ -365,8 +365,12 @@ class Configuration(object):
             所有非参变量
         """
         return CLASS_EXCLUDE_NAMES | {
-            'class_var', 'parsable_var', 'items', 'load', 'dump'
+            'class_var', 'parsable_var', 'items', 'load', 'dump', 'help_info'
         } | cls.run_time_variables()
+
+    @classmethod
+    def help_info(cls) -> dict:
+        return {}
 
 
 class InheritableConfiguration(Configuration):
@@ -533,6 +537,15 @@ class ConfigurationParser(argparse.ArgumentParser):
     {'a': '1', 'b': 1}
     >>> parser(["--a", "1", "--b", "int(1)", "--kwargs", "c=int(3);d=None"])
     {'a': '1', 'b': 1, 'c': 3, 'd': None}
+    >>> parser.print_help()
+    usage: docrunner.py [-h] [--a A] [--b B] [--kwargs KWARGS]
+    <BLANKLINE>
+    optional arguments:
+      -h, --help       show this help message and exit
+      --a A            set a, default is 1
+      --b B            set b, default is 2
+      --kwargs KWARGS  add extra argument here, use format:
+                       <key>=<value>(;<key>=<value>)
     >>> parser.add_command(test_f1, test_f2, test_f3)
     >>> parser(["test_f1"])
     {'a': 1, 'b': 2, 'k': 1, 'subcommand': 'test_f1'}
@@ -543,6 +556,43 @@ class ConfigurationParser(argparse.ArgumentParser):
     >>> parser = ConfigurationParser(TestC, commands=[test_f1, test_f2])
     >>> parser(["test_f1"])
     {'a': 1, 'b': 2, 'k': 1, 'subcommand': 'test_f1'}
+    >>> parser.print_help()
+    usage: docrunner.py [-h] [--a A] [--b B] [--kwargs KWARGS]
+                        {test_f1,test_f2} ...
+    <BLANKLINE>
+    positional arguments:
+      {test_f1,test_f2}  help for sub-command
+        test_f1          test_f1
+        test_f2          test_f2
+    <BLANKLINE>
+    optional arguments:
+      -h, --help         show this help message and exit
+      --a A              set a, default is 1
+      --b B              set b, default is 2
+      --kwargs KWARGS    add extra argument here, use format:
+                         <key>=<value>(;<key>=<value>)
+    >>> class TestC1(TestC):
+    ...     @classmethod
+    ...     def help_info(cls):
+    ...         return {'a': 'Alpha'}
+    >>> ConfigurationParser(TestC1).print_help()
+    usage: docrunner.py [-h] [--a A] [--b B] [--kwargs KWARGS]
+    <BLANKLINE>
+    optional arguments:
+      -h, --help       show this help message and exit
+      --a A            Alpha, set a, default is 1
+      --b B            set b, default is 2
+      --kwargs KWARGS  add extra argument here, use format:
+                       <key>=<value>(;<key>=<value>)
+    >>> ConfigurationParser(TestC1, params_help={"a": "alpha"}).print_help()
+    usage: docrunner.py [-h] [--a A] [--b B] [--kwargs KWARGS]
+    <BLANKLINE>
+    optional arguments:
+      -h, --help       show this help message and exit
+      --a A            alpha, set a, default is 1
+      --b B            set b, default is 2
+      --kwargs KWARGS  add extra argument here, use format:
+                       <key>=<value>(;<key>=<value>)
     >>> class TestCC:
     ...     c = {"_c": 1, "_d": 0.1}
     >>> parser = ConfigurationParser(TestCC)
@@ -562,10 +612,25 @@ class ConfigurationParser(argparse.ArgumentParser):
     {'b': 2, 'subcommand': 'b'}
     >>> parser("c")
     {'c': 3, 'subcommand': 'c'}
-
+    >>> ConfigurationParser(TestCls, commands=[TestCls.b, TestCls.c], commands_help={"b": "b mode"}).print_help()
+    usage: docrunner.py [-h] [--kwargs KWARGS] {b,c} ...
+    <BLANKLINE>
+    positional arguments:
+      {b,c}            help for sub-command
+        b              b mode
+        c              c help
+    <BLANKLINE>
+    optional arguments:
+      -h, --help       show this help message and exit
+      --kwargs KWARGS  add extra argument here, use format:
+                       <key>=<value>(;<key>=<value>)
     """
 
-    def __init__(self, class_type, excluded_names: (set, None) = None, commands=None, *args, **kwargs):
+    def __init__(self, class_type, excluded_names: (set, None) = None,
+                 commands=None,
+                 *args,
+                 params_help=None, commands_help=None, override_help=False,
+                 **kwargs):
         excluded_names = {
             'logger'
         } if excluded_names is None else excluded_names
@@ -573,6 +638,20 @@ class ConfigurationParser(argparse.ArgumentParser):
         self.__proto_type = argparse.ArgumentParser(add_help=False)
 
         params = {k: v for k, v in get_class_var(class_type).items()}
+        _params_help = {}
+        _params_help.update(class_type.help_info() if hasattr(class_type, 'help_info') else {})
+        _params_help.update({} if params_help is None else params_help)
+        params_help = _params_help
+
+        def get_help_info(default_help_info, param_name=None):
+            if not params_help or param_name not in params_help:
+                return default_help_info
+            else:
+                if override_help:
+                    return "%s" % params_help[param_name]
+                else:
+                    return "%s, %s" % (params_help[param_name], default_help_info)
+
         for param, value in params.items():
             if param in excluded_names:  # pragma: no cover
                 continue
@@ -581,15 +660,16 @@ class ConfigurationParser(argparse.ArgumentParser):
                               "use format: <key>=<value>(;<key>=<value>)"
                 self.__proto_type.add_argument(
                     '--%s' % param,
-                    help='set %s, default is %s%s' % (
+                    help=get_help_info('set %s, default is %s%s' % (
                         param, value, format_tips
-                    ), default=value,
+                    ), param),
+                    default=value,
                     type=parse_dict_string,
                 )
             else:
                 self.__proto_type.add_argument(
                     '--%s' % param,
-                    help='set %s, default is %s' % (param, value),
+                    help=get_help_info('set %s, default is %s' % (param, value), param),
                     default=value,
                     type=value_parse,
                 )
@@ -603,12 +683,16 @@ class ConfigurationParser(argparse.ArgumentParser):
 
         if commands is not None:
             assert isinstance(commands, Iterable)
-            self.add_command(*commands)
+            self.add_command(*commands, help_info=commands_help)
 
-    def add_command(self, *commands):
+    def add_command(self, *commands, help_info: (list, dict, str, None) = None):
         """批量添加子命令解析器"""
-        for command in commands:
-            self._add_subcommand(self.func_spec(command))
+        if isinstance(help_info, list):
+            for command, _help_info in zip(commands, help_info):
+                self._add_subcommand(self.func_spec(command), _help_info)
+        else:
+            for command in commands:
+                self._add_subcommand(self.func_spec(command), help_info)
 
     @staticmethod
     def parse(arguments):
@@ -630,7 +714,7 @@ class ConfigurationParser(argparse.ArgumentParser):
     def get_cli_cfg(cls, params_class) -> dict:
         """获取默认配置参数"""
         params_parser = cls(params_class)
-        kwargs = params_parser.parse_args()
+        kwargs = params_parser.parse_args([])
         kwargs = params_parser.parse(kwargs)
         return kwargs
 
@@ -641,8 +725,17 @@ class ConfigurationParser(argparse.ArgumentParser):
         kwargs = self.parse(kwargs)
         return kwargs
 
-    def _add_subcommand(self, command_parameters):
+    def _add_subcommand(self, command_parameters, help_info=None):
         """添加子命令解析器"""
+
+        def get_help_info(default_help_info, command=None):
+            if isinstance(help_info, dict):
+                return help_info.get(command, default_help_info)
+            elif command is None:
+                return default_help_info
+            else:
+                return command
+
         if self.sub_command_parsers is None:
             self.sub_command_parsers = self.add_subparsers(
                 parser_class=argparse.ArgumentParser,
@@ -651,7 +744,7 @@ class ConfigurationParser(argparse.ArgumentParser):
         subparsers = self.sub_command_parsers
         subcommand, parameters = command_parameters
         subparser = subparsers.add_parser(
-            subcommand, help="%s help" % subcommand, parents=[self.__proto_type],
+            subcommand, help=get_help_info("%s help" % subcommand, subcommand), parents=[self.__proto_type],
         )
         subparser.set_defaults(subcommand=subcommand)
         for parameter in parameters:
@@ -806,3 +899,17 @@ class Formatter(object):
     def format(*format_string, formatter=None):
         formatter = Formatter(formatter)
         return formatter(*format_string)
+
+
+if __name__ == '__main__':
+    class TestC(Configuration):
+        a = 1
+        b = 2
+
+        @classmethod
+        def help_info(cls) -> dict:
+            return {"a": "Alpha"}
+
+
+    parser = ConfigurationParser(TestC, params_help={"a": 'alpha1'}, override_help=True)
+    parser.print_help()
