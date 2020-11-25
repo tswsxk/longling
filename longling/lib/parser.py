@@ -899,17 +899,3 @@ class Formatter(object):
     def format(*format_string, formatter=None):
         formatter = Formatter(formatter)
         return formatter(*format_string)
-
-
-if __name__ == '__main__':
-    class TestC(Configuration):
-        a = 1
-        b = 2
-
-        @classmethod
-        def help_info(cls) -> dict:
-            return {"a": "Alpha"}
-
-
-    parser = ConfigurationParser(TestC, params_help={"a": 'alpha1'}, override_help=True)
-    parser.print_help()
