@@ -171,12 +171,13 @@ def get_params(received_params: dict):
     return cfg_params
 
 
-def prepare_hyper_search(cfg_kwargs: dict, cfg_cls: (Configuration, type(Configuration)),
+def prepare_hyper_search(cfg_kwargs: dict,
                          reporthook=None, final_reporthook=None,
                          primary_key=None, max_key=True, reporter_cls=None, with_keys: (list, str, None) = None,
+                         final_keys: (list, str, None) = None,
                          dump=False, disable=False):
     """
-    Updated in v1.3.17
+    Updated in v1.3.18
 
     从 nni package 中获取超参，更新配置文件参数。当 nni 不可用或不是 nni 搜索模式时，参数将不会改变。
 
@@ -203,17 +204,18 @@ def prepare_hyper_search(cfg_kwargs: dict, cfg_cls: (Configuration, type(Configu
     ----------
     cfg_kwargs: dict
         待传入cfg的参数
-    cfg_cls: type(Configuration) or Configuration
-        配置文件
     reporthook
     final_reporthook
     primary_key:
         评估模型用的主键,
         ``nni.report_intermediate_result`` 和 ``nni.report_final_result``中 ``metric`` 的 ``default``
-    max_key
+    max_key: bool
+        主键是越大越好
     reporter_cls
     with_keys: list or str
-        其它要存储的 metric
+        其它要存储的 metric，final report时默认为 primary_key 最优时指标
+    final_keys: list or str
+        with_keys 中使用最后一个 report result 而不是 primary_key 最优时指标
     dump: bool
         为 True 时，会修改 配置文件 中 workspace 参数为 ``workspace/nni.get_experiment_id()/nni.get_trial_id()``
         使得 nni 的中间结果会被存储下来。
@@ -296,6 +298,7 @@ def prepare_hyper_search(cfg_kwargs: dict, cfg_cls: (Configuration, type(Configu
             def final(self):
                 best_fn = get_min if max_key is False else get_max
                 _with_keys = (with_keys if with_keys else []) + [primary_key]
+                _final_keys = set(final_keys if final_keys else [])
                 final_result = best_fn(
                     self.datas, primary_key, with_keys=";".join(_with_keys), merge=False
                 )
@@ -304,7 +307,10 @@ def prepare_hyper_search(cfg_kwargs: dict, cfg_cls: (Configuration, type(Configu
                 }
                 appendix_dict = dict(final_result[1][primary_key])
                 for key in _with_keys:
-                    feed_dict[key] = appendix_dict[key]
+                    if key in _final_keys:
+                        feed_dict[key] = get_by_key(self.datas[-1], key_parser(key))
+                    else:
+                        feed_dict[key] = appendix_dict[key]
                 report_final_result(feed_dict)
 
         rc = Reporter() if reporter_cls is None else reporter_cls
