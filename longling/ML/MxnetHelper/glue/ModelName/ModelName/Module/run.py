@@ -115,7 +115,7 @@ def train(train_fn, test_fn, reporthook=None, final_reporthook=None,
     from longling.ML.toolkit.hyper_search import prepare_hyper_search
 
     cfg_kwargs, reporthook, final_reporthook, tag = prepare_hyper_search(
-        cfg_kwargs, Configuration, reporthook, final_reporthook, primary_key=primary_key
+        cfg_kwargs, reporthook, final_reporthook, primary_key=primary_key, with_keys="Epoch"
     )
 
     _cfg = Configuration(**cfg_kwargs)
