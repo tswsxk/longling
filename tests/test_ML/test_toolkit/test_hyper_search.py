@@ -6,11 +6,6 @@ from longling.ML.toolkit.hyper_search import prepare_hyper_search
 
 
 def test_hyper_search():
-    class CFG(Configuration):
-        hyper_params = {"hidden_num": 100}
-        learning_rate = 0.001
-        workspace = ""
-
     cfg_kwargs, _, _, _ = prepare_hyper_search(
         {"learning_rate": 0.1}, primary_key="macro_avg:f1", with_keys="accuracy", disable=True
     )
