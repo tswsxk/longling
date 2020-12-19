@@ -144,9 +144,7 @@ def get_params(received_params: dict):
     Returns
     -------
     cfg_params: dict
-        存在与 cfg 中 received_params 的更新值
-    unk_params: dict
-        不存在与 cfg 中 received_params 的更新值
+        更新后的参数字典
 
     Examples
     --------
@@ -318,7 +316,7 @@ def prepare_hyper_search(cfg_kwargs: dict,
         final_reporthook = final_reporthook if final_reporthook is not None else rc.final
         cfg_cls_params = get_params(get_next_parameter())
         using_nni_tag = True if cfg_cls_params else False
-        cfg_kwargs.update(cfg_cls_params)
+        nested_update(cfg_kwargs, cfg_cls_params)
         if using_nni_tag is True and dump is True:  # pragma: no cover
             cfg_kwargs["workspace"] = cfg_kwargs.get("workspace", "") + path_append(
                 nni.get_experiment_id(), nni.get_trial_id(), to_str=True
