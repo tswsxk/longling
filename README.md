@@ -1,3 +1,5 @@
+![longling logo](docs/_static/longling_logo.png)
+
 # longling
 
 [![Documentation Status](https://readthedocs.org/projects/longling/badge/?version=latest)](https://longling.readthedocs.io/zh/latest/index.html)
