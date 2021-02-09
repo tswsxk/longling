@@ -81,7 +81,7 @@ def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_resul
 
 
 def pseudo_numerical_check(_net, _cfg):  # pragma: no cover
-    datas = pesudo_data_iter(_cfg)
+    datas = pseudo_data_iter(_cfg)
     numerical_check(_net, _cfg, datas, datas, dump_result=False)
 
 
