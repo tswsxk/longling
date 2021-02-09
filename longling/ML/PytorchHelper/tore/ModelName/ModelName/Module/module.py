@@ -289,9 +289,16 @@ class Module(module.Module):
                 loss_function=loss_function,
                 loss_monitor=loss_monitor,
             )
-        loss_values = {
-            name: loss for name, loss in loss_monitor.items()
-        }
+
+        if loss_monitor is not None:
+            loss_values = {
+                name: loss for name, loss in loss_monitor.items()
+            }
+            # optional, whether reset the loss at the end of each epoch
+            loss_monitor.reset()
+        else:
+            loss_values = {}
+
         return loss_values
 
     @staticmethod

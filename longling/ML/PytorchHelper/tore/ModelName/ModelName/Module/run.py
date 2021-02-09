@@ -76,6 +76,9 @@ def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_resul
             if reporthook is not None:
                 reporthook(data)
 
+        # optional, whether reset the loss at the end of each epoch
+        loss_monitor.reset()
+
     if final_reporthook is not None:
         final_reporthook()
 
