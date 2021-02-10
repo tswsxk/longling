@@ -49,7 +49,7 @@ class ConsoleProgressMonitorPlayer(object):
             __indexes = ["%s-%s" % (prefix, _index) for _index in _indexes]
             arguments += __indexes
             index_header += (" " * 2).join(
-                ["{:>%s}" % min(len(index), 15) for index in __indexes]
+                ["{:>%s}" % max(len(index), 15) for index in __indexes]
             )
 
         self.output_formatter = self.info_header + " " * 2 + index_header + " " * 2 + self.progress_header_fmt

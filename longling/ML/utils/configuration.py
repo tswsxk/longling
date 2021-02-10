@@ -1,29 +1,23 @@
 # coding: utf-8
-# Copyright @tongshiwei
-from __future__ import absolute_import
-from __future__ import print_function
+# create by tongshiwei on 2020-11-16
 
-__all__ = ["Configuration", "ConfigurationParser"]
+from longling import ConfigurationParser
+
+__all__ = ["Configuration", "ConfigurationParser", "directory_check"]
 
 import datetime
-import pathlib
-
-from mxnet import cpu
 
 from longling import path_append
-from longling.ML.MxnetHelper.glue import parser
-from longling.ML.MxnetHelper.glue.parser import eval_var
-from longling.ML.MxnetHelper.toolkit import get_optimizer_cfg
-from longling.ML.MxnetHelper.toolkit.select_exp import all_params as _select
+from longling.lib import parser
 from longling.lib.parser import var2exp
 from longling.lib.utilog import config_logging, LogLevel
 
 
 class Configuration(parser.Configuration):
     # 目录配置
-    model_name = str(pathlib.Path(__file__).parents[1].name)
+    model_name = "MLModel"
 
-    root = pathlib.Path(__file__).parents[2]
+    root = "./"
     dataset = ""
     timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     workspace = ""
@@ -37,35 +31,6 @@ class Configuration(parser.Configuration):
     root = str(root)
     root_data_dir = str(root_data_dir)
     root_model_dir = str(root_model_dir)
-
-    # 训练参数设置
-    begin_epoch = 0
-    end_epoch = 100
-    batch_size = 32
-    save_epoch = 1
-
-    # 优化器设置
-    optimizer, optimizer_params = get_optimizer_cfg(name="base")
-    # lr_params 中包含 update_params 时，学习率衰减方式运行时确定
-    lr_params = {"update_params": {}}
-
-    # 更新保存参数，一般需要保持一致
-    train_select = _select
-    save_select = train_select
-
-    # 运行设备
-    ctx = cpu()
-
-    # 工具包参数
-    toolbox_params = {}
-
-    # 用户变量
-    # 网络超参数
-    hyper_params = {}
-    # 网络初始化参数
-    init_params = {}
-    # 损失函数超参数
-    loss_params = {}
 
     # 说明
     caption = ""
@@ -87,6 +52,10 @@ class Configuration(parser.Configuration):
             The path to configuration file which is in json format
         kwargs:
             Parameters to be reset.
+
+        Notes
+        -----
+        Developers modifying this code should simultaneously modify the relevant codes in glue and tore
         """
         super(Configuration, self).__init__(
             logger=config_logging(
@@ -124,7 +93,7 @@ class Configuration(parser.Configuration):
             kwargs["root_data_dir"] = path_append("$root", "data", "$dataset")
         # set workspace
         if (is_overridden("workspace") or is_overridden("root_model_dir")) and not is_overridden("model_dir"):
-            kwargs["model_dir"] = path_append("$root_model_dir", "workspace")
+            kwargs["model_dir"] = path_append("$root_model_dir", "$workspace")
 
         # rebuild relevant directory or file path according to the kwargs
         _dirs = [
@@ -138,16 +107,6 @@ class Configuration(parser.Configuration):
             )
             setattr(self, _dir, eval(exp))
 
-        _vars = [
-            "ctx"
-        ]
-        for _var in _vars:
-            if _var in kwargs:
-                try:
-                    setattr(self, _var, eval_var(kwargs[_var]))
-                except TypeError:
-                    pass
-
         self.validation_result_file = path_append(
             self.model_dir, "result.json", to_str=True
         )
@@ -159,15 +118,12 @@ class Configuration(parser.Configuration):
         cfg_path = self.cfg_path if cfg_path is None else cfg_path
         super(Configuration, self).dump(cfg_path, override, file_format=file_format)
 
-    def var2val(self, var):
+    @classmethod
+    def var2val(cls, var):
         return eval(var2exp(
             var,
             env_wrap=lambda x: "self.%s" % x
         ))
-
-
-class ConfigurationParser(parser.ConfigurationParser):
-    pass
 
 
 def directory_check(class_obj):
@@ -177,7 +133,7 @@ def directory_check(class_obj):
 
 if __name__ == '__main__':
     # Advise: firstly checkout whether the directory is correctly (step 1) and
-    # then generate the parameters configuration file
+    # then generate the paramters configuation file
     # to check the details (step 2)
     stage = 1
     # step 1

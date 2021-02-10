@@ -1,28 +1,27 @@
 # coding: utf-8
 # create by tongshiwei on 2019-9-1
 from longling import path_append
-from longling.ML.MxnetHelper.toolkit.optimizer_cfg import get_lr_params
+from longling.ML import get_epoch_params_filepath
+from longling.ML.MxnetHelper import save_params
 
 try:
     # for python module
-    from .sym import get_net, get_bp_loss, fit_f, eval_f, net_viz, net_init
+    from .sym import get_net, get_loss, fit_f, eval_f, net_viz, net_init
     from .etl import transform, etl, pseudo_data_iter
     from .configuration import Configuration, ConfigurationParser
 except (ImportError, SystemError):  # pragma: no cover
     # for python script
-    from sym import get_net, get_bp_loss, fit_f, eval_f, net_viz, net_init
+    from sym import get_net, get_loss, fit_f, eval_f, net_viz, net_init
     from etl import transform, etl, pseudo_data_iter
     from configuration import Configuration, ConfigurationParser
 
 
 def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_result=False,
-                    reporthook=None, final_reporthook=None):  # pragma: no cover
+                    reporthook=None, final_reporthook=None, params_save=False):  # pragma: no cover
     ctx = _cfg.ctx
     batch_size = _cfg.batch_size
 
-    bp_loss_f = get_bp_loss(**_cfg.loss_params)
-    loss_function = {}
-    loss_function.update(bp_loss_f)
+    loss_function = get_loss(**_cfg.loss_params)
 
     from longling.ML.MxnetHelper.glue import module
     from longling.ML.toolkit import EpochEvalFMT as Formatter
@@ -58,12 +57,12 @@ def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_resul
         for i, batch_data in enumerate(progress_monitor(train_data, "Epoch: %s" % epoch)):
             fit_f(
                 net=_net, batch_size=batch_size, batch_data=batch_data,
-                trainer=trainer, bp_loss_f=bp_loss_f,
+                trainer=trainer,
                 loss_function=loss_function,
                 loss_monitor=loss_monitor,
                 ctx=ctx,
             )
-        if _cfg.lr_params and "update_params" in _cfg.lr_params:
+        if _cfg.lr_params and "update_params" in _cfg.lr_params and _cfg.end_epoch - _cfg.begin_epoch - 1 > 0:
             _cfg.logger.info("reset trainer")
             lr_params = _cfg.lr_params.pop("update_params")
             lr_update_params = dict(
@@ -97,6 +96,11 @@ def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_resul
             if reporthook is not None:
                 reporthook(data)
 
+        if params_save and (epoch % _cfg.save_epoch == 0 or epoch == _cfg.end_epoch - 1):
+            params_path = get_epoch_params_filepath(_cfg.model_name, epoch, _cfg.model_dir)
+            _cfg.logger.info("save model params to %s, with select='%s'" % (params_path, _cfg.save_select))
+            save_params(params_path, _net, select=_cfg.save_select)
+
     if final_reporthook is not None:
         final_reporthook()
 
@@ -106,11 +110,12 @@ def pseudo_numerical_check(_net, _cfg):  # pragma: no cover
     numerical_check(_net, _cfg, datas, datas, dump_result=False)
 
 
-def train(train_fn, test_fn, reporthook=None, final_reporthook=None, **cfg_kwargs):  # pragma: no cover
+def train(train_fn, test_fn, reporthook=None, final_reporthook=None,
+          primary_key="macro_avg:f1", params_save=False, **cfg_kwargs):  # pragma: no cover
     from longling.ML.toolkit.hyper_search import prepare_hyper_search
 
     cfg_kwargs, reporthook, final_reporthook, tag = prepare_hyper_search(
-        cfg_kwargs, Configuration, reporthook, final_reporthook, primary_key="macro_avg:f1"
+        cfg_kwargs, reporthook, final_reporthook, primary_key=primary_key, with_keys="Epoch"
     )
 
     _cfg = Configuration(**cfg_kwargs)
@@ -122,7 +127,7 @@ def train(train_fn, test_fn, reporthook=None, final_reporthook=None, **cfg_kwarg
     test_data = etl(_cfg.var2val(test_fn), params=_cfg)
 
     numerical_check(_net, _cfg, train_data, test_data, dump_result=not tag, reporthook=reporthook,
-                    final_reporthook=final_reporthook)
+                    final_reporthook=final_reporthook, params_save=params_save)
 
 
 def sym_run(stage: (int, str) = "viz"):  # pragma: no cover
@@ -158,9 +163,10 @@ def sym_run(stage: (int, str) = "viz"):  # pragma: no cover
             optimizer_params={
                 "learning_rate": 0.001
             },
-            hyper_params={
+            hyper_params_update={
             },
             batch_size=16,
+            params_save=False
         )
 
     elif stage == 3:

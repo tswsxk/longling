@@ -51,7 +51,6 @@ class ModelName(DL.CliServiceModule):
         if load_epoch is not None:
             self.model_init(load_epoch, allow_reinit=False)
 
-        self.bp_loss_f = None
         self.loss_function = None
         self.toolbox = None
         self.trainer = None
@@ -112,20 +111,12 @@ class ModelName(DL.CliServiceModule):
         mod.logger.info("parameters saved to %s" % filename)
         return mod
 
-    def set_loss(self, bp_loss_f=None, loss_function=None):
-        # 4.1 todo 定义损失函数
+    def set_loss(self, loss_function=None):
+        # 3 todo 定义损失函数
         # bp_loss_f 定义了用来进行 back propagation 的损失函数，
 
-        bp_loss_f = get_bp_loss(**self.mod.cfg.loss_params) if bp_loss_f is None else bp_loss_f
+        loss_function = get_loss(**self.mod.cfg.loss_params) if loss_function is None else loss_function
 
-        assert bp_loss_f is not None and len(bp_loss_f) == 1
-
-        loss_function = {
-
-        } if loss_function is None else loss_function
-        loss_function.update(bp_loss_f)
-
-        self.bp_loss_f = bp_loss_f
         self.loss_function = loss_function
 
     def viz(self):
@@ -163,7 +154,7 @@ class ModelName(DL.CliServiceModule):
 
         loss_monitor = MovingLoss(self.loss_function)
 
-        # 4.1 todo 初始化一些训练过程中的交互信息
+        # 4 todo 初始化一些训练过程中的交互信息
         timer = Clock()
 
         progress_monitor = ProgressMonitor(
@@ -210,13 +201,10 @@ class ModelName(DL.CliServiceModule):
         mod = self.mod
         net = self.net
         cfg = mod.cfg if cfg is None else cfg
-        begin_epoch = cfg.begin_epoch
-
-        load_epoch = load_epoch if load_epoch is not None else begin_epoch
 
         # 5 todo 初始化模型
         model_file = kwargs.get(
-            "init_model_file", mod.epoch_params_filename(load_epoch)
+            "init_model_file", mod.epoch_params_filepath(load_epoch) if load_epoch is not None else None
         )
         mod.net_initialize(
             net,
@@ -246,7 +234,6 @@ class ModelName(DL.CliServiceModule):
         cfg = self.mod.cfg
         net = self.net
 
-        bp_loss_f = self.bp_loss_f
         loss_function = self.loss_function
         toolbox = self.toolbox
 
@@ -255,24 +242,18 @@ class ModelName(DL.CliServiceModule):
         end_epoch = mod.cfg.end_epoch
         ctx = mod.cfg.ctx
 
-        assert all([bp_loss_f, loss_function]), \
-            "make sure these variable have been initialized, " \
-            "check init method and " \
-            "make sure package_init method has been called"
-
-        # 6 todo 训练
+        # 6.2 todo 训练
         trainer = self.trainer if trainer is None else trainer
         mod.logger.info("start training")
         mod.fit(
             net=net, begin_epoch=begin_epoch, end_epoch=end_epoch,
             batch_size=batch_size,
             train_data=train_data,
-            trainer=trainer, bp_loss_f=bp_loss_f,
+            trainer=trainer,
             loss_function=loss_function,
             eval_data=eval_data,
             ctx=ctx,
             toolbox=toolbox,
-            prefix=mod.prefix,
             save_epoch=cfg.save_epoch,
         )
 
@@ -286,7 +267,6 @@ class ModelName(DL.CliServiceModule):
         mod = self.mod
         net = self.net
 
-        bp_loss_f = self.bp_loss_f
         loss_function = self.loss_function
 
         if loss_monitor is None:
@@ -301,7 +281,7 @@ class ModelName(DL.CliServiceModule):
         mod.fit_f(
             net=net, batch_size=batch_size, batch_data=batch_data,
             trainer=trainer,
-            bp_loss_f=bp_loss_f, loss_function=loss_function,
+            loss_function=loss_function,
             loss_monitor=loss_monitor,
             ctx=ctx,
         )
@@ -346,7 +326,7 @@ class ModelName(DL.CliServiceModule):
         mod = self.mod
         cfg = mod.cfg if cfg is None else cfg
 
-        # 4.2 todo 定义数据加载
+        # 6.1 todo 定义数据加载
         mod.logger.info("loading data")
         data = etl(cfg.var2val(data_src), params=cfg)
 

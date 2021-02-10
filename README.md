@@ -1,3 +1,5 @@
+![longling logo](docs/_static/longling_logo.png)
+
 # longling
 
 [![Documentation Status](https://readthedocs.org/projects/longling/badge/?version=latest)](https://longling.readthedocs.io/zh/latest/index.html)
@@ -5,6 +7,7 @@
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/longling.svg)](https://pypi.python.org/pypi/longling)
 [![Build Status](https://www.travis-ci.org/tswsxk/longling.svg?branch=master)](https://www.travis-ci.org/tswsxk/longling)
 [![codecov](https://codecov.io/gh/tswsxk/longling/branch/master/graph/badge.svg)](https://codecov.io/gh/tswsxk/longling)
+[![Download](https://img.shields.io/pypi/dm/longling.svg?style=flat)](https://pypi.python.org/pypi/longling)
 
 This project aims to provide some handy toolkit functions to help construct the
 architecture. 
@@ -39,6 +42,13 @@ pip install longling --no-dependencies
 # source
 python setup.py install --no-dependencies
 ```
+
+### Help for windows user
+
+Due to the potential compile error in windows, some required package may not be installed as expected.
+To deal with this issue, pre-compiled binaries are advised.
+You can go to [lfd.uci.edu/~gohlke/pythonlibs](https://www.lfd.uci.edu/~gohlke/pythonlibs) 
+and download the required packages.
 
 ## Overview
 The project contains several modules for different purposes:

@@ -84,7 +84,7 @@ class _FactorScheduler(FactorScheduler, _LRScheduler):
             discount=discount
         )
 
-        if batches_per_epoch and update_epoch:
+        if batches_per_epoch is not None and update_epoch is not None:
             step, factor, stop_factor_lr = get_factor_lr_params(
                 base_lr,
                 update_epoch,
@@ -122,7 +122,7 @@ class _PolyScheduler(PolyScheduler, _LRScheduler):
             discount=discount
         )
 
-        if batches_per_epoch and update_epoch:
+        if batches_per_epoch is not None and update_epoch is not None:
             max_update = batches_per_epoch * update_epoch + kwargs.get("warmup_steps", 0)
             kwargs.update({"max_update": max_update})
 
@@ -153,7 +153,7 @@ class _CosineScheduler(CosineScheduler, _LRScheduler):
             discount=discount
         ))
 
-        if batches_per_epoch and update_epoch:
+        if batches_per_epoch is not None and update_epoch is not None:
             max_update = batches_per_epoch * update_epoch * epoch_update_freq + kwargs.get("warmup_steps", 0)
             kwargs.update({"max_update": max_update})
 
@@ -228,7 +228,7 @@ class _LinearScheduler(LinearScheduler, _LRScheduler):
             batches_per_epoch=batches_per_epoch,
             discount=discount
         )
-        if batches_per_epoch and update_epoch:
+        if batches_per_epoch is not None and update_epoch is not None:
             max_update = batches_per_epoch * update_epoch * epoch_update_freq + kwargs.get("warmup_steps", 0)
             kwargs.update({"max_update": max_update})
         return cls(base_lr=base_lr, **kwargs)
@@ -311,7 +311,7 @@ class _NormScheduler(NormScheduler, _LRScheduler):
             batches_per_epoch=batches_per_epoch,
             discount=discount,
         ))
-        if batches_per_epoch and update_epoch:
+        if batches_per_epoch is not None and update_epoch is not None:
             max_update = int(batches_per_epoch * update_epoch) + kwargs.get("warmup_steps", 0)
             kwargs.update({"max_update": max_update, "step": batches_per_epoch // epoch_update_freq})
         return cls(base_lr=base_lr, **kwargs)

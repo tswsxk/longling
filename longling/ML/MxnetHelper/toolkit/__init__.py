@@ -9,3 +9,4 @@ from .optimizer_cfg import get_optimizer_cfg
 from .persistence import save_params
 from .toolbox import get_default_toolbox
 from .trainer import get_trainer
+from .loss import tmt_mx_loss, as_tmt_mx_loss, loss_dict2tmt_mx_loss

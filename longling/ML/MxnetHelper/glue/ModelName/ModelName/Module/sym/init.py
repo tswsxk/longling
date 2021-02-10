@@ -29,6 +29,6 @@ def net_init(
             initializer_kwargs = {} if initializer_kwargs is None else initializer_kwargs
             net_initialize(net, cfg.ctx, **initializer_kwargs)
         else:
-            logger.info(
+            logger.error(
                 "model doesn't exist, target file: %s" % model_file
             )

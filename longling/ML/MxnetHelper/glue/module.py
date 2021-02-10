@@ -39,13 +39,13 @@ class Module(DL.Module):
         The initialized net
         """
         # 根据起始轮次装载已有的网络参数
-        filename = self.epoch_params_filename(epoch)
+        filename = self.epoch_params_filepath(epoch)
         return load_net(
             filename, net, ctx, allow_missing=allow_missing,
             ignore_extra=ignore_extra
         )
 
-    def epoch_params_filename(self, epoch):
+    def epoch_params_filepath(self, epoch):
         raise NotImplementedError
 
     def net_initialize(self, *args, **kwargs):

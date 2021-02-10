@@ -9,6 +9,7 @@ import os
 import mxnet as mx
 from longling.ML.MxnetHelper.glue import module
 from longling.ML.toolkit import EpochEvalFMT as Formatter
+from tqdm import tqdm
 
 from .configuration import Configuration
 from .sym import get_net, fit_f, eval_f, net_init
@@ -86,7 +87,7 @@ class Module(module.Module):
         self.cfg.dump(filename, override=True)
         return filename
 
-    def epoch_params_filename(self, epoch):
+    def epoch_params_filepath(self, epoch):
         return self.prefix + "-%04d.parmas" % epoch
 
     # 部分定义训练相关的方法
@@ -114,7 +115,7 @@ class Module(module.Module):
             self,
             net, begin_epoch, end_epoch, batch_size,
             train_data,
-            trainer, bp_loss_f,
+            trainer,
             loss_function,
             eval_data=None,
             ctx=mx.cpu(),
@@ -140,11 +141,9 @@ class Module(module.Module):
             NOTICE: should have been divided to batches
         trainer:
             The trainer used to update the parameters of the net
-        bp_loss_f: dict with only one value and one key
-            The function to compute the loss for the procession
-            of back propagation
         loss_function: dict of function
-            Some other measurement in addition to bp_loss_f
+            The functions to compute the loss for the procession
+            of back propagation
         eval_data: Iterable
             The data used for the evaluation at the end of each epoch,
             NOTICE: should have been divided to batches
@@ -164,7 +163,7 @@ class Module(module.Module):
             net=net, begin_epoch=begin_epoch, end_epoch=end_epoch,
             batch_size=batch_size,
             train_data=train_data,
-            trainer=trainer, bp_loss_f=bp_loss_f,
+            trainer=trainer,
             loss_function=loss_function,
             test_data=eval_data,
             ctx=ctx,
@@ -177,7 +176,7 @@ class Module(module.Module):
             net, begin_epoch, end_epoch, batch_size,
             train_data,
             trainer,
-            bp_loss_f, loss_function,
+            loss_function,
             test_data=None,
             ctx=mx.cpu(),
             toolbox=None,
@@ -204,11 +203,9 @@ class Module(module.Module):
             NOTICE: should have been divided to batches
         trainer:
             The trainer used to update the parameters of the net
-        bp_loss_f: dict with only one value and one key
-            The function to compute the loss for the procession
-            of back propagation
         loss_function: dict of function
-            Some other measurement in addition to bp_loss_f
+            The functions to compute the loss for the procession
+            of back propagation
         test_data: Iterable
             The data used for the evaluation at the end of each epoch,
             NOTICE: should have been divided to batches
@@ -233,12 +230,13 @@ class Module(module.Module):
             batch_num, loss_values = self.batch_loop(
                 net=net, epoch=epoch, batch_size=batch_size,
                 train_data=train_data,
-                trainer=trainer, bp_loss_f=bp_loss_f,
+                trainer=trainer,
                 loss_function=loss_function,
                 ctx=ctx,
                 toolbox=toolbox,
             )
-            if hasattr(self.cfg, "lr_params") and self.cfg.lr_params and "update_params" in self.cfg.lr_params:
+            if hasattr(self.cfg, "lr_params") and self.cfg.lr_params \
+                    and "update_params" in self.cfg.lr_params and self.cfg.end_epoch - self.cfg.begin_epoch - 1 > 0:
                 self.cfg.logger.info("reset trainer")
                 lr_params = self.cfg.lr_params.pop("update_params")
                 lr_update_params = dict(
@@ -286,17 +284,16 @@ class Module(module.Module):
 
             # todo 定义模型保存方案
             if save_model:
-                if kwargs.get('prefix') and (
-                        epoch % kwargs.get('save_epoch', 1) == 0 or end_epoch - 10 <= epoch <= end_epoch - 1):
+                if epoch % kwargs.get('save_epoch', 1) == 0:
                     self.save_params(
-                        kwargs['prefix'] + "-%04d.parmas" % (epoch + 1), net
+                        self.epoch_params_filepath(epoch), net
                     )
 
     def batch_loop(
             self,
             net, epoch, batch_size,
             train_data,
-            trainer, bp_loss_f,
+            trainer,
             loss_function,
             ctx=mx.cpu(),
             toolbox=None,
@@ -318,11 +315,9 @@ class Module(module.Module):
             NOTICE: should have been divided to batches
         trainer:
             The trainer used to update the parameters of the net
-        bp_loss_f: dict with only one value and one key
-            The function to compute the loss for the procession
-            of back propagation
         loss_function: dict of function
-            Some other measurement in addition to bp_loss_f
+            The functions to compute the loss for the procession
+            of back propagation
         ctx: Context or list of Context
             Defaults to ``mx.cpu()``.
         toolbox: dict
@@ -342,13 +337,13 @@ class Module(module.Module):
                 loss_monitor = monitor.get("loss")
                 progress_monitor = monitor.get("progress")
             if progress_monitor is None:
-                from tqdm import tqdm
-                progress_monitor = lambda x, y: tqdm(x, "[%s]" % y)
+                def progress_monitor(x, y):
+                    return tqdm(x, "[%s]" % y)
 
         for i, batch_data in progress_monitor(enumerate(train_data), epoch):
             self.fit_f(
                 net=net, batch_size=batch_size, batch_data=batch_data,
-                trainer=trainer, bp_loss_f=bp_loss_f,
+                trainer=trainer,
                 loss_function=loss_function,
                 loss_monitor=loss_monitor,
                 ctx=ctx,
