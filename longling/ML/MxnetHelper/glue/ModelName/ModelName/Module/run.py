@@ -96,6 +96,9 @@ def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_resul
             if reporthook is not None:
                 reporthook(data)
 
+        # optional
+        loss_monitor.reset()
+
         if params_save and (epoch % _cfg.save_epoch == 0 or epoch == _cfg.end_epoch - 1):
             params_path = get_epoch_params_filepath(_cfg.model_name, epoch, _cfg.model_dir)
             _cfg.logger.info("save model params to %s, with select='%s'" % (params_path, _cfg.save_select))

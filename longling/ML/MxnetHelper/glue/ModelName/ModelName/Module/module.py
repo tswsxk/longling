@@ -349,9 +349,14 @@ class Module(module.Module):
                 ctx=ctx,
             )
 
-        loss_values = {
-            name: loss for name, loss in loss_monitor.items()
-        } if loss_monitor is not None else {}
+        if loss_monitor is not None:
+            loss_values = {
+                name: loss for name, loss in loss_monitor.items()
+            }
+            # optional
+            loss_monitor.reset()
+        else:
+            loss_values = {}
         return i, loss_values
 
     @staticmethod
