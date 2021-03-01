@@ -5,6 +5,7 @@ from longling import path_append
 from longling.ML.toolkit.hyper_search import prepare_hyper_search
 from longling.ML.toolkit import EpochEvalFMT as Formatter
 from longling.ML.toolkit import MovingLoss
+from longling.ML.toolkit import ConsoleProgressMonitor
 from tqdm import tqdm
 from longling.ML import get_epoch_params_filepath
 
@@ -12,28 +13,59 @@ from longling.ML import get_epoch_params_filepath
 def train(
         net, cfg, loss_function, trainer,
         train_data, test_data=None,
-        params_save=False,
+        params_save=False, dump_result=False, progress_monitor=None,
         *,
         fit_f, eval_f=None, net_init=None, get_net=None, get_loss=None, get_trainer=None, save_params=None,
-        reporthook=None, final_reporthook=None, primary_key=None,
+        enable_hyper_search=False, reporthook=None, final_reporthook=None, primary_key=None,
+        eval_epoch=1, loss_dict2tmt_loss=None,
         **cfg_kwargs):
+
     net = net if get_net is None else get_net(**cfg.hyper_params)
 
     if net_init is not None:
         net_init(net, cfg=cfg, **cfg.init_params)
 
-    cfg_kwargs, reporthook, final_reporthook, tag = prepare_hyper_search(
-        cfg_kwargs, reporthook, final_reporthook, primary_key=primary_key, with_keys="Epoch"
-    )
+    if enable_hyper_search:
+        cfg_kwargs, reporthook, final_reporthook, tag = prepare_hyper_search(
+            cfg_kwargs, reporthook, final_reporthook, primary_key=primary_key, with_keys="Epoch"
+        )
+        dump_result = not tag
 
     ctx = cfg.ctx
     batch_size = cfg.batch_size
 
     loss_function = get_loss(**cfg.loss_params) if get_loss is not None else loss_function
 
+    if isinstance(loss_function, dict):
+        _loss_function = loss_function
+    else:
+        if hasattr(loss_function, "__name__"):
+            loss_name = loss_function.__name__
+        elif hasattr(loss_function, "__class__"):
+            loss_name = loss_function.__class__.__name__
+        else:
+            loss_name = "loss"
+        loss_function = {loss_name: loss_function}
+        if loss_dict2tmt_loss is not None:
+            loss_function = loss_dict2tmt_loss(loss_function)
+        _loss_function = list(loss_function.values())[0]
+
     loss_monitor = MovingLoss(loss_function)
-    progress_monitor = tqdm
-    dump_result = not tag
+
+    if progress_monitor is None and loss_dict2tmt_loss is not None:
+        progress_monitor = ConsoleProgressMonitor(
+            indexes={
+                "Loss": [name for name in loss_function]
+            },
+            values={
+                "Loss": loss_monitor.losses
+            },
+            player_type="epoch",
+            total_epoch=cfg.end_epoch - 1
+        )
+    elif progress_monitor is None or progress_monitor == "tqdm":
+        progress_monitor = lambda x, e: tqdm(x, "Epoch: %s" % e)
+
     if dump_result:
         from longling import config_logging
         validation_logger = config_logging(
@@ -58,11 +90,11 @@ def train(
     ) if get_trainer is not None else trainer
 
     for epoch in range(cfg.begin_epoch, cfg.end_epoch):
-        for i, batch_data in enumerate(progress_monitor(train_data, "Epoch: %s" % epoch)):
+        for i, batch_data in enumerate(progress_monitor(train_data, epoch)):
             fit_f(
-                net=net, batch_size=batch_size, batch_data=batch_data,
+                net, batch_size=batch_size, batch_data=batch_data,
                 trainer=trainer,
-                loss_function=loss_function,
+                loss_function=_loss_function,
                 loss_monitor=loss_monitor,
                 ctx=ctx,
             )
@@ -89,7 +121,7 @@ def train(
                 logger=cfg.logger
             )
 
-        if epoch % 1 == 0:
+        if test_data is not None and epoch % eval_epoch == 0:
             msg, data = evaluation_formatter(
                 iteration=epoch,
                 loss_name_value=dict(loss_monitor.items()),

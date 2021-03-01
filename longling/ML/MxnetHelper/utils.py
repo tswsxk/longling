@@ -13,11 +13,12 @@ from longling.ML.MxnetHelper.glue.parser import eval_var
 from longling.ML.MxnetHelper.toolkit import get_optimizer_cfg
 from longling.ML.MxnetHelper.toolkit.select_exp import all_params as _select
 from longling.lib.parser import var2exp
-from longling.lib.utilog import config_logging, LogLevel
+from longling.lib.utilog import config_logging
 
 
 class Configuration(parser.Configuration):
     model_name = "model"
+    model_dir = model_name
 
     # 训练参数设置
     begin_epoch = 0
@@ -28,7 +29,8 @@ class Configuration(parser.Configuration):
     # 优化器设置
     optimizer, optimizer_params = get_optimizer_cfg(name="base")
     # lr_params 中包含 update_params 时，学习率衰减方式运行时确定
-    lr_params = {"update_params": {}}
+    # lr_params = {"update_params": {}}
+    lr_params = {}
 
     # 更新保存参数，一般需要保持一致
     train_select = _select
@@ -51,7 +53,7 @@ class Configuration(parser.Configuration):
     # 说明
     caption = ""
 
-    def __init__(self, model_dir, params_path=None, **kwargs):
+    def __init__(self, params_path=None, **kwargs):
         """
         Configuration File, including categories:
 
@@ -69,14 +71,6 @@ class Configuration(parser.Configuration):
         kwargs:
             Parameters to be reset.
         """
-        self.model_dir = model_dir
-        super(Configuration, self).__init__(
-            logger=config_logging(
-                logger=self.model_name,
-                console_log_level=LogLevel.INFO
-            )
-        )
-
         params = self.class_var
         if params_path:
             params.update(self.load_cfg(cfg_path=params_path))
@@ -86,8 +80,14 @@ class Configuration(parser.Configuration):
             if key.endswith("_params") and key + "_update" in params:
                 params[key].update(params[key + "_update"])
 
-        for param, value in params.items():
-            setattr(self, "%s" % param, value)
+        params["logger"] = params.pop(
+            "logger",
+            config_logging(
+                logger=params.get("model_name", self.model_name),
+                console_log_level="info"
+            )
+        )
+        super(Configuration, self).__init__(**params)
 
         _vars = [
             "ctx"
