@@ -9,8 +9,8 @@ __all__ = ["fit_wrapper"]
 
 
 def fit_wrapper(_fit_f):
-    def fit_f(net, batch_size, batch_data,
-              trainer, loss_function, loss_monitor=None,
+    def fit_f(net, batch_data, loss_function, trainer,
+              batch_size=None, loss_monitor=None,
               ctx=mx.cpu()):
         """
         Defined how each step of batch train goes
