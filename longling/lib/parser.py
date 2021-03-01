@@ -343,6 +343,9 @@ class Configuration(object):
             string.append("%s: %s" % (k, v))
         return "\n".join(string)
 
+    def __repr__(self):
+        return str(self)
+
     def __getitem__(self, item):
         return getattr(self, item)
 
