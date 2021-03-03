@@ -1,2 +1,4 @@
 1.3.19:
     1. Update optimizer_cfg.py in DL package: update the default learning rate and weight decay
+    2. Change fit function in DL package: reassign the args locations
+    3. Add light module (unstable)
