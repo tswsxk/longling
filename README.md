@@ -9,7 +9,8 @@
 [![codecov](https://codecov.io/gh/tswsxk/longling/branch/master/graph/badge.svg)](https://codecov.io/gh/tswsxk/longling)
 [![Download](https://img.shields.io/pypi/dm/longling.svg?style=flat)](https://pypi.python.org/pypi/longling)
 [![License](https://img.shields.io/github/license/tswsxk/longling)](LICENSE)
-
+![CodeSize](https://img.shields.io/github/languages/code-size/tswsxk/longling)
+![CodeLine](https://img.shields.io/tokei/lines/github/tswsxk/longling)
 This project aims to provide some handy toolkit functions to help construct the
 architecture. 
 Full documentation [here](https://longling.readthedocs.io/zh/latest/index.html).
