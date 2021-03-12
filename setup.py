@@ -29,7 +29,7 @@ dm_base_deps = [
 
 ml_base_deps = [
     "pandas",
-    "numpy",
+    "numpy>= 1.16.5",
     "scipy",
     "scikit-learn>=0.23.2",
     "matplotlib",
