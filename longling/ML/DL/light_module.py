@@ -19,7 +19,6 @@ def train(
         enable_hyper_search=False, reporthook=None, final_reporthook=None, primary_key=None,
         eval_epoch=1, loss_dict2tmt_loss=None,
         **cfg_kwargs):
-
     net = net if get_net is None else get_net(**cfg.hyper_params)
 
     if net_init is not None:
@@ -64,7 +63,8 @@ def train(
             total_epoch=cfg.end_epoch - 1
         )
     elif progress_monitor is None or progress_monitor == "tqdm":
-        progress_monitor = lambda x, e: tqdm(x, "Epoch: %s" % e)
+        def progress_monitor(x, e):
+            return tqdm(x, "Epoch: %s" % e)
 
     if dump_result:
         from longling import config_logging
