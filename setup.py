@@ -54,7 +54,7 @@ try:
 except ModuleNotFoundError:
     import sys
 
-    if 5 <= sys.version_info[1] <= 7:
+    if 5 <= sys.version_info[1]:
         ml_pytorch_deps = ["torch"]
     else:
         ml_pytorch_deps = []
