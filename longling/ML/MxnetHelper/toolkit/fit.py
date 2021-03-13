@@ -3,7 +3,7 @@
 import mxnet as mx
 from mxnet import autograd
 
-from longling.ML.MxnetHelper.toolkit.ctx import split_and_load
+from .ctx import split_and_load
 
 __all__ = ["fit_wrapper"]
 
