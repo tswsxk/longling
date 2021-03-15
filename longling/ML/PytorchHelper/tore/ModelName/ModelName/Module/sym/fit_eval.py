@@ -5,7 +5,7 @@ __all__ = ["fit_f", "eval_f"]
 import torch
 from tqdm import tqdm
 
-from longling.ML.PytorchHelper import tensor2list, set_device
+from longling.ML.PytorchHelper import tensor2list
 
 
 def _fit_f(_net, _data, bp_loss_f, loss_function, loss_monitor):
@@ -23,12 +23,9 @@ def _fit_f(_net, _data, bp_loss_f, loss_function, loss_monitor):
     return bp_loss
 
 
-def eval_f(_net, test_data, ctx=None):
+def eval_f(_net, test_data):
     ground_truth = []
     prediction = []
-
-    if ctx is not None:
-        _net = set_device(_net, ctx)
 
     def evaluation_function(y_true, y_pred):
         return 0
