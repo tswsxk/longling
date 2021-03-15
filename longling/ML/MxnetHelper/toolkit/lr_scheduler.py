@@ -304,13 +304,18 @@ SCHEDULERS = {
 }
 
 
-def get_lr_scheduler(scheduler: (str, LRScheduler) = "cosine", logger=logging, update_params=None, **kwargs):
-    for key in {"learning_rate", "lr"}:
-        if key in kwargs:
-            kwargs["base_lr"] = kwargs.pop(key)
+def get_lr_scheduler(scheduler: (str, LRScheduler) = "cosine", logger=logging, update_params=None, adaptive=True,
+                     **kwargs):
+    if adaptive is True:
+        for key in {"learning_rate", "lr"}:
+            if key in kwargs:
+                kwargs["base_lr"] = kwargs.pop(key)
 
-    if isinstance(scheduler, str):
-        scheduler = SCHEDULERS[scheduler].init(**kwargs)
+        if isinstance(scheduler, str):
+            scheduler = SCHEDULERS[scheduler].init(**kwargs)
+    else:
+        if isinstance(scheduler, str):
+            scheduler = eval(scheduler)(**kwargs)
 
     assert isinstance(scheduler, LRScheduler)
 
