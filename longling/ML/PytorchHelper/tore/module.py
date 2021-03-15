@@ -3,9 +3,10 @@
 import os
 
 __all__ = ["Module"]
+
 import torch
 
-from ..toolkit.optimizer import get_trainer
+from ..toolkit.trainer import get_trainer
 from ..toolkit.parallel import set_device
 from longling.ML import DL
 
