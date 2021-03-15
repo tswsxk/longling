@@ -8,7 +8,7 @@ import mxnet.ndarray as nd
 __all__ = ["save_params"]
 
 
-def save_params(filename, net, select):
+def save_params(filename, net, select=None):
     """
     New in version 1.3.16
 
@@ -19,7 +19,7 @@ def save_params(filename, net, select):
     (i.e., excluding those unnecessary parameters such as pretrained embedding).
     """
     params = net._collect_params_with_prefix()
-    if select:
+    if select is not None:
         pattern = re.compile(select)
         params = {name: value for name, value in params.items() if
                   pattern.match(name)}
