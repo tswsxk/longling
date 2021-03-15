@@ -3,7 +3,7 @@
 
 from longling.ML.DL import light_module as dlm
 from .glue import net_init as _net_init
-from .toolkit import loss_dict2tmt_mx_loss, get_trainer as _get_trainer
+from .toolkit import loss_dict2tmt_mx_loss, get_trainer as _get_trainer, save_params as _save_params
 
 
 def train(
@@ -23,6 +23,8 @@ def train(
 
     if trainer is None and get_trainer is None:
         get_trainer = _get_trainer
+
+    save_params = _save_params if save_params is None else save_params
 
     dlm.train(
         net, cfg, loss_function, trainer, train_data, test_data, params_save, dump_result, progress_monitor,
