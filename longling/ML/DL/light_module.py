@@ -17,7 +17,7 @@ def train(
         *,
         fit_f, eval_f=None, net_init=None, get_net=None, get_loss=None, get_trainer=None, save_params=None,
         enable_hyper_search=False, reporthook=None, final_reporthook=None, primary_key=None,
-        eval_epoch=1, loss_dict2tmt_loss=None,
+        eval_epoch=1, loss_dict2tmt_loss=None, epoch_lr_scheduler=None, batch_lr_scheduler=None,
         **cfg_kwargs):
     net = net if get_net is None else get_net(**cfg.hyper_params)
 
@@ -98,6 +98,8 @@ def train(
                 loss_monitor=loss_monitor,
                 ctx=ctx,
             )
+            if batch_lr_scheduler is not None:
+                batch_lr_scheduler.step()
 
         if cfg.lr_params and "update_params" in cfg.lr_params and cfg.end_epoch - cfg.begin_epoch - 1 > 0:
             cfg.logger.info("reset trainer")
@@ -142,6 +144,9 @@ def train(
             params_path = get_epoch_params_filepath(cfg.model_name, epoch, cfg.model_dir)
             cfg.logger.info("save model params to %s, with select='%s'" % (params_path, cfg.save_select))
             save_params(params_path, net, select=cfg.save_select)
+
+        if epoch_lr_scheduler is not None:
+            epoch_lr_scheduler.step()
 
     if final_reporthook is not None:
         final_reporthook()
