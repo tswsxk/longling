@@ -5,7 +5,6 @@ from __future__ import absolute_import
 import os
 
 from longling.ML.PytorchHelper.tore import module
-from longling.ML.PytorchHelper import set_device
 
 from .configuration import Configuration
 from .sym import get_net, fit_f, eval_f
@@ -138,8 +137,6 @@ class Module(module.Module):
 
         """
         # 此方法可以直接使用
-        if ctx is not None:
-            net = set_device(net, ctx)
         return self.epoch_loop(
             net=net, begin_epoch=begin_epoch, end_epoch=end_epoch,
             train_data=train_data,
