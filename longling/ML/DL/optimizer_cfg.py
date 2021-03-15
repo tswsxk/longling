@@ -3,13 +3,13 @@
 
 from copy import deepcopy
 
-__all__ = ["get_optimizer_cfg"]
+__all__ = ["get_optimizer_cfg", "OPTIMIZERS"]
 
 # By default, we suppose the batch_size is 16
 # if the batch_size is 128, learning_rate should be 10 times default value
 # e.g., for Adam, learning rate should be changed from 1e-3 to 1e-2.
 
-optimizers = {
+OPTIMIZERS = {
     "base": (
         "Adam",
         {
@@ -48,9 +48,9 @@ optimizers = {
 
 def get_optimizer_cfg(name):
     try:
-        optimizer, optimizer_params = optimizers[name]
+        optimizer, optimizer_params = OPTIMIZERS[name]
     except KeyError:
-        raise KeyError("the name should be in: %s" % ", ".join(optimizers))
+        raise KeyError("the name should be in: %s" % ", ".join(OPTIMIZERS))
     optimizer_params = deepcopy(optimizer_params)
 
     return optimizer, optimizer_params
