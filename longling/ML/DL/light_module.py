@@ -82,12 +82,17 @@ def train(
         evaluation_formatter = Formatter()
 
     # train check
-    trainer = get_trainer(
-        net, optimizer=cfg.optimizer,
-        optimizer_params=cfg.optimizer_params,
-        select=cfg.train_select,
-        lr_params=cfg.lr_params
-    ) if get_trainer is not None else trainer
+    if get_trainer is not None:
+        trainer = get_trainer(
+            net, optimizer=cfg.optimizer,
+            optimizer_params=cfg.optimizer_params,
+            select=cfg.train_select,
+            lr_params=cfg.lr_params
+        )
+        if batch_lr_scheduler is True:
+            trainer, batch_lr_scheduler = trainer
+        elif epoch_lr_scheduler is True:
+            trainer, epoch_lr_scheduler = trainer
 
     for epoch in range(cfg.begin_epoch, cfg.end_epoch):
         for i, batch_data in enumerate(progress_monitor(train_data, epoch)):
