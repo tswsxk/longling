@@ -3,6 +3,7 @@
 import re
 
 import torch
+from .lr_scheduler import get_lr_scheduler
 
 
 def collect_params(_net, select):
@@ -13,7 +14,7 @@ def collect_params(_net, select):
     return ret
 
 
-def get_trainer(_net, optimizer, optimizer_params=None, select=None):
+def get_trainer(_net, optimizer, optimizer_params=None, lr_params=None, select=None):
     assert isinstance(optimizer, str) or issubclass(optimizer, torch.optim.Optimizer)
     parameters = collect_params(_net, select)
     assert optimizer_params is None or isinstance(optimizer_params, dict)
@@ -33,4 +34,9 @@ def get_trainer(_net, optimizer, optimizer_params=None, select=None):
     else:
         optimizer_class = optimizer
 
-    return optimizer_class(parameters, **optimizer_params)
+    optimizer = optimizer_class(parameters, **optimizer_params)
+    if lr_params:
+        lr_scheduler = get_lr_scheduler(optimizer=optimizer, **lr_params)
+        return optimizer, lr_scheduler
+    else:
+        return optimizer
