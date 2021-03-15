@@ -5,7 +5,7 @@ import torch
 from torch.nn import DataParallel
 
 
-def set_device(_net, ctx, **kwargs):
+def set_device(_net, ctx, *args, **kwargs):
     if ctx == "cpu":
         return _net
     elif any(map(lambda x: x in ctx, ["cuda", "gpu"])):
