@@ -32,8 +32,8 @@ class Configuration(Params):
         )
 
     @staticmethod
-    def load_cfg(params_path, **kwargs):
-        with open(params_path) as f:
+    def load_cfg(cfg_path, **kwargs):
+        with open(cfg_path) as f:
             params = load_configuration(
                 f,
             )
