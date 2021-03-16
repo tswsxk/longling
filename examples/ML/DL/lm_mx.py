@@ -8,6 +8,7 @@ from mxnet.gluon.data import ArrayDataset, DataLoader
 from longling.ML.metrics import classification_report
 
 from longling.ML.MxnetHelper.utils import Configuration
+from longling.ML.MxnetHelper import fit_wrapper, loss_dict2tmt_mx_loss
 
 
 def transform(x, y, batch_size, **params):
@@ -74,33 +75,31 @@ def eval_f(_net, test_data, ctx=mx.cpu()):
     return classification_report(y_true, y_pred)
 
 
+@fit_wrapper
+def fit_f(_net, batch_data, loss_function, *args, **kwargs):
+    x, y = batch_data
+    out = _net(x)
+    loss = []
+    for _value in loss_function.values():
+        loss.append(_value(out, y))
+    return sum(loss)
+
+
+def get_net(*args, **kwargs):
+    return MLP(*args, **kwargs)
+
+
+def get_loss(*args, **kwargs):
+    return loss_dict2tmt_mx_loss(
+        {"cross entropy": gluon.loss.SoftmaxCELoss(*args, **kwargs)}
+    )
+
+
 if __name__ == '__main__':
     from longling.ML.MxnetHelper import light_module as lm
-    from longling.ML.MxnetHelper import fit_wrapper, loss_dict2tmt_mx_loss
 
     cfg = config()
     train_data, valid_data = etl(cfg.batch_size)
-
-
-    @fit_wrapper
-    def fit_f(_net, batch_data, loss_function, *args, **kwargs):
-        x, y = batch_data
-        out = _net(x)
-        loss = []
-        for _value in loss_function.values():
-            loss.append(_value(out, y))
-        return sum(loss)
-
-
-    def get_net(*args, **kwargs):
-        return MLP(*args, **kwargs)
-
-
-    def get_loss(*args, **kwargs):
-        return loss_dict2tmt_mx_loss(
-            {"cross entropy": gluon.loss.SoftmaxCELoss(*args, **kwargs)}
-        )
-
 
     cfg.dump()
 
