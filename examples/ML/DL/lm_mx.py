@@ -7,6 +7,8 @@ from sklearn.model_selection import train_test_split
 from mxnet.gluon.data import ArrayDataset, DataLoader
 from longling.ML.metrics import classification_report
 
+from longling.ML.MxnetHelper.utils import Configuration
+
 
 def transform(x, y, batch_size, **params):
     dataset = ArrayDataset(x.astype("float32"), y.astype("float32"))
@@ -52,8 +54,6 @@ class MLP(gluon.HybridBlock):
 
 
 def config():
-    from longling.ML.MxnetHelper.utils import Configuration
-
     configuration = Configuration(model_name="mlp", model_dir="mlp")
     configuration.end_epoch = 2
     configuration.batch_size = 32
