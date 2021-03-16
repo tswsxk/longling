@@ -8,9 +8,9 @@ __all__ = ["Configuration", "ConfigurationParser"]
 import datetime
 import pathlib
 
-import longling.ML.PytorchHelper.tore.parser as parser
 from longling import path_append
 from longling.ML.PytorchHelper.tore.parser import eval_var
+from longling.ML.PytorchHelper.tore import parser
 from longling.lib.parser import var2exp
 from longling.lib.utilog import config_logging, LogLevel
 
