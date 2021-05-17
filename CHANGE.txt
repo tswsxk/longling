@@ -1,3 +1,6 @@
+1.3.21:
+    1. Remove lib/structure/Factor.py
+
 1.3.20:
     1. Remove deprecated methods ResultAnalyser.
     2. fix some style errors.
