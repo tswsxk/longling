@@ -5,4 +5,5 @@ sphinx_rtd_theme
 Image
 recommonmark
 ipython
-m2r
+m2r2
+sphinx_toggleprompt
