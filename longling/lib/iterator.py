@@ -30,7 +30,7 @@ class BaseIter(object):
     """
     迭代器
 
-    Notice
+    Notes
     ------
 
     * 如果 src 是一个迭代器实例，那么在一轮迭代之后，迭代器里的内容就被迭代完了，将无法重启。
