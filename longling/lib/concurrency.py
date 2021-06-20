@@ -32,12 +32,15 @@ _LEVEL = dict(
 
 class ThreadPool(StdTPE):
     def __init__(self, max_workers=None, thread_name_prefix='', ret: list = None):
-        """Initializes a new ThreadPoolExecutor instance.
+        """
+        Initializes a new ThreadPoolExecutor instance.
 
-        Args:
-            max_workers: The maximum number of threads that can be used to
-                execute the given calls.
-            thread_name_prefix: An optional name prefix to give our threads.
+        Parameters
+        ----------
+        max_workers:
+            The maximum number of threads that can be used to execute the given calls.
+        thread_name_prefix:
+            An optional name prefix to give our threads.
         """
         super(ThreadPool, self).__init__(max_workers=max_workers, thread_name_prefix=thread_name_prefix)
         self._result = []
@@ -127,6 +130,7 @@ LEVEL_CLASS = {
 def concurrent_pool(level: str, pool_size: int = None, ret: list = None):
     """
     Simple api for start completely independent concurrent programs:
+
     * thread
     * process
     * coroutine
