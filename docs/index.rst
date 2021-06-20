@@ -1,4 +1,5 @@
-.. mdinclude:: ../README.md
+.. mdinclude:: overview.md
+
 
 Module Index
 -------------
