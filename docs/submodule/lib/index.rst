@@ -193,6 +193,6 @@ utilog
 
 yaml
 -----
-.. automodule:: longling.lib.yaml
+.. automodule:: longling.lib.yaml_helper
    :members:
    :imported-members:
