@@ -1,4 +1,4 @@
-__all__ = ['as_list', 'dict2pv', 'list2dict', 'get_dict_by_path', 'format_byte_sizeof', 'group_by_n']
+__all__ = ['as_list', 'dict2pv', 'list2dict', 'get_dict_by_path', 'format_byte_sizeof', 'group_by_n', 'as_ordered_dict']
 
 from collections import OrderedDict
 
