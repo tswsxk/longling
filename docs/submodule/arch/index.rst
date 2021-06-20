@@ -12,6 +12,6 @@ components
    :members:
    :imported-members:
 
-.. automodule:: longling.Architecture.cli.utils
+.. automodule:: longling.Architecture.utils
    :members:
    :imported-members:
