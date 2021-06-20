@@ -67,6 +67,8 @@ def pandas_format(data: (dict, list, tuple), columns: list = None, index: (list,
     max_rows: (int, None), default 80
     max_columns: (int, None), default 80
 
+    Examples
+    --------
     >>> print(pandas_format({"a": {"x": 1, "y": 2}, "b": {"x": 1.0, "y": 3}},  ["x", "y"]))
          x  y
     a  1.0  2
