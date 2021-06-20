@@ -14,7 +14,18 @@ test_deps = [
     'pytest-flake8',
 ]
 
-dev_deps = test_deps + [
+docs_deps = [
+    'sphinx',
+    'sphinx_rtd_theme',
+    'nbsphinx',
+    'm2r2',
+    'Image',
+    'recommonmark',
+    'ipython',
+    'sphinx_toggleprompt'
+]
+
+dev_deps = test_deps + docs_deps + [
     'setuptools>=40',
     'wheel',
     'twine'
@@ -25,7 +36,6 @@ dm_base_deps = [
     "numpy",
     "matplotlib",
 ]
-
 
 ml_base_deps = [
     "pandas",
@@ -139,6 +149,7 @@ setup(
     ],
     extras_require={
         'test': test_deps + full_deps,
+        'doc': docs_deps,
         'dev': dev_deps,
         'dm': dm_base_deps,
         'ml': ml_base_deps,
