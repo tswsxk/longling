@@ -47,11 +47,12 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
     'sphinx.ext.mathjax',
+    'sphinx_toggleprompt',
     # 'sphinx_gallery.gen_gallery',
     'nbsphinx',
     'IPython.sphinxext.ipython_console_highlighting',
     'IPython.sphinxext.ipython_directive',
-    'm2r'
+    'm2r2',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
