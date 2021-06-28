@@ -16,7 +16,7 @@ contrastive triplet
 (query, pos, neg)
 """
 
-__all__ = ["TripletPairSampler", "UITripletPairSampler"]
+__all__ = ["TripletPairSampler", "UserSpecificPairSampler"]
 
 
 class Sampler(object):
@@ -27,11 +27,6 @@ class Sampler(object):
     def padding(self, sampled: list, n, *args, **kwargs) -> list:
         pad_value = kwargs.get("pad_value", self.pad_value)
         return sampled + [pad_value] * (n - len(sampled))
-
-
-class PairSampler(object):
-    def __init__(self):
-        pass
 
 
 class TripletPairSampler(Sampler):
@@ -132,7 +127,7 @@ class TripletPairSampler(Sampler):
         return df.set_index(query_field)
 
 
-class UITripletPairSampler(TripletPairSampler):
+class UserSpecificPairSampler(TripletPairSampler):
     """
     User-Item
 
@@ -145,13 +140,13 @@ class UITripletPairSampler(TripletPairSampler):
     ...     "user_id": [0, 1, 1, 1, 2],
     ...     "item_id": [1, 3, 0, 2, 1]
     ... })
-    >>> triplet_df = UITripletPairSampler.rating2triplet(rating_matrix)
+    >>> triplet_df = UserSpecificPairSampler.rating2triplet(rating_matrix)
     >>> triplet_df.index
     Int64Index([0, 1, 2], dtype='int64', name='user_id')
-    >>> sampler = UITripletPairSampler(triplet_df)
+    >>> sampler = UserSpecificPairSampler(triplet_df)
     >>> sampler(1)
     (0, [0])
-    >>> sampler = UITripletPairSampler(triplet_df, item_id_range=item_num)
+    >>> sampler = UserSpecificPairSampler(triplet_df, item_id_range=item_num)
     >>> sampler(0, implicit=True)
     (1, [0])
     >>> sampler(0, 5, implicit=True)
@@ -165,7 +160,7 @@ class UITripletPairSampler(TripletPairSampler):
     ...     "item_id": [1, 3, 0, 2, 1],
     ...     "score": [1, 0, 1, 1, 0]
     ... })
-    >>> triplet_df = UITripletPairSampler.rating2triplet(rating_matrix=rating_matrix, value_field="score")
+    >>> triplet_df = UserSpecificPairSampler.rating2triplet(rating_matrix=rating_matrix, value_field="score")
     >>> triplet_df["pos"]
     user_id
     0       [1]
@@ -178,7 +173,7 @@ class UITripletPairSampler(TripletPairSampler):
     1    [3]
     2    [1]
     Name: neg, dtype: object
-    >>> sampler = UITripletPairSampler(triplet_df)
+    >>> sampler = UserSpecificPairSampler(triplet_df)
     >>> sampler([0, 1, 2], 5, pad_value=-1)
     [(0, [-1, -1, -1, -1, -1]), (1, [3, -1, -1, -1, -1]), (1, [1, -1, -1, -1, -1])]
     >>> sampler([0, 1, 2], 5, neg=False, pad_value=-1)
@@ -198,7 +193,7 @@ class UITripletPairSampler(TripletPairSampler):
                  query_field="user_id", pos_field="pos", neg_field="neg", set_index=False,
                  user_id_range=None, item_id_range=None,
                  random_state=10):
-        super(UITripletPairSampler, self).__init__(
+        super(UserSpecificPairSampler, self).__init__(
             triplet_df=triplet_df,
             query_field=query_field,
             pos_field=pos_field,
