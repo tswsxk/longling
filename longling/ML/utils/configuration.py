@@ -1,6 +1,6 @@
 # coding: utf-8
 # create by tongshiwei on 2020-11-16
-
+import os
 from longling import ConfigurationParser
 
 __all__ = ["Configuration", "ConfigurationParser", "directory_check"]
@@ -35,7 +35,7 @@ class Configuration(parser.Configuration):
     # 说明
     caption = ""
 
-    def __init__(self, params_path=None, **kwargs):
+    def __init__(self, params_path=None, params_kwargs=None, **kwargs):
         """
         Configuration File, including categories:
 
@@ -66,7 +66,7 @@ class Configuration(parser.Configuration):
 
         params = self.class_var
         if params_path:
-            params.update(self.load_cfg(cfg_path=params_path))
+            params.update(self.load_cfg(cfg_path=params_path, **(params_kwargs if params_kwargs else {})))
         params.update(**kwargs)
 
         for key in params:
@@ -118,8 +118,7 @@ class Configuration(parser.Configuration):
         cfg_path = self.cfg_path if cfg_path is None else cfg_path
         super(Configuration, self).dump(cfg_path, override, file_format=file_format)
 
-    @classmethod
-    def var2val(cls, var):
+    def var2val(self, var):
         return eval(var2exp(
             var,
             env_wrap=lambda x: "self.%s" % x
@@ -127,7 +126,6 @@ class Configuration(parser.Configuration):
 
 
 def directory_check(class_obj):
-    import os
     print("root", os.path.abspath(class_obj.root))
 
 
