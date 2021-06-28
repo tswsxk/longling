@@ -57,6 +57,18 @@ For path
 .. autosummary::
    longling.lib.testing.simulate_stdin
 
+结构体
+.. autosummary::
+   longling.lib.structure.AttrDict
+   longling.lib.structure.nested_update
+   longling.lib.structure.SortedList
+
+正则
+.. autosummary::
+   longling.lib.structure.variable_replace
+   longling.lib.structure.default_variable_replace
+
+
 candylib
 -------------
 .. automodule:: longling.lib.candylib
