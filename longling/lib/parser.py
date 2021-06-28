@@ -13,6 +13,7 @@ import re
 import sys
 from collections import Iterable
 from copy import deepcopy
+from typing import List, Dict
 
 import toml
 import yaml
@@ -24,7 +25,7 @@ __all__ = [
     "get_parsable_var", "load_configuration",
     "var2exp", "path_append",
     "Configuration", "ConfigurationParser",
-    "Formatter"
+    "Formatter", "ParserGroup", "is_classmethod"
 ]
 
 CLASS_EXCLUDE_NAMES = set(vars(object).keys()) | {
@@ -216,11 +217,22 @@ def is_classmethod(method):
         descriptor = vars(cls).get(name)
         if descriptor is not None:
             return isinstance(descriptor, classmethod)
-    return False
+    return False  # pragma: no cover
 
 
 class Configuration(object):
-    """自定义的配置文件基类"""
+    """
+    自定义的配置文件基类
+
+
+    Examples
+    --------
+    >>> c = Configuration(a=1, b="example", c=[0,2], d={"a1": 3})
+    >>> c.parsable_var
+    {'a': 1, 'b': 'example', 'c': [0, 2], 'd': {'a1': 3}}
+    >>> c.default_file_format()
+    'json'
+    """
 
     def __init__(self, logger=logging, **kwargs):
         self.logger = logger
@@ -378,27 +390,44 @@ class Configuration(object):
         return {}
 
 
-class InheritableConfiguration(Configuration):
-    @classmethod
-    def vars(cls):
-        return get_class_var(cls, get_vars=False)
-
-    @property
-    def parsable_var(self):
-        """
-        获取可以进行命令行设定的参数
-
-        Returns
-        -------
-        store_vars: dict
-            可以进行命令行设定的参数
-        """
-        return get_parsable_var(
-            self,
-            parse_exclude=None,
-            dump_parse_functions=None,
-            get_vars=False
-        )
+# class InheritableConfiguration(Configuration):
+#     """
+#     Examples
+#     -------
+#     >>> class Parent(Configuration):
+#     ...     a = 1
+#     ...     b = 2
+#     >>> class Child1(Parent):
+#     ...     a = 0
+#     ...     c = 3
+#     # >>> c1 = Child1()
+#     # >>> c1.parsable_var
+#     >>> class Child2(Parent, InheritableConfiguration):
+#     ...     c = 3
+#     >>> c2 = Child2()
+#     >>> c2.parsable_var
+#
+#     """
+#     @classmethod
+#     def vars(cls):
+#         return get_class_var(cls, get_vars=False)
+#
+#     @property
+#     def parsable_var(self):
+#         """
+#         获取可以进行命令行设定的参数
+#
+#         Returns
+#         -------
+#         store_vars: dict
+#             可以进行命令行设定的参数
+#         """
+#         return get_parsable_var(
+#             self,
+#             parse_exclude=None,
+#             dump_parse_functions=None,
+#             get_vars=False
+#         )
 
 
 def value_parse(value):
@@ -634,7 +663,7 @@ class ConfigurationParser(argparse.ArgumentParser):
             assert isinstance(commands, Iterable)
             self.add_command(*commands, help_info=commands_help)
 
-    def add_command(self, *commands, help_info: (list, dict, str, None) = None):
+    def add_command(self, *commands, help_info: (List[Dict], dict, str, None) = None):
         """批量添加子命令解析器"""
         if isinstance(help_info, list):
             for command, _help_info in zip(commands, help_info):
@@ -680,7 +709,7 @@ class ConfigurationParser(argparse.ArgumentParser):
         def get_help_info(default_help_info, command=None):
             if isinstance(help_info, dict):
                 return help_info.get(command, default_help_info)
-            elif command is None:
+            elif command is None:  # pragma: no cover
                 return default_help_info
             else:
                 return command
