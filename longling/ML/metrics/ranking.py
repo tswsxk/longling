@@ -3,8 +3,9 @@
 from tqdm import tqdm
 from longling import as_list
 from copy import deepcopy
-# from .utils import POrderedDict
-from longling.ML.metrics.utils import POrderedDict
+from .utils import POrderedDict
+
+__all__ = ["ranking_report"]
 
 
 def ranking_auc(ranked_label):
@@ -46,18 +47,92 @@ def ranking_report(y_true, y_pred, k: (int, list) = None, coerce="ignore", pad_p
 
     Examples
     --------
-    >>> _y_true = [[1, 0, 0], [0, 0, 1]]
-    >>> _y_score = [[0.75, 0.5, 1], [1, 0.2, 0.1]]
-    >>> result = ranking_report(_y_true, _y_score)
-    >>> result[1]["ndcg@k"]
-    1.0
-    >>> result[3]["ndcg@k"]  # doctest: +ELLIPSIS
-    0.56...
-    >>> result["auc"]
-    0.25
-    >>> result_bottom = ranking_report(_y_true, _y_score, bottom=True)
-    >>> result_bottom[3]["ndcg@k(B)"]   # doctest: +ELLIPSIS
-    0.80...
+    >>> y_true = [[1, 0, 0], [0, 0, 1]]
+    >>> y_pred = [[0.75, 0.5, 1], [1, 0.2, 0.1]]
+    >>> ranking_report(y_true, y_pred)  # doctest: +NORMALIZE_WHITESPACE
+           ndcg@k  precision@k  recall@k  f1@k  len@k  support@k
+    1   1.000000     0.000000       0.0   0.0    1.0          2
+    3   0.565465     0.333333       1.0   0.5    3.0          2
+    5   0.565465     0.333333       1.0   0.5    3.0          2
+    10  0.565465     0.333333       1.0   0.5    3.0          2
+    auc: 0.250000	map: 0.416667	mrr: 0.416667	coverage_error: 2.500000	ranking_loss: 0.750000	len: 3.000000
+    support: 2
+    >>> ranking_report(y_true, y_pred, bottom=True)  # doctest: +NORMALIZE_WHITESPACE
+              ndcg@k  precision@k  recall@k  f1@k  len@k  support@k  ndcg@k(B) \
+    1   1.000000     0.000000       0.0   0.0    1.0          2   1.000000
+    3   0.565465     0.333333       1.0   0.5    3.0          2   0.806574
+    5   0.565465     0.333333       1.0   0.5    3.0          2   0.806574
+    10  0.565465     0.333333       1.0   0.5    3.0          2   0.806574
+    <BLANKLINE>
+        precision@k(B)  recall@k(B)   f1@k(B)  len@k(B)  support@k(B)
+    1         0.500000         0.25  0.333333       1.0             2
+    3         0.666667         1.00  0.800000       3.0             2
+    5         0.666667         1.00  0.800000       3.0             2
+    10        0.666667         1.00  0.800000       3.0             2
+    auc: 0.250000	map: 0.416667	mrr: 0.416667	coverage_error: 2.500000	ranking_loss: 0.750000	len: 3.000000
+    support: 2	map(B): 0.708333	mrr(B): 0.750000
+    >>> y_true = [[1, 0], [0, 0, 1]]
+    >>> y_pred = [[0.75, 0.5], [1, 0.2, 0.1]]
+    >>> ranking_report(y_true, y_pred)  # doctest: +NORMALIZE_WHITESPACE
+        ndcg@k  precision@k  recall@k      f1@k  len@k  support@k
+    1     1.00     0.500000       0.5  0.500000    1.0          2
+    3     0.75     0.416667       1.0  0.583333    2.5          2
+    5     0.75     0.416667       1.0  0.583333    2.5          2
+    10    0.75     0.416667       1.0  0.583333    2.5          2
+    auc: 0.500000	map: 0.666667	mrr: 0.666667	coverage_error: 2.000000	ranking_loss: 0.500000	len: 2.500000
+    support: 2
+    >>> ranking_report(y_true, y_pred, coerce="abandon")  # doctest: +NORMALIZE_WHITESPACE
+       ndcg@k  precision@k  recall@k  f1@k  len@k  support@k
+    1     1.0     0.500000       0.5   0.5    1.0          2
+    3     0.5     0.333333       1.0   0.5    3.0          1
+    auc: 0.500000	map: 0.666667	mrr: 0.666667	coverage_error: 2.000000	ranking_loss: 0.500000	len: 2.500000
+    support: 2
+    >>> ranking_report(y_true, y_pred, coerce="padding")  # doctest: +NORMALIZE_WHITESPACE
+        ndcg@k  precision@k  recall@k      f1@k  len@k  support@k
+    1     1.00     0.500000       0.5  0.500000    1.0          2
+    3     0.75     0.416667       1.0  0.583333    2.5          2
+    5     0.75     0.416667       1.0  0.583333    2.5          2
+    10    0.75     0.416667       1.0  0.583333    2.5          2
+    auc: 0.500000	map: 0.666667	mrr: 0.666667	coverage_error: 2.000000	ranking_loss: 0.500000	len: 2.500000
+    support: 2
+    >>> ranking_report(y_true, y_pred, bottom=True)  # doctest: +NORMALIZE_WHITESPACE
+        ndcg@k  precision@k  recall@k      f1@k  len@k  support@k  ndcg@k(B)  \
+    1     1.00     0.500000       0.5  0.500000    1.0          2   1.000000
+    3     0.75     0.416667       1.0  0.583333    2.5          2   0.846713
+    5     0.75     0.416667       1.0  0.583333    2.5          2   0.846713
+    10    0.75     0.416667       1.0  0.583333    2.5          2   0.846713
+    <BLANKLINE>
+        precision@k(B)  recall@k(B)   f1@k(B)  len@k(B)  support@k(B)
+    1         0.500000          0.5  0.500000       1.0             2
+    3         0.583333          1.0  0.733333       2.5             2
+    5         0.583333          1.0  0.733333       2.5             2
+    10        0.583333          1.0  0.733333       2.5             2
+    auc: 0.500000	map: 0.666667	mrr: 0.666667	coverage_error: 2.000000	ranking_loss: 0.500000	len: 2.500000
+    support: 2	map(B): 0.791667	mrr(B): 0.750000
+    >>> ranking_report(y_true, y_pred, bottom=True, coerce="abandon")  # doctest: +NORMALIZE_WHITESPACE
+       ndcg@k  precision@k  recall@k  f1@k  len@k  support@k  ndcg@k(B)  \
+    1     1.0     0.500000       0.5   0.5    1.0          2   1.000000
+    3     0.5     0.333333       1.0   0.5    3.0          1   0.693426
+    <BLANKLINE>
+       precision@k(B)  recall@k(B)  f1@k(B)  len@k(B)  support@k(B)
+    1        0.500000          0.5      0.5       1.0             2
+    3        0.666667          1.0      0.8       3.0             1
+    auc: 0.500000	map: 0.666667	mrr: 0.666667	coverage_error: 2.000000	ranking_loss: 0.500000
+    len: 2.500000	support: 2	map(B): 0.791667	mrr(B): 0.750000
+    >>> ranking_report(y_true, y_pred, bottom=True, coerce="padding")  # doctest: +NORMALIZE_WHITESPACE
+        ndcg@k  precision@k  recall@k      f1@k  len@k  support@k  ndcg@k(B)  \
+    1     1.00     0.500000       0.5  0.500000    1.0          2   1.000000
+    3     0.75     0.416667       1.0  0.583333    2.5          2   0.846713
+    5     0.75     0.416667       1.0  0.583333    2.5          2   0.846713
+    10    0.75     0.416667       1.0  0.583333    2.5          2   0.846713
+    <BLANKLINE>
+        precision@k(B)  recall@k(B)   f1@k(B)  len@k(B)  support@k(B)
+    1             0.50          0.5  0.500000       1.0             2
+    3             0.50          1.0  0.650000       3.0             2
+    5             0.30          1.0  0.452381       5.0             2
+    10            0.15          1.0  0.257576      10.0             2
+    auc: 0.500000	map: 0.666667	mrr: 0.666667	coverage_error: 2.000000	ranking_loss: 0.500000	len: 2.500000
+    support: 2	map(B): 0.791667	mrr(B): 0.750000
     """
     import numpy as np
     from collections import OrderedDict
@@ -114,12 +189,18 @@ def ranking_report(y_true, y_pred, k: (int, list) = None, coerce="ignore", pad_p
 
         try:
             results["coverage_error"].append(coverage_error([label], [pred]))
-        except ValueError:  # pragma: no cover
-            pass
+        except ValueError as e:
+            if coerce == "ignore":
+                pass
+            else:  # pragma: no cover
+                raise e
         try:
             results["ranking_loss"].append(label_ranking_loss([label], [pred]))
-        except ValueError:  # pragma: no cover
-            pass
+        except ValueError as e:
+            if coerce == "ignore":
+                pass
+            else:  # pragma: no cover
+                raise e
         results["len"].append(len(label))
         results["support"].append(1)
         label_pred = list(sorted(zip(label, pred), key=lambda x: x[1], reverse=True))
@@ -139,18 +220,22 @@ def ranking_report(y_true, y_pred, k: (int, list) = None, coerce="ignore", pad_p
                 if _suffix == "":
                     _label_pred = deepcopy(label_pred)
                     if len(_label_pred) < _k:
-                        if coerce == "abandon":  # pragma: no cover
+                        if coerce == "ignore":
+                            pass
+                        elif coerce == "abandon":
                             continue
-                        elif coerce == "raise":  # pragma: no cover
+                        elif coerce == "raise":
                             raise ValueError("Not enough value: %s vs target %s" % (len(_label_pred), _k))
-                        elif coerce == "padding":
+                        elif coerce == "padding":  # pragma: no cover
                             _label_pred += [(0, pad_pred)] * (_k - len(_label_pred))
                     k_label_pred = label_pred[:_k]
                     total_label = sum(label)
                 else:
                     inv_label_pred = [(1 - _l, -p) for _l, p in label_pred][::-1]
                     if len(inv_label_pred) < _k:
-                        if coerce == "abandon":  # pragma: no cover
+                        if coerce == "ignore":
+                            pass
+                        elif coerce == "abandon":
                             continue
                         elif coerce == "raise":  # pragma: no cover
                             raise ValueError("Not enough value: %s vs target %s" % (len(inv_label_pred), _k))
