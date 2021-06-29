@@ -19,6 +19,33 @@ def _to_dict(name_value: (dict, tuple)) -> dict:
 
 
 class EvalFMT(object):
+    """
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from longling.ML.metrics import classification_report
+    >>> y_true = np.array([0, 0, 1, 1, 2, 1])
+    >>> y_pred = np.array([2, 1, 0, 1, 1, 0])
+    >>> y_score = np.array([
+    ...     [0.15, 0.4, 0.45],
+    ...     [0.1, 0.9, 0.0],
+    ...     [0.33333, 0.333333, 0.333333],
+    ...     [0.15, 0.4, 0.45],
+    ...     [0.1, 0.9, 0.0],
+    ...     [0.33333, 0.333333, 0.333333]
+    ... ])
+    >>> print(EvalFMT.format(
+    ...     iteration=30,
+    ...     eval_name_value=classification_report(y_true, y_pred, y_score)
+    ... ))    # doctest: +NORMALIZE_WHITESPACE
+    Iteration [30]
+               precision    recall        f1  support
+    0           0.000000  0.000000  0.000000        2
+    1           0.333333  0.333333  0.333333        3
+    2           0.000000  0.000000  0.000000        1
+    macro_avg   0.111111  0.111111  0.111111        6
+    accuracy: 0.166667	macro_auc: 0.194444
+    """
     def __init__(self, logger=logging.getLogger(), dump_file: (PATH_IO_TYPE, None) = False,
                  col: (int, None) = None, **kwargs):
         self.logger = logger
@@ -146,6 +173,26 @@ class EvalFMT(object):
 
 
 def result_format(data: dict, col=None):
+    """
+
+    Parameters
+    ----------
+    data
+    col
+
+    Returns
+    -------
+
+    Examples
+    --------
+    >>> print(result_format({"a": 1, "b": 2}))    # doctest: +NORMALIZE_WHITESPACE
+    a: 1	b: 2
+    >>> print(result_format({"a": 1, "b": {"1": 0.1, "2": 0.3}, "c": {"1": 0.4, "2": 0.0}}))
+         1    2
+    b  0.1  0.3
+    c  0.4  0.0
+    a: 1
+    """
     table = OrderedDict()
     series = OrderedDict()
     for key, value in data.items():
@@ -167,37 +214,66 @@ eval_format = EvalFMT.format
 
 
 class EpochEvalFMT(EvalFMT):
+    """
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from longling.ML.metrics import classification_report
+    >>> y_true = np.array([0, 0, 1, 1, 2, 1])
+    >>> y_pred = np.array([2, 1, 0, 1, 1, 0])
+    >>> y_score = np.array([
+    ...     [0.15, 0.4, 0.45],
+    ...     [0.1, 0.9, 0.0],
+    ...     [0.33333, 0.333333, 0.333333],
+    ...     [0.15, 0.4, 0.45],
+    ...     [0.1, 0.9, 0.0],
+    ...     [0.33333, 0.333333, 0.333333]
+    ... ])
+    >>> print(EpochEvalFMT.format(
+    ...     iteration=30,
+    ...     eval_name_value=classification_report(y_true, y_pred, y_score)
+    ... ))    # doctest: +NORMALIZE_WHITESPACE
+    Epoch [30]
+               precision    recall        f1  support
+    0           0.000000  0.000000  0.000000        2
+    1           0.333333  0.333333  0.333333        3
+    2           0.000000  0.000000  0.000000        1
+    macro_avg   0.111111  0.111111  0.111111        6
+    accuracy: 0.166667	macro_auc: 0.194444
+    """
     @property
     def iteration_name(self):
         return "Epoch"
 
 
 class EpisodeEvalFMT(EvalFMT):
+    """
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from longling.ML.metrics import classification_report
+    >>> y_true = np.array([0, 0, 1, 1, 2, 1])
+    >>> y_pred = np.array([2, 1, 0, 1, 1, 0])
+    >>> y_score = np.array([
+    ...     [0.15, 0.4, 0.45],
+    ...     [0.1, 0.9, 0.0],
+    ...     [0.33333, 0.333333, 0.333333],
+    ...     [0.15, 0.4, 0.45],
+    ...     [0.1, 0.9, 0.0],
+    ...     [0.33333, 0.333333, 0.333333]
+    ... ])
+    >>> print(EpisodeEvalFMT.format(
+    ...     iteration=30,
+    ...     eval_name_value=classification_report(y_true, y_pred, y_score)
+    ... ))    # doctest: +NORMALIZE_WHITESPACE
+    Episode [30]
+               precision    recall        f1  support
+    0           0.000000  0.000000  0.000000        2
+    1           0.333333  0.333333  0.333333        3
+    2           0.000000  0.000000  0.000000        1
+    macro_avg   0.111111  0.111111  0.111111        6
+    accuracy: 0.166667	macro_auc: 0.194444
+    """
     @property
     def iteration_name(self):
         return "Episode"
-
-
-if __name__ == '__main__':
-    import numpy as np
-    import logging
-    from longling.ML.metrics import classification_report
-
-    logging.getLogger().setLevel(logging.INFO)
-
-    y_true = np.array([0, 0, 1, 1, 2, 1])
-    y_pred = np.array([2, 1, 0, 1, 1, 0])
-    y_score = np.array([
-        [0.15, 0.4, 0.45],
-        [0.1, 0.9, 0.0],
-        [0.33333, 0.333333, 0.333333],
-        [0.15, 0.4, 0.45],
-        [0.1, 0.9, 0.0],
-        [0.33333, 0.333333, 0.333333]
-    ])
-
-    # print(result_format(classification_report(y_true, y_pred, y_score)))
-    EvalFMT.format(
-        iteration=30,
-        eval_name_value=classification_report(y_true, y_pred, y_score)
-    )
