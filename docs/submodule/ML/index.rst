@@ -3,6 +3,14 @@ ML: Machine Learning
 
 .. mdinclude:: ../../../longling/ML/README.md
 
+metrics
+-------
+.. toctree::
+   :glob:
+   :maxdepth: 2
+
+   metrics
+
 toolkit
 ---------------
 .. mdinclude:: ../../../longling/ML/toolkit/README.md
