@@ -352,8 +352,8 @@ class ModelName(DL.CliServiceModule):
 
     @classmethod
     def test(cls, test_filename, test_epoch, dump_file=None, **kwargs):
-        from longling.ML.toolkit.formatter import EvalFormatter
-        formatter = EvalFormatter(dump_file=dump_file)
+        from longling.ML.toolkit.formatter import EpochEvalFMT as Formatter
+        formatter = Formatter(dump_file=dump_file)
         module = cls.load(test_epoch, **kwargs)
 
         test_data = module.etl(test_filename)

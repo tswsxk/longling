@@ -3,6 +3,5 @@
 
 from .dataset import *
 from .formatter.EvalFMT import *
-from .formatter.EvalFormatter import *
 from .monitor.LossMonitor import *
 from .monitor.ProgressMonitor import *

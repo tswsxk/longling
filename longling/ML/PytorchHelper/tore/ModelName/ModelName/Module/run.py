@@ -26,7 +26,7 @@ def numerical_check(_net, _cfg: Configuration, train_data, test_data, dump_resul
     loss_function = {}
     loss_function.update(bp_loss_f)
 
-    from longling.ML.toolkit import EvalFormatter as Formatter
+    from longling.ML.toolkit import EpochEvalFMT as Formatter
     from longling.ML.toolkit import MovingLoss
     from tqdm import tqdm
 

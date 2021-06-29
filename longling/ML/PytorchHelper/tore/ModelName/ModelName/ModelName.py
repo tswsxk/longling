@@ -121,7 +121,7 @@ class ModelName(object):
         from longling import path_append
         from longling.lib.clock import Clock
         from longling.lib.utilog import config_logging
-        from longling.ML.toolkit import EvalFormatter as Formatter
+        from longling.ML.toolkit import EpochEvalFMT as Formatter
         from longling.ML.toolkit import MovingLoss, ConsoleProgressMonitor as ProgressMonitor
 
         self.toolbox = {
@@ -354,8 +354,8 @@ class ModelName(object):
 
     @staticmethod
     def test(test_filename, test_epoch, dump_file=None, **kwargs):
-        from longling.ML.toolkit.formatter import EvalFormatter
-        formatter = EvalFormatter(dump_file=dump_file)
+        from longling.ML.toolkit.formatter import EpochEvalFMT as Formatter
+        formatter = Formatter(dump_file=dump_file)
         module = ModelName.load(test_epoch, **kwargs)
 
         test_data = module.etl(test_filename)
