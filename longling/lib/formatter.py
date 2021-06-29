@@ -12,16 +12,11 @@ def dict_format(data: dict, digits=6, col: int = None):
     """
     Examples
     --------
-    .. code-block: python
-
-        print(dict_format({"a": 123, "b": 3, "c": 4, "d": 5}))
-        a: 123  b: 3	c: 4	d: 5
-
-    .. code-block: bash
-
-        print(dict_format({"a": 123, "b": 3, "c": 4, "d": 5}, col=3))
-        a: 123	b: 3	c: 4
-        d: 5
+    >>> print(dict_format({"a": 123, "b": 3, "c": 4, "d": 5}))  # doctest: +NORMALIZE_WHITESPACE
+    a: 123	b: 3	c: 4	d: 5
+    >>> print(dict_format({"a": 123, "b": 3, "c": 4, "d": 5}, col=3))  # doctest: +NORMALIZE_WHITESPACE
+    a: 123	b: 3	c: 4
+    d: 5
     """
     if col is None:
         msg = []
