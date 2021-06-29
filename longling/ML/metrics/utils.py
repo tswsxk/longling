@@ -1,7 +1,6 @@
 # coding: utf-8
 # 2021/6/28 @ tongshiwei
-from longling.ML.toolkit import result_format
-# from ..toolkit import result_format
+from ..toolkit import result_format
 from collections import OrderedDict
 
 __all__ = ["POrderedDict"]
@@ -20,5 +19,6 @@ class POrderedDict(OrderedDict):
     c  1  5
     a: 1
     """
+
     def __repr__(self):
         return result_format(self)
