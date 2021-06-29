@@ -1,12 +1,13 @@
 # coding: utf-8
 # 2020/4/16 @ tongshiwei
 
-from collections import OrderedDict
-
 import numpy as np
 from sklearn.metrics import explained_variance_score, mean_absolute_error, mean_squared_error, r2_score
 
 from longling import as_list
+from .utils import POrderedDict
+
+__all__ = ["regression_report"]
 
 
 def regression_report(
@@ -42,7 +43,7 @@ def regression_report(
         'uniform_average' :
             Errors of all outputs are averaged with uniform weight.
             Alias: "macro"
-        ‘variance_weighted’ :
+        'variance_weighted':
             Only support in evar and r2.
             Scores of all outputs are averaged, weighted by the variances of each individual output.
             Alias: "vw"
@@ -55,7 +56,48 @@ def regression_report(
     verbose: bool
     Returns
     -------
+    evar: explained variance
+    mse: mean squared error
+    rmse: root mean squared error
+    mae: mean absolute error
+    r2: r2 score
 
+    Examples
+    ---------
+    >>> y_true = [[0.5, 1, 1], [-1, 1, 1], [7, -6, 1]]
+    >>> y_pred = [[0, 2, 1], [-1, 2, 1], [8, -5, 1]]
+    >>> regression_report(y_true, y_pred)   # doctest: +NORMALIZE_WHITESPACE
+                           evar       mse      rmse  mae        r2
+    0                  0.967742  0.416667  0.645497  0.5  0.965438
+    1                  1.000000  1.000000  1.000000  1.0  0.908163
+    2                  1.000000  0.000000  0.000000  0.0  1.000000
+    uniform_average    0.989247  0.472222  0.548499  0.5  0.957867
+    variance_weighted  0.983051  0.472222  0.548499  0.5  0.938257
+    >>> regression_report(y_true, y_pred, verbose=False)   # doctest: +NORMALIZE_WHITESPACE
+    evar: 0.989247	mse: 0.472222	rmse: 0.548499	mae: 0.500000	r2: 0.957867
+    >>> regression_report(
+    ...     y_true, y_pred, multioutput="variance_weighted", verbose=False
+    ... )   # doctest: +NORMALIZE_WHITESPACE
+    evar: 0.983051	mse: 0.472222	rmse: 0.548499	mae: 0.500000	r2: 0.938257
+    >>> regression_report(y_true, y_pred, multioutput=[0.3, 0.6, 0.1], verbose=False)   # doctest: +NORMALIZE_WHITESPACE
+    evar: 0.990323	mse: 0.725000	rmse: 0.793649	mae: 0.750000	r2: 0.934529
+    >>> regression_report(y_true, y_pred, verbose=True)   # doctest: +NORMALIZE_WHITESPACE
+                           evar       mse      rmse  mae        r2
+    0                  0.967742  0.416667  0.645497  0.5  0.965438
+    1                  1.000000  1.000000  1.000000  1.0  0.908163
+    2                  1.000000  0.000000  0.000000  0.0  1.000000
+    uniform_average    0.989247  0.472222  0.548499  0.5  0.957867
+    variance_weighted  0.983051  0.472222  0.548499  0.5  0.938257
+    >>> regression_report(
+    ...     y_true, y_pred, verbose=True, average_options=["macro", "vw", [0.3, 0.6, 0.1]]
+    ... )   # doctest: +NORMALIZE_WHITESPACE
+                           evar       mse      rmse   mae        r2
+    0                  0.967742  0.416667  0.645497  0.50  0.965438
+    1                  1.000000  1.000000  1.000000  1.00  0.908163
+    2                  1.000000  0.000000  0.000000  0.00  1.000000
+    uniform_average    0.989247  0.472222  0.548499  0.50  0.957867
+    variance_weighted  0.983051  0.472222  0.548499  0.50  0.938257
+    weighted           0.990323  0.725000  0.793649  0.75  0.934529
     """
     legal_metrics = ["evar", "rmse", "mse", "mae", "r2"]
     if not metrics:
@@ -74,7 +116,7 @@ def regression_report(
         "vw": "variance_weighted",
     }
 
-    ret = OrderedDict()
+    ret = POrderedDict()
 
     if len(y_true.shape) > 1 and verbose:
         _ret = regression_report(
@@ -125,25 +167,3 @@ def regression_report(
                                                            multioutput=multioutput)
 
     return ret
-
-
-if __name__ == '__main__':
-    from longling.ML.toolkit.formatter import EvalFMT
-
-    # y_true = [3, -0.5, 2, 7]
-    # y_pred = [2.5, 0.0, 2, 8]
-    # y_true = [[0.5, 1], [-1, 1], [7, -6]]
-    # y_pred = [[0, 2], [-1, 2], [8, -5]]
-    y_true = [[0.5, 1, 1], [-1, 1, 1], [7, -6, 1]]
-    y_pred = [[0, 2, 1], [-1, 2, 1], [8, -5, 1]]
-    print(EvalFMT.format(
-        eval_name_value=regression_report(y_true, y_pred, multioutput="variance_weighted", verbose=False))
-    )
-    print(EvalFMT.format(eval_name_value=regression_report(y_true, y_pred, verbose=False)))
-    print(EvalFMT.format(eval_name_value=regression_report(y_true, y_pred, multioutput=[0.3, 0.6, 0.1]), verbose=False))
-    print(EvalFMT.format(eval_name_value=regression_report(y_true, y_pred, verbose=True)))
-    print(EvalFMT.format(
-        eval_name_value=regression_report(
-            y_true, y_pred, verbose=True, average_options=["macro", "vw", [0.3, 0.6, 0.1]]
-        )
-    ))
