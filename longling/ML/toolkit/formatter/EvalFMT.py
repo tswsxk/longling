@@ -20,6 +20,18 @@ def _to_dict(name_value: (dict, tuple)) -> dict:
 
 class EvalFMT(object):
     """
+    评价指标格式化类。可以按一定格式快速格式化评价指标。
+    Parameters
+    ----------
+    logger:
+        默认为 root logger
+    dump_file:
+        不为空时，将结果写入dump_file
+    col: int
+        每行放置的指标数量
+    kwargs:
+        拓展兼容性参数
+
     Examples
     --------
     >>> import numpy as np
@@ -48,6 +60,12 @@ class EvalFMT(object):
     """
     def __init__(self, logger=logging.getLogger(), dump_file: (PATH_IO_TYPE, None) = False,
                  col: (int, None) = None, **kwargs):
+        """
+
+        Parameters
+        ----------
+
+        """
         self.logger = logger
         if dump_file is not False:
             # clean file
