@@ -189,17 +189,17 @@ def ranking_report(y_true, y_pred, k: (int, list) = None, coerce="ignore", pad_p
 
         try:
             results["coverage_error"].append(coverage_error([label], [pred]))
-        except ValueError as e:
+        except ValueError as e:   # pragma: no cover
             if coerce == "ignore":
                 pass
-            else:  # pragma: no cover
+            else:
                 raise e
         try:
             results["ranking_loss"].append(label_ranking_loss([label], [pred]))
-        except ValueError as e:
+        except ValueError as e:   # pragma: no cover
             if coerce == "ignore":
                 pass
-            else:  # pragma: no cover
+            else:
                 raise e
         results["len"].append(len(label))
         results["support"].append(1)
