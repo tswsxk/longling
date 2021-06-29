@@ -11,13 +11,23 @@ from sklearn.metrics import (classification_report as cr,
 from sklearn.utils import check_consistent_length
 from sklearn.utils.multiclass import unique_labels
 import functools
+from longling.ML.metrics.utils import POrderedDict
+
+__all__ = ["classification_report"]
 
 
-def multiclass2multilabel(y):
+def multiclass2multilabel(y: list):
     """
     Parameters
     ----------
     y: 1d label indicator array
+
+    Examples
+    --------
+    >>> multiclass2multilabel([0, 1, 5])
+    matrix([[1., 0., 0.],
+            [0., 1., 0.],
+            [0., 0., 1.]])
     """
     from sklearn.preprocessing import OneHotEncoder
     ret = []
@@ -65,6 +75,105 @@ def classification_report(y_true, y_pred=None, y_score=None, labels=None, metric
     Returns
     -------
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> # binary classification
+    >>> y_true = np.array([0, 0, 1, 1, 0])
+    >>> y_pred = np.array([0, 1, 0, 1, 0])
+    >>> classification_report(y_true, y_pred)
+               precision    recall        f1  support
+    0           0.666667  0.666667  0.666667        3
+    1           0.500000  0.500000  0.500000        2
+    macro_avg   0.583333  0.583333  0.583333        5
+    accuracy: 0.600000
+    >>> y_true = np.array([0, 0, 1, 1])
+    >>> y_score = np.array([0.1, 0.4, 0.35, 0.8])
+    >>> classification_report(y_true, y_score=y_score)    # doctest: +NORMALIZE_WHITESPACE
+    macro_auc: 0.750000	macro_aupoc: 0.833333
+    >>> y_true = np.array([0, 0, 1, 1])
+    >>> y_pred = [0, 0, 0, 1]
+    >>> y_score = np.array([0.1, 0.4, 0.35, 0.8])
+    >>> classification_report(y_true, y_pred, y_score=y_score)    # doctest: +NORMALIZE_WHITESPACE
+               precision  recall        f1  support
+    0           0.666667    1.00  0.800000        2
+    1           1.000000    0.50  0.666667        2
+    macro_avg   0.833333    0.75  0.733333        4
+    accuracy: 0.750000	macro_auc: 0.750000	macro_aupoc: 0.833333
+    >>> # multiclass classification
+    >>> y_true = [0, 1, 2, 2, 2]
+    >>> y_pred = [0, 0, 2, 2, 1]
+    >>> classification_report(y_true, y_pred)
+               precision    recall        f1  support
+    0                0.5  1.000000  0.666667        1
+    1                0.0  0.000000  0.000000        1
+    2                1.0  0.666667  0.800000        3
+    macro_avg        0.5  0.555556  0.488889        5
+    accuracy: 0.600000
+    >>> # multiclass in multilabel
+    >>> y_true = np.array([0, 0, 1, 1, 2, 1])
+    >>> y_pred = np.array([2, 1, 0, 2, 1, 0])
+    >>> y_score = np.array([
+    ...    [0.15, 0.4, 0.45],
+    ...    [0.1, 0.9, 0.0],
+    ...    [0.33333, 0.333333, 0.333333],
+    ...    [0.15, 0.4, 0.45],
+    ...    [0.1, 0.9, 0.0],
+    ...    [0.33333, 0.333333, 0.333333]
+    ... ])
+    >>> classification_report(
+    ...    y_true, y_pred, y_score,
+    ...    multiclass_to_multilabel=True,
+    ...    metrics=["aupoc"]
+    ... )
+                  aupoc
+    0          0.291667
+    1          0.416667
+    2          0.166667
+    macro_avg  0.291667
+    >>> classification_report(
+    ...     y_true, y_pred, y_score,
+    ...    multiclass_to_multilabel=True,
+    ...    metrics=["auc", "aupoc"]
+    ... )
+                    auc     aupoc
+    0          0.250000  0.291667
+    1          0.055556  0.416667
+    2          0.100000  0.166667
+    macro_avg  0.135185  0.291667
+    macro_auc: 0.194444
+    >>> y_true = np.array([0, 1, 1, 1, 2, 1])
+    >>> y_pred = np.array([2, 1, 0, 2, 1, 0])
+    >>> y_score = np.array([
+    ...    [0.45, 0.4, 0.15],
+    ...    [0.1, 0.9, 0.0],
+    ...    [0.33333, 0.333333, 0.333333],
+    ...    [0.15, 0.4, 0.45],
+    ...    [0.1, 0.9, 0.0],
+    ...    [0.33333, 0.333333, 0.333333]
+    ... ])
+    >>> classification_report(
+    ...    y_true, y_pred,
+    ...    y_score,
+    ...    multiclass_to_multilabel=True,
+    ... )    # doctest: +NORMALIZE_WHITESPACE
+               precision    recall        f1   auc     aupoc  support
+    0           0.000000  0.000000  0.000000  1.00  1.000000        1
+    1           0.500000  0.250000  0.333333  0.25  0.583333        4
+    2           0.000000  0.000000  0.000000  0.10  0.166667        1
+    macro_avg   0.166667  0.083333  0.111111  0.45  0.583333        6
+    accuracy: 0.166667	macro_auc: 0.437500
+    >>> classification_report(
+    ...    y_true, y_pred,
+    ...    y_score,
+    ...    labels=[0, 1],
+    ...    multiclass_to_multilabel=True,
+    ... )    # doctest: +NORMALIZE_WHITESPACE
+               precision  recall        f1   auc     aupoc  support
+    0               0.00   0.000  0.000000  1.00  1.000000        1
+    1               0.50   0.250  0.333333  0.25  0.583333        4
+    macro_avg       0.25   0.125  0.166667  0.45  0.583333        5
+    accuracy: 0.166667	macro_auc: 0.437500
     """
     if y_pred is not None:
         check_consistent_length(y_true, y_pred)
@@ -189,7 +298,7 @@ def classification_report(y_true, y_pred=None, y_score=None, labels=None, metric
                 ret[_label] = aupoc
 
     logger.info("sorting metrics")
-    _ret = OrderedDict()
+    _ret = POrderedDict()
     for key in ret:
         if isinstance(ret[key], dict):
             _ret[key] = OrderedDict()
