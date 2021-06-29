@@ -16,7 +16,7 @@ contrastive triplet
 (query, pos, neg)
 """
 
-__all__ = ["TripletPairSampler", "UserSpecificPairSampler"]
+__all__ = ["TripletPairSampler", "UserSpecificPairSampler", "ItemSpecificSampler"]
 
 
 class Sampler(object):
@@ -30,17 +30,118 @@ class Sampler(object):
 
 
 class TripletPairSampler(Sampler):
+    """
+    Examples
+    --------
+    >>> # implicit feedback
+    >>> import pandas as pd
+    >>> triplet_df = pd.DataFrame({
+    ...     "query": [0, 1, 2],
+    ...     "pos": [[1], [3, 0, 2], [1]],
+    ...     "neg": [[], [], []]
+    ... })
+    >>> sampler = TripletPairSampler(triplet_df, "query", set_index=True)
+    >>> rating_matrix = pd.DataFrame({
+    ...     "query": [0, 1, 1, 1, 2],
+    ...     "key": [1, 3, 0, 2, 1]
+    ... })
+    >>> triplet_df = TripletPairSampler.rating2triplet(rating_matrix, query_field="query", key_field="key")
+    >>> triplet_df   # doctest: +NORMALIZE_WHITESPACE
+                 pos neg
+    query
+    0            [1]  []
+    1      [3, 0, 2]  []
+    2            [1]  []
+    >>> sampler = TripletPairSampler(triplet_df, "query")
+    >>> sampler(0)
+    (0, [0])
+    >>> sampler(0, 3)
+    (0, [0, 0, 0])
+    >>> sampler(0, 3, padding=False)
+    (0, [])
+    >>> sampler = TripletPairSampler(triplet_df, "query", query_range=3, key_range=4)
+    >>> sampler(0)
+    (0, [0])
+    >>> sampler(0, 3)
+    (0, [0, 0, 0])
+    >>> sampler(0, 3, padding=False)
+    (0, [])
+    >>> sampler(0, 5, padding=False, implicit=True)
+    (3, [0, 3, 2])
+    >>> sampler(0, 5, padding=False, implicit=True, excluded_key=[3])
+    (2, [2, 0])
+    >>> sampler(0, 5, padding=True, implicit=True, excluded_key=[3])
+    (2, [0, 2, 0, 0, 0])
+    >>> sampler(0, 5, implicit=True, pad_value=-1)
+    (3, [3, 2, 0, -1, -1])
+    >>> rating_matrix = pd.DataFrame({
+    ...     "query": [0, 1, 1, 1, 2],
+    ...     "key": [1, 3, 0, 2, 1],
+    ...     "score": [1, 0, 1, 1, 0]
+    ... })
+    >>> triplet_df = TripletPairSampler.rating2triplet(
+    ...     rating_matrix,
+    ...     "query", "key",
+    ...     value_field="score"
+    ... )
+    >>> triplet_df   # doctest: +NORMALIZE_WHITESPACE
+                pos  neg
+    query
+    0           [1]   []
+    1        [0, 2]  [3]
+    2            []  [1]
+    >>> sampler = TripletPairSampler(triplet_df, "query", query_range=3, key_range=4)
+    >>> sampler([0, 1, 2], 5, implicit=True, pad_value=-1)
+    [(3, [0, 3, 2, -1, -1]), (2, [3, 1, -1, -1, -1]), (4, [2, 1, 0, 3, -1])]
+    >>> sampler([0, 1, 2], 5, pad_value=-1)
+    [(0, [-1, -1, -1, -1, -1]), (1, [3, -1, -1, -1, -1]), (1, [1, -1, -1, -1, -1])]
+    >>> sampler([0, 1, 2], 5, neg=False, pad_value=-1)
+    [(1, [1, -1, -1, -1, -1]), (2, [0, 2, -1, -1, -1]), (0, [-1, -1, -1, -1, -1])]
+    >>> sampler(rating_matrix["query"], 2, neg=rating_matrix["score"],
+    ...     excluded_key=rating_matrix["key"], pad_value=-1)
+    [(0, [-1, -1]), (2, [2, 0]), (1, [3, -1]), (1, [3, -1]), (0, [-1, -1])]
+    >>> sampler(rating_matrix["query"], 2, neg=rating_matrix["score"],
+    ...     excluded_key=rating_matrix["key"], pad_value=-1, return_column=True)
+    ((0, 2, 1, 1, 0), ([-1, -1], [0, 2], [3, -1], [3, -1], [-1, -1]))
+    >>> sampler(rating_matrix["query"], 2, neg=rating_matrix["score"],
+    ...     excluded_key=rating_matrix["key"], pad_value=-1, return_column=True, split_sample_to_column=True)
+    ((0, 2, 1, 1, 0), [(-1, 0, 3, 3, -1), (-1, 2, -1, -1, -1)])
+    >>> rating_matrix = pd.DataFrame({
+    ...     "query": [0, 1, 1, 1, 2],
+    ...     "key": [1, 3, 0, 2, 1],
+    ...     "score": [0.8, 0.4, 0.7, 0.5, 0.1]
+    ... })
+    >>> TripletPairSampler.rating2triplet(
+    ...     rating_matrix,
+    ...     "query", "key",
+    ...     value_field="score",
+    ...     value_threshold=0.5
+    ... )   # doctest: +NORMALIZE_WHITESPACE
+              pos  neg
+    query
+    0         [1]   []
+    1      [0, 2]  [3]
+    2          []  [1]
+    """
+
     def __init__(self, triplet_df: pd.DataFrame,
                  query_field, pos_field="pos", neg_field="neg", set_index=False,
-                 query_range=None, key_range=None,
+                 query_range: (int, tuple, list) = None, key_range: (int, tuple, list) = None,
                  random_state=10):
         super(TripletPairSampler, self).__init__(random_state)
         self.df = triplet_df
         self.query_field = query_field
         self.pos_field = pos_field
         self.neg_field = neg_field
-        self.query_range = [0, query_range]
-        self.key_range = [0, key_range]
+
+        def _get_range(value: (None, int, tuple, list)) -> tuple:
+            if isinstance(value, int):
+                return 0, value
+            else:
+                return value
+
+        self.query_range = _get_range(query_range)
+        self.key_range = _get_range(key_range)
         if set_index:
             self.df.set_index(self.query_field, inplace=True)
 
@@ -79,11 +180,7 @@ class TripletPairSampler(Sampler):
             return n_and_sample
 
     def sample(self, query: (int, str, list), n=1, excluded_key=None, neg=True, *args, **kwargs):
-        try:
-            candidates = self.df.loc[query][self.neg_field] if neg else self.df.loc[query][self.pos_field]
-        except IndexError as e:
-            print(query, excluded_key, neg)
-            raise e
+        candidates = self.df.loc[query][self.neg_field] if neg else self.df.loc[query][self.pos_field]
 
         if excluded_key is not None:
             candidates = list(set(candidates) - set(as_list(excluded_key)))
@@ -100,7 +197,7 @@ class TripletPairSampler(Sampler):
         return sampled
 
     @staticmethod
-    def rating2triplet(rating_matrix: (pd.DataFrame, list), query_field, key_field, value_field=None,
+    def rating2triplet(rating_matrix: pd.DataFrame, query_field, key_field, value_field=None,
                        value_threshold=None,
                        pos_field="pos", neg_field="neg",
                        *args, verbose=True, **kwargs):
@@ -118,10 +215,8 @@ class TripletPairSampler(Sampler):
                     pos = group[group[value_field] == 1][key_field]
                     neg = group[group[value_field] == 0][key_field]
                 triplet.append([query_key, pos.tolist(), neg.tolist()])
-        elif isinstance(rating_matrix, list):
-            triplet = rating_matrix
         else:
-            raise NotImplementedError
+            raise TypeError()
 
         df = pd.DataFrame(triplet, columns=[query_field, pos_field, neg_field])
         return df.set_index(query_field)
@@ -129,8 +224,6 @@ class TripletPairSampler(Sampler):
 
 class UserSpecificPairSampler(TripletPairSampler):
     """
-    User-Item
-
     Examples
     --------
     >>> import pandas as pd
@@ -141,8 +234,12 @@ class UserSpecificPairSampler(TripletPairSampler):
     ...     "item_id": [1, 3, 0, 2, 1]
     ... })
     >>> triplet_df = UserSpecificPairSampler.rating2triplet(rating_matrix)
-    >>> triplet_df.index
-    Int64Index([0, 1, 2], dtype='int64', name='user_id')
+    >>> triplet_df   # doctest: +NORMALIZE_WHITESPACE
+                   pos neg
+    user_id
+    0              [1]  []
+    1        [3, 0, 2]  []
+    2              [1]  []
     >>> sampler = UserSpecificPairSampler(triplet_df)
     >>> sampler(1)
     (0, [0])
@@ -161,18 +258,12 @@ class UserSpecificPairSampler(TripletPairSampler):
     ...     "score": [1, 0, 1, 1, 0]
     ... })
     >>> triplet_df = UserSpecificPairSampler.rating2triplet(rating_matrix=rating_matrix, value_field="score")
-    >>> triplet_df["pos"]
+    >>> triplet_df   # doctest: +NORMALIZE_WHITESPACE
+                pos  neg
     user_id
-    0       [1]
-    1    [0, 2]
-    2        []
-    Name: pos, dtype: object
-    >>> triplet_df["neg"]
-    user_id
-    0     []
-    1    [3]
-    2    [1]
-    Name: neg, dtype: object
+    0           [1]   []
+    1        [0, 2]  [3]
+    2            []  [1]
     >>> sampler = UserSpecificPairSampler(triplet_df)
     >>> sampler([0, 1, 2], 5, pad_value=-1)
     [(0, [-1, -1, -1, -1, -1]), (1, [3, -1, -1, -1, -1]), (1, [1, -1, -1, -1, -1])]
@@ -204,8 +295,102 @@ class UserSpecificPairSampler(TripletPairSampler):
             random_state=random_state)
 
     @staticmethod
-    def rating2triplet(rating_matrix: (pd.DataFrame, list),
+    def rating2triplet(rating_matrix: pd.DataFrame,
                        query_field="user_id", key_field="item_id", value_field=None,
+                       value_threshold=None, pos_field="pos", neg_field="neg",
+                       *args, verbose=True, **kwargs):
+        return TripletPairSampler.rating2triplet(
+            rating_matrix=rating_matrix,
+            query_field=query_field,
+            key_field=key_field,
+            value_field=value_field,
+            value_threshold=value_threshold,
+            pos_field=pos_field,
+            neg_field=neg_field,
+            *args,
+            verbose=verbose,
+            **kwargs
+        )
+
+
+class ItemSpecificSampler(TripletPairSampler):
+    """
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> user_num = 3
+    >>> item_num = 4
+    >>> rating_matrix = pd.DataFrame({
+    ...     "user_id": [0, 1, 1, 1, 2],
+    ...     "item_id": [1, 3, 0, 2, 1]
+    ... })
+    >>> triplet_df = ItemSpecificSampler.rating2triplet(rating_matrix)
+    >>> triplet_df   # doctest: +NORMALIZE_WHITESPACE
+                pos neg
+    item_id
+    0           [1]  []
+    1        [0, 2]  []
+    2           [1]  []
+    3           [1]  []
+    >>> triplet_df.index
+    Int64Index([0, 1, 2, 3], dtype='int64', name='item_id')
+    >>> sampler = ItemSpecificSampler(triplet_df)
+    >>> sampler(1)
+    (0, [0])
+    >>> sampler = ItemSpecificSampler(triplet_df, user_id_range=user_num)
+    >>> sampler(0, implicit=True)
+    (1, [0])
+    >>> sampler(0, 5, implicit=True)
+    (2, [0, 2, 0, 0, 0])
+    >>> sampler(0, 5, implicit=True, pad_value=-1)
+    (2, [2, 0, -1, -1, -1])
+    >>> sampler([0, 1, 2], 5, implicit=True, pad_value=-1)
+    [(2, [0, 2, -1, -1, -1]), (1, [1, -1, -1, -1, -1]), (2, [2, 0, -1, -1, -1])]
+    >>> rating_matrix = pd.DataFrame({
+    ...     "user_id": [0, 1, 1, 1, 2],
+    ...     "item_id": [1, 3, 0, 2, 1],
+    ...     "score": [1, 0, 1, 1, 0]
+    ... })
+    >>> triplet_df = ItemSpecificSampler.rating2triplet(rating_matrix=rating_matrix, value_field="score")
+    >>> triplet_df   # doctest: +NORMALIZE_WHITESPACE
+             pos  neg
+    item_id
+    0        [1]   []
+    1        [0]  [2]
+    2        [1]   []
+    3         []  [1]
+    >>> sampler = UserSpecificPairSampler(triplet_df)
+    >>> sampler([0, 1, 2], 5, pad_value=-1)
+    [(0, [-1, -1, -1, -1, -1]), (1, [2, -1, -1, -1, -1]), (0, [-1, -1, -1, -1, -1])]
+    >>> sampler([0, 1, 2], 5, neg=False, pad_value=-1)
+    [(1, [1, -1, -1, -1, -1]), (1, [0, -1, -1, -1, -1]), (1, [1, -1, -1, -1, -1])]
+    >>> sampler(rating_matrix["item_id"], 2, neg=rating_matrix["score"],
+    ...     excluded_key=rating_matrix["user_id"], pad_value=-1)
+    [(1, [2, -1]), (0, [-1, -1]), (0, [-1, -1]), (0, [-1, -1]), (1, [0, -1])]
+    >>> sampler(rating_matrix["item_id"], 2, neg=rating_matrix["score"],
+    ...     excluded_key=rating_matrix["user_id"], pad_value=-1, return_column=True)
+    ((1, 0, 0, 0, 1), ([2, -1], [-1, -1], [-1, -1], [-1, -1], [0, -1]))
+    >>> sampler(rating_matrix["item_id"], 2, neg=rating_matrix["score"],
+    ...     excluded_key=rating_matrix["user_id"], pad_value=-1, return_column=True, split_sample_to_column=True)
+    ((1, 0, 0, 0, 1), [(2, -1, -1, -1, 0), (-1, -1, -1, -1, -1)])
+    """
+    def __init__(self, triplet_df: pd.DataFrame,
+                 query_field="item_id", pos_field="pos", neg_field="neg", set_index=False,
+                 item_id_range=None, user_id_range=None,
+                 random_state=10):
+        super(ItemSpecificSampler, self).__init__(
+            triplet_df=triplet_df,
+            query_field=query_field,
+            pos_field=pos_field,
+            neg_field=neg_field,
+            set_index=set_index,
+            query_range=item_id_range,
+            key_range=user_id_range,
+            random_state=random_state)
+
+    @staticmethod
+    def rating2triplet(rating_matrix: pd.DataFrame,
+                       query_field="item_id", key_field="user_id", value_field=None,
                        value_threshold=None, pos_field="pos", neg_field="neg",
                        *args, verbose=True, **kwargs):
         return TripletPairSampler.rating2triplet(
