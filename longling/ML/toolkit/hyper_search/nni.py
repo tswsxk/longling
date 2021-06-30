@@ -5,7 +5,7 @@ import pathlib
 import warnings
 from heapq import nlargest
 from longling.ML.toolkit.analyser import get_max, get_min, get_by_key, key_parser
-from longling import Configuration, path_append
+from longling import as_list, path_append
 from longling import list2dict, nested_update
 
 import json
@@ -271,13 +271,20 @@ def prepare_hyper_search(cfg_kwargs: dict,
 
         assert primary_key is not None
 
-        if isinstance(with_keys, str):
-            if ";" in with_keys:
-                with_keys = with_keys.split(";")
-            else:
-                with_keys = [with_keys]
-        elif with_keys is None:
-            with_keys = []
+        def _as_key_list(_keys: (list, str, None)):
+            if isinstance(_keys, str):
+                if ";" in _keys:
+                    _keys = _keys.split(";")
+                else:
+                    _keys = [_keys]
+            elif isinstance(_keys, list):
+                pass
+            elif _keys is None:
+                _keys = []
+            return _keys
+
+        with_keys = _as_key_list(with_keys)
+        final_keys = _as_key_list(final_keys)
 
         class Reporter(BaseReporter):
             def __init__(self):
