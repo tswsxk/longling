@@ -2,18 +2,18 @@
 # 2021/3/13 @ tongshiwei
 
 
-__all__ = ["tmt_torch_loss", "as_tmt_torch_loss", "loss_dict2tmt_torch_loss"]
+__all__ = ["as_tmt_torch_loss", "loss_dict2tmt_torch_loss"]
 
 import torch
-from longling.ML.toolkit import tmt_loss, as_tmt_loss, loss_dict2tmt_loss
+from longling.ML.toolkit import as_tmt_loss, loss_dict2tmt_loss
 
 
 def _loss2value(loss: torch.Tensor):
     return loss.mean().item()
 
 
-def tmt_torch_loss(loss2value=_loss2value):
-    return tmt_loss(loss2value)
+# def tmt_torch_loss(loss2value=_loss2value):
+#     return tmt_loss(loss2value)
 
 
 def as_tmt_torch_loss(loss_obj, loss2value=_loss2value):
