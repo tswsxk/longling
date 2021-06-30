@@ -1,4 +1,4 @@
-lib: General Library
+General Library
 ====================
 
 

@@ -1,4 +1,4 @@
-ML: Machine Learning
+Machine Learning
 ====================
 
 .. mdinclude:: ../../../longling/ML/README.md

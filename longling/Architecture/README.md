@@ -1,4 +1,4 @@
-# arch: Tools for Constructing Project
+# Architecture Tools for Constructing Projects
 
 ## notice
 
