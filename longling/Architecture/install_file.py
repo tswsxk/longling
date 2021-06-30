@@ -378,7 +378,7 @@ def _gitlab_ci(commands: dict, stage, image_name, private=True, on_stop=None, ma
     ci_registry_image = "${CI_REGISTRY_IMAGE}"
     environment_name = stage
 
-    export_version = "export API_VERSION=$(cat chart/Chart.yaml | grep apiVersion | cut -d\  -f2)"
+    export_version = r"export API_VERSION=$(cat chart/Chart.yaml | grep apiVersion | cut -d\  -f2)"
 
     if not only_master:
         image_tag = "${CI_COMMIT_REF_NAME}"
