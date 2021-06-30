@@ -10,6 +10,11 @@ def test_hyper_search():
     )
     assert cfg_kwargs == {"learning_rate": 0.1}
 
+    cfg_kwargs, _, _, _ = prepare_hyper_search(
+        {"learning_rate": 0.1}, primary_key="macro_avg:f1"
+    )
+    assert cfg_kwargs == {"learning_rate": 0.1}
+
     cfg_kwargs, reporthook, final_reporthook, dump = prepare_hyper_search(
         {"learning_rate": 0.1}, primary_key="macro_avg:f1", with_keys="accuracy"
     )
