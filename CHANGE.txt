@@ -1,5 +1,6 @@
 v1.3.23:
     1. remove EvalFormatter, which is replaced by EpochEvalFMT
+    2. remove tmt_value and tmt_loss function
 
 1.3.22:
     1. remove InheritableConfiguration class in lib/parser
