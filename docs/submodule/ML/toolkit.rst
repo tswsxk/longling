@@ -24,3 +24,9 @@ monitor
 .. automodule:: longling.ML.toolkit.monitor
    :members:
    :imported-members:
+
+hyper_search
+--------
+.. automodule:: longling.ML.toolkit.hyper_search
+   :members:
+   :imported-members:
