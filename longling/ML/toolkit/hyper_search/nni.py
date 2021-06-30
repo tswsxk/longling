@@ -179,7 +179,7 @@ def prepare_hyper_search(cfg_kwargs: dict,
 
     从 nni package 中获取超参，更新配置文件参数。当 nni 不可用或不是 nni 搜索模式时，参数将不会改变。
 
-    ..code-block :: python
+    .. code-block :: python
 
         cfg_kwargs, reporthook, final_reporthook, tag = prepare_hyper_search(
             cfg_kwargs, Configuration, reporthook, final_reporthook, primary_key="macro_avg:f1"
@@ -206,7 +206,7 @@ def prepare_hyper_search(cfg_kwargs: dict,
     final_reporthook
     primary_key:
         评估模型用的主键,
-        ``nni.report_intermediate_result`` 和 ``nni.report_final_result``中 ``metric`` 的 ``default``
+        ``nni.report_intermediate_result`` 和 ``nni.report_final_result`` 中  ``metric`` 的 ``default``
     max_key: bool
         主键是越大越好
     reporter_cls
