@@ -21,6 +21,7 @@ def _to_dict(name_value: (dict, tuple)) -> dict:
 class EvalFMT(object):
     """
     评价指标格式化类。可以按一定格式快速格式化评价指标。
+
     Parameters
     ----------
     logger:
