@@ -315,7 +315,7 @@ class CacheAsyncLoopIter(AsyncLoopIter):
         self.cache_queue = None
         self.cache_thread = None
 
-        if os.path.exists(self.cache_file) and not rerun:
+        if os.path.exists(self.cache_file) and rerun is False:
             # 从已有数据中进行装载
             def src():
                 return loading(self.cache_file, "jsonl")
