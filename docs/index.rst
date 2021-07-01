@@ -4,11 +4,13 @@
 Module Index
 -------------
 .. toctree::
+   :caption: Introduction
    :hidden:
 
    self
 
 .. toctree::
+   :caption: API Reference
    :glob:
    :maxdepth: 3
 
