@@ -71,14 +71,14 @@ def test_loop(tmpdir):
         LoopIter: [{}],
         AsyncLoopIter: [
             {},
-            # dict(level="p")
+            dict(level="p")
         ],
         MemoryIter: [
             {},
             dict(prefetch=True),
         ],
         CacheAsyncLoopIter: [
-            # dict(cache_file=path_append(tmpdir, "test.jsonl"), level="p"),
+            dict(cache_file=path_append(tmpdir, "test.jsonl"), level="p"),
             dict(cache_file=path_append(tmpdir, "test.jsonl"), rerun=False)
         ]
     }
