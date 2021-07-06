@@ -42,6 +42,8 @@ ml_base_deps = [
     "numpy>= 1.16.5",
     "scipy",
     "scikit-learn>=0.23.2",
+]
+viz_deps = [
     "matplotlib",
     "tensorboardx",
     "tensorboard"
@@ -85,7 +87,7 @@ spider_deps = [
 
 dl_deps = ml_mx_deps + ml_pytorch_deps
 
-ml_full_deps = ml_base_deps + dl_deps + ["nni>=1.8"]
+ml_full_deps = ml_base_deps + dl_deps + ["nni>=1.8"] + viz_deps
 
 full_deps = ml_full_deps + spider_deps
 
@@ -153,6 +155,8 @@ setup(
         'dev': dev_deps,
         'dm': dm_base_deps,
         'ml': ml_base_deps,
+        'ml-viz': ml_base_deps + viz_deps,
+        'viz': viz_deps,
         'mx': ml_mx_deps,
         'torch': ml_pytorch_deps,
         'dl': dl_deps,
