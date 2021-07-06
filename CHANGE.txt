@@ -1,3 +1,7 @@
+v1.3.24:
+    1. change dependencies, remove matplotlib, tensorboard, tensorboardx in ml;
+    2. new installation mode: viz with matplotlib, tensorboard, tensorboardx, ml-viz with basic dependencies plus viz deps.
+
 v1.3.23:
     1. remove EvalFormatter, which is replaced by EpochEvalFMT
     2. remove tmt_value and tmt_loss function
