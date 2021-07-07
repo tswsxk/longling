@@ -1,3 +1,6 @@
+1.3.25:
+    1. add fast implicit sampling in ML PairSampler
+
 v1.3.24:
     1. change dependencies, remove matplotlib, tensorboard, tensorboardx in ml;
     2. new installation mode: viz with matplotlib, tensorboard, tensorboardx, ml-viz with basic dependencies plus viz deps.
