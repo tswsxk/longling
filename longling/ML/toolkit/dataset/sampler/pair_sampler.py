@@ -74,6 +74,12 @@ class TripletPairSampler(Sampler):
     (2, [0, 2, 0, 0, 0])
     >>> sampler(0, 5, implicit=True, pad_value=-1)
     (3, [3, 2, 0, -1, -1])
+    >>> sampler(0, 5, implicit=True, fast_implicit=True, pad_value=-1)
+    (3, [0, 2, 3, -1, -1])
+    >>> sampler(0, 5, implicit=True, fast_implicit=True, with_n_implicit=3, pad_value=-1)
+    (3, [0, 2, 3, -1, -1, -1, -1, -1])
+    >>> sampler(0, 5, implicit=True, fast_implicit=True, with_n_implicit=3, pad_value=-1, padding_implicit=True)
+    (3, [0, 2, 3, -1, -1, -1, -1, -1])
     >>> rating_matrix = pd.DataFrame({
     ...     "query": [0, 1, 1, 1, 2],
     ...     "key": [1, 3, 0, 2, 1],
@@ -146,7 +152,8 @@ class TripletPairSampler(Sampler):
             self.df.set_index(self.query_field, inplace=True)
 
     def __call__(self, query: (int, str, list), n=1, excluded_key=None, neg=True, implicit=False, padding=True,
-                 *args, verbose=True, return_column=False, split_sample_to_column=False, **kwargs):
+                 *args, verbose=True, return_column=False, split_sample_to_column=False,
+                 padding_implicit=False, fast_implicit=False, with_n_implicit=None, **kwargs):
         if isinstance(query, (int, str)):
             sample = self.sample(
                 query=query,
@@ -157,17 +164,43 @@ class TripletPairSampler(Sampler):
                 query=query,
                 n=n,
                 excluded_key=excluded_key,
-                neg=neg
+                neg=neg,
+                fast_mode=fast_implicit
             )
             n_sample = len(sample)
+            padding_n = n
+            if with_n_implicit is not None:
+                padding_n += with_n_implicit
+                implicit_sample = self.implicit_sample(
+                    query=query, n=with_n_implicit, excluded_key=excluded_key,
+                    samples=sample,
+                    neg=neg, fast_mode=fast_implicit)
+                n_sample += len(implicit_sample)
+                sample += implicit_sample
+
             if padding:
-                return n_sample, self.padding(sample, n, **kwargs)
+                if padding_implicit is True:
+                    if n_sample < padding_n:
+                        padding_sample = self.implicit_sample(query=query, n=padding_n - n_sample,
+                                                              excluded_key=excluded_key, samples=sample,
+                                                              neg=neg, fast_mode=fast_implicit)
+                        n_padding_sample = len(padding_sample)
+                        return n_sample + n_padding_sample, self.padding(sample + padding_sample, padding_n, **kwargs)
+                else:
+                    return n_sample, self.padding(sample, padding_n, **kwargs)
+
             return n_sample, sample
         else:
             neg = neg if isinstance(neg, Iterable) else [neg] * len(query)
             excluded_key = excluded_key if isinstance(excluded_key, Iterable) else [excluded_key] * len(query)
             n_and_sample = [
-                self(_query, n, _excluded_key, _neg, implicit, padding, *args, **kwargs)
+                self(
+                    _query, n, _excluded_key, _neg, implicit, padding,
+                    *args,
+                    padding_implicit=padding_implicit,
+                    fast_implicit=fast_implicit,
+                    with_n_implicit=with_n_implicit,
+                    **kwargs)
                 for _query, _excluded_key, _neg in tqdm(
                     zip(query, excluded_key, neg), "sampling", disable=not verbose
                 )
@@ -188,13 +221,26 @@ class TripletPairSampler(Sampler):
         sampled = self.random_state.choice(candidates, min(n, len(candidates)), replace=False).tolist()
         return sampled
 
-    def implicit_sample(self, query: (int, str, list), n=1, excluded_key=None, neg=True, *args, **kwargs):
+    def implicit_sample(self, query: (int, str, list), n=1, excluded_key=None, neg=True, fast_mode=False, samples=None,
+                        *args, fast_max_try=100, **kwargs):
         exclude = set(self.df.loc[query][self.pos_field] if neg else self.df.loc[query][self.neg_field])
         if excluded_key is not None:
             exclude |= set(as_list(excluded_key))
-        candidates = list(set(range(*self.key_range)) - exclude)
-        sampled = self.random_state.choice(candidates, min(n, len(candidates)), replace=False).tolist()
-        return sampled
+        if samples is not None:
+            exclude |= set(samples)
+        if fast_mode is False:
+            candidates = list(set(range(*self.key_range)) - exclude)
+            sampled = self.random_state.choice(candidates, min(n, len(candidates)), replace=False).tolist()
+            return sampled
+        else:
+            sampled = set()
+            try_cnt = 0
+            while len(sampled) < n and try_cnt < n + fast_max_try:
+                _sample = self.random_state.randint(*self.key_range)
+                if _sample not in exclude and _sample not in sampled:
+                    sampled.add(_sample)
+                try_cnt += 1
+            return list(sampled)
 
     @staticmethod
     def rating2triplet(rating_matrix: pd.DataFrame, query_field, key_field, value_field=None,
@@ -374,6 +420,7 @@ class ItemSpecificSampler(TripletPairSampler):
     ...     excluded_key=rating_matrix["user_id"], pad_value=-1, return_column=True, split_sample_to_column=True)
     ((1, 0, 0, 0, 1), [(2, -1, -1, -1, 0), (-1, -1, -1, -1, -1)])
     """
+
     def __init__(self, triplet_df: pd.DataFrame,
                  query_field="item_id", pos_field="pos", neg_field="neg", set_index=False,
                  item_id_range=None, user_id_range=None,
