@@ -2,7 +2,7 @@
 # create by tongshiwei on 2019/7/2
 # PYTEST_DONT_REWRITE
 
-__all__ = ["path_append", "file_exist", "abs_current_dir", "type_from_name", "tmpfile"]
+__all__ = ["path_append", "file_exist", "abs_current_dir", "type_from_name", "parent_dir", "tmpfile"]
 
 import os
 from pathlib import PurePath
@@ -68,6 +68,14 @@ def abs_current_dir(filepath):
 
     """
     return os.path.abspath(os.path.dirname(filepath))
+
+
+def parent_dir(filepath, level):
+    _path = filepath
+    for _ in range(level):
+        _path = path_append(_path, "..")
+
+    return _path
 
 
 @contextmanager
