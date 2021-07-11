@@ -169,7 +169,7 @@ def ranking_report(y_true, y_pred, k: (int, list) = None, continuous=False, coer
             k = [3, 5, 10]
         else:
             k = [1, 3, 5, 10]
-    
+
     results = {
         "auc": [],
         "map": [],
