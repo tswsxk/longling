@@ -30,7 +30,8 @@ def ranking_auc(ranked_label):
     ) / (pos_num * neg_num)
 
 
-def ranking_report(y_true, y_pred, k: (int, list) = None, coerce="ignore", pad_pred=-100, bottom=False) -> POrderedDict:
+def ranking_report(y_true, y_pred, k: (int, list) = None, continuous=False, coerce="ignore", pad_pred=-100,
+                   metrics=None, bottom=False, verbose=True) -> POrderedDict:
     r"""
 
     Parameters
@@ -38,9 +39,12 @@ def ranking_report(y_true, y_pred, k: (int, list) = None, coerce="ignore", pad_p
     y_true
     y_pred
     k
+    continuous
     coerce
     pad_pred
+    metrics
     bottom
+    verbose
 
     Returns
     -------
@@ -71,6 +75,17 @@ def ranking_report(y_true, y_pred, k: (int, list) = None, coerce="ignore", pad_p
     10        0.666667         1.00  0.800000       3.0             2
     auc: 0.250000	map: 0.416667	mrr: 0.416667	coverage_error: 2.500000	ranking_loss: 0.750000	len: 3.000000
     support: 2	map(B): 0.708333	mrr(B): 0.750000
+    >>> ranking_report(y_true, y_pred, bottom=True, metrics=["auc"])  # doctest: +NORMALIZE_WHITESPACE
+    auc: 0.250000   len: 3.000000	support: 2
+    >>> y_true = [[0.9, 0.7, 0.1], [0, 0.5, 1]]
+    >>> y_pred = [[0.75, 0.5, 1], [1, 0.2, 0.1]]
+    >>> ranking_report(y_true, y_pred, continuous=True)  # doctest: +NORMALIZE_WHITESPACE
+          ndcg@k  len@k  support@k
+    1   1.000000    1.0          2
+    3   0.675647    3.0          2
+    5   0.675647    3.0          2
+    10  0.675647    3.0          2
+    auc: 0.000000	mrr: 0.750000	len: 3.000000	support: 2
     >>> y_true = [[1, 0], [0, 0, 1]]
     >>> y_pred = [[0.75, 0.5], [1, 0.2, 0.1]]
     >>> ranking_report(y_true, y_pred)  # doctest: +NORMALIZE_WHITESPACE
@@ -141,6 +156,11 @@ def ranking_report(y_true, y_pred, k: (int, list) = None, coerce="ignore", pad_p
         ndcg_score, label_ranking_loss, coverage_error
     )
     assert coerce in {"ignore", "abandon", "raise", "padding"}
+    if metrics is None:
+        metrics = ["auc", "mrr", "ndcg"]
+        if continuous is False:
+            metrics.extend(["map", "coverage_error", "ranking_loss", "precision", "recall", "f1"])
+    metrics = set(metrics)
     k = as_list(k) if k is not None else [1, 3, 5, 10]
     results = {
         "auc": [],
@@ -179,75 +199,86 @@ def ranking_report(y_true, y_pred, k: (int, list) = None, coerce="ignore", pad_p
     if bottom:
         suffix += ["(B)"]
 
-    for label, pred in tqdm(zip(y_true, y_pred), "ranking metrics"):
-        results["map"].append(label_ranking_average_precision_score([label], [pred]))
-        if bottom:
-            results["map(B)"].append(label_ranking_average_precision_score(
-                [(1 - np.asarray(label)).tolist()],
-                [(-np.asarray(pred)).tolist()]
-            ))
+    for label, pred in tqdm(zip(y_true, y_pred), "ranking metrics", disable=not verbose):
+        if continuous is False and "map" in metrics:
+            results["map"].append(label_ranking_average_precision_score([label], [pred]))
+            if bottom:
+                results["map(B)"].append(label_ranking_average_precision_score(
+                    [(1 - np.asarray(label)).tolist()],
+                    [(-np.asarray(pred)).tolist()]
+                ))
 
-        if len(label) > 1:
-            results["coverage_error"].append(coverage_error([label], [pred]))
-            results["ranking_loss"].append(label_ranking_loss([label], [pred]))
+        if len(label) > 1 and continuous is False:
+            if "coverage_error" in metrics:
+                results["coverage_error"].append(coverage_error([label], [pred]))
+            if "ranking_loss" in metrics:
+                results["ranking_loss"].append(label_ranking_loss([label], [pred]))
 
         results["len"].append(len(label))
         results["support"].append(1)
         label_pred = list(sorted(zip(label, pred), key=lambda x: x[1], reverse=True))
         sorted_label = list(zip(*label_pred))[0]
-        results["auc"].append(ranking_auc(sorted_label))
-        try:
-            results["mrr"].append(1 / (np.asarray(sorted_label).nonzero()[0][0] + 1))
-        except IndexError:  # pragma: no cover
-            pass
-        try:
-            if bottom:
-                results["mrr(B)"].append(1 / (np.asarray(sorted_label[::-1]).nonzero()[0][0] + 1))
-        except IndexError:  # pragma: no cover
-            pass
-        for _k in k:
-            for _suffix in suffix:
-                if _suffix == "":
-                    _label_pred = deepcopy(label_pred)
-                    if len(_label_pred) < _k:
-                        if coerce == "ignore":
-                            pass
-                        elif coerce == "abandon":
-                            continue
-                        elif coerce == "raise":
-                            raise ValueError("Not enough value: %s vs target %s" % (len(_label_pred), _k))
-                        elif coerce == "padding":  # pragma: no cover
-                            _label_pred += [(0, pad_pred)] * (_k - len(_label_pred))
-                    k_label_pred = label_pred[:_k]
-                    total_label = sum(label)
-                else:
-                    inv_label_pred = [(1 - _l, -p) for _l, p in label_pred][::-1]
-                    if len(inv_label_pred) < _k:
-                        if coerce == "ignore":
-                            pass
-                        elif coerce == "abandon":
-                            continue
-                        elif coerce == "raise":  # pragma: no cover
-                            raise ValueError("Not enough value: %s vs target %s" % (len(inv_label_pred), _k))
-                        elif coerce == "padding":
-                            inv_label_pred += [(0, pad_pred)] * (_k - len(inv_label_pred))
-                    k_label_pred = inv_label_pred[:_k]
-                    total_label = len(label) - sum(label)
+        if "auc" in metrics:
+            results["auc"].append(ranking_auc(sorted_label))
+        if "mrr" in metrics:
+            try:
+                results["mrr"].append(1 / (np.asarray(sorted_label).nonzero()[0][0] + 1))
+            except IndexError:  # pragma: no cover
+                pass
+            try:
+                if bottom:
+                    results["mrr(B)"].append(1 / (np.asarray(sorted_label[::-1]).nonzero()[0][0] + 1))
+            except IndexError:  # pragma: no cover
+                pass
 
-                if not k_label_pred:  # pragma: no cover
-                    continue
-                k_label, k_pred = list(zip(*k_label_pred))
-                if len(k_label) == 1:
-                    k_results[_k]["ndcg@k%s" % _suffix].append(1)
-                else:
-                    k_results[_k]["ndcg@k%s" % _suffix].append(ndcg_score([k_label], [k_pred]))
-                p = sum(k_label) / len(k_label)
-                r = sum(k_label) / total_label if total_label else 0
-                k_results[_k]["precision@k%s" % _suffix].append(p)
-                k_results[_k]["recall@k%s" % _suffix].append(r)
-                k_results[_k]["f1@k%s" % _suffix].append(2 * p * r / (p + r) if p + r else 0)
-                k_results[_k]["len@k%s" % _suffix].append(len(k_label))
-                k_results[_k]["support@k%s" % _suffix].append(1)
+        if metrics & {"ndcg", "precision", "recall", "f1"}:
+            for _k in k:
+                for _suffix in suffix:
+                    if _suffix == "":
+                        _label_pred = deepcopy(label_pred)
+                        if len(_label_pred) < _k:
+                            if coerce == "ignore":
+                                pass
+                            elif coerce == "abandon":
+                                continue
+                            elif coerce == "raise":
+                                raise ValueError("Not enough value: %s vs target %s" % (len(_label_pred), _k))
+                            elif coerce == "padding":  # pragma: no cover
+                                _label_pred += [(0, pad_pred)] * (_k - len(_label_pred))
+                        k_label_pred = label_pred[:_k]
+                        total_label = sum(label)
+                    else:
+                        inv_label_pred = [(1 - _l, -p) for _l, p in label_pred][::-1]
+                        if len(inv_label_pred) < _k:
+                            if coerce == "ignore":
+                                pass
+                            elif coerce == "abandon":
+                                continue
+                            elif coerce == "raise":  # pragma: no cover
+                                raise ValueError("Not enough value: %s vs target %s" % (len(inv_label_pred), _k))
+                            elif coerce == "padding":
+                                inv_label_pred += [(0, pad_pred)] * (_k - len(inv_label_pred))
+                        k_label_pred = inv_label_pred[:_k]
+                        total_label = len(label) - sum(label)
+
+                    if not k_label_pred:  # pragma: no cover
+                        continue
+                    k_label, k_pred = list(zip(*k_label_pred))
+                    if "ndcg" in metrics:
+                        if len(k_label) == 1 and "ndcg" in metrics:
+                            k_results[_k]["ndcg@k%s" % _suffix].append(1)
+                        else:
+                            k_results[_k]["ndcg@k%s" % _suffix].append(ndcg_score([k_label], [k_pred]))
+                    p = sum(k_label) / len(k_label)
+                    r = sum(k_label) / total_label if total_label else 0
+                    if "precision" in metrics:
+                        k_results[_k]["precision@k%s" % _suffix].append(p)
+                    if "recall" in metrics:
+                        k_results[_k]["recall@k%s" % _suffix].append(r)
+                    if "f1" in metrics:
+                        k_results[_k]["f1@k%s" % _suffix].append(2 * p * r / (p + r) if p + r else 0)
+                    k_results[_k]["len@k%s" % _suffix].append(len(k_label))
+                    k_results[_k]["support@k%s" % _suffix].append(1)
 
     ret = POrderedDict()
     for key, value in results.items():
@@ -256,12 +287,14 @@ def ranking_report(y_true, y_pred, k: (int, list) = None, coerce="ignore", pad_p
                 ret[key] = np.sum(value)
             else:
                 ret[key] = np.mean(value)
-    for k, key_value in k_results.items():
-        ret[k] = OrderedDict()
-        for key, value in key_value.items():
-            if value:
-                if key in {"support@k", "support@k(B)"}:
-                    ret[k][key] = np.sum(value)
-                else:
-                    ret[k][key] = np.mean(value)
+
+    if metrics & {"ndcg", "precision", "recall", "f1"}:
+        for k, key_value in k_results.items():
+            ret[k] = OrderedDict()
+            for key, value in key_value.items():
+                if value:
+                    if key in {"support@k", "support@k(B)"}:
+                        ret[k][key] = np.sum(value)
+                    else:
+                        ret[k][key] = np.mean(value)
     return ret
