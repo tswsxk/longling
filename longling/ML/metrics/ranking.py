@@ -81,7 +81,6 @@ def ranking_report(y_true, y_pred, k: (int, list) = None, continuous=False, coer
     >>> y_pred = [[0.75, 0.5, 1], [1, 0.2, 0.1]]
     >>> ranking_report(y_true, y_pred, continuous=True)  # doctest: +NORMALIZE_WHITESPACE
           ndcg@k  len@k  support@k
-    1   1.000000    1.0          2
     3   0.675647    3.0          2
     5   0.675647    3.0          2
     10  0.675647    3.0          2
