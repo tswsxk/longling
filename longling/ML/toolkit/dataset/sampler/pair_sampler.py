@@ -16,7 +16,7 @@ contrastive triplet
 (query, pos, neg)
 """
 
-__all__ = ["TripletPairSampler", "UserSpecificPairSampler", "ItemSpecificSampler"]
+__all__ = ["Sampler", "TripletPairSampler", "UserSpecificPairSampler", "ItemSpecificSampler"]
 
 
 class Sampler(object):
@@ -67,13 +67,13 @@ class TripletPairSampler(Sampler):
     >>> sampler(0, 3, padding=False)
     (0, [])
     >>> sampler(0, 5, padding=False, implicit=True)
-    (3, [0, 3, 2])
+    (3, [2, 3, 0])
     >>> sampler(0, 5, padding=False, implicit=True, excluded_key=[3])
-    (2, [2, 0])
+    (2, [0, 2])
     >>> sampler(0, 5, padding=True, implicit=True, excluded_key=[3])
-    (2, [0, 2, 0, 0, 0])
+    (2, [2, 0, 0, 0, 0])
     >>> sampler(0, 5, implicit=True, pad_value=-1)
-    (3, [3, 2, 0, -1, -1])
+    (3, [2, 3, 0, -1, -1])
     >>> sampler(0, 5, implicit=True, fast_implicit=True, pad_value=-1)
     (3, [0, 2, 3, -1, -1])
     >>> sampler(0, 5, implicit=True, fast_implicit=True, with_n_implicit=3, pad_value=-1)
@@ -98,7 +98,7 @@ class TripletPairSampler(Sampler):
     2            []  [1]
     >>> sampler = TripletPairSampler(triplet_df, "query", query_range=3, key_range=4)
     >>> sampler([0, 1, 2], 5, implicit=True, pad_value=-1)
-    [(3, [0, 3, 2, -1, -1]), (2, [3, 1, -1, -1, -1]), (4, [2, 1, 0, 3, -1])]
+    [(3, [2, 3, 0, -1, -1]), (1, [1, -1, -1, -1, -1]), (3, [3, 0, 2, -1, -1])]
     >>> sampler([0, 1, 2], 5, pad_value=-1)
     [(0, [-1, -1, -1, -1, -1]), (1, [3, -1, -1, -1, -1]), (1, [1, -1, -1, -1, -1])]
     >>> sampler([0, 1, 2], 5, neg=False, pad_value=-1)
@@ -325,13 +325,13 @@ class UserSpecificPairSampler(TripletPairSampler):
     (0, [0])
     >>> sampler = UserSpecificPairSampler(triplet_df, item_id_range=item_num)
     >>> sampler(0, implicit=True)
-    (1, [0])
+    (1, [3])
     >>> sampler(0, 5, implicit=True)
     (3, [3, 2, 0, 0, 0])
     >>> sampler(0, 5, implicit=True, pad_value=-1)
     (3, [3, 2, 0, -1, -1])
     >>> sampler([0, 1, 2], 5, implicit=True, pad_value=-1)
-    [(3, [3, 2, 0, -1, -1]), (1, [1, -1, -1, -1, -1]), (3, [3, 0, 2, -1, -1])]
+    [(3, [2, 3, 0, -1, -1]), (1, [1, -1, -1, -1, -1]), (3, [2, 0, 3, -1, -1])]
     >>> rating_matrix = pd.DataFrame({
     ...     "user_id": [0, 1, 1, 1, 2],
     ...     "item_id": [1, 3, 0, 2, 1],
@@ -351,13 +351,13 @@ class UserSpecificPairSampler(TripletPairSampler):
     [(1, [1, -1, -1, -1, -1]), (2, [0, 2, -1, -1, -1]), (0, [-1, -1, -1, -1, -1])]
     >>> sampler(rating_matrix["user_id"], 2, neg=rating_matrix["score"],
     ...     excluded_key=rating_matrix["item_id"], pad_value=-1)
-    [(0, [-1, -1]), (2, [0, 2]), (1, [3, -1]), (1, [3, -1]), (0, [-1, -1])]
+    [(0, [-1, -1]), (2, [2, 0]), (1, [3, -1]), (1, [3, -1]), (0, [-1, -1])]
     >>> sampler(rating_matrix["user_id"], 2, neg=rating_matrix["score"],
     ...     excluded_key=rating_matrix["item_id"], pad_value=-1, return_column=True)
-    ((0, 2, 1, 1, 0), ([-1, -1], [2, 0], [3, -1], [3, -1], [-1, -1]))
+    ((0, 2, 1, 1, 0), ([-1, -1], [0, 2], [3, -1], [3, -1], [-1, -1]))
     >>> sampler(rating_matrix["user_id"], 2, neg=rating_matrix["score"],
     ...     excluded_key=rating_matrix["item_id"], pad_value=-1, return_column=True, split_sample_to_column=True)
-    ((0, 2, 1, 1, 0), [(-1, 0, 3, 3, -1), (-1, 2, -1, -1, -1)])
+    ((0, 2, 1, 1, 0), [(-1, 2, 3, 3, -1), (-1, 0, -1, -1, -1)])
     """
 
     def __init__(self, triplet_df: pd.DataFrame,
@@ -419,13 +419,13 @@ class ItemSpecificSampler(TripletPairSampler):
     (0, [0])
     >>> sampler = ItemSpecificSampler(triplet_df, user_id_range=user_num)
     >>> sampler(0, implicit=True)
-    (1, [0])
+    (1, [2])
     >>> sampler(0, 5, implicit=True)
-    (2, [0, 2, 0, 0, 0])
+    (2, [2, 0, 0, 0, 0])
     >>> sampler(0, 5, implicit=True, pad_value=-1)
-    (2, [2, 0, -1, -1, -1])
+    (2, [0, 2, -1, -1, -1])
     >>> sampler([0, 1, 2], 5, implicit=True, pad_value=-1)
-    [(2, [0, 2, -1, -1, -1]), (1, [1, -1, -1, -1, -1]), (2, [2, 0, -1, -1, -1])]
+    [(2, [0, 2, -1, -1, -1]), (1, [1, -1, -1, -1, -1]), (2, [0, 2, -1, -1, -1])]
     >>> rating_matrix = pd.DataFrame({
     ...     "user_id": [0, 1, 1, 1, 2],
     ...     "item_id": [1, 3, 0, 2, 1],
