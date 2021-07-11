@@ -161,7 +161,15 @@ def ranking_report(y_true, y_pred, k: (int, list) = None, continuous=False, coer
         if continuous is False:
             metrics.extend(["map", "coverage_error", "ranking_loss", "precision", "recall", "f1"])
     metrics = set(metrics)
-    k = as_list(k) if k is not None else [1, 3, 5, 10]
+
+    if k is not None:
+        k = as_list(k)
+    else:
+        if continuous is True:
+            k = [3, 5, 10]
+        else:
+            k = [1, 3, 5, 10]
+    
     results = {
         "auc": [],
         "map": [],
