@@ -1,5 +1,7 @@
 1.3.26：
     1. RandomState is replaced by default_rng in ML PairSampler
+    2. Update arguments and default actions in ranking_report
+    3. Add parent_dir method in lib.path
 
 1.3.25:
     1. add fast implicit sampling in ML PairSampler
