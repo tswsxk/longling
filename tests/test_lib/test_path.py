@@ -2,7 +2,7 @@
 # 2019/12/11 @ tongshiwei
 
 from longling import path_append, wf_open
-from longling import file_exist, abs_current_dir
+from longling import file_exist, abs_current_dir, parent_dir
 
 
 def test_path(tmp_path):
@@ -13,4 +13,5 @@ def test_path(tmp_path):
         print("hello world", file=wf)
 
     assert file_exist(tmp_file)
-    abs_current_dir(tmp_file)
+    _dir = abs_current_dir(tmp_file)
+    assert parent_dir(_dir, 2) == path_append(_dir, "..", "..")
