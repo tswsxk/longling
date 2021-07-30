@@ -61,6 +61,13 @@ def ranking_report(y_true, y_pred, k: (int, list) = None, continuous=False, coer
     10  0.565465     0.333333       1.0   0.5    3.0          2
     auc: 0.250000	map: 0.416667	mrr: 0.416667	coverage_error: 2.500000	ranking_loss: 0.750000	len: 3.000000
     support: 2
+    >>> ranking_report(y_true, y_pred, k=[1, 3, 5])  # doctest: +NORMALIZE_WHITESPACE
+           ndcg@k  precision@k  recall@k  f1@k  len@k  support@k
+    1   1.000000     0.000000       0.0   0.0    1.0          2
+    3   0.565465     0.333333       1.0   0.5    3.0          2
+    5   0.565465     0.333333       1.0   0.5    3.0          2
+    auc: 0.250000	map: 0.416667	mrr: 0.416667	coverage_error: 2.500000	ranking_loss: 0.750000	len: 3.000000
+    support: 2
     >>> ranking_report(y_true, y_pred, bottom=True)  # doctest: +NORMALIZE_WHITESPACE
               ndcg@k  precision@k  recall@k  f1@k  len@k  support@k  ndcg@k(B) \
     1   1.000000     0.000000       0.0   0.0    1.0          2   1.000000
@@ -84,7 +91,7 @@ def ranking_report(y_true, y_pred, k: (int, list) = None, continuous=False, coer
     3   0.675647    3.0          2
     5   0.675647    3.0          2
     10  0.675647    3.0          2
-    auc: 0.000000	mrr: 0.750000	len: 3.000000	support: 2
+    mrr: 0.750000	len: 3.000000	support: 2
     >>> y_true = [[1, 0], [0, 0, 1]]
     >>> y_pred = [[0.75, 0.5], [1, 0.2, 0.1]]
     >>> ranking_report(y_true, y_pred)  # doctest: +NORMALIZE_WHITESPACE
@@ -156,9 +163,9 @@ def ranking_report(y_true, y_pred, k: (int, list) = None, continuous=False, coer
     )
     assert coerce in {"ignore", "abandon", "raise", "padding"}
     if metrics is None:
-        metrics = ["auc", "mrr", "ndcg"]
+        metrics = ["mrr", "ndcg"]
         if continuous is False:
-            metrics.extend(["map", "coverage_error", "ranking_loss", "precision", "recall", "f1"])
+            metrics.extend(["auc", "map", "coverage_error", "ranking_loss", "precision", "recall", "f1"])
     metrics = set(metrics)
 
     if k is not None:
