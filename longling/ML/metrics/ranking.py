@@ -298,9 +298,9 @@ def ranking_report(y_true, y_pred, k: (int, list) = None, continuous=False, coer
     for key, value in results.items():
         if value:
             if key == "support":
-                ret[key] = np.sum(value)
+                ret[key] = np.sum(value).item()
             else:
-                ret[key] = np.mean(value)
+                ret[key] = np.mean(value).item()
 
     if metrics & {"ndcg", "precision", "recall", "f1"}:
         for k, key_value in k_results.items():
@@ -308,7 +308,7 @@ def ranking_report(y_true, y_pred, k: (int, list) = None, continuous=False, coer
             for key, value in key_value.items():
                 if value:
                     if key in {"support@k", "support@k(B)"}:
-                        ret[k][key] = np.sum(value)
+                        ret[k][key] = np.sum(value).item()
                     else:
-                        ret[k][key] = np.mean(value)
+                        ret[k][key] = np.mean(value).item()
     return ret
