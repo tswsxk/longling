@@ -42,4 +42,4 @@ class Configuration(Params):
 
     @classmethod
     def load(cls, cfg_path, **kwargs):
-        return cls(cls.load_cfg(cfg_path, **kwargs))
+        return cls(**cls.load_cfg(cfg_path, **kwargs))
