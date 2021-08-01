@@ -132,7 +132,7 @@ def train(
             msg, data = evaluation_formatter(
                 iteration=epoch,
                 loss_name_value=dict(loss_monitor.items()),
-                eval_name_value=eval_f(net, test_data, ctx=ctx),
+                eval_name_value=eval_f(net, test_data, ctx=ctx, **cfg.get("eval_params", {})),
                 extra_info=None,
                 dump=dump_result,
                 keep={"msg", "data"}
