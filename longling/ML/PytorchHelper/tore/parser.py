@@ -31,8 +31,8 @@ class Configuration(Params):
             parse_exclude={'logger'},
         )
 
-    @staticmethod
-    def load_cfg(cfg_path, **kwargs):
+    @classmethod
+    def load_cfg(cls, cfg_path, **kwargs):
         with open(cfg_path) as f:
             params = load_configuration(
                 f,
@@ -40,6 +40,6 @@ class Configuration(Params):
         params.update(kwargs)
         return params
 
-    @staticmethod
-    def load(cfg_path, **kwargs):
-        Configuration(Configuration.load_cfg(cfg_path, **kwargs))
+    @classmethod
+    def load(cls, cfg_path, **kwargs):
+        return cls(cls.load_cfg(cfg_path, **kwargs))
