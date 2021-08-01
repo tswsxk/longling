@@ -9,6 +9,7 @@ from longling.lib.stream import as_out_io, PATH_IO_TYPE
 from collections import OrderedDict
 from longling.lib.formatter import table_format, series_format
 from longling.lib.candylib import as_list
+import warnings
 
 __all__ = ["eval_format", "EvalFMT", "EpochEvalFMT", "EpisodeEvalFMT", "result_format"]
 
@@ -59,6 +60,7 @@ class EvalFMT(object):
     macro_avg   0.111111  0.111111  0.111111        6
     accuracy: 0.166667	macro_auc: 0.194444
     """
+
     def __init__(self, logger=logging.getLogger(), dump_file: (PATH_IO_TYPE, None) = False,
                  col: (int, None) = None, **kwargs):
         """
@@ -176,7 +178,7 @@ class EvalFMT(object):
                     with as_out_io(log_f, "a") as wf:
                         print(json.dumps(data, ensure_ascii=False), file=wf)
                 except Exception as e:  # pragma: no cover
-                    logger.warning(e)
+                    warnings.warn("Result dumping to file aborted: %s" % str(e))
 
         if keep is None:
             return msg
@@ -260,6 +262,7 @@ class EpochEvalFMT(EvalFMT):
     macro_avg   0.111111  0.111111  0.111111        6
     accuracy: 0.166667	macro_auc: 0.194444
     """
+
     @property
     def iteration_name(self):
         return "Epoch"
@@ -293,6 +296,7 @@ class EpisodeEvalFMT(EvalFMT):
     macro_avg   0.111111  0.111111  0.111111        6
     accuracy: 0.166667	macro_auc: 0.194444
     """
+
     @property
     def iteration_name(self):
         return "Episode"
