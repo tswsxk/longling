@@ -364,6 +364,12 @@ class Configuration(object):
     def __contains__(self, item):
         return item in self.class_var
 
+    def get(self, k, default=None):
+        if k in self:
+            return self[k]
+        else:
+            return default
+
     def items(self):
         return {k: v for k, v in self.parsable_var.items()}
 
@@ -382,7 +388,7 @@ class Configuration(object):
             所有非参变量
         """
         return CLASS_EXCLUDE_NAMES | {
-            'class_var', 'parsable_var', 'items', 'load', 'dump', 'help_info'
+            'class_var', 'parsable_var', 'items', 'load', 'dump', 'help_info', 'get'
         } | cls.run_time_variables()
 
     @classmethod
