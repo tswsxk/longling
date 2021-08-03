@@ -5,8 +5,8 @@ from collections import OrderedDict
 import torch
 
 
-def save_params(filename, net: torch.nn.Module, select=None):
-    params = net.state_dict()
+def save_params(filename, net: (torch.nn.Module, torch.nn.DataParallel), select=None):
+    params = net.module.state_dict() if isinstance(net, torch.nn.DataParallel) else net.state_dict()
 
     if select is None:
         if select is not None:
