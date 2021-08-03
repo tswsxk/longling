@@ -7,7 +7,9 @@ from torch.nn import DataParallel
 
 def set_device(_net, ctx, *args, **kwargs):
     if ctx == "cpu":
-        return _net
+        if not isinstance(_net, DataParallel):
+            _net = DataParallel(_net)
+        return _net.cpu()
     elif any(map(lambda x: x in ctx, ["cuda", "gpu"])):
         if not torch.cuda.is_available():
             try:
@@ -20,16 +22,22 @@ def set_device(_net, ctx, *args, **kwargs):
                 assert ctx_name in ["cuda", "gpu"], "the equipment should be 'cpu', 'cuda' or 'gpu', now is %s" % ctx
                 device_ids = [int(i) for i in device_ids.strip().split(",")]
                 try:
-                    return DataParallel(_net, device_ids).cuda()
+                    if not isinstance(_net, DataParallel):
+                        return DataParallel(_net, device_ids).cuda
+                    return _net.cuda(device_ids)
                 except AssertionError as e:
                     logging.error(device_ids)
                     raise e
             elif ctx in ["cuda", "gpu"]:
-                return DataParallel(_net).cuda()
+                if not isinstance(_net, DataParallel):
+                    _net = DataParallel(_net)
+                return _net.cuda()
             else:
                 raise TypeError("the equipment should be 'cpu', 'cuda' or 'gpu', now is %s" % ctx)
         else:
             print(torch.cuda.device_count())
             raise TypeError("0 gpu can be used, use cpu")
     else:
-        return DataParallel(_net, device_ids=ctx).cuda()
+        if not isinstance(_net, DataParallel):
+            return DataParallel(_net, device_ids=ctx).cuda()
+        return _net.cuda(ctx)
