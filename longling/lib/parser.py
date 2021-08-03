@@ -232,6 +232,12 @@ class Configuration(object):
     {'a': 1, 'b': 'example', 'c': [0, 2], 'd': {'a1': 3}}
     >>> c.default_file_format()
     'json'
+    >>> c.get("a")
+    1
+    >>> c.get("e") is None
+    True
+    >>> c.get("e", 0)
+    0
     """
 
     def __init__(self, logger=logging, **kwargs):
@@ -362,7 +368,7 @@ class Configuration(object):
         return getattr(self, item)
 
     def __contains__(self, item):
-        return item in self.class_var
+        return item in vars(self)
 
     def get(self, k, default=None):
         if k in self:
