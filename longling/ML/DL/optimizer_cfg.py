@@ -46,11 +46,27 @@ OPTIMIZERS = {
 }
 
 
-def get_optimizer_cfg(name):
+def get_optimizer_cfg(name) -> tuple:
+    """
+
+    Parameters
+    ----------
+    name
+
+    Returns
+    -------
+    optimizer_name: str
+    optimizer_params: dict
+
+    Examples
+    --------
+    >>> get_optimizer_cfg('base')
+    ('Adam', {'learning_rate': 0.001, 'wd': 0.0001, 'clip_gradient': 1})
+    """
     try:
         optimizer, optimizer_params = OPTIMIZERS[name]
     except KeyError:
-        raise KeyError("the name should be in: %s" % ", ".join(OPTIMIZERS))
+        raise KeyError("Unknown optimizer name: %s, the name should be in: %s" % (name, ", ".join(OPTIMIZERS)))
     optimizer_params = deepcopy(optimizer_params)
 
     return optimizer, optimizer_params
