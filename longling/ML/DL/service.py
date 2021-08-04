@@ -2,7 +2,7 @@
 # 2020/1/7 @ tongshiwei
 
 
-class ServiceModule(object):
+class ServiceModule(object):  # pragma: no cover
     def __init__(self, cfg=None, **kwargs):
         self.cfg = self.config(cfg, **kwargs)
         self.mod = self.get_module(self.cfg)
@@ -62,7 +62,7 @@ class ServiceModule(object):
         return mod
 
 
-class CliServiceModule(ServiceModule):
+class CliServiceModule(ServiceModule):  # pragma: no cover
     @staticmethod
     def get_configuration_cls():
         raise NotImplementedError
@@ -108,7 +108,7 @@ def service_wrapper(
         meta_model_cls: type(CliServiceModule),
         configuration_cls=None,
         configuration_parser_cls=None,
-        module_cls=None):
+        module_cls=None):  # pragma: no cover
     class MetaModel(meta_model_cls):
         @staticmethod
         def get_configuration_cls():
