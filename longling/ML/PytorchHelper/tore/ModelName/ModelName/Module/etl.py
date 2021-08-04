@@ -1,8 +1,6 @@
 # coding: utf-8
 # create by tongshiwei on 2019/4/12
 
-import mxnet as mx
-from mxnet import gluon
 from tqdm import tqdm
 
 __all__ = ["extract", "transform", "etl", "pseudo_data_iter"]
@@ -44,12 +42,7 @@ def transform(raw_data, params):
 def load(transformed_data, params):
     batch_size = params.batch_size
 
-    return gluon.data.DataLoader(
-        gluon.data.ArrayDataset(
-            mx.nd.array(transformed_data, dtype="float32")
-        ),
-        batch_size
-    )
+    raise NotImplementedError
 
 
 def etl(*args, params):
