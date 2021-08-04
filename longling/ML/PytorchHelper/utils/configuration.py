@@ -8,7 +8,7 @@ from longling import path_append
 from longling.ML.PytorchHelper.tore import parser
 from longling.ML.PytorchHelper.tore.parser import eval_var
 from longling.ML.PytorchHelper.toolkit import get_optimizer_cfg
-from longling.ML.MxnetHelper.toolkit.select_exp import all_params as _select
+from longling.ML.DL import ALL_PARAMS as SELECT
 from longling.lib.parser import var2exp
 from longling.lib.utilog import config_logging
 
@@ -30,7 +30,7 @@ class Configuration(parser.Configuration):
     lr_params = {}
 
     # 更新保存参数，一般需要保持一致
-    train_select = _select
+    train_select = SELECT
     save_select = train_select
 
     # 运行设备
