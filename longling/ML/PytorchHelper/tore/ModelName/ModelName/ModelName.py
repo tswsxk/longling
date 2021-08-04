@@ -1,7 +1,7 @@
 # coding: utf-8
 # Copyright @tongshiwei
 
-import mxnet as mx
+import torch
 
 try:
     from .Module import *
@@ -298,8 +298,7 @@ class ModelName(object):
         # pre process x
 
         # convert the data to ndarray
-        ctx = self.mod.cfg.ctx if ctx is None else ctx
-        x = mx.nd.array([x], dtype='float32', ctx=ctx)
+        x = torch.tensor([x])
 
         # forward
         outputs = self.net(x).asnumpy().tolist()[0]
@@ -314,7 +313,7 @@ class ModelName(object):
         # pre process x
 
         # convert the data to ndarray
-        x = mx.nd.array(x, dtype='float32', ctx=self.mod.cfg.ctx)
+        x = torch.tensor(x)
 
         # forward
         outputs = self.net(x).asnumpy().tolist()
