@@ -10,7 +10,8 @@ def set_device(_net, ctx, *args, **kwargs):
         if not isinstance(_net, DataParallel):
             _net = DataParallel(_net)
         return _net.cpu()
-    elif any(map(lambda x: x in ctx, ["cuda", "gpu"])):
+    elif any(map(lambda x: x in ctx, ["cuda", "gpu"])):  # pragma: no cover
+        # todo: find a way to test gpu device
         if not torch.cuda.is_available():
             try:
                 torch.ones((1,), device=torch.device("cuda: 0"))
@@ -37,7 +38,8 @@ def set_device(_net, ctx, *args, **kwargs):
         else:
             print(torch.cuda.device_count())
             raise TypeError("0 gpu can be used, use cpu")
-    else:
+    else:  # pragma: no cover
+        # todo: find a way to test gpu device
         if not isinstance(_net, DataParallel):
             return DataParallel(_net, device_ids=ctx).cuda()
         return _net.cuda(ctx)
