@@ -14,6 +14,12 @@ for optimizer in OPTIMIZERS.values():
 
 
 def get_optimizer_cfg(name):
+    """
+    Examples
+    -------
+    >>> get_optimizer_cfg('base')
+    ('Adam', {'lr': 0.001, 'weight_decay': 0.0001})
+    """
     try:
         optimizer, optimizer_params = OPTIMIZERS[name]
     except KeyError:
