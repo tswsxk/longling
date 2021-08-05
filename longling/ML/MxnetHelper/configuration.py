@@ -70,6 +70,17 @@ class Configuration(parser.Configuration):
             The path to configuration file which is in json format
         kwargs:
             Parameters to be reset.
+
+        Examples
+        --------
+        >>> cfg = Configuration(model_dir="./", ctx="cpu(0)")
+        >>> cfg  # doctest: +ELLIPSIS
+        logger: <Logger model (INFO)>
+        model_name: model
+        model_dir: ./
+        ...
+        >>> cfg.var2val("$model_dir")
+        './'
         """
         params = self.class_var
         if params_path:
