@@ -6,7 +6,7 @@ __all__ = ["length2mask", "get_sequence_mask", "sequence_mask"]
 import torch
 from torch import Tensor
 
-from longling.ML.PytorchHelper.helper import tensor2list
+from .utils import tensor2list
 
 
 def length2mask(length, max_len, valid_mask_val, invalid_mask_val):
