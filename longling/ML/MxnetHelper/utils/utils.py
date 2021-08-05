@@ -1,9 +1,10 @@
 # coding: utf-8
 # create by tongshiwei on 2019/4/7
 
+import numpy as np
 from mxnet import symbol, ndarray
 
-__all__ = ["getF", "copy_net"]
+__all__ = ["getF", "copy_net", "array_equal"]
 
 
 def getF(input_object: (symbol.Symbol, ndarray.NDArray)) -> (symbol, ndarray):
@@ -82,3 +83,30 @@ def copy_net(src_net, target_net, select=None):
         target_params._params[
             name.replace(src_params.prefix, target_params.prefix)
         ].set_data(value)
+
+
+def array_equal(a1, a2):
+    """
+
+    Parameters
+    ----------
+    a1: ndarray.NDArray
+    a2: ndarray.NDArray
+
+    Returns
+    -------
+    b: bool
+        Returns True if the arrays are equal.
+
+    Examples
+    --------
+    >>> import mxnet.ndarray as nd
+    >>> a = nd.ones((1, 3))
+    >>> a1 = nd.ones((1, 3))
+    >>> a2 = nd.zeros((1, 3))
+    >>> array_equal(a, a1)
+    True
+    >>> array_equal(a1, a2)
+    False
+    """
+    return np.array_equal(a1.asnumpy(), a2.asnumpy())
