@@ -3,4 +3,3 @@
 
 from .utils import pick, tensor2list
 from .sequence import sequence_mask
-from .configuration import Configuration, ConfigurationParser
