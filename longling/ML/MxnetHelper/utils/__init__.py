@@ -3,3 +3,4 @@
 
 from .utils import getF, copy_net
 from .sequence import get_begin_state, mask_sequence_variable_length, format_sequence
+from .embedding import set_embedding
