@@ -287,7 +287,7 @@ class TripletPairSampler(Sampler):
                 query_key = group[query_field].unique()[0]
                 if value_field is None:
                     pos = group[key_field]
-                    neg = pd.Series([])
+                    neg = pd.Series([], dtype=pos.dtype)
                 elif value_threshold:
                     pos = group[group[value_field] >= value_threshold][key_field]
                     neg = group[group[value_field] < value_threshold][key_field]
