@@ -3,7 +3,6 @@
 
 __all__ = ["Configuration", "ConfigurationParser"]
 
-
 from longling import path_append
 from longling.ML.PytorchHelper.tore import parser
 from longling.ML.PytorchHelper.tore.parser import eval_var
@@ -67,6 +66,17 @@ class Configuration(parser.Configuration):
             The path to configuration file which is in json format
         kwargs:
             Parameters to be reset.
+
+        Examples
+        -------
+        >>> cfg = Configuration(model_dir="./")
+        >>> cfg  # doctest: +ELLIPSIS
+        logger: <Logger model (INFO)>
+        model_name: model
+        model_dir: ./
+        ...
+        >>> cfg.var2val("$model_dir")
+        './'
         """
         params = self.class_var
         if params_path:
@@ -87,8 +97,8 @@ class Configuration(parser.Configuration):
         super(Configuration, self).__init__(**params)
 
         _vars = [
-        ]
-        for _var in _vars:
+        ]  # pragma: no cover
+        for _var in _vars:  # pragma: no cover
             if _var in kwargs:
                 try:
                     setattr(self, _var, eval_var(kwargs[_var]))
