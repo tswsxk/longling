@@ -11,6 +11,7 @@ __all__ = ["format_sequence", "mask_sequence_variable_length", "get_begin_state"
 
 def format_sequence(length, inputs, layout, merge, in_layout=None):
     """
+    `Original Code <https://github.com/apache/incubator-mxnet/blob/master/python/mxnet/gluon/rnn/rnn_cell.py#L52>`_
 
     Parameters
     ----------
@@ -23,6 +24,37 @@ def format_sequence(length, inputs, layout, merge, in_layout=None):
     Returns
     -------
 
+    Examples
+    --------
+    >>> import mxnet.ndarray as nd
+    >>> seq = [[[0] * 4, [2] * 4, [4] * 4], [[1] * 4, [3] * 4, [5] * 4]]
+    >>> seq1, axis, _, batch_size = format_sequence(3, nd.array(seq), "NTC", False)
+    >>> seq1   # doctest: +NORMALIZE_WHITESPACE
+    [
+    [[0. 0. 0. 0.]
+     [1. 1. 1. 1.]]
+    <NDArray 2x4 @cpu(0)>,
+    [[2. 2. 2. 2.]
+     [3. 3. 3. 3.]]
+    <NDArray 2x4 @cpu(0)>,
+    [[4. 4. 4. 4.]
+     [5. 5. 5. 5.]]
+    <NDArray 2x4 @cpu(0)>]
+    >>> axis
+    1
+    >>> batch_size
+    2
+    >>> seq2, _, _, _ = format_sequence(3, nd.array(seq), "NTC", True)
+    >>> seq2   # doctest: +NORMALIZE_WHITESPACE
+    <BLANKLINE>
+    [[[0. 0. 0. 0.]
+      [2. 2. 2. 2.]
+      [4. 4. 4. 4.]]
+    <BLANKLINE>
+     [[1. 1. 1. 1.]
+      [3. 3. 3. 3.]
+      [5. 5. 5. 5.]]]
+    <NDArray 2x3x4 @cpu(0)>
     """
     assert inputs is not None, \
         "unroll(inputs=None) has been deprecated. " \
@@ -71,6 +103,7 @@ def format_sequence(length, inputs, layout, merge, in_layout=None):
 def mask_sequence_variable_length(F, data, length, valid_length, time_axis,
                                   merge):
     """
+    `Original Code <https://github.com/apache/incubator-mxnet/blob/master/python/mxnet/gluon/rnn/rnn_cell.py#L82>`_
 
     Parameters
     ----------
@@ -79,11 +112,47 @@ def mask_sequence_variable_length(F, data, length, valid_length, time_axis,
     length
     valid_length
     time_axis
-    merge
+    merge: bool
 
     Returns
     -------
+    masked_sequence: list, ...
+        if merge is False, return list of step vector
 
+    Examples
+    --------
+    >>> import mxnet.ndarray as nd
+    >>> import mxnet as mx
+    >>> mask_sequence_variable_length(
+    ...     nd, mx.nd.ones((2, 4, 3)), 4, nd.array([2, 4]), 1, False
+    ... )    # doctest: +NORMALIZE_WHITESPACE
+    [
+    [[1. 1. 1.]
+     [1. 1. 1.]]
+    <NDArray 2x3 @cpu(0)>,
+    [[1. 1. 1.]
+     [1. 1. 1.]]
+    <NDArray 2x3 @cpu(0)>,
+    [[0. 0. 0.]
+     [1. 1. 1.]]
+    <NDArray 2x3 @cpu(0)>,
+    [[0. 0. 0.]
+     [1. 1. 1.]]
+    <NDArray 2x3 @cpu(0)>]
+    >>> mask_sequence_variable_length(
+    ...     nd, mx.nd.ones((2, 4, 3)), 4, nd.array([2, 4]), 1, True
+    ... )    # doctest: +NORMALIZE_WHITESPACE
+    <BLANKLINE>
+    [[[1. 1. 1.]
+      [1. 1. 1.]
+      [0. 0. 0.]
+      [0. 0. 0.]]
+    <BLANKLINE>
+     [[1. 1. 1.]
+      [1. 1. 1.]
+      [1. 1. 1.]
+      [1. 1. 1.]]]
+    <NDArray 2x4x3 @cpu(0)>
     """
     assert valid_length is not None
     if not isinstance(data, tensor_types):
@@ -103,6 +172,31 @@ def mask_sequence_variable_length(F, data, length, valid_length, time_axis,
 
 
 def get_begin_state(cell, F, begin_state, inputs, batch_size):
+    """
+    `Original Code <https://github.com/apache/incubator-mxnet/blob/master/python/mxnet/gluon/rnn/rnn_cell.py#L45>`_
+
+    Parameters
+    ----------
+    cell
+    F
+    begin_state
+    inputs
+    batch_size
+
+    Returns
+    -------
+    >>> import mxnet.ndarray as nd
+    >>> from mxnet import gluon
+    >>> lstm_cell = gluon.rnn.LSTMCell(3)
+    >>> get_begin_state(lstm_cell, nd, None, nd.ones((2, 4, 5)), 2)   # doctest: +NORMALIZE_WHITESPACE
+    [
+    [[0. 0. 0.]
+     [0. 0. 0.]]
+    <NDArray 2x3 @cpu(0)>,
+    [[0. 0. 0.]
+     [0. 0. 0.]]
+    <NDArray 2x3 @cpu(0)>]
+    """
     if begin_state is None:
         if F is ndarray:
             ctx = inputs.context if isinstance(inputs, tensor_types) else inputs[0].context
