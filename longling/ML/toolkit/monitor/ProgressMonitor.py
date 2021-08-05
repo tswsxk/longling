@@ -21,6 +21,21 @@ __all__ = ["ConsoleProgressMonitor", "ConsoleProgressMonitorPlayer"]
 class ConsoleProgressMonitorPlayer(object):
     def __init__(self, indexes: (dict, OrderedDict), values: (dict, None) = None,
                  total=NAN, silent=False, timer=None, stream=sys.stdout, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        indexes: dict
+            {prefix: list of names}
+        values: dict
+            {prefix: list of functions}
+        total
+        silent
+        timer
+        stream
+        args
+        kwargs
+        """
 
         if values is not None:
             assert type(indexes) == type(values)
