@@ -3,5 +3,6 @@
 
 
 from .glue import *
-from longling.ML.MxnetHelper.utils import *
+from .utils import *
 from .toolkit import *
+from .configuration import *

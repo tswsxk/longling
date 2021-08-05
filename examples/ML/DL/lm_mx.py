@@ -7,7 +7,7 @@ from sklearn.model_selection import train_test_split
 from mxnet.gluon.data import ArrayDataset, DataLoader
 from longling.ML.metrics import classification_report
 
-from longling.ML.MxnetHelper.utils import Configuration
+from longling.ML.MxnetHelper import Configuration
 from longling.ML.MxnetHelper import fit_wrapper, loss_dict2tmt_mx_loss
 
 
