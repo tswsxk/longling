@@ -199,12 +199,12 @@ class _LinearScheduler(LinearScheduler, _LRScheduler):
     @classmethod
     def init(cls, base_lr, batches_per_epoch=None, update_epoch=None, epoch_update_freq=1, warmup_epoch=0,
              discount=None, *args, **kwargs):
-        kwargs = super(_LinearScheduler, cls).init(
+        kwargs.update(super(_LinearScheduler, cls).init(
             base_lr,
             warmup_epoch=warmup_epoch,
             batches_per_epoch=batches_per_epoch,
             discount=discount
-        )
+        ))
         if batches_per_epoch is not None and update_epoch is not None:
             max_update = batches_per_epoch * update_epoch * epoch_update_freq + kwargs.get("warmup_steps", 0)
             kwargs.update({"max_update": max_update})
@@ -306,6 +306,36 @@ SCHEDULERS = {
 
 def get_lr_scheduler(scheduler: (str, LRScheduler) = "cosine", logger=logging, update_params=None, adaptive=True,
                      **kwargs):
+    """
+
+    Parameters
+    ----------
+    scheduler
+    logger
+    update_params
+    adaptive
+    kwargs
+
+    Returns
+    -------
+
+    Examples
+    --------
+    >>> get_lr_scheduler(max_update=100, lr=0.01)  # doctest: +NORMALIZE_WHITESPACE
+    {'scheduler': 'CosineScheduler', 'base_lr': 0.01, 'step': 1,
+    'max_steps': 100, 'final_lr': 0, 'warmup_mode': 'linear', 'warmup_begin_lr': 0, 'warmup_steps': 0}
+    >>> get_lr_scheduler("cosine", batches_per_epoch=10, update_epoch=10, lr=0.01)  # doctest: +NORMALIZE_WHITESPACE
+    {'scheduler': 'CosineScheduler', 'base_lr': 0.01, 'step': 1,
+    'max_steps': 100, 'final_lr': 0, 'warmup_mode': 'linear', 'warmup_begin_lr': 0, 'warmup_steps': 0}
+    >>> get_lr_scheduler("CosineScheduler", max_update=100,
+    ... base_lr=0.01, adaptive=False)  # doctest: +ELLIPSIS
+    <mxnet.lr_scheduler.CosineScheduler...
+    >>> get_lr_scheduler("norm", base_lr=1, discount=0.01, lr_loc=0.02,
+    ...     batches_per_epoch=100, update_epoch=10, epoch_update_freq=10
+    ... )  # doctest: +NORMALIZE_WHITESPACE
+    {'scheduler': 'NormScheduler', 'lr_loc': 0.02, 'step': 10, 'max_lr': 0.1,
+    'min_lr': 0.01, 'lr_scale': 0.04, 'warmup_mode': 'linear', 'warmup_begin_lr': 0, 'warmup_steps': 0}
+    """
     if adaptive is True:
         for key in {"learning_rate", "lr"}:
             if key in kwargs:
@@ -324,7 +354,7 @@ def get_lr_scheduler(scheduler: (str, LRScheduler) = "cosine", logger=logging, u
     return scheduler
 
 
-def plot_schedule(schedule_fn, iterations=1500):
+def plot_schedule(schedule_fn, iterations=1500, show=True):
     import matplotlib.pyplot as plt
     # Iteration count starting at 1
     iterations = [i + 1 for i in range(iterations)]
@@ -332,7 +362,8 @@ def plot_schedule(schedule_fn, iterations=1500):
     plt.scatter(iterations, lrs)
     plt.xlabel("Iteration")
     plt.ylabel("Learning Rate")
-    plt.show()
+    if show:
+        plt.show()
 
 
 if __name__ == '__main__':
