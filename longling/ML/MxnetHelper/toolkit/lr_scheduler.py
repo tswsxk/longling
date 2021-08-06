@@ -6,9 +6,9 @@ import numpy as np
 import scipy.stats as st
 from mxnet.lr_scheduler import LRScheduler, FactorScheduler, PolyScheduler, MultiFactorScheduler, CosineScheduler
 
-from longling.ML.DL import get_total_update_steps, get_factor_lr_params, stop_lr as _stop_lr
+from longling.ML.DL import get_max_update, get_lr_factor, get_final_lr, get_step
 
-__all__ = ["get_lr_scheduler", "plot_schedule", "get_total_update_steps"]
+__all__ = ["get_lr_scheduler", "plot_schedule", "get_max_update"]
 
 
 class _LRScheduler(LRScheduler):
@@ -25,17 +25,20 @@ class _LRScheduler(LRScheduler):
     @classmethod
     def init(cls, base_lr, batches_per_epoch=None, update_epoch=None, epoch_update_freq=1, warmup_epoch=0,
              discount=None, *args, **kwargs):
+
         if warmup_epoch:
             kwargs.update({"warmup_steps": warmup_epoch * batches_per_epoch})
 
         if discount is not None:
-            final_lr, discount = _stop_lr(base_lr, discount=discount)
+            final_lr, discount = get_final_lr(base_lr, discount=discount)
             kwargs.update({"final_lr": final_lr})
 
         return kwargs
 
 
 class _FactorScheduler(FactorScheduler, _LRScheduler):
+    """update at every *n* steps (batches)"""
+
     def __repr__(self):
         return str(self.state_dict)
 
@@ -54,28 +57,44 @@ class _FactorScheduler(FactorScheduler, _LRScheduler):
     @classmethod
     def init(cls, base_lr, batches_per_epoch=None, update_epoch=None, epoch_update_freq=1, warmup_epoch=0,
              discount=None, **kwargs):
-        kwargs = super(_FactorScheduler, cls).init(
+        kwargs.update(super(_FactorScheduler, cls).init(
             base_lr,
             warmup_epoch=warmup_epoch,
             batches_per_epoch=batches_per_epoch,
             discount=discount
-        )
+        ))
 
         if batches_per_epoch is not None and update_epoch is not None:
-            step, factor, stop_factor_lr = get_factor_lr_params(
+            step, factor, stop_factor_lr = get_lr_factor(
                 base_lr,
-                update_epoch,
-                batches_per_epoch,
-                epoch_update_freq,
-                kwargs.get("final_lr", kwargs.get("stop_factor_lr", None)),
-                discount,
+                step=get_step(batches_per_epoch, epoch_update_freq),
+                max_update=get_max_update(update_epoch, batches_per_epoch, kwargs.get("warmup_steps", 0)),
+                final_lr=kwargs.get("final_lr", kwargs.get("stop_factor_lr", None)),
+                discount=discount
             )
             kwargs.update({"step": step, "factor": factor, "stop_factor_lr": stop_factor_lr})
+
+        elif "max_update" in kwargs:
+            max_update = kwargs.pop("max_update")
+            step, factor, stop_factor_lr = get_lr_factor(
+                base_lr,
+                step=kwargs["step"],
+                max_update=max_update,
+                final_lr=kwargs.get("final_lr", kwargs.get("stop_factor_lr", None)),
+                discount=discount
+            )
+
+            kwargs.update({"step": step, "factor": factor, "stop_factor_lr": stop_factor_lr})
+
+        if "final_lr" in kwargs:
+            kwargs.pop("final_lr")
 
         return cls(base_lr=base_lr, **kwargs)
 
 
 class _PolyScheduler(PolyScheduler, _LRScheduler):
+    """update at each step (batch)"""
+
     @property
     def state_dict(self):
         return {
@@ -90,7 +109,7 @@ class _PolyScheduler(PolyScheduler, _LRScheduler):
         }
 
     @classmethod
-    def init(cls, base_lr, batches_per_epoch=None, update_epoch=None, epoch_update_freq=1, warmup_epoch=0,
+    def init(cls, base_lr, batches_per_epoch=None, update_epoch=None, epoch_update_freq=0, warmup_epoch=0,
              discount=None, *args, **kwargs):
         kwargs = super(_PolyScheduler, cls).init(
             base_lr,
@@ -100,13 +119,15 @@ class _PolyScheduler(PolyScheduler, _LRScheduler):
         )
 
         if batches_per_epoch is not None and update_epoch is not None:
-            max_update = batches_per_epoch * update_epoch + kwargs.get("warmup_steps", 0)
+            max_update = get_max_update(update_epoch, batches_per_epoch, kwargs.get("warmup_steps", 0))
             kwargs.update({"max_update": max_update})
 
         return cls(base_lr=base_lr, **kwargs)
 
 
 class _CosineScheduler(CosineScheduler, _LRScheduler):
+    """update at each step (batch)"""
+
     @property
     def state_dict(self):
         return {
@@ -121,8 +142,10 @@ class _CosineScheduler(CosineScheduler, _LRScheduler):
         }
 
     @classmethod
-    def init(cls, base_lr, batches_per_epoch=None, update_epoch=None, epoch_update_freq=1, warmup_epoch=0,
+    def init(cls, base_lr, batches_per_epoch=None, update_epoch=None, epoch_update_freq=0, warmup_epoch=0,
              discount=None, *args, **kwargs):
+        batches_per_epoch = epoch_update_freq if batches_per_epoch is None else batches_per_epoch
+
         kwargs.update(super(_CosineScheduler, cls).init(
             base_lr,
             warmup_epoch=warmup_epoch,
@@ -131,19 +154,21 @@ class _CosineScheduler(CosineScheduler, _LRScheduler):
         ))
 
         if batches_per_epoch is not None and update_epoch is not None:
-            max_update = batches_per_epoch * update_epoch * epoch_update_freq + kwargs.get("warmup_steps", 0)
+            max_update = get_max_update(batches_per_epoch, update_epoch, kwargs.get("warmup_steps", 0))
             kwargs.update({"max_update": max_update})
 
         return cls(base_lr=base_lr, **kwargs)
 
 
 class _MultiFactorScheduler(MultiFactorScheduler, _LRScheduler):
+    """Reduce the learning rate by given a list of steps"""
+
     @property
     def state_dict(self):
         return {
             "scheduler": "MultiFactorScheduler",
             "base_lr": self.base_lr,
-            "max_steps": self.step,
+            "steps": self.step,
             "warmup_mode": self.warmup_mode,
             "warmup_begin_lr": self.warmup_begin_lr,
             "warmup_steps": self.warmup_steps,
@@ -152,17 +177,45 @@ class _MultiFactorScheduler(MultiFactorScheduler, _LRScheduler):
     @classmethod
     def init(cls, base_lr, batches_per_epoch=None, update_epoch=None, epoch_update_freq=1, warmup_epoch=0,
              discount=None, *args, **kwargs):
-        kwargs = super(_MultiFactorScheduler, cls).init(
+        batches_per_epoch = epoch_update_freq if batches_per_epoch is None else batches_per_epoch
+
+        kwargs.update(super(_MultiFactorScheduler, cls).init(
             base_lr,
             warmup_epoch=warmup_epoch,
             batches_per_epoch=batches_per_epoch,
             discount=discount
-        )
+        ))
+
+        if batches_per_epoch is not None and update_epoch is not None:
+            step, factor, stop_factor_lr = get_lr_factor(
+                base_lr,
+                step=get_step(batches_per_epoch, epoch_update_freq),
+                max_update=get_max_update(update_epoch, batches_per_epoch, kwargs.get("warmup_steps")),
+                final_lr=kwargs.get("final_lr", kwargs.get("stop_factor_lr", None)),
+                discount=discount
+            )
+            if "step" in kwargs:
+                step: list = kwargs["step"]
+                step = [kwargs["warmup_steps"] + _step * batches_per_epoch * epoch_update_freq for _step in step]
+            elif "acc_step" in kwargs:  # accumulative
+                acc_step: list = kwargs.pop("acc_step")
+                step = [kwargs["warmup_steps"] + acc_step[0] * batches_per_epoch * epoch_update_freq]
+                for i, _acc_step in enumerate(acc_step[1:]):
+                    step.append(step[i] + _acc_step * batches_per_epoch * epoch_update_freq)
+            else:
+                raise KeyError("step or acc_step should be set")
+
+            kwargs.update({"step": step, "factor": factor})
+
+        if "final_lr" in kwargs:
+            kwargs.pop("final_lr")
         return cls(base_lr=base_lr, **kwargs)
 
 
 class LinearScheduler(LRScheduler):
-    def __init__(self, max_update, base_lr=0.01, final_lr=0,
+    """update at every *n* steps (batches)"""
+
+    def __init__(self, max_update, step=1, base_lr=0.01, final_lr=0,
                  warmup_steps=0, warmup_begin_lr=0, warmup_mode='linear'):
         super(LinearScheduler, self).__init__(
             base_lr, warmup_steps=warmup_steps, warmup_begin_lr=warmup_begin_lr, warmup_mode=warmup_mode
@@ -172,13 +225,17 @@ class LinearScheduler(LRScheduler):
             raise ValueError("maximum number of updates must be strictly positive")
         self.max_update = max_update
         self.final_lr = final_lr
-        self.max_steps = self.max_update - self.warmup_steps
-        self.increase = (self.final_lr - self.base_lr) / float(self.max_steps)
+        self.count = 0
+        self.step = step
+        self.max_steps = self.max_update // self.step
+        self.increase = (self.final_lr - self.base_lr) / ((self.max_steps - 1) if self.max_steps > 1 else 1)
 
     def __call__(self, num_update):
         if num_update < self.warmup_steps:
             return self.get_warmup_lr(num_update)
-        self.base_lr += self.increase
+        while num_update > self.count + self.step:
+            self.count += self.step
+            self.base_lr += self.increase
         if self.base_lr < self.final_lr:
             return self.final_lr
         return self.base_lr
@@ -199,6 +256,8 @@ class _LinearScheduler(LinearScheduler, _LRScheduler):
     @classmethod
     def init(cls, base_lr, batches_per_epoch=None, update_epoch=None, epoch_update_freq=1, warmup_epoch=0,
              discount=None, *args, **kwargs):
+        batches_per_epoch = epoch_update_freq if batches_per_epoch is None else batches_per_epoch
+
         kwargs.update(super(_LinearScheduler, cls).init(
             base_lr,
             warmup_epoch=warmup_epoch,
@@ -206,8 +265,10 @@ class _LinearScheduler(LinearScheduler, _LRScheduler):
             discount=discount
         ))
         if batches_per_epoch is not None and update_epoch is not None:
-            max_update = batches_per_epoch * update_epoch * epoch_update_freq + kwargs.get("warmup_steps", 0)
-            kwargs.update({"max_update": max_update})
+            kwargs.update({"step": get_step(batches_per_epoch, epoch_update_freq)})
+            kwargs.update(
+                {"max_update": get_max_update(update_epoch, batches_per_epoch, kwargs.get("warmup_steps", 0))}
+            )
         return cls(base_lr=base_lr, **kwargs)
 
 
@@ -255,7 +316,7 @@ class NormScheduler(LRScheduler):
             return self.get_warmup_lr(num_update)
 
         # NOTE: use while rather than if  (for continuing training via load_epoch)
-        while num_update - self.warmup_steps > self.count + self.step:
+        while num_update > self.count + self.step:
             self.count += self.step
             self._p += self.p_increase
             self.base_lr = self.get_lr()
@@ -282,6 +343,8 @@ class _NormScheduler(NormScheduler, _LRScheduler):
     @classmethod
     def init(cls, base_lr=None, batches_per_epoch=None, update_epoch=None, epoch_update_freq=1, warmup_epoch=0,
              discount=None, *args, **kwargs):
+        batches_per_epoch = epoch_update_freq if batches_per_epoch is None else batches_per_epoch
+
         kwargs.update(super(_NormScheduler, cls).init(
             base_lr,
             warmup_epoch=warmup_epoch,
@@ -316,8 +379,42 @@ def get_lr_scheduler(scheduler: (str, LRScheduler) = "cosine", logger=logging, u
     adaptive
     kwargs
 
+    Other Parameters
+    ----------------
+    base_lr: int or float
+    learning_rate:
+        alias of base_lr
+    lr:
+        alias of base_lr
+    batches_per_epoch
+    update_epoch
+    epoch_update_freq: int
+        default to 1
+        when set to 0, update_freq will be the same as batches_per_epoch (i.e., update once at an epoch)
+    max_update: int
+        maximum number of updates before the decay reaches final learning rate, which includs warmup steps
+    total_step: int
+        alias for max_update
+    step: int or list of int
+        Changes the learning rate for every n updates.
+        Specially, for MultiFactorScheduler, The list of steps to schedule a change
+    acc_step: list of int
+        Only for MultiFactorScheduler, The list of accumulative steps to schedule a change
+    final_lr: int or float
+        final learning rate after all steps
+    warmup_epoch: int
+    warmup_steps: int
+        number of warmup steps used before this scheduler starts decay
+    warmup_begin_lr: float
+        if using warmup, the learning rate from which it starts warming up
+    warmup_mode: str
+        warmup can be done in two modes.
+        'linear' mode gradually increases lr with each step in equal increments
+        'constant' mode keeps lr at warmup_begin_lr for warmup_steps
+
     Returns
     -------
+    scheduler: _LRScheduler or LRScheduler
 
     Examples
     --------
@@ -330,11 +427,50 @@ def get_lr_scheduler(scheduler: (str, LRScheduler) = "cosine", logger=logging, u
     >>> get_lr_scheduler("CosineScheduler", max_update=100,
     ... base_lr=0.01, adaptive=False)  # doctest: +ELLIPSIS
     <mxnet.lr_scheduler.CosineScheduler...
+    >>> get_lr_scheduler("norm", base_lr=1, discount=0.01, max_update=100)   # doctest: +NORMALIZE_WHITESPACE
+    {'scheduler': 'NormScheduler', 'lr_loc': 0.5, 'step': 1, 'max_lr': 1.0, 'min_lr': 0.01, 'lr_scale': 0.25,
+    'warmup_mode': 'linear', 'warmup_begin_lr': 0, 'warmup_steps': 0}
     >>> get_lr_scheduler("norm", base_lr=1, discount=0.01, lr_loc=0.02,
-    ...     batches_per_epoch=100, update_epoch=10, epoch_update_freq=10
+    ...     batches_per_epoch=100, update_epoch=10, epoch_update_freq=10,
     ... )  # doctest: +NORMALIZE_WHITESPACE
     {'scheduler': 'NormScheduler', 'lr_loc': 0.02, 'step': 10, 'max_lr': 0.1,
     'min_lr': 0.01, 'lr_scale': 0.04, 'warmup_mode': 'linear', 'warmup_begin_lr': 0, 'warmup_steps': 0}
+    >>> get_lr_scheduler("linear", learning_rate=0.01, discount=0.1,
+    ...     max_update=20, step=2)  # doctest: +NORMALIZE_WHITESPACE
+    {'scheduler': 'LinearScheduler', 'base_lr': 0.01, 'max_steps': 10,
+    'warmup_mode': 'linear', 'warmup_begin_lr': 0, 'warmup_steps': 0}
+    >>> get_lr_scheduler("linear", learning_rate=0.01, discount=0.1,
+    ...     update_epoch=2, warmup_epoch=1, batches_per_epoch=10)  # doctest: +NORMALIZE_WHITESPACE
+    {'scheduler': 'LinearScheduler', 'base_lr': 0.01, 'max_steps': 3,
+    'warmup_mode': 'linear', 'warmup_begin_lr': 0, 'warmup_steps': 10}
+    >>> get_lr_scheduler("factor", learning_rate=0.01,
+    ...     discount=0.1, max_update=10, step=2)  # doctest: +NORMALIZE_WHITESPACE
+    {'scheduler': 'FactorScheduler', 'base_lr': 0.01, 'step': 2, 'stop_factor_lr': 0.001, 'warmup_mode': 'linear',
+    'warmup_begin_lr': 0, 'warmup_steps': 0}
+    >>> get_lr_scheduler("factor", learning_rate=0.01, discount=0.1,
+    ...     update_epoch=2, warmup_epoch=1, batches_per_epoch=10)  # doctest: +NORMALIZE_WHITESPACE
+    {'scheduler': 'FactorScheduler', 'base_lr': 0.01, 'step': 10, 'stop_factor_lr': 0.001,
+    'warmup_mode': 'linear', 'warmup_begin_lr': 0, 'warmup_steps': 10}
+    >>> get_lr_scheduler("poly", learning_rate=0.01, discount=0.1,
+    ...     update_epoch=2, warmup_epoch=1, batches_per_epoch=10)  # doctest: +NORMALIZE_WHITESPACE
+    {'scheduler': 'PolyScheduler', 'base_lr': 0.01, 'step': 1, 'max_steps': 20,
+    'final_lr': 0.001, 'warmup_mode': 'linear', 'warmup_begin_lr': 0, 'warmup_steps': 10}
+    >>> get_lr_scheduler("multifactor", learning_rate=0.01, discount=0.1,
+    ...     update_epoch=5, warmup_epoch=1, step=[1, 2, 3], batches_per_epoch=10)  # doctest: +NORMALIZE_WHITESPACE
+    {'scheduler': 'MultiFactorScheduler', 'base_lr': 0.01, 'steps': [20, 30, 40],
+    'warmup_mode': 'linear', 'warmup_begin_lr': 0, 'warmup_steps': 10}
+    >>> get_lr_scheduler("multifactor", learning_rate=0.01, discount=0.1,
+    ...     update_epoch=5, warmup_epoch=1, acc_step=[1, 1, 1], batches_per_epoch=10)  # doctest: +NORMALIZE_WHITESPACE
+    {'scheduler': 'MultiFactorScheduler', 'base_lr': 0.01, 'steps': [20, 30, 40],
+    'warmup_mode': 'linear', 'warmup_begin_lr': 0, 'warmup_steps': 10}
+    >>> get_lr_scheduler("cosine", learning_rate=0.01, discount=0.1,
+    ...     update_epoch=2, warmup_epoch=1, batches_per_epoch=10)  # doctest: +NORMALIZE_WHITESPACE
+    {'scheduler': 'CosineScheduler', 'base_lr': 0.01, 'step': 1, 'max_steps': 20, 'final_lr': 0.001,
+    'warmup_mode': 'linear', 'warmup_begin_lr': 0, 'warmup_steps': 10}
+    >>> get_lr_scheduler("norm", learning_rate=0.01, discount=0.1,
+    ...     update_epoch=2, warmup_epoch=1, batches_per_epoch=10)   # doctest: +NORMALIZE_WHITESPACE
+    {'scheduler': 'NormScheduler', 'lr_loc': 0.005, 'step': 10, 'max_lr': 0.01, 'min_lr': 0.001,
+    'lr_scale': 0.0025, 'warmup_mode': 'linear', 'warmup_begin_lr': 0, 'warmup_steps': 10}
     """
     if adaptive is True:
         for key in {"learning_rate", "lr"}:
@@ -355,21 +491,54 @@ def get_lr_scheduler(scheduler: (str, LRScheduler) = "cosine", logger=logging, u
 
 
 def plot_schedule(schedule_fn, iterations=1500, show=True):
+    """
+
+    Parameters
+    ----------
+    schedule_fn
+    iterations
+    show
+
+    Returns
+    -------
+    learning rates: list
+
+    Examples
+    --------
+    >>> scheduler = get_lr_scheduler("linear", base_lr=1, final_lr=0,
+    ...     update_epoch=2, warmup_epoch=1, batches_per_epoch=10)
+    >>> plot_schedule(scheduler, iterations=20, show=False)   # doctest: +NORMALIZE_WHITESPACE
+    [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
+    >>> scheduler = get_lr_scheduler("norm", base_lr=1, discount=0.01,
+    ...     batches_per_epoch=2, update_epoch=9, warmup_epoch=1)
+    >>> plot_schedule(scheduler, iterations=20, show=False)   # doctest: +NORMALIZE_WHITESPACE
+    [0.5, 1.0, 0.8051600872118375, 0.8051600872118375, 0.6911774184465967, 0.6911774184465967, 0.6076818248238643,
+    0.6076818248238643, 0.5349275747204655, 0.5349275747204655, 0.46507242527953446, 0.46507242527953446,
+    0.39231817517613554, 0.39231817517613554, 0.30882258155340314, 0.30882258155340314, 0.19483991278816226,
+    0.19483991278816226, 0.01, 0.01]
+    """
     import matplotlib.pyplot as plt
+
     # Iteration count starting at 1
     iterations = [i + 1 for i in range(iterations)]
     lrs = [schedule_fn(i) for i in iterations]
+
     plt.scatter(iterations, lrs)
     plt.xlabel("Iteration")
     plt.ylabel("Learning Rate")
-    if show:
+    if show:  # pragma: no cover
         plt.show()
+    return lrs
 
 
 if __name__ == '__main__':
-    logging.getLogger().setLevel(logging.INFO)
-    _scheduler = get_lr_scheduler(
-        "norm", base_lr=1, discount=0.01, lr_loc=0.02,
-        batches_per_epoch=100, update_epoch=10, epoch_update_freq=10,
-    )
-    plot_schedule(_scheduler)
+    # logging.getLogger().setLevel(logging.INFO)
+    # _scheduler = get_lr_scheduler(
+    #     "norm", base_lr=1, discount=0.01, lr_loc=0.02,
+    #     batches_per_epoch=100, update_epoch=10, epoch_update_freq=10,
+    # )
+    # plot_schedule(_scheduler)
+    scheduler = get_lr_scheduler("linear", lr=0.01, discount=0.1, batches_per_epoch=10, update_epoch=2,
+                                 warmup_epoch=1,
+                                 epoch_update_freq=2)
+    lrs = plot_schedule(scheduler, 30)
