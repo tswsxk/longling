@@ -353,7 +353,7 @@ class _NormScheduler(NormScheduler, _LRScheduler):
         ))
         if batches_per_epoch is not None and update_epoch is not None:
             max_update = int(batches_per_epoch * update_epoch) + kwargs.get("warmup_steps", 0)
-            kwargs.update({"max_update": max_update, "step": batches_per_epoch // epoch_update_freq})
+            kwargs.update({"max_update": max_update, "step": get_step(batches_per_epoch, epoch_update_freq)})
         return cls(base_lr=base_lr, **kwargs)
 
 
