@@ -10,12 +10,12 @@ from longling.lib.stream import build_dir
 __all__ = ["VizError", "plot_network"]
 
 
-class VizError(Exception):
+class VizError(Exception):  # pragma: no cover
     pass
 
 
 def plot_network(nn_symbol, save_path="plot/network", shape=None,
-                 node_attrs=None, view=False):
+                 node_attrs=None, view=False):  # pragma: no cover
     node_attrs = {} if node_attrs is None else node_attrs
 
     graph = mx.viz.plot_network(nn_symbol, shape=shape, node_attrs=node_attrs)
