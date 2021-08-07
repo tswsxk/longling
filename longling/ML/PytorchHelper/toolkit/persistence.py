@@ -8,10 +8,10 @@ import torch
 def save_params(filename, net: (torch.nn.Module, torch.nn.DataParallel), select=None):
     params = net.module.state_dict() if isinstance(net, torch.nn.DataParallel) else net.state_dict()
 
-    if select is None:
-        if select is not None:
-            pattern = re.compile(select)
-            params = OrderedDict({name: value for name, value in params.items() if
-                                  pattern.match(name)})
+    if select is not None:
+        pattern = re.compile(select)
+        params = OrderedDict({name: value for name, value in params.items() if
+                              pattern.match(name)})
 
     torch.save(params, filename)
+    return filename

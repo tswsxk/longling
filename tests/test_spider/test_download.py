@@ -8,7 +8,7 @@ from longling.spider.utils import reporthook4urlretrieve
 
 
 def test_download_data(tmp_path):
-    url = "http://base.ustc.edu.cn/data/EdNet/EdNet-Contents.zip"
+    url = "http://base.ustc.edu.cn/data/tests/test_doc.zip"
     tmp_file = path_append(tmp_path, "download", to_str=True)
 
     download_file(url, save_path=tmp_file, decomp=False)

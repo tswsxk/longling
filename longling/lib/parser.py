@@ -139,7 +139,7 @@ def load_configuration(fp, file_format="json", load_parse_function=None):
     elif file_format == "toml":
         params = toml.load(fp)
     elif file_format == "yaml":
-        params = yaml.load(fp)
+        params = yaml.load(fp, Loader=yaml.FullLoader)
     else:
         raise TypeError("Unsupported file format: %s, only `json`, `toml` and `yaml` are supported" % file_format)
     return parse_params(params, load_parse_function)

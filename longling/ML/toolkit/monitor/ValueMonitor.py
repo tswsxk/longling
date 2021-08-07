@@ -114,18 +114,30 @@ class ValueMonitor(object):
     ...     return 1
     >>> def m2_func():
     ...     return 2
-    >>> vm = ValueMonitor({"m1": m1_func, "m2": m2_func})
+    >>> vm = ValueMonitor({"m1": m1_func, "m2": m2_func}, auto="ignore")
     >>> vm.value
     {'m1': nan, 'm2': nan}
     >>> vm["m1"]
     nan
     """
 
-    def __init__(self, value_function_names: (list, dict), digits=6, *args, **kwargs):
+    def __init__(self, value_function_names: (list, dict), digits=6, auto=None, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        value_function_names
+        digits
+        auto: str, None or bool
+        args
+        kwargs
+        """
         self._values = {name: NAN for name in value_function_names}
         self._funcs = value_function_names if isinstance(value_function_names, dict) else {}
-        for name, func in self._funcs.items():
-            self.link(name, func)
+        self._auto = auto
+        if self._auto is not False:
+            for name, func in self._funcs.items():
+                self.link(name, func)
         self._digits = digits
 
     def __str__(self):
@@ -188,7 +200,11 @@ class ValueMonitor(object):
         if hasattr(obj, "pipe"):
             obj.pipe.append(functools.partial(self.pipe_get, name))
         else:
-            warnings.warn("invalid link operation, for %s has no pipe attribute, suggest to use TMTValue" % obj)
+            hint = "invalid link operation, for %s has no pipe attribute, suggest to use TMTValue" % obj
+            if self._auto is True:
+                raise AttributeError(hint)
+            elif self._auto is None or self._auto == "warn":
+                warnings.warn(hint)
 
 
 class EMAValue(ValueMonitor):

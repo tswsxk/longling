@@ -16,7 +16,7 @@ logger = config_logging(
 )
 
 
-def new_model(model_name, source_dir, directory=None, level="project", skip_existing=False):
+def new_model(model_name, source_dir, directory=None, level="project", skip_existing=False):  # pragma: no cover
     target_dir = os.path.join(
         directory, model_name
     ) if directory is not None else model_name
@@ -86,7 +86,7 @@ def new_model(model_name, source_dir, directory=None, level="project", skip_exis
     return True
 
 
-def cli(source_dir, model_name=None):
+def cli(source_dir, model_name=None):  # pragma: no cover
     parser = argparse.ArgumentParser()
     if model_name is not None:
         parser.add_argument(

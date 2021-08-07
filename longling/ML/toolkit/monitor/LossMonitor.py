@@ -64,7 +64,7 @@ def loss_dict2tmt_loss(loss_dict, loss2value=lambda x: x, exclude=None, include=
     >>> losses = loss_dict2tmt_loss({"mse": mse, "rmse": lambda x: x}, include="mse")
     >>> losses.keys()
     dict_keys(['mse', 'rmse'])
-    >>> ema = EMAValue(losses)
+    >>> ema = EMAValue(losses, auto="ignore")
     >>> losses["mse"](2)
     4
     >>> losses["rmse"](2)
@@ -74,7 +74,7 @@ def loss_dict2tmt_loss(loss_dict, loss2value=lambda x: x, exclude=None, include=
     >>> losses = loss_dict2tmt_loss({"mse": mse, "rmse": lambda x: x}, exclude="mse")
     >>> losses.keys()
     dict_keys(['mse', 'rmse'])
-    >>> ema = EMAValue(losses)
+    >>> ema = EMAValue(losses, auto="ignore")
     >>> losses["mse"](2)
     4
     >>> losses["rmse"](2)

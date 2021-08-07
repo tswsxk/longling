@@ -17,7 +17,7 @@ def train(
         *,
         fit_f, eval_f=None, net_init=None, get_net=None, get_loss=None, get_trainer=None, save_params=None,
         enable_hyper_search=False, reporthook=None, final_reporthook=None, primary_key=None,
-        eval_epoch=1, loss_dict2tmt_loss=None, epoch_lr_scheduler=None, batch_lr_scheduler=None,
+        eval_epoch=1, loss_dict2tmt_loss=None, epoch_lr_scheduler=None, batch_lr_scheduler=None, loss_as_dict=False,
         **cfg_kwargs):
     net = net if get_net is None else get_net(**cfg.hyper_params)
 
@@ -42,12 +42,12 @@ def train(
             loss_name = loss_function.__name__
         elif hasattr(loss_function, "__class__"):
             loss_name = loss_function.__class__.__name__
-        else:
+        else:  # pragma: no cover
             loss_name = "loss"
         loss_function = {loss_name: loss_function}
         if loss_dict2tmt_loss is not None:
             loss_function = loss_dict2tmt_loss(loss_function)
-        _loss_function = list(loss_function.values())[0]
+        _loss_function = list(loss_function.values())[0] if loss_as_dict is False else loss_function
 
     loss_monitor = MovingLoss(loss_function)
 

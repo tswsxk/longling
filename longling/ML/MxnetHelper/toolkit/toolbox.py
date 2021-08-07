@@ -12,9 +12,11 @@ def get_default_toolbox(
         validation_logger_mode="w",
         silent=False,
         configuration=None
-):
+):  # pragma: no cover
     """
     New in version 1.3.16
+
+    todo: consider whether to keep it
 
     Notice
     ------

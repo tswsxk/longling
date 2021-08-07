@@ -14,7 +14,7 @@ def train(
         fit_f, eval_f=None, get_net=None, get_loss=None, get_trainer=None, save_params=None,
         enable_hyper_search=False, reporthook=None, final_reporthook=None, primary_key=None,
         eval_epoch=1, initial_net=True, net_init=None, batch_lr_scheduler=None, epoch_lr_scheduler=None,
-        **cfg_kwargs
+        loss_as_dict=False, **cfg_kwargs
 ):
     if initial_net:
         net_init = _net_init if net_init is None else net_init
@@ -23,6 +23,9 @@ def train(
 
     if trainer is None and get_trainer is None:
         get_trainer = _get_trainer
+
+    if cfg.lr_params:
+        assert batch_lr_scheduler or epoch_lr_scheduler
 
     save_params = _save_params if save_params is None else save_params
 
@@ -34,6 +37,6 @@ def train(
         enable_hyper_search=enable_hyper_search, reporthook=reporthook,
         final_reporthook=final_reporthook,
         primary_key=primary_key, eval_epoch=eval_epoch, loss_dict2tmt_loss=loss_dict2tmt_torch_loss,
-        batch_lr_scheduler=batch_lr_scheduler, epoch_lr_scheduler=epoch_lr_scheduler,
+        batch_lr_scheduler=batch_lr_scheduler, epoch_lr_scheduler=epoch_lr_scheduler, loss_as_dict=loss_as_dict,
         **cfg_kwargs
     )

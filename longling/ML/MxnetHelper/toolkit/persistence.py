@@ -25,3 +25,4 @@ def save_params(filename, net, select=None):
                   pattern.match(name)}
     arg_dict = {key: val._reduce() for key, val in params.items()}
     nd.save(filename, arg_dict)
+    return filename

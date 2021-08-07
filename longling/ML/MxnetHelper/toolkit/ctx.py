@@ -9,7 +9,8 @@ __all__ = ["real_ctx", "split_and_load"]
 
 def real_ctx(ctx, data_len):
     ctx = as_list(ctx)
-    if data_len < len(ctx):
+    if data_len < len(ctx):  # pragma: no cover
+        # todo: find test case
         ctx = ctx[:1]
     return ctx
 

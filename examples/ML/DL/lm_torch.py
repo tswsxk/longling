@@ -8,7 +8,7 @@ from torch import nn
 import torch.nn.functional as F
 from longling.ML.metrics import classification_report
 
-from longling.ML.PytorchHelper.utils import Configuration
+from longling.ML.PytorchHelper import Configuration
 from longling.ML.PytorchHelper import fit_wrapper, loss_dict2tmt_torch_loss, eval_wrapper
 
 
