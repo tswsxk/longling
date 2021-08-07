@@ -66,17 +66,17 @@ def net_initialize(
     <NDArray 2x4 @cpu(0)>
     >>> net1 = EmbNet()
     >>> net_initialize(net1, mx.cpu(), initializer=["xaiver", "uniform"], select=[BLOCK_EMBEDDING, ".*embedding"])
-    >>> net1(mx.nd.array([0, 1]))
+    >>> net1(mx.nd.array([0, 1]))  # doctest: +ELLIPSIS
     <BLANKLINE>
-    [[-0.08960472 -0.01794337 -0.01566934 -0.01366429]
-     [ 0.00333809  0.02550057  0.01116303  0.04468787]]
+    [[-0.0896... -0.0179... -0.0156... -0.0136...]
+     [ 0.0033...  0.0255...  0.0111...  0.0446...]]
     <NDArray 2x4 @cpu(0)>
     >>> net_initialize(net1, mx.cpu(), initializer=[(BLOCK_EMBEDDING, "xaiver"), (".*embedding", "uniform")],
     ...     force_reinit=True)
-    >>> net1(mx.nd.array([0, 1]))
+    >>> net1(mx.nd.array([0, 1]))  # doctest: +ELLIPSIS
     <BLANKLINE>
-    [[ 0.01530514  0.02665048 -0.04661535  0.02911537]
-     [-0.03623329  0.00634527  0.02276477 -0.02129381]]
+    [[ 0.0153...  0.0266... -0.0466...  0.0291...]
+     [-0.0362...  0.0063...  0.0227... -0.0212...]]
     <NDArray 2x4 @cpu(0)>
     """
     if isinstance(initializer, str):
