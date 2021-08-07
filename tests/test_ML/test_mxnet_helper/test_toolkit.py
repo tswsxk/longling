@@ -14,9 +14,5 @@ def test_init_error():
 
 
 def test_lr_scheduler_error():
-    with pytest.raises(KeyError):
-        get_lr_scheduler("multifactor", learning_rate=0.01, discount=0.1, update_epoch=5,
-                         warmup_epoch=1, batches_per_epoch=10)
-
     with pytest.raises(ValueError):
         get_lr_scheduler("linear", lr=0.01, max_update=0)
