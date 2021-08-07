@@ -212,7 +212,7 @@ class _MultiFactorScheduler(MultiFactorScheduler, _LRScheduler):
             step = kwargs.pop("step")
             acc_step = [step[0]]
             for i, _step in enumerate(step[1:]):
-                step.append(acc_step[i] + _step)
+                acc_step.append(acc_step[i] + _step)
             kwargs.update({"step": acc_step})
 
         if "final_lr" in kwargs:
@@ -471,11 +471,19 @@ def get_lr_scheduler(scheduler: (str, LRScheduler) = "cosine", logger=logging, u
     {'scheduler': 'PolyScheduler', 'base_lr': 0.01, 'step': 1, 'max_steps': 20,
     'final_lr': 0.001, 'warmup_mode': 'linear', 'warmup_begin_lr': 0, 'warmup_steps': 10}
     >>> get_lr_scheduler("multifactor", learning_rate=0.01, discount=0.1,
+    ...     step=[20, 30, 40])  # doctest: +NORMALIZE_WHITESPACE
+    {'scheduler': 'MultiFactorScheduler', 'base_lr': 0.01, 'steps': [20, 30, 40],
+    'warmup_mode': 'linear', 'warmup_begin_lr': 0, 'warmup_steps': 0}
+    >>> get_lr_scheduler("multifactor", learning_rate=0.01, discount=0.1,
+    ...     step=[20, 10, 10], acc_step=True)  # doctest: +NORMALIZE_WHITESPACE
+    {'scheduler': 'MultiFactorScheduler', 'base_lr': 0.01, 'steps': [20, 30, 40],
+    'warmup_mode': 'linear', 'warmup_begin_lr': 0, 'warmup_steps': 0}
+    >>> get_lr_scheduler("multifactor", learning_rate=0.01, discount=0.1,
     ...     update_epoch=[2, 3, 4], warmup_epoch=1, batches_per_epoch=10)  # doctest: +NORMALIZE_WHITESPACE
     {'scheduler': 'MultiFactorScheduler', 'base_lr': 0.01, 'steps': [20, 30],
     'warmup_mode': 'linear', 'warmup_begin_lr': 0, 'warmup_steps': 10}
-    >>> get_lr_scheduler("multifactor", learning_rate=0.01, discount=0.1,
-    ...     update_epoch=[2, 1, 1], warmup_epoch=1, acc_step=True, batches_per_epoch=10)  # doctest: +NORMALIZE_WHITESPACE
+    >>> get_lr_scheduler("multifactor", learning_rate=0.01, discount=0.1, update_epoch=[2, 1, 1],
+    ...     warmup_epoch=1, acc_step=True, batches_per_epoch=10)  # doctest: +NORMALIZE_WHITESPACE
     {'scheduler': 'MultiFactorScheduler', 'base_lr': 0.01, 'steps': [20, 30],
     'warmup_mode': 'linear', 'warmup_begin_lr': 0, 'warmup_steps': 10}
     >>> get_lr_scheduler("cosine", learning_rate=0.01, discount=0.1,
