@@ -238,6 +238,9 @@ class Configuration(object):
     True
     >>> c.get("e", 0)
     0
+    >>> c.update(e=2)
+    >>> c["e"]
+    2
     """
 
     def __init__(self, logger=logging, **kwargs):
@@ -249,6 +252,18 @@ class Configuration(object):
         for param, value in params.items():
             # all class variables will be contained in instance variables
             setattr(self, "%s" % param, value)
+
+    def deep_update(self, **kwargs):
+        for param, value in kwargs.items():
+            setattr(self, "%s" % param, value)
+
+    def _update(self, **kwargs):
+        self.deep_update(**kwargs)
+
+    def update(self, **kwargs):
+        params = self.class_var
+        params.update(**kwargs)
+        self._update(**params)
 
     @classmethod
     def vars(cls):
@@ -394,7 +409,7 @@ class Configuration(object):
             所有非参变量
         """
         return CLASS_EXCLUDE_NAMES | {
-            'class_var', 'parsable_var', 'items', 'load', 'dump', 'help_info', 'get'
+            'class_var', 'parsable_var', 'items', 'load', 'dump', 'help_info', 'get', 'update', 'deep_update'
         } | cls.run_time_variables()
 
     @classmethod
