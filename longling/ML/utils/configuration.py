@@ -56,18 +56,40 @@ class Configuration(parser.Configuration):
         Notes
         -----
         Developers modifying this code should simultaneously modify the relevant codes in glue and tore
+
+        Examples
+        --------
+        >>> cfg = Configuration(epoch=5)
+        >>> cfg["epoch"]
+        5
+        >>> cfg   # doctest: +ELLIPSIS
+        logger: <Logger MLModel (INFO)>
+        model_name: MLModel
+        root: ./
+        ...
         """
-        super(Configuration, self).__init__(
-            logger=config_logging(
-                logger=self.model_name,
-                console_log_level=LogLevel.INFO
-            )
-        )
+        super(Configuration, self).__init__()
 
         params = self.class_var
         if params_path:
             params.update(self.load_cfg(cfg_path=params_path, **(params_kwargs if params_kwargs else {})))
         params.update(**kwargs)
+
+        self.validation_result_file = None
+        self.cfg_path = None
+
+        self._update(**params)
+
+    def _update(self, **kwargs):
+        params = kwargs
+
+        params["logger"] = params.pop(
+            "logger",
+            config_logging(
+                logger=params.get("model_name", self.model_name),
+                console_log_level="info"
+            )
+        )
 
         for key in params:
             if key.endswith("_params") and key + "_update" in params:

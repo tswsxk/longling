@@ -53,7 +53,7 @@ class Configuration(parser.Configuration):
     # 说明
     caption = ""
 
-    def __init__(self, params_path=None, **kwargs):
+    def __init__(self, params_path=None, params_kwargs=None, **kwargs):
         """
         Configuration File, including categories:
 
@@ -73,24 +73,28 @@ class Configuration(parser.Configuration):
 
         Examples
         --------
-        >>> cfg = Configuration(model_dir="./", ctx="cpu(0)")
+        >>> cfg = Configuration(model_name="longling", model_dir="./", ctx="cpu(0)")
         >>> cfg  # doctest: +ELLIPSIS
-        logger: <Logger model (INFO)>
-        model_name: model
+        logger: <Logger longling (INFO)>
+        model_name: longling
         model_dir: ./
         ...
         >>> cfg.var2val("$model_dir")
         './'
         """
+        super(Configuration, self).__init__()
         params = self.class_var
         if params_path:
-            params.update(self.load_cfg(cfg_path=params_path))
+            params.update(self.load_cfg(cfg_path=params_path, **(params_kwargs if params_kwargs else {})))
         params.update(**kwargs)
 
-        for key in params:
-            if key.endswith("_params") and key + "_update" in params:
-                params[key].update(params[key + "_update"])
+        self.validation_result_file = None
+        self.cfg_path = None
 
+        self.update(**params)
+
+    def _update(self, **kwargs):
+        params = kwargs
         params["logger"] = params.pop(
             "logger",
             config_logging(
@@ -98,7 +102,12 @@ class Configuration(parser.Configuration):
                 console_log_level="info"
             )
         )
-        super(Configuration, self).__init__(**params)
+
+        for key in params:
+            if key.endswith("_params") and key + "_update" in params:
+                params[key].update(params[key + "_update"])
+
+        self.deep_update(**params)
 
         _vars = [
             "ctx"

@@ -5,7 +5,6 @@ __all__ = ["Configuration", "ConfigurationParser"]
 
 from longling import path_append
 from longling.ML.PytorchHelper.tore import parser
-from longling.ML.PytorchHelper.tore.parser import eval_var
 from longling.ML.PytorchHelper.toolkit import get_optimizer_cfg
 from longling.ML.DL import ALL_PARAMS as SELECT
 from longling.lib.parser import var2exp
@@ -49,7 +48,7 @@ class Configuration(parser.Configuration):
     # 说明
     caption = ""
 
-    def __init__(self, params_path=None, **kwargs):
+    def __init__(self, params_path=None, params_kwargs=None, **kwargs):
         """
         Configuration File, including categories:
 
@@ -69,24 +68,28 @@ class Configuration(parser.Configuration):
 
         Examples
         -------
-        >>> cfg = Configuration(model_dir="./")
+        >>> cfg = Configuration(model_name="longling", model_dir="./")
         >>> cfg  # doctest: +ELLIPSIS
-        logger: <Logger model (INFO)>
-        model_name: model
+        logger: <Logger longling (INFO)>
+        model_name: longling
         model_dir: ./
         ...
         >>> cfg.var2val("$model_dir")
         './'
         """
+        super(Configuration, self).__init__()
         params = self.class_var
         if params_path:
-            params.update(self.load_cfg(cfg_path=params_path))
+            params.update(self.load_cfg(cfg_path=params_path, **(params_kwargs if params_kwargs else {})))
         params.update(**kwargs)
 
-        for key in params:
-            if key.endswith("_params") and key + "_update" in params:
-                params[key].update(params[key + "_update"])
+        self.validation_result_file = None
+        self.cfg_path = None
 
+        self.update(**params)
+
+    def _update(self, **kwargs):
+        params = kwargs
         params["logger"] = params.pop(
             "logger",
             config_logging(
@@ -94,16 +97,12 @@ class Configuration(parser.Configuration):
                 console_log_level="info"
             )
         )
-        super(Configuration, self).__init__(**params)
 
-        _vars = [
-        ]  # pragma: no cover
-        for _var in _vars:  # pragma: no cover
-            if _var in kwargs:
-                try:
-                    setattr(self, _var, eval_var(kwargs[_var]))
-                except TypeError:
-                    pass
+        for key in params:
+            if key.endswith("_params") and key + "_update" in params:
+                params[key].update(params[key + "_update"])
+
+        self.deep_update(**params)
 
         self.validation_result_file = path_append(
             self.model_dir, "result.json", to_str=True
