@@ -1,3 +1,6 @@
+1.3.30:
+    1. add update method in Configuration class
+
 1.3.29:
     1. mxnet gallery is moved to Baize(https://github.com/tswsxk/Baize)
     2. update light_module
