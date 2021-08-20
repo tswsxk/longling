@@ -1,3 +1,7 @@
+1.3.31:
+    1. add instance_var in Configuration class
+    2. fix hyper_search with nni in light_module
+
 1.3.30:
     1. add update method in Configuration class
 
