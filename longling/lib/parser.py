@@ -19,6 +19,7 @@ import toml
 import yaml
 from longling import wf_open
 from longling.lib.path import path_append
+from longling.lib.structure import nested_update
 
 __all__ = [
     "CLASS_EXCLUDE_NAMES", "get_class_var",
@@ -228,7 +229,7 @@ class Configuration(object):
     Examples
     --------
     >>> c = Configuration(a=1, b="example", c=[0,2], d={"a1": 3})
-    >>> c.parsable_var
+    >>> c.instance_var
     {'a': 1, 'b': 'example', 'c': [0, 2], 'd': {'a1': 3}}
     >>> c.default_file_format()
     'json'
@@ -261,7 +262,7 @@ class Configuration(object):
         self.deep_update(**kwargs)
 
     def update(self, **kwargs):
-        params = self.class_var
+        params = self.instance_var
         params.update(**kwargs)
         self._update(**params)
 
@@ -300,6 +301,14 @@ class Configuration(object):
         store_vars: dict
             可以进行命令行设定的参数
         """
+        return get_parsable_var(
+            self,
+            parse_exclude=None,
+            dump_parse_functions=None,
+        )
+
+    @property
+    def instance_var(self):
         return get_parsable_var(
             self,
             parse_exclude=None,
@@ -409,7 +418,8 @@ class Configuration(object):
             所有非参变量
         """
         return CLASS_EXCLUDE_NAMES | {
-            'class_var', 'parsable_var', 'items', 'load', 'dump', 'help_info', 'get', 'update', 'deep_update'
+            'class_var', 'parsable_var', 'instance_var', 'items', 'load', 'dump', 'help_info', 'get', 'update',
+            'deep_update'
         } | cls.run_time_variables()
 
     @classmethod
