@@ -19,16 +19,18 @@ def train(
         enable_hyper_search=False, reporthook=None, final_reporthook=None, primary_key=None,
         eval_epoch=1, loss_dict2tmt_loss=None, epoch_lr_scheduler=None, batch_lr_scheduler=None, loss_as_dict=False,
         **cfg_kwargs):
-    net = net if get_net is None else get_net(**cfg.hyper_params)
-
-    if net_init is not None:
-        net_init(net, cfg=cfg, **cfg.init_params)
-
     if enable_hyper_search:
+        assert get_net is not None
         cfg_kwargs, reporthook, final_reporthook, tag = prepare_hyper_search(
             cfg_kwargs, reporthook, final_reporthook, primary_key=primary_key, with_keys="Epoch"
         )
         dump_result = not tag
+        cfg.update(**cfg_kwargs)
+
+    net = net if get_net is None else get_net(**cfg.hyper_params)
+
+    if net_init is not None:
+        net_init(net, cfg=cfg, **cfg.init_params)
 
     ctx = cfg.ctx
     batch_size = cfg.batch_size
