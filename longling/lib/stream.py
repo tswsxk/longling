@@ -20,7 +20,7 @@ __all__ = ['to_io', 'as_io', 'as_out_io', 'rf_open', 'wf_open', 'rf_group_open',
            'flush_print', 'build_dir', 'json_load',
            'as_io_group', 'as_out_io_group',
            'pickle_load', 'AddPrinter', 'AddObject', 'StreamError', 'check_file',
-           'PATH_TYPE', 'encode', 'IO_TYPE', "PATH_IO_TYPE"
+           'PATH_TYPE', 'encode', 'IO_TYPE', "PATH_IO_TYPE", "block_std"
            ]
 
 
@@ -31,6 +31,23 @@ class StreamError(Exception):
 PATH_TYPE = (str, PurePath)
 IO_TYPE = (TextIOWrapper, TextIO, BinaryIO, codecs.StreamReaderWriter, fileinput.FileInput)
 PATH_IO_TYPE = (PATH_TYPE, IO_TYPE)
+
+
+@contextmanager
+def block_std():
+    """
+    Examples
+    --------
+    >>> print("hello world")
+    hello world
+    >>> with block_std():
+    ...     print("hello world")
+    """
+    sys.stdout = open(os.devnull, "w")
+    sys.stderr = open(os.devnull, "w")
+    yield
+    sys.stdout = sys.__stdout__
+    sys.stderr = sys.__stderr__
 
 
 def flush_print(*values, **kwargs):
