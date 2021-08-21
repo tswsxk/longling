@@ -11,15 +11,13 @@ import logging
 import os
 import re
 import sys
-from collections import Iterable
 from copy import deepcopy
-from typing import List, Dict
+from typing import List, Dict, Iterable
 
 import toml
 import yaml
 from longling import wf_open
 from longling.lib.path import path_append
-from longling.lib.structure import nested_update
 
 __all__ = [
     "CLASS_EXCLUDE_NAMES", "get_class_var",
@@ -712,7 +710,7 @@ class ConfigurationParser(argparse.ArgumentParser):
     @staticmethod
     def parse(arguments):
         """参数后解析"""
-        arguments = vars(arguments)
+        arguments = vars(arguments) if not isinstance(arguments, dict) else arguments
         args_dict = dict()
         for k, v in arguments.items():
             if k == "kwargs" and v:

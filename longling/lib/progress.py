@@ -45,7 +45,7 @@ cooperate with tqdm
             return tqdm(iterator, **kwargs)
 """
 
-from collections import Iterable
+from typing import Iterable
 from longling.lib.stream import flush_print
 import threading
 import queue
