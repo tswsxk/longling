@@ -3,7 +3,27 @@
 
 from longling import path_append
 
-__all__ = ["epoch_params_filename", "get_epoch_params_filepath"]
+__all__ = ["epoch_params_filename", "get_epoch_params_filepath", "params_filename", "get_params_filepath"]
+
+
+def params_filename(model_name: str):
+    """
+    Examples
+    --------
+    >>> params_filename("CNN")
+    'CNN.params'
+    """
+    return "%s.params" % model_name
+
+
+def get_params_filepath(model_name: str, model_dir: str = "./"):
+    """
+    Examples
+    --------
+    >>> params_filename("CNN")
+    'CNN.params'
+    """
+    return path_append(model_dir, params_filename(model_name), to_str=True)
 
 
 def epoch_params_filename(model_name: str, epoch: int):
