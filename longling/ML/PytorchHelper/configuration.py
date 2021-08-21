@@ -9,6 +9,7 @@ from longling.ML.PytorchHelper.toolkit import get_optimizer_cfg
 from longling.ML.DL import ALL_PARAMS as SELECT
 from longling.lib.parser import var2exp
 from longling.lib.utilog import config_logging
+from longling.ML.const import RESULT_JSON, CFG_JSON
 
 
 class Configuration(parser.Configuration):
@@ -105,10 +106,10 @@ class Configuration(parser.Configuration):
         self.deep_update(**params)
 
         self.validation_result_file = path_append(
-            self.model_dir, "result.json", to_str=True
+            self.model_dir, RESULT_JSON, to_str=True
         )
         self.cfg_path = path_append(
-            self.model_dir, "configuration.json", to_str=True
+            self.model_dir, CFG_JSON, to_str=True
         )
 
     def dump(self, cfg_path=None, override=True, file_format=None):
