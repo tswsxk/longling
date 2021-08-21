@@ -3,6 +3,7 @@
 
 import logging
 
+from copy import deepcopy
 from mxnet import gluon
 
 
@@ -18,6 +19,7 @@ def get_trainer(net, optimizer='sgd', optimizer_params=None, lr_params=None, sel
             pass
         else:
             from longling.ML.MxnetHelper.toolkit import get_lr_scheduler
+            optimizer_params = deepcopy(optimizer_params)
             optimizer_params["lr_scheduler"] = get_lr_scheduler(logger=logger, **lr_params)
 
     trainer = gluon.Trainer(
