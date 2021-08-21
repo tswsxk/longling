@@ -18,14 +18,19 @@ def train(
         fit_f, eval_f=None, net_init=None, get_net=None, get_loss=None, get_trainer=None, save_params=None,
         enable_hyper_search=False, reporthook=None, final_reporthook=None, primary_key=None,
         eval_epoch=1, loss_dict2tmt_loss=None, epoch_lr_scheduler=None, batch_lr_scheduler=None, loss_as_dict=False,
-        **cfg_kwargs):
+        verbose=True, dump_cfg=None, **cfg_kwargs):
     if enable_hyper_search:
         assert get_net is not None
         cfg_kwargs, reporthook, final_reporthook, tag = prepare_hyper_search(
             cfg_kwargs, reporthook, final_reporthook, primary_key=primary_key, with_keys="Epoch"
         )
         dump_result = not tag
+        verbose = not tag
         cfg.update(**cfg_kwargs)
+
+    dump_cfg = dump_cfg if dump_cfg is not None else params_save
+    if dump_cfg:
+        cfg.dump()
 
     net = net if get_net is None else get_net(**cfg.hyper_params)
 
@@ -62,11 +67,12 @@ def train(
                 "Loss": loss_monitor.losses
             },
             player_type="epoch",
-            total_epoch=cfg.end_epoch - 1
+            total_epoch=cfg.end_epoch - 1,
+            silent=not verbose
         )
     elif progress_monitor is None or progress_monitor == "tqdm":
         def progress_monitor(x, e):
-            return tqdm(x, "Epoch: %s" % e)
+            return tqdm(x, "Epoch: %s" % e, disable=not verbose)
 
     if dump_result:
         from longling import config_logging
