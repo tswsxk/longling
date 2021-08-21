@@ -13,7 +13,7 @@ def train(
         *,
         fit_f, eval_f=None, get_net=None, get_loss=None, get_trainer=None, save_params=None,
         enable_hyper_search=False, reporthook=None, final_reporthook=None, primary_key=None,
-        eval_epoch=1, initial_net=True, net_init=None,
+        eval_epoch=1, initial_net=True, net_init=None, verbose=True, dump_cfg=None,
         **cfg_kwargs
 ):
     if initial_net:
@@ -33,5 +33,7 @@ def train(
         save_params=save_params,
         enable_hyper_search=enable_hyper_search, reporthook=reporthook,
         final_reporthook=final_reporthook,
-        primary_key=primary_key, eval_epoch=eval_epoch, loss_dict2tmt_loss=loss_dict2tmt_mx_loss, **cfg_kwargs
+        primary_key=primary_key, eval_epoch=eval_epoch, loss_dict2tmt_loss=loss_dict2tmt_mx_loss, verbose=verbose,
+        dump_cfg=dump_cfg,
+        **cfg_kwargs
     )
