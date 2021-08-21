@@ -11,6 +11,7 @@ from longling import path_append
 from longling.lib import parser
 from longling.lib.parser import var2exp
 from longling.lib.utilog import config_logging, LogLevel
+from ..const import CFG_JSON, RESULT_JSON
 
 
 class Configuration(parser.Configuration):
@@ -130,10 +131,10 @@ class Configuration(parser.Configuration):
             setattr(self, _dir, eval(exp))
 
         self.validation_result_file = path_append(
-            self.model_dir, "result.json", to_str=True
+            self.model_dir, RESULT_JSON, to_str=True
         )
         self.cfg_path = path_append(
-            self.model_dir, "configuration.json", to_str=True
+            self.model_dir, CFG_JSON, to_str=True
         )
 
     def dump(self, cfg_path=None, override=True, file_format=None):
