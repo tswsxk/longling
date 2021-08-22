@@ -31,7 +31,7 @@ def fit_f(_net, batch_data, loss_function, *args, **kwargs):
     return sum(loss)
 
 
-def eval_f(_net, test_data, ctx=mx.cpu()):
+def eval_f(_net, test_data, ctx=mx.cpu(), *args, **kwargs):
     y_true = []
     y_pred = []
     for x, y in test_data:

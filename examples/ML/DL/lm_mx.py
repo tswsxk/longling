@@ -63,7 +63,7 @@ def config():
     return configuration
 
 
-def eval_f(_net, test_data, ctx=mx.cpu()):
+def eval_f(_net, test_data, ctx=mx.cpu(), *args, **kwargs):
     y_true = []
     y_pred = []
     for x, y in test_data:
