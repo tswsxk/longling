@@ -18,16 +18,19 @@ def train(
         fit_f, eval_f=None, net_init=None, get_net=None, get_loss=None, get_trainer=None, save_params=None,
         enable_hyper_search=False, reporthook=None, final_reporthook=None, primary_key=None,
         eval_epoch=1, loss_dict2tmt_loss=None, epoch_lr_scheduler=None, batch_lr_scheduler=None, loss_as_dict=False,
-        verbose=True, dump_cfg=None, **cfg_kwargs):
+        verbose=None, dump_cfg=None, **cfg_kwargs):
     if enable_hyper_search:
         assert get_net is not None
         cfg_kwargs, reporthook, final_reporthook, tag = prepare_hyper_search(
-            cfg_kwargs, reporthook, final_reporthook, primary_key=primary_key, with_keys="Epoch"
+            cfg_kwargs, reporthook, final_reporthook, primary_key=primary_key, with_keys="Epoch", dump=params_save
         )
-        dump_result = not tag
-        verbose = not tag
+        dump_result = tag
+        verbose = tag if verbose is None else verbose
         cfg.update(**cfg_kwargs)
+        print("hyper search enabled")
+        print(cfg)
 
+    verbose = True if verbose is None else verbose
     dump_cfg = dump_cfg if dump_cfg is not None else params_save
     if dump_cfg:
         cfg.dump()
@@ -35,7 +38,7 @@ def train(
     net = net if get_net is None else get_net(**cfg.hyper_params)
 
     if net_init is not None:
-        net_init(net, cfg=cfg, **cfg.init_params)
+        net_init(net, cfg=cfg, initializer_kwargs=cfg.init_params)
 
     train_ctx = cfg.ctx if cfg.train_ctx is None else cfg.train_ctx
     eval_ctx = cfg.ctx if cfg.eval_ctx is None else cfg.eval_ctx
@@ -141,7 +144,7 @@ def train(
             msg, data = evaluation_formatter(
                 iteration=epoch,
                 loss_name_value=dict(loss_monitor.items()),
-                eval_name_value=eval_f(net, test_data, ctx=eval_ctx, **cfg.get("eval_params", {})),
+                eval_name_value=eval_f(net, test_data, ctx=eval_ctx, verbose=verbose, **cfg.get("eval_params", {})),
                 extra_info=None,
                 dump=dump_result,
                 keep={"msg", "data"}
