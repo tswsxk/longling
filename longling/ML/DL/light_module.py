@@ -8,6 +8,7 @@ from longling.ML.toolkit import MovingLoss
 from longling.ML.toolkit import ConsoleProgressMonitor
 from tqdm import tqdm
 from longling.ML import get_epoch_params_filepath
+from longling.ML.const import RESULT_LOG
 
 
 def train(
@@ -81,7 +82,7 @@ def train(
     if dump_result:
         from longling import config_logging
         validation_logger = config_logging(
-            filename=path_append(cfg.model_dir, "result.log"),
+            filename=path_append(cfg.model_dir, cfg.get("result_log", RESULT_LOG)),
             logger="%s-validation" % cfg.model_name,
             mode="w",
             log_format="%(message)s",
