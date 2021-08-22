@@ -39,6 +39,8 @@ class Configuration(parser.Configuration):
 
     # 运行设备
     ctx = cpu()
+    train_ctx = None
+    eval_ctx = None
 
     # 工具包参数
     toolbox_params = {}

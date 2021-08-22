@@ -37,7 +37,8 @@ def train(
     if net_init is not None:
         net_init(net, cfg=cfg, **cfg.init_params)
 
-    ctx = cfg.ctx
+    train_ctx = cfg.ctx if cfg.train_ctx is None else cfg.train_ctx
+    eval_ctx = cfg.ctx if cfg.eval_ctx is None else cfg.eval_ctx
     batch_size = cfg.batch_size
 
     loss_function = get_loss(**cfg.loss_params) if get_loss is not None else loss_function
@@ -109,7 +110,7 @@ def train(
                 trainer=trainer,
                 loss_function=_loss_function,
                 loss_monitor=loss_monitor,
-                ctx=ctx,
+                ctx=train_ctx,
             )
             if batch_lr_scheduler is not None:
                 batch_lr_scheduler.step()
@@ -140,7 +141,7 @@ def train(
             msg, data = evaluation_formatter(
                 iteration=epoch,
                 loss_name_value=dict(loss_monitor.items()),
-                eval_name_value=eval_f(net, test_data, ctx=ctx, **cfg.get("eval_params", {})),
+                eval_name_value=eval_f(net, test_data, ctx=eval_ctx, **cfg.get("eval_params", {})),
                 extra_info=None,
                 dump=dump_result,
                 keep={"msg", "data"}
