@@ -14,7 +14,7 @@ def train(
         fit_f, eval_f=None, get_net=None, get_loss=None, get_trainer=None, save_params=None,
         enable_hyper_search=False, reporthook=None, final_reporthook=None, primary_key=None,
         eval_epoch=1, initial_net=True, net_init=None, batch_lr_scheduler=None, epoch_lr_scheduler=None,
-        loss_as_dict=False, verbose=True, dump_cfg=None, **cfg_kwargs
+        loss_as_dict=False, verbose=None, dump_cfg=None, **cfg_kwargs
 ):
     if initial_net:
         net_init = _net_init if net_init is None else net_init

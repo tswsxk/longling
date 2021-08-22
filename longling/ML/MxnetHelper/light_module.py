@@ -13,7 +13,7 @@ def train(
         *,
         fit_f, eval_f=None, get_net=None, get_loss=None, get_trainer=None, save_params=None,
         enable_hyper_search=False, reporthook=None, final_reporthook=None, primary_key=None,
-        eval_epoch=1, initial_net=True, net_init=None, verbose=True, dump_cfg=None,
+        eval_epoch=1, initial_net=True, net_init=None, verbose=None, dump_cfg=None,
         **cfg_kwargs
 ):
     if initial_net:
