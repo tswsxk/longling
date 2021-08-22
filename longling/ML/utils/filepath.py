@@ -20,7 +20,7 @@ def get_params_filepath(model_name: str, model_dir: str = "./"):
     """
     Examples
     --------
-    >>> params_filename("CNN")
+    >>> get_params_filepath("CNN")
     'CNN.params'
     """
     return path_append(model_dir, params_filename(model_name), to_str=True)
