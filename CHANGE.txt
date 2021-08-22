@@ -1,3 +1,6 @@
+1.3.32:
+    1. enable different ctx for train and eval in light_module
+
 1.3.31:
     1. add instance_var in Configuration class
     2. fix invalid hyper_search with nni in light_module
