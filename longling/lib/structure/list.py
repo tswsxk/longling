@@ -2,7 +2,7 @@
 # 2020/8/23 @ tongshiwei
 
 
-from collections import Iterable
+from typing import Iterable
 import bisect
 
 __all__ = ["SortedList"]

@@ -1,7 +1,7 @@
 # coding: utf-8
 # create by tongshiwei on 2020-11-21
 
-from collections import Iterable
+from typing import Iterable
 
 import pandas as pd
 from longling import as_list
