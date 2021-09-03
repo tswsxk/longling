@@ -4,7 +4,7 @@
 import warnings
 import functools
 import math
-from collections import Iterable
+from typing import Iterable
 
 try:
     NAN = math.nan
