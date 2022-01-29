@@ -1,3 +1,6 @@
+1.3.33:
+    1. replace `max_rows` with `display.max_rows` and `max_columns` with `display.max_columns` to support pandas 1.4
+
 1.3.32:
     1. enable different ctx for train and eval in light_module
     2. fix some errors in light_module
