@@ -77,8 +77,8 @@ def pandas_format(data: (dict, list, tuple), columns: list = None, index: (list,
     import pandas as pd
 
     kwargs.update({
-        "max_rows": max_rows,
-        "max_columns": max_columns,
+        "display.max_rows": max_rows,
+        "display.max_columns": max_columns,
     })
 
     pd_kwargs = {} if pd_kwargs is None else pd_kwargs
