@@ -24,8 +24,8 @@ def set_device(_net, ctx, *args, **kwargs):
                 device_ids = [int(i) for i in device_ids.strip().split(",")]
                 try:
                     if not isinstance(_net, DataParallel):
-                        return DataParallel(_net, device_ids).cuda()
-                    return _net.cuda(device_ids)
+                        return DataParallel(_net, device_ids).cuda(device_ids[0])
+                    return _net.cuda(device_ids[0])
                 except AssertionError as e:
                     logging.error(device_ids)
                     raise e
