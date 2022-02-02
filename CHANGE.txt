@@ -1,5 +1,6 @@
 1.3.35:
     1. [bugfix] gpu device specification in `set_device`
+    2. [feat] can use dict-type select in torch trainer
 
 1.3.34:
     1. [bugfix] missing `()` in `set_device` of `PytorchHelper`
