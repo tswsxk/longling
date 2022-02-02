@@ -149,9 +149,37 @@ def get_trainer(net, optimizer, optimizer_params=None, lr_params=None, select=No
         nesterov: False
         weight_decay: 0
     )
+    >>> select = {".*embedding": {"weight_decay": 0.0001}, "^(?!.*embedding)": {}}
+    >>> get_trainer(net, torch.optim.SGD, optimizer_params={"lr": 0.01},
+    ...     select=select)
+    SGD (
+    Parameter Group 0
+        dampening: 0
+        lr: 0.01
+        momentum: 0
+        nesterov: False
+        weight_decay: 0.0001
+    <BLANKLINE>
+    Parameter Group 1
+        dampening: 0
+        lr: 0.01
+        momentum: 0
+        nesterov: False
+        weight_decay: 0
+    )
     """
     assert isinstance(optimizer, str) or issubclass(optimizer, torch.optim.Optimizer)
-    parameters = collect_params(net, select)
+
+    if select is None or isinstance(select, str):
+        parameters = collect_params(net, select)
+    elif isinstance(select, dict):
+        parameters = []
+        for k, v in select.items():
+            params = {"params": collect_params(net, k)}
+            params.update(v)
+            parameters.append(params)
+    else:  # pragma: no cover
+        raise TypeError("select should be None, str or dict, now is %s" % type(select))
     assert optimizer_params is None or isinstance(optimizer_params, dict)
     optimizer_params = {} if optimizer_params is None else optimizer_params
 
