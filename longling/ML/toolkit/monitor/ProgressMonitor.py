@@ -105,7 +105,7 @@ class ConsoleProgressMonitorPlayer(object):
 
         Parameters
         ----------
-        t  : int
+        t  : int or float
             Number of seconds.
 
         Returns
@@ -129,6 +129,8 @@ class ConsoleProgressMonitorPlayer(object):
         '100:00:00'
         >>> ConsoleProgressMonitorPlayer.format_interval(3600000)
         '1000:00:00'
+        >>> ConsoleProgressMonitorPlayer.format_interval(36.123, time_digital=True)
+        '00:36.123'
         """
         ms = int(round(t - int(t), 3) * 1000)
         mins, s = divmod(int(t), 60)
