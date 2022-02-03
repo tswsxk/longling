@@ -73,7 +73,8 @@ def train(
             },
             player_type="epoch",
             total_epoch=cfg.end_epoch - 1,
-            silent=not verbose
+            silent=not verbose,
+            time_digital=getattr(cfg, "time_digital", False)
         )
     elif progress_monitor is None or progress_monitor == "tqdm":
         def progress_monitor(x, e):

@@ -20,7 +20,7 @@ __all__ = ["ConsoleProgressMonitor", "ConsoleProgressMonitorPlayer"]
 
 class ConsoleProgressMonitorPlayer(object):
     def __init__(self, indexes: (dict, OrderedDict), values: (dict, None) = None,
-                 total=NAN, silent=False, timer=None, stream=sys.stdout, *args, **kwargs):
+                 total=NAN, silent=False, timer=None, stream=sys.stdout, time_digital=False, *args, **kwargs):
         """
 
         Parameters
@@ -56,6 +56,7 @@ class ConsoleProgressMonitorPlayer(object):
 
         self.stream = stream
         self.timer = timer if timer is not None else Timer()
+        self.time_digital = time_digital
 
         index_header = ""
         arguments = []
@@ -76,7 +77,7 @@ class ConsoleProgressMonitorPlayer(object):
 
     @property
     def progress_header_fmt(self):
-        return "{:^30}"
+        return "{:^30}" if not self.time_digital else "{:^36}"
 
     @property
     def progress_header(self):
@@ -88,17 +89,17 @@ class ConsoleProgressMonitorPlayer(object):
         if not round(elapsed, 6) or not self.n:  # pragma: no cover
             return ""
         rate = self.n / elapsed
-        elapsed = self.format_interval(int(elapsed))
+        elapsed = self.format_interval(elapsed, time_digital=self.time_digital)
         if self.total is not NAN:
-            remaining = int((self.total - self.n) / rate)
-            remaining = "<" + self.format_interval(remaining)
+            remaining = (self.total - self.n) / rate
+            remaining = "<" + self.format_interval(remaining, time_digital=self.time_digital)
         else:
             remaining = ""
 
         return "[%s]" % (elapsed + remaining + ", {:.2f}it/s".format(rate))
 
     @staticmethod
-    def format_interval(t):
+    def format_interval(t, time_digital=False):
         """
         Formats a number of seconds as a clock time, [H:]MM:SS
 
@@ -129,10 +130,13 @@ class ConsoleProgressMonitorPlayer(object):
         >>> ConsoleProgressMonitorPlayer.format_interval(3600000)
         '1000:00:00'
         """
+        ms = int(round(t - int(t), 3) * 1000)
         mins, s = divmod(int(t), 60)
         h, m = divmod(mins, 60)
         if h:
             return '{0:d}:{1:02d}:{2:02d}'.format(h, m, s)
+        elif time_digital and not m:
+            return '{0:02d}:{1:02d}.{2:03d}'.format(m, s, ms)
         else:
             return '{0:02d}:{1:02d}'.format(m, s)
 
