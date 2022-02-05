@@ -182,7 +182,7 @@ def prepare_hyper_search(cfg_kwargs: dict,
     .. code-block :: python
 
         cfg_kwargs, reporthook, final_reporthook, tag = prepare_hyper_search(
-            cfg_kwargs, Configuration, reporthook, final_reporthook, primary_key="macro_avg:f1"
+            cfg_kwargs, reporthook, final_reporthook, primary_key="macro_avg:f1"
         )
 
         _cfg = Configuration(**cfg_kwargs)
