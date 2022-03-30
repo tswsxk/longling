@@ -137,7 +137,7 @@ class ConsoleProgressMonitorPlayer(object):
         h, m = divmod(mins, 60)
         if h:
             return '{0:d}:{1:02d}:{2:02d}'.format(h, m, s)
-        elif time_digital and not m:
+        elif time_digital:
             return '{0:02d}:{1:02d}.{2:03d}'.format(m, s, ms)
         else:
             return '{0:02d}:{1:02d}'.format(m, s)
