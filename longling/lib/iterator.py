@@ -191,6 +191,7 @@ class LoopIter(BaseIter):
 
 def produce(data, produce_queue):
     _stop = False
+    data = data() if callable(data) else data
     try:
         for _data in data:
             produce_queue.put(_data)
@@ -240,7 +241,12 @@ class AsyncLoopIter(LoopIter):
         return map_dict[mode]
 
     def reset(self):
-        super(AsyncLoopIter, self).reset()
+        if self.mode == "p":
+            self._set_length()
+            self._data = self._reset
+        else:
+            super(AsyncLoopIter, self).reset()
+
         if self.thread is not None:
             self.thread.join()
 
@@ -385,6 +391,30 @@ def iterwrap(itertype: str = "AsyncLoopIter", *args, **kwargs):
         for _ in range(5):
             for line in data:
                 pass
+
+    Warnings
+    --------
+    As mentioned in [1], on Windows or MacOS, `spawn()` is the default multiprocessing start method.
+    Using `spawn()`, another interpreter is launched which runs your main script,
+    followed by the internal worker function that receives parameters through pickle serialization.
+    However, `functools.partial` does not well fit `pickle` like discussed in [2].
+    Therefore, all itertype will not support `level='p'` in windows platform.
+
+    Notes
+    ------
+    Although `fork` in `multiprocessing` is quite easy to use, and iterwrap can work well with it,
+    the users should still be aware of that `fork` is not safety enough as mentioned in [3].
+
+    We use the default mode when deal with `multiprocessing`, i.e., `spawn` in windows and macos, and `folk` in linux.
+    An example to change the default behaviour is `multiprocessing.set_start_method('spawn')`, which could
+    be found in [3]
+
+    References
+    ----------
+    [1] https://pytorch.org/docs/stable/data.html#platform-specific-behaviors
+    [2] https://stackoverflow.com/questions/51867402/cant-\
+    pickle-function-stringtongrams-at-0x104144f28-its-not-the-same-object
+    [3] https://docs.python.org/3/library/multiprocessing.html#contexts-and-start-methods
     """
     if itertype not in register:
         raise TypeError("itertype %s is unknown, the available type are %s" % (itertype, ", ".join(register)))
