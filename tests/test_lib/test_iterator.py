@@ -23,9 +23,6 @@ def etl():
 
 @pytest.mark.parametrize("iter_params", [(BaseIter, {}), (AsyncIter, {}), (AsyncIter, {"level": "t"})])
 def test_base(iter_params):
-    # if _skip_windows():
-    #     return
-
     Iter, params = iter_params
 
     @Iter.wrap
@@ -67,21 +64,17 @@ def test_loop(tmpdir):
         LoopIter: [{}],
         AsyncLoopIter: [
             {},
-            # dict(level="p")
+            dict(level="p")
         ],
         MemoryIter: [
             {},
             dict(prefetch=True),
         ],
         CacheAsyncLoopIter: [
-            # dict(cache_file=path_append(tmpdir, "test.jsonl"), level="p"),
-            dict(cache_file=path_append(tmpdir, "test.jsonl"), rerun=True),
+            dict(cache_file=path_append(tmpdir, "test.jsonl"), level="p"),
             dict(cache_file=path_append(tmpdir, "test.jsonl"), rerun=False)
         ]
     }
-    if not _skip_windows():
-        test_iter[AsyncLoopIter].append(dict(level="p"))
-        test_iter[CacheAsyncLoopIter].append(dict(cache_file=path_append(tmpdir, "test.jsonl"), level="p"))
 
     for Iter, params in test_iter.items():
 
