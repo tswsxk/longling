@@ -3,7 +3,8 @@
 
 import asyncio
 from concurrent.futures import ThreadPoolExecutor as StdTPE
-from multiprocessing.pool import Pool
+# from multiprocessing.pool import Pool
+from multiprocess.pool import Pool
 
 __all__ = ["concurrent_pool", "ThreadPool", "ProcessPool", "CoroutinePool"]
 
