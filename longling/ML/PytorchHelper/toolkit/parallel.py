@@ -4,11 +4,10 @@ import logging
 import torch
 from torch.nn import DataParallel
 
-
 def set_device(_net, ctx, *args, **kwargs):
     if ctx == "cpu":
-        if not isinstance(_net, DataParallel):
-            _net = DataParallel(_net)
+        # if not isinstance(_net, DataParallel):
+        #     _net = DataParallel(_net)
         return _net.cpu()
     elif any(map(lambda x: x in ctx, ["cuda", "gpu"])):  # pragma: no cover
         # todo: find a way to test gpu device
