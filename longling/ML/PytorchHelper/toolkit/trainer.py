@@ -64,12 +64,11 @@ def get_trainer(net, optimizer, optimizer_params=None, lr_params=None, select=No
     ...         self.linear = torch.nn.Linear(3, 5)
     >>> net = EmbedMLP()
     >>> optimizer = get_trainer(net, "sgd", optimizer_params={"lr": 0.01})
-    >>> optimizer
+    >>> optimizer  # doctest: +ELLIPSIS
     SGD (
     Parameter Group 0
         dampening: 0
-        lr: 0.01
-        maximize: False
+        lr: 0.01...
         momentum: 0
         nesterov: False
         weight_decay: 0
@@ -89,7 +88,7 @@ def get_trainer(net, optimizer, optimizer_params=None, lr_params=None, select=No
     ...     optimizer_params={"lr": 0.01},
     ...     lr_params={"scheduler": "OneCycleLR", "max_lr": 1, "total_steps": 100}
     ... )
-    >>> optimizer
+    >>> optimizer  # doctest:+ELLIPSIS
     SGD (
     Parameter Group 0
         base_momentum: 0.85
@@ -97,8 +96,7 @@ def get_trainer(net, optimizer, optimizer_params=None, lr_params=None, select=No
         initial_lr: 0.04
         lr: 0.040000000000000036
         max_lr: 1
-        max_momentum: 0.95
-        maximize: False
+        max_momentum: 0.95...
         min_lr: 4e-06
         momentum: 0.95
         nesterov: False
@@ -106,72 +104,65 @@ def get_trainer(net, optimizer, optimizer_params=None, lr_params=None, select=No
     )
     >>> lr_scheduler  # doctest: +ELLIPSIS
     <torch.optim.lr_scheduler.OneCycleLR...
-    >>> get_trainer(net, "adam", optimizer_params={"lr": 0.01})
+    >>> get_trainer(net, "adam", optimizer_params={"lr": 0.01})  # doctest:+ELLIPSIS
     Adam (
     Parameter Group 0
         amsgrad: False
         betas: (0.9, 0.999)
         eps: 1e-08
-        lr: 0.01
-        maximize: False
+        lr: 0.01...
         weight_decay: 0
     )
-    >>> get_trainer(net, "adagrad", optimizer_params={"lr": 0.01})
+    >>> get_trainer(net, "adagrad", optimizer_params={"lr": 0.01})  # doctest:+ELLIPSIS
     Adagrad (
     Parameter Group 0
         eps: 1e-10
         initial_accumulator_value: 0
         lr: 0.01
-        lr_decay: 0
-        maximize: False
+        lr_decay: 0...
         weight_decay: 0
     )
-    >>> get_trainer(net, "rmsprop", optimizer_params={"lr": 0.01})
+    >>> get_trainer(net, "rmsprop", optimizer_params={"lr": 0.01})  # doctest:+ELLIPSIS
     RMSprop (
     Parameter Group 0
         alpha: 0.99
         centered: False
         eps: 1e-08
-        lr: 0.01
-        maximize: False
+        lr: 0.01...
         momentum: 0
         weight_decay: 0
     )
-    >>> get_trainer(net, "Rprop", optimizer_params={"lr": 0.01})
+    >>> get_trainer(net, "Rprop", optimizer_params={"lr": 0.01})  # doctest:+ELLIPSIS
     Rprop (
     Parameter Group 0
         etas: (0.5, 1.2)
-        lr: 0.01
-        maximize: False
+        lr: 0.01...
         step_sizes: (1e-06, 50)
     )
     >>> import torch
-    >>> get_trainer(net, torch.optim.SGD, optimizer_params={"lr": 0.01})
+    >>> get_trainer(net, torch.optim.SGD, optimizer_params={"lr": 0.01})  # doctest:+ELLIPSIS
     SGD (
     Parameter Group 0
         dampening: 0
-        lr: 0.01
-        maximize: False
+        lr: 0.01...
         momentum: 0
         nesterov: False
         weight_decay: 0
     )
     >>> select = {".*embedding": {"weight_decay": 0.0001}, "^(?!.*embedding)": {}}
     >>> get_trainer(net, torch.optim.SGD, optimizer_params={"lr": 0.01},
-    ...     select=select)
+    ...     select=select)  # doctest:+ELLIPSIS
     SGD (
     Parameter Group 0
         dampening: 0
-        lr: 0.01
-        maximize: False
+        lr: 0.01...
         momentum: 0
         nesterov: False
         weight_decay: 0.0001
     <BLANKLINE>
     Parameter Group 1
         dampening: 0
-        lr: 0.01
-        maximize: False
+        lr: 0.01...
         momentum: 0
         nesterov: False
         weight_decay: 0
