@@ -146,8 +146,9 @@ setup(
         "pip",
         "tqdm",
         "fire",
-        "PyYAML",
+        "PyYAML>=5.1",
         "toml",
+        "multiprocess"
     ],
     extras_require={
         'test': test_deps + full_deps,
