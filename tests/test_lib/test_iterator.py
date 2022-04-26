@@ -5,7 +5,6 @@ import platform
 import random
 
 import pytest
-
 from longling import BaseIter, MemoryIter, LoopIter, AsyncLoopIter, AsyncIter, CacheAsyncLoopIter
 from longling import iterwrap, path_append
 
@@ -24,8 +23,8 @@ def etl():
 
 @pytest.mark.parametrize("iter_params", [(BaseIter, {}), (AsyncIter, {}), (AsyncIter, {"level": "t"})])
 def test_base(iter_params):
-    if _skip_windows():
-        return
+    # if _skip_windows():
+    #     return
 
     Iter, params = iter_params
 
@@ -64,24 +63,25 @@ def test_base(iter_params):
 
 
 def test_loop(tmpdir):
-    if _skip_windows():
-        return
-
     test_iter = {
         LoopIter: [{}],
         AsyncLoopIter: [
             {},
-            dict(level="p")
+            # dict(level="p")
         ],
         MemoryIter: [
             {},
             dict(prefetch=True),
         ],
         CacheAsyncLoopIter: [
-            dict(cache_file=path_append(tmpdir, "test.jsonl"), level="p"),
+            # dict(cache_file=path_append(tmpdir, "test.jsonl"), level="p"),
+            dict(cache_file=path_append(tmpdir, "test.jsonl"), rerun=True),
             dict(cache_file=path_append(tmpdir, "test.jsonl"), rerun=False)
         ]
     }
+    if not _skip_windows():
+        test_iter[AsyncLoopIter].append(dict(level="p"))
+        test_iter[CacheAsyncLoopIter].append(dict(cache_file=path_append(tmpdir, "test.jsonl"), level="p"))
 
     for Iter, params in test_iter.items():
 
@@ -115,13 +115,26 @@ def test_loop(tmpdir):
 
 
 def test_iterwrap():
-    if _skip_windows():
-        return
-
     with pytest.raises(TypeError):
         @iterwrap("a wrong case")
         def etl_loop():
             return etl()
+
+
+@iterwrap(level="t")
+def etl_t():
+    for _ in range(100):
+        yield [1, 1, 1]
+
+
+def test_thread_level():
+    data = etl_t()
+    for _ in range(3):
+        tag = False
+        for _ in data:
+            tag = True
+        else:
+            assert tag
 
 
 @iterwrap(level="p")
@@ -131,10 +144,6 @@ def etl_p():
 
 
 def test_process_level():
-    """waiting for testing"""
-    if _skip_windows():
-        return
-
     data = etl_p()
     for _ in range(3):
         tag = False

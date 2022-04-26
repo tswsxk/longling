@@ -6,12 +6,14 @@ import warnings
 import functools
 import queue
 import threading
-import multiprocessing as mp
+# import multiprocessing as mp
+import multiprocess as mp
 from tqdm import tqdm
 
 from longling import wf_open, loading
 
-__all__ = ["BaseIter", "MemoryIter", "LoopIter", "AsyncLoopIter", "AsyncIter", "CacheAsyncLoopIter", "iterwrap"]
+__all__ = ["BaseIter", "MemoryIter", "LoopIter", "AsyncLoopIter", "AsyncIter", "CacheAsyncLoopIter",
+           "iterwrap"]
 
 
 class Register(dict):  # pragma: no cover
@@ -75,8 +77,10 @@ class BaseIter(object):
             bi.reset()
     """
 
-    def __init__(self, src, length=None, *args, **kwargs):
+    def __init__(self, src, fargs=None, fkwargs=None, length=None, *args, **kwargs):
         self._reset = src
+        self._fargs: list = fargs if fargs is not None else []
+        self._fkwargs: dict = fkwargs if fkwargs is not None else {}
         self._data = None
         self._length = length
         self._count = 0
@@ -103,7 +107,7 @@ class BaseIter(object):
         self.reset()
 
     def reset(self):
-        _data = self._reset() if callable(self._reset) else self._reset
+        _data = self._reset(*self._fargs, **self._fkwargs) if callable(self._reset) else self._reset
         try:
             self._length = len(_data)
         except TypeError:
@@ -117,8 +121,8 @@ class BaseIter(object):
     @classmethod
     def wrap(cls, f):
         @functools.wraps(f)
-        def _f(*args, **kwargs):
-            return cls(functools.partial(f, *args, **kwargs))
+        def _f(*fargs, **fkwargs):
+            return cls(f, fargs=fargs, fkwargs=fkwargs)
 
         return _f
 
@@ -131,10 +135,10 @@ class MemoryIter(BaseIter):
     会将所有迭代器内容装载入内存
     """
 
-    def __init__(self, src, length=None, prefetch=False, *args, **kwargs):
+    def __init__(self, src, fargs=None, fkwargs=None, length=None, prefetch=False, *args, **kwargs):
         self._memory_data = []
         self._in_memory = True
-        super(MemoryIter, self).__init__(src, length)
+        super(MemoryIter, self).__init__(src, fargs, fkwargs, length)
         self.prefetch = prefetch
         if self.prefetch:
             self._prefetch()
@@ -176,8 +180,8 @@ class LoopIter(BaseIter):
     每次迭代后会进行自动的 reset() 操作
     """
 
-    def __init__(self, src, length=None, *args, **kwargs):
-        super(LoopIter, self).__init__(src, length)
+    def __init__(self, src, fargs=None, fkwargs=None, length=None, *args, **kwargs):
+        super(LoopIter, self).__init__(src, fargs, fkwargs, length)
 
     def __next__(self):
         try:
@@ -189,9 +193,9 @@ class LoopIter(BaseIter):
             raise StopIteration
 
 
-def produce(data, produce_queue):
+def produce(data, produce_queue, fargs, fkwargs):
     _stop = False
-    data = data() if callable(data) else data
+    data = data(*fargs, **fkwargs) if callable(data) else data
     try:
         for _data in data:
             produce_queue.put(_data)
@@ -216,7 +220,7 @@ class AsyncLoopIter(LoopIter):
     数据的读入和数据的使用迭代是异步的。reset() 之后会进行数据预取
     """
 
-    def __init__(self, src, tank_size=8, timeout=None, level="t"):
+    def __init__(self, src, fargs=None, fkwargs=None, tank_size=8, timeout=None, level="t"):
         self.thread = None
         self._size = tank_size
         self.mode = self._mode_map(level)
@@ -230,7 +234,7 @@ class AsyncLoopIter(LoopIter):
             raise TypeError("unknown mode: %s" % self.mode)
         self.queue = self.queue_cls(self._size)
         self._timeout = timeout
-        super(AsyncLoopIter, self).__init__(src)
+        super(AsyncLoopIter, self).__init__(src, fargs, fkwargs)
 
     @classmethod
     def _mode_map(cls, mode):
@@ -252,7 +256,7 @@ class AsyncLoopIter(LoopIter):
 
         self.thread = self.thread_cls(
             target=produce,
-            kwargs=dict(data=self._data, produce_queue=self.queue),
+            kwargs=dict(data=self._data, produce_queue=self.queue, fargs=self._fargs, fkwargs=self._fkwargs),
             daemon=True
         )
         self.thread.start()
@@ -316,16 +320,16 @@ class CacheAsyncLoopIter(AsyncLoopIter):
     将异步加载中处理的预处理数据放到指定的缓冲文件中
     """
 
-    def __init__(self, src, cache_file, rerun=True, tank_size=8, timeout=None, level="t"):
+    def __init__(self, src, cache_file, fargs=None, fkwargs=None, rerun=True, tank_size=8, timeout=None, level="t"):
         self.cache_file = cache_file
         self.cache_queue = None
         self.cache_thread = None
 
         if os.path.exists(self.cache_file) and rerun is False:
             # 从已有数据中进行装载
-            def src():
-                return loading(self.cache_file, "jsonl")
-
+            src = loading
+            fargs = [self.cache_file, "jsonl"]
+            fkwargs = None
             self._cache_stop = True
         else:
             # 重新生成数据
@@ -333,13 +337,14 @@ class CacheAsyncLoopIter(AsyncLoopIter):
             self.cache_thread = threading.Thread(target=self.cached, daemon=False)
             self.cache_thread.start()
             self._cache_stop = False
-        super(CacheAsyncLoopIter, self).__init__(src, tank_size, timeout, level)
+        super(CacheAsyncLoopIter, self).__init__(src, fargs, fkwargs, tank_size, timeout, level)
 
     def init(self):
         super(CacheAsyncLoopIter, self).reset()
 
     def reset(self):
-        self._reset = lambda: loading(self.cache_file, "jsonl")
+        self._reset = loading
+        self._fargs = [self.cache_file, "jsonl"]
         if self.cache_thread is not None:
             self.cache_thread.join()
             self.cache_thread = None
@@ -397,8 +402,11 @@ def iterwrap(itertype: str = "AsyncLoopIter", *args, **kwargs):
     As mentioned in [1], on Windows or MacOS, `spawn()` is the default multiprocessing start method.
     Using `spawn()`, another interpreter is launched which runs your main script,
     followed by the internal worker function that receives parameters through pickle serialization.
-    However, `functools.partial` does not well fit `pickle` like discussed in [2].
-    Therefore, all itertype will not support `level='p'` in windows platform.
+    However, `decorator` and `functools` function does not well fit `pickle` like discussed in [2].
+    Therefore, since version 1.3.36, instead of using `multiprocessing`,
+    we use `multiprocess` which replace `pickle` with `dill` .
+    Nevertheless, the users should be aware of that `level='p'` may not work in windows and mac platform
+    if the decorated function does not follow the `spawn()` behaviour.
 
     Notes
     ------
@@ -407,7 +415,7 @@ def iterwrap(itertype: str = "AsyncLoopIter", *args, **kwargs):
 
     We use the default mode when deal with `multiprocessing`, i.e., `spawn` in windows and macos, and `folk` in linux.
     An example to change the default behaviour is `multiprocessing.set_start_method('spawn')`, which could
-    be found in [3]
+    be found in [3].
 
     References
     ----------
@@ -422,7 +430,7 @@ def iterwrap(itertype: str = "AsyncLoopIter", *args, **kwargs):
     def _f1(f):
         @functools.wraps(f)
         def _f2(*fargs, **fkwargs):
-            return register[itertype](functools.partial(f, *fargs, **fkwargs), *args, **kwargs)
+            return register[itertype](f, fargs=fargs, fkwargs=fkwargs, *args, **kwargs)
 
         return _f2
 
