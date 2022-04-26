@@ -4,6 +4,7 @@ import logging
 import torch
 from torch.nn import DataParallel
 
+
 def set_device(_net, ctx, *args, **kwargs):
     if ctx == "cpu":
         # if not isinstance(_net, DataParallel):
