@@ -402,7 +402,7 @@ def iterwrap(itertype: str = "AsyncLoopIter", *args, **kwargs):
     As mentioned in [1], on Windows or MacOS, `spawn()` is the default multiprocessing start method.
     Using `spawn()`, another interpreter is launched which runs your main script,
     followed by the internal worker function that receives parameters through pickle serialization.
-    However, `decorator` and `functools` function does not well fit `pickle` like discussed in [2].
+    However, `decorator` ,`functools`, `lambda` and local function does not well fit `pickle` like discussed in [2].
     Therefore, since version 1.3.36, instead of using `multiprocessing`,
     we use `multiprocess` which replace `pickle` with `dill` .
     Nevertheless, the users should be aware of that `level='p'` may not work in windows and mac platform
