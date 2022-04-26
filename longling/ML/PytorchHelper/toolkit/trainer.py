@@ -98,6 +98,7 @@ def get_trainer(net, optimizer, optimizer_params=None, lr_params=None, select=No
         lr: 0.040000000000000036
         max_lr: 1
         max_momentum: 0.95
+        maximize: False
         min_lr: 4e-06
         momentum: 0.95
         nesterov: False
@@ -112,6 +113,7 @@ def get_trainer(net, optimizer, optimizer_params=None, lr_params=None, select=No
         betas: (0.9, 0.999)
         eps: 1e-08
         lr: 0.01
+        maximize: False
         weight_decay: 0
     )
     >>> get_trainer(net, "adagrad", optimizer_params={"lr": 0.01})
@@ -121,6 +123,7 @@ def get_trainer(net, optimizer, optimizer_params=None, lr_params=None, select=No
         initial_accumulator_value: 0
         lr: 0.01
         lr_decay: 0
+        maximize: False
         weight_decay: 0
     )
     >>> get_trainer(net, "rmsprop", optimizer_params={"lr": 0.01})
@@ -130,6 +133,7 @@ def get_trainer(net, optimizer, optimizer_params=None, lr_params=None, select=No
         centered: False
         eps: 1e-08
         lr: 0.01
+        maximize: False
         momentum: 0
         weight_decay: 0
     )
@@ -138,6 +142,7 @@ def get_trainer(net, optimizer, optimizer_params=None, lr_params=None, select=No
     Parameter Group 0
         etas: (0.5, 1.2)
         lr: 0.01
+        maximize: False
         step_sizes: (1e-06, 50)
     )
     >>> import torch
@@ -146,6 +151,7 @@ def get_trainer(net, optimizer, optimizer_params=None, lr_params=None, select=No
     Parameter Group 0
         dampening: 0
         lr: 0.01
+        maximize: False
         momentum: 0
         nesterov: False
         weight_decay: 0
@@ -157,6 +163,7 @@ def get_trainer(net, optimizer, optimizer_params=None, lr_params=None, select=No
     Parameter Group 0
         dampening: 0
         lr: 0.01
+        maximize: False
         momentum: 0
         nesterov: False
         weight_decay: 0.0001
@@ -164,6 +171,7 @@ def get_trainer(net, optimizer, optimizer_params=None, lr_params=None, select=No
     Parameter Group 1
         dampening: 0
         lr: 0.01
+        maximize: False
         momentum: 0
         nesterov: False
         weight_decay: 0
