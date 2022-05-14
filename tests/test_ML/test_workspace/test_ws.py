@@ -91,5 +91,6 @@ def test_ws(fs, ws_config_dir):
         wsm.pws("space")
 
     wsm = ws.use("ws", space_dir=ws_config_dir, force_reinit=True)
+    wsm.ll()
     assert wsm.root.fp != fs["root"]
     wsm.mount()

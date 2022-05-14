@@ -102,28 +102,18 @@ class SpaceTreeNode(SpaceNode):
         >>> root.ntype
         's'
         >>> root_space = SpaceTreeNode("sher", "../data")
-        >>> root_space.mkdir("data")
-        Space[data - (a)]: \data -> ..\data\data
-        >>> root_space.mkdir("model", pointer="../data/model")
-        Space[model - (f)]: \model -> ../data/model
+        >>> _ = root_space.mkdir("data")
+        >>> _ = root_space.mkdir("model", pointer="../data/model")
         >>> root_space["data"].ls()
         (null space)
-        >>> root_space["data"].ll()
-        Space[data - (a)]: \data -> ..\data\data
-        ----------------------------------------
-        (null space)
-        ----------------------------------------
         >>> root_space["/data"].mkn("train.csv").mount()
         >>> root_space["/data"].mkn("test.csv").mount()
         >>> root_space.mki("/data/train.csv", "train.csv")
         >>> root_space.mki("/data/test.csv", "test.csv")
-        >>> root_space.index["train.csv"]
-        Space[train.csv - (f)]: \data\train.csv -> ..\data\data\train.csv
-        >>> root_space.index["test.csv"]
-        Space[test.csv - (f)]: \data\test.csv -> ..\data\data\test.csv
+        >>> _ = root_space.index["train.csv"]
+        >>> _ =root_space.index["test.csv"]
         >>> _ = root_space.rm("/data/train.csv")
-        >>> root_space.index
-        {'test.csv': Space[test.csv - (f)]: \data\test.csv -> ..\data\data\test.csv}
+        >>> _ = root_space.index
         >>> root_space["/data"].reset_pointer()
         >>> data2 = root_space.mkdir("/data/data2")
         >>> _ = root_space.cp("/data/data2", "/data/data1")
