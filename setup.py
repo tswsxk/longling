@@ -148,7 +148,8 @@ setup(
         "fire",
         "PyYAML>=5.1",
         "toml",
-        "multiprocess"
+        "multiprocess",
+        "joblib"
     ],
     extras_require={
         'test': test_deps + full_deps,
