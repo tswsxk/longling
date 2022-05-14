@@ -4,3 +4,4 @@
 from __future__ import absolute_import
 
 from .utils import *
+from .Workspace import workspace as ws
