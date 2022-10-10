@@ -215,7 +215,7 @@ def file_split(*files, ratio: (str, list) = None, target_files: list, index_file
 
 def train_test(*files, train_size: (float, int) = 0.8, test_size: (float, int, None) = None, ratio=None,
                random_state=None, shuffle=True, target_names=None,
-               suffix: list = None, prefix="", logger=_logger, **kwargs):
+               suffix: list = None, prefix="", logger=None, **kwargs):
     """
 
     Parameters
@@ -235,6 +235,7 @@ def train_test(*files, train_size: (float, int) = 0.8, test_size: (float, int, N
     suffix: list
     kwargs
     """
+    logger = _logger if logger is None else logger
     logger.info("train_test start")
     suffix = [".train", ".test"] if suffix is None else suffix
 
@@ -271,7 +272,7 @@ def train_valid_test(*files,
                      test_size: (float, int, None) = None, ratio=None,
                      random_state=None,
                      shuffle=True, target_names=None,
-                     suffix: list = None, logger=_logger, prefix="", **kwargs):
+                     suffix: list = None, logger=None, prefix="", **kwargs):
     """
 
     Parameters
@@ -293,6 +294,7 @@ def train_valid_test(*files,
     suffix: list
     kwargs
     """
+    logger = _logger if logger is None else logger
     logger.info("train_valid_test start")
     suffix = [".train", ".valid", ".test"] if suffix is None else suffix
 
@@ -336,7 +338,8 @@ def _kfold(*files, idx, indices, suffix, logger=_logger, prefix=""):
     logger.info("kfold %s end" % idx)
 
 
-def kfold(*files, n_splits=5, shuffle=False, random_state=None, suffix=None, logger=_logger, prefix=""):
+def kfold(*files, n_splits=5, shuffle=False, random_state=None, suffix=None, logger=None, prefix=""):
+    logger = _logger if logger is None else logger
     splitter = KFold(n_splits=n_splits, shuffle=shuffle, random_state=random_state)
     suffix = [".train", ".test"] if suffix is None else suffix
 
