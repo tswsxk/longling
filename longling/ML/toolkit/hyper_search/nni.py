@@ -40,6 +40,7 @@ def show(key, max_key=True, exp_id=None, res_dir="./",
     Parameters
     ----------
     key
+    max_key
     exp_id
     res_dir
     nni_dir
