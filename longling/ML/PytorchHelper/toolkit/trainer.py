@@ -95,10 +95,12 @@ def get_trainer(net, optimizer, optimizer_params=None, lr_params=None, select=No
     Parameter Group 0
         base_momentum: 0.85
         dampening: 0
+        ...
         initial_lr: 0.04
-        lr: 0.040000000000000036
+        lr: 0.04...
         max_lr: 1
         max_momentum: 0.95...
+        ...
         min_lr: 4e-06
         momentum: 0.95
         nesterov: False
