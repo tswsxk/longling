@@ -21,8 +21,8 @@ def describe(array, op: (str, list) = None):
     Examples
     ---------
     >>> a = range(10)
-    >>> describe(a)
-    {'mean': 4.5, 'min': 0, 'max': 9, 'var': 9.166666666666666, 'skew': 0.0, 'kurtosis': -1.2242424242424244}
+    >>> describe(a) # doctest: +ELLIPSIS
+    {'mean': 4.5, 'min': 0, 'max': 9, 'var': 9.16..., 'skew': 0.0, 'kurtosis': -1.224...}
     """
     result = {}
 
