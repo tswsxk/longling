@@ -68,7 +68,9 @@ def get_trainer(net, optimizer, optimizer_params=None, lr_params=None, select=No
     SGD (
     Parameter Group 0
         dampening: 0
+        ...
         lr: 0.01...
+        ...
         momentum: 0
         nesterov: False
         weight_decay: 0
