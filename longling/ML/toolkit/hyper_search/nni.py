@@ -29,7 +29,7 @@ def _key(x):
 
 
 def show(key, max_key=True, exp_id=None, res_dir="./",
-         nni_dir=path_append(os.environ.get("HOME", "./"), "nni-experiments"),
+         nni_dir=None,
          only_final=False,
          with_keys=None, with_all=False):  # pragma: no cover
     """
@@ -51,6 +51,7 @@ def show(key, max_key=True, exp_id=None, res_dir="./",
     -------
 
     """
+    nni_dir = nni_dir if nni_dir is not None else path_append(os.environ.get("HOME", "./"), "nni-experiments")
     if exp_id is None:
         exp_id = pathlib.PurePath(os.path.abspath(res_dir)).name
     nni_dir = path_append(nni_dir, exp_id)
