@@ -225,14 +225,17 @@ def train_test(*files, train_size: (float, int) = 0.8, test_size: (float, int, N
         Represent the proportion of the dataset to include in the train split.
     test_size: float, int, or None
         Represent the proportion of the dataset to include in the train split.
+    ratio
     random_state: int, RandomState instance or None, optional (default=None)
         If int, random_state is the seed used by the random number generator;
         If RandomState instance, random_state is the random number generator;
         If None, the random number generator is the RandomState instance used by np.random.
     shuffle: boolean, optional (default=True)
-        Whether or not to shuffle the data before splitting. If shuffle=False then stratify must be None
+        Whether to shuffle the data before splitting. If shuffle=False then stratify must be None
     target_names: list of PATH_TYPE
     suffix: list
+    prefix: str
+    logger:
     kwargs
     """
     logger = _logger if logger is None else logger
@@ -272,7 +275,7 @@ def train_valid_test(*files,
                      test_size: (float, int, None) = None, ratio=None,
                      random_state=None,
                      shuffle=True, target_names=None,
-                     suffix: list = None, logger=None, prefix="", **kwargs):
+                     suffix: list = None, prefix="", logger=None, **kwargs):
     """
 
     Parameters
@@ -284,14 +287,17 @@ def train_valid_test(*files,
         Represent the proportion of the dataset to include in the valid split.
     test_size: float, int, or None
         Represent the proportion of the dataset to include in the test split.
+    ratio
     random_state: int, RandomState instance or None, optional (default=None)
         If int, random_state is the seed used by the random number generator;
         If RandomState instance, random_state is the random number generator;
         If None, the random number generator is the RandomState instance used by np.random.
     shuffle: boolean, optional (default=True)
-        Whether or not to shuffle the data before splitting. If shuffle=False then stratify must be None
+        Whether to shuffle the data before splitting. If shuffle=False then stratify must be None
     target_names
     suffix: list
+    prefix: str
+    logger
     kwargs
     """
     logger = _logger if logger is None else logger
@@ -326,7 +332,7 @@ def train_valid_test(*files,
     logger.info("train_valid_test end")
 
 
-def _kfold(*files, idx, indices, suffix, logger=_logger, prefix=""):
+def _kfold(*files, idx, indices, suffix, prefix="", logger=_logger):
     logger.info("kfold %s start" % idx)
     s_indices = [set(_indices.tolist()) for _indices in indices]
     target_files = _target_files(
@@ -338,7 +344,7 @@ def _kfold(*files, idx, indices, suffix, logger=_logger, prefix=""):
     logger.info("kfold %s end" % idx)
 
 
-def kfold(*files, n_splits=5, shuffle=False, random_state=None, suffix=None, logger=None, prefix=""):
+def kfold(*files, n_splits=5, shuffle=False, random_state=None, suffix=None, prefix="", logger=None):
     logger = _logger if logger is None else logger
     splitter = KFold(n_splits=n_splits, shuffle=shuffle, random_state=random_state)
     suffix = [".train", ".test"] if suffix is None else suffix
@@ -351,6 +357,6 @@ def kfold(*files, n_splits=5, shuffle=False, random_state=None, suffix=None, log
                 idx=i,
                 indices=indices,
                 suffix=suffix,
+                prefix=prefix,
                 logger=logger,
-                prefix=prefix
             )

@@ -4,7 +4,7 @@
 from longling.lib.formatter import pandas_format, dict_format
 from .select import get_max, get_min
 
-__all__ = ["select_max", "arg_select_max"]
+__all__ = ["select_max", "arg_select_max", "select_min", "arg_select_min"]
 
 
 def _select(src, *keys, with_keys: (str, None) = None, with_all=False, func=None, **kwargs):
