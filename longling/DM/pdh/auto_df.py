@@ -4,7 +4,7 @@
 import functools
 import logging
 import re
-from collections import Iterable
+from typing import Iterable
 
 import pandas as pd
 from tqdm import tqdm
