@@ -50,7 +50,7 @@ def train_valid_test_cli(*files,
                          test_size: (float, int, None) = None, ratio=None,
                          random_state=None,
                          shuffle=True, target_names=None,
-                         suffix: list = None, logger=None, prefix="", **kwargs):
+                         suffix: list = None, prefix="", logger=None, **kwargs):
     from longling.ML.toolkit.dataset import train_valid_test
     train_valid_test(
         *files,
@@ -60,8 +60,8 @@ def train_valid_test_cli(*files,
         shuffle,
         target_names,
         suffix,
-        logger,
         prefix,
+        logger,
         **kwargs
     )
 
@@ -78,9 +78,9 @@ def train_test_cli(*files, train_size: (float, int) = 0.8, test_size: (float, in
     )
 
 
-def kfold_cli(*files, n_splits=5, shuffle=False, random_state=None, suffix=None, logger=None, prefix=""):
+def kfold_cli(*files, n_splits=5, shuffle=False, random_state=None, suffix=None, prefix="", logger=None):
     from longling.ML.toolkit.dataset import kfold
-    kfold(*files, n_splits, shuffle, random_state, suffix, logger, prefix)
+    kfold(*files, n_splits, shuffle, random_state, suffix, prefix, logger)
 
 
 def show_top_k_cli(k, exp_id=None, exp_dir=None):
