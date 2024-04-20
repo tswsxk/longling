@@ -50,12 +50,12 @@ def as_ordered_dict(dict_data: (dict, OrderedDict), index: (list, None) = None):
     """
     Examples
     --------
-    >>> as_ordered_dict({0: 0, 2: 123, 1: 1})
-    OrderedDict([(0, 0), (2, 123), (1, 1)])
-    >>> as_ordered_dict({0: 0, 2: 123, 1: 1}, [2, 0, 1])
-    OrderedDict([(2, 123), (0, 0), (1, 1)])
-    >>> as_ordered_dict(OrderedDict([(2, 123), (0, 0), (1, 1)]))
-    OrderedDict([(2, 123), (0, 0), (1, 1)])
+    >>> dict(as_ordered_dict({0: 0, 2: 123, 1: 1}))
+    {0: 0, 2: 123, 1: 1}
+    >>> dict(as_ordered_dict({0: 0, 2: 123, 1: 1}, [2, 0, 1]))
+    {2: 123, 0: 0, 1: 1}
+    >>> dict(as_ordered_dict(OrderedDict([(2, 123), (0, 0), (1, 1)])))
+    {2: 123, 0: 0, 1: 1}
     """
 
     if index is None and isinstance(dict_data, OrderedDict):
