@@ -53,9 +53,9 @@ viz_deps = [
 try:
     import mxnet
 
-    mxnet_requires = []
+    mxnet_requires = ["numpy <= 1.19"]
 except ModuleNotFoundError:
-    mxnet_requires = ["mxnet"]
+    mxnet_requires = ["mxnet", "numpy <= 1.19"]
 except Exception as e:
     mxnet_requires = []
     logging.error(e)
