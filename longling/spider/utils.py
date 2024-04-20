@@ -8,7 +8,7 @@ import zipfile
 import rarfile
 
 from longling import flush_print
-from longling.lib.candylib import format_byte_sizeof
+from longling.utils.candylib import format_byte_sizeof
 
 __all__ = ["decompress", "get_path", "un_zip", "un_rar", "un_tar", "reporthook4urlretrieve"]
 

@@ -6,8 +6,8 @@ import json
 import yaml
 import toml
 from longling import wf_open, path_append
-from longling.lib.parser import ConfigurationParser, ParserGroup
-from longling.lib.parser import get_parsable_var, load_configuration, Configuration
+from longling.utils.parser import ConfigurationParser, ParserGroup
+from longling.utils.parser import get_parsable_var, load_configuration, Configuration
 
 
 class DemoConfiguration(Configuration):

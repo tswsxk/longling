@@ -2,7 +2,7 @@
 # 2019/12/11 @ tongshiwei
 
 import pytest
-from longling.lib.progress import ProgressMonitor, IterableMIcing, MonitorPlayer
+from longling.utils.progress import ProgressMonitor, IterableMIcing, MonitorPlayer
 
 
 class DemoMonitor(ProgressMonitor):

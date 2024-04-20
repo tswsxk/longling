@@ -2,7 +2,7 @@
 # 2019/12/19 @ tongshiwei
 
 import pytest
-from longling.lib.structure import AttrDict
+from longling.utils.structure import AttrDict
 
 
 def test_attr_dict_exception():

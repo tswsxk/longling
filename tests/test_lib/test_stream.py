@@ -9,7 +9,7 @@ from pathlib import PurePath
 import pytest
 
 from longling import path_append, tmpfile
-from longling.lib.stream import *
+from longling.utils.stream import *
 
 
 def test_build_dir(tmp_path_factory):

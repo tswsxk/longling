@@ -3,7 +3,7 @@
 
 import pytest
 
-from longling.lib.regex import variable_replace, default_variable_replace
+from longling.utils.regex import variable_replace, default_variable_replace
 
 
 # from longling.lib.regex import PatternHitter

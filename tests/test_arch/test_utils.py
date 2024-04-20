@@ -2,10 +2,10 @@
 # 2020/4/14 @ tongshiwei
 
 from longling import as_out_io, path_append
-from longling.lib.testing import simulate_stdin
-from longling.Architecture.install_file import copytree, copyfile, template_copy
-from longling.Architecture import config
-from longling.Architecture.utils import default_legal_input
+from longling.utils.testing import simulate_stdin
+from longling.infrastructure.install_file import copytree, copyfile, template_copy
+from longling.infrastructure import config
+from longling.infrastructure.utils import default_legal_input
 
 
 def test_copy(tmpdir):

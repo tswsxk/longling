@@ -5,9 +5,9 @@ import functools
 import time
 import random
 import json
-from longling.lib.stream import as_io
-from longling.lib.path import path_append, abs_current_dir
-from longling.lib.candylib import as_list
+from longling.utils.stream import as_io
+from longling.utils.path import path_append, abs_current_dir
+from longling.utils.candylib import as_list
 from urllib.request import ProxyHandler, build_opener
 from longling.spider.conf import logger
 

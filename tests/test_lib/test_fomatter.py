@@ -2,7 +2,7 @@
 # 2020/4/14 @ tongshiwei
 
 import pytest
-from longling.lib.formatter import series_format, table_format
+from longling.utils.formatter import series_format, table_format
 
 
 def test_series_format():

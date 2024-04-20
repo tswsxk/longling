@@ -43,6 +43,7 @@ ml_base_deps = [
     "numpy>= 1.16.5",
     "scipy",
     "scikit-learn>=0.23.2",
+    "nni"
 ]
 viz_deps = [
     "matplotlib",
@@ -50,33 +51,6 @@ viz_deps = [
     "tensorboard"
 ]
 
-try:
-    import mxnet
-
-    mxnet_requires = ["1.16.5 <= numpy < 1.20"]
-except ModuleNotFoundError:
-    mxnet_requires = ["mxnet", "1.16.5 <= numpy < 1.20"]
-except Exception as e:
-    mxnet_requires = []
-    logging.error(e)
-
-try:
-    import torch
-
-    ml_pytorch_deps = []
-except ModuleNotFoundError:
-    import sys
-
-    if 5 <= sys.version_info[1]:
-        ml_pytorch_deps = ["torch"]
-    else:
-        ml_pytorch_deps = []
-        logging.warning("Current python version %s is not supported by pytorch", str(sys.version_info[:2]))
-except Exception as e:
-    ml_pytorch_deps = []
-    logging.error(e)
-
-ml_mx_deps = ["gluonnlp"] + mxnet_requires
 
 spider_deps = [
     "requests",
@@ -86,9 +60,8 @@ spider_deps = [
     "urllib3"
 ]
 
-dl_deps = ml_mx_deps + ml_pytorch_deps
 
-ml_full_deps = ml_base_deps + dl_deps + ["nni>=1.8"] + viz_deps
+ml_full_deps = ml_base_deps + viz_deps
 
 full_deps = ml_full_deps + spider_deps
 
@@ -160,9 +133,6 @@ setup(
         'ml': ml_base_deps,
         'ml-viz': ml_base_deps + viz_deps,
         'viz': viz_deps,
-        'mx': ml_mx_deps,
-        'torch': ml_pytorch_deps,
-        'dl': dl_deps,
         'ml-full': ml_full_deps,
         "spider": spider_deps,
         "full": full_deps

@@ -1,8 +1,8 @@
 # coding: utf-8
 # 2020/4/14 @ tongshiwei
 
-from longling.Architecture.cli.main import cli
-from longling.lib.testing import simulate_stdin
+from longling.infrastructure.cli.main import cli
+from longling.utils.testing import simulate_stdin
 
 
 def test_python_cli(tmp_path_factory):

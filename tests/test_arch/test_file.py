@@ -2,13 +2,13 @@
 # 2019/12/31 @ tongshiwei
 
 from longling import wf_open, path_append
-from longling.Architecture.install_file import (
+from longling.infrastructure.install_file import (
     template_copy,
     gitignore, pytest as gen_pytest, coverage, pysetup, sphinx_conf,
     readthedocs, makefile, nni
 )
-from longling.Architecture.install_proj import py_proj, docs_proj
-from longling.Architecture import config
+from longling.infrastructure.install_proj import py_proj, docs_proj
+from longling.infrastructure import config
 
 
 def test_template_copy(tmpdir):

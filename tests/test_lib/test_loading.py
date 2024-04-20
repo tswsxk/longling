@@ -1,7 +1,7 @@
 # coding: utf-8
 # 2020/1/2 @ tongshiwei
 
-from longling.lib.loading import load_csv, load_jsonl, jsonl2csv, csv2jsonl, loading
+from longling.utils.loading import load_csv, load_jsonl, jsonl2csv, csv2jsonl, loading
 from longling import path_append, as_out_io, as_io
 
 DEMO_TEXT = """
