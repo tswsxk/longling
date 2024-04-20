@@ -5,6 +5,10 @@ from longling.ml.toolkit.hyper_search import prepare_hyper_search
 
 
 def test_hyper_search():
+    try:
+        import nni
+    except ModuleNotFoundError:
+        return
     cfg_kwargs, _, _, _ = prepare_hyper_search(
         {"learning_rate": 0.1}, primary_key="macro_avg:f1", with_keys="accuracy", disable=True
     )
