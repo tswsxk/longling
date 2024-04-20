@@ -413,7 +413,7 @@ class ItemSpecificSampler(TripletPairSampler):
     2           [1]  []
     3           [1]  []
     >>> triplet_df.index
-    Int64Index([0, 1, 2, 3], dtype='int64', name='item_id')
+    Index([0, 1, 2, 3], dtype='int64', name='item_id')
     >>> sampler = ItemSpecificSampler(triplet_df)
     >>> sampler(1)
     (0, [0])

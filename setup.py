@@ -33,7 +33,7 @@ dev_deps = test_deps + docs_deps + [
 ]
 
 dm_base_deps = [
-    "pandas",
+    "pandas>=2.0",
     "numpy",
     "matplotlib",
 ]
@@ -42,7 +42,7 @@ ml_base_deps = [
     "pandas",
     "numpy>= 1.16.5",
     "scipy",
-    "scikit-learn>=0.23.2",
+    "scikit-learn",
     "nni"
 ]
 viz_deps = [

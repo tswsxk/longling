@@ -1,22 +1,25 @@
 # coding: utf-8
 # 2020/4/13 @ tongshiwei
 
+import functools
 import logging
-from longling.utils.candylib import as_list
 from collections import OrderedDict
+from typing import Iterable
+
+import numpy as np
 from sklearn.metrics import (classification_report as cr,
                              roc_auc_score, average_precision_score, accuracy_score
                              )
-
 from sklearn.utils import check_consistent_length
 from sklearn.utils.multiclass import unique_labels
-import functools
+
 from longling.ml.metrics.utils import POrderedDict
+from longling.utils.candylib import as_list
 
 __all__ = ["classification_report"]
 
 
-def multiclass2multilabel(y: list):
+def multiclass2multilabel(y: Iterable):
     """
     Parameters
     ----------
@@ -229,7 +232,7 @@ def classification_report(y_true, y_pred=None, y_score=None, labels=None, metric
             for k in _metrics & {"precision", "recall", "f1", "support", "accuracy"}:
                 _k = k if k != "f1" else "f1-score"
                 if _k in value:
-                    ret[key][k] = value[_k]
+                    ret[key][k] = value[_k] if _k != "support" else int(value[_k])
 
         for average in ["micro", "macro", "samples", "weighted"]:
             _label = average_label_fmt.format(average=average)
@@ -249,7 +252,7 @@ def classification_report(y_true, y_pred=None, y_score=None, labels=None, metric
                                  **kwargs.get("auc", {"multi_class": 'ovo'}))
 
         if multiclass_to_multilabel:
-            _y_true = multiclass2multilabel(y_true)
+            _y_true = np.asarray(multiclass2multilabel(y_true))
             auc_score = func(y_true=_y_true, average=None)
             for _label, score in enumerate(auc_score):
                 if _label not in labels_set:
@@ -277,7 +280,7 @@ def classification_report(y_true, y_pred=None, y_score=None, labels=None, metric
         func = functools.partial(average_precision_score, y_score=y_score, sample_weight=sample_weight)
 
         if multiclass_to_multilabel:
-            _y_true = multiclass2multilabel(y_true)
+            _y_true = np.asarray(multiclass2multilabel(y_true))
             aupoc = func(y_true=_y_true, average=None)
             for _label, score in enumerate(aupoc):
                 if _label not in labels_set:
