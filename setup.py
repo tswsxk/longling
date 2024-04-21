@@ -11,7 +11,6 @@ from setuptools import find_packages
 test_deps = [
     'pytest>=4',
     'pytest-cov>=2.6.0',
-    'pytest-flake8',
     'flake8<5.0.0'
 ]
 

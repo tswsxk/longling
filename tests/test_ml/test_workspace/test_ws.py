@@ -6,7 +6,7 @@ from longling.ml import ws
 from longling import as_out_io, path_append
 
 
-@pytest.fixture()
+@pytest.fixture
 def fs(tmp_path_factory):
     root = tmp_path_factory.mktemp("ws")
     with as_out_io(path_append(root, "train.csv")) as wf:
@@ -19,7 +19,7 @@ def fs(tmp_path_factory):
     }
 
 
-@pytest.fixture()
+@pytest.fixture
 def ws_config_dir(tmp_path_factory):
     return tmp_path_factory.mktemp("ws_config")
 
@@ -64,24 +64,24 @@ def test_ws(fs, ws_config_dir):
     wsm["space/model2"].mount(pointer="../data/test.csv")
     wsm["space/model2"].pws()
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=".*"):
         wsm.rm(wsm["space/model2"])
 
     wsm.rm("space/model2", recursive=True)
 
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match=".*"):
         wsm.rm(1)
 
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match=".*"):
         wsm.mv(1, "space/model2")
 
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match=".*"):
         wsm.mv("space", 2)
 
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match=".*"):
         wsm.cp(1, "space/model2")
 
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match=".*"):
         wsm.cp("space", 2)
 
     ws.commit()

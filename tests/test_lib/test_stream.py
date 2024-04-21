@@ -105,15 +105,15 @@ def test_read_write(tmp_path):
                 assert line == "hello world\n"
 
     # Exception Test
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="cannot handle the mode unk"):
         with as_io(tmp_file, mode="unk"):
             pass
 
     # Exception Test
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="123"):
         wf_open({"123": 123})
 
-    with pytest.raises(StreamError):
+    with pytest.raises(StreamError, match="123"):
         close_io("123")
 
 

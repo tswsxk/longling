@@ -37,7 +37,7 @@ install:
 
 test:
 	@echo "run test"
-	$(PYTEST)
+	flake8 && $(PYTEST)
 
 build: test, clean
 	$(PYTHON) setup.py bdist_wheel sdist

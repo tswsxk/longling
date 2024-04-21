@@ -161,7 +161,7 @@ def ranking_report(y_true, y_pred, k: (int, list) = None, continuous=False, coer
         label_ranking_average_precision_score,
         ndcg_score, label_ranking_loss, coverage_error
     )
-    assert coerce in {"ignore", "abandon", "raise", "padding"}
+    assert coerce in {"ignore", "abandon", "raise", "padding"}, "unknown coerce"
     if metrics is None:
         metrics = ["mrr", "ndcg"]
         if continuous is False:

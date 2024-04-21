@@ -38,7 +38,7 @@ class ConsoleProgressMonitorPlayer(object):
         """
 
         if values is not None:
-            assert type(indexes) == type(values)
+            assert type(indexes) is type(values)
 
         if isinstance(indexes, dict):
             indexes = OrderedDict(indexes)

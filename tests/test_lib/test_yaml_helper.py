@@ -28,8 +28,11 @@ def test_yaml(tmp_path):
 
     for i, (key, value) in enumerate(ordered_yaml_load(tmp_file).items()):
         if i == 0:
-            assert key == "b" and value == 123
+            assert key == "b"
+            assert value == 123
         elif i == 1:
-            assert key == "a" and value == 456
+            assert key == "a"
+            assert value == 456
         elif i == 2:
-            assert key == "c" and value == ['helm install --set "abc"\n']
+            assert key == "c"
+            assert value == ['helm install --set "abc"\n']

@@ -22,5 +22,5 @@ jobs:
           pip install codecov
       - name: Test with pytest
         run: |
-          pytest
+          make test
           codecov

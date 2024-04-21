@@ -23,7 +23,7 @@ def xy_path(tmp_path_factory):
 
 
 def test_utils(tmpdir, xy_path):
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="ratio or s_indices should be specified"):
         get_s_indices(*xy_path)
 
     index_file = path_append(tmpdir, "index.json")

@@ -18,12 +18,12 @@ async def async_fn(idx, bias):
 
 
 def test_exception():
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match=".*"):
         with concurrent_pool("c") as c:
             for i in range(4):
                 c.submit(async_fn, i, bias="1")
 
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match=".*"):
         with concurrent_pool("t") as c:
             for i in range(4):
                 c.submit(fn, i, bias="1")

@@ -22,11 +22,13 @@ def test_configuration():
 
     directory_check(_config)
 
-    assert _config.optimizer_params["lr"] == 0.001 and _config.optimizer_params["weight_decay"] == 0.1
+    assert _config.optimizer_params["lr"] == 0.001
+    assert _config.optimizer_params["weight_decay"] == 0.1
     assert _config.var2val("$dataset") == "abc"
 
     _config.update(optimizer_params_update={"lr": 0.1})
-    assert _config.optimizer_params["lr"] == 0.1 and _config.optimizer_params["weight_decay"] == 0.1
+    assert _config.optimizer_params["lr"] == 0.1
+    assert _config.optimizer_params["weight_decay"] == 0.1
 
 
 @pytest.mark.parametrize("file_format", ["json", "toml", "yaml"])
@@ -39,11 +41,13 @@ def test_configuration_format(tmpdir, file_format):
 
     _config = DemoConfiguration.load(filename, file_format=file_format)
 
-    assert _config["optimizer"] == "adam" and _config.lr == 0.01
+    assert _config["optimizer"] == "adam"
+    assert _config.lr == 0.01
 
     _config = DemoConfiguration(params_path=filename, params_kwargs={'file_format': file_format})
 
-    assert _config["optimizer"] == "adam" and _config.lr == 0.01
+    assert _config["optimizer"] == "adam"
+    assert _config.lr == 0.01
 
 
 def test_parser():

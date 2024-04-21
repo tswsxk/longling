@@ -39,13 +39,13 @@ def test_category2codes(df):
 
 
 def test_numeric_fill_na(df):
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="Cannot handle .* type offset"):
         numeric_fill_na(df, ["c"], mode=10)
 
-    with pytest.raises(AttributeError):
+    with pytest.raises(AttributeError, match=".*"):
         numeric_fill_na(df, ["a"], mode="error")
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Cannot handle errors mode .*"):
         numeric_fill_na(df, ["a"], mode="error", errors="unknown")
 
 
