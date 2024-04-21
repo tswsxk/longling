@@ -15,5 +15,5 @@ def test_choice():
     with pytest.raises(ValueError, match="the sum of obj should be 1, now is .*"):
         choice(obj)
 
-    with pytest.raises(TypeError, match= "obj should be either list or dict, now is .*"):
+    with pytest.raises(TypeError, match="obj should be either list or dict, now is .*"):
         choice(1)
