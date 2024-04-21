@@ -4,7 +4,7 @@
 
 [![VERSION](https://img.shields.io/pypi/pyversions/longling)](https://pypi.python.org/pypi/longling)
 [![PyPI](https://img.shields.io/pypi/v/longling.svg)](https://pypi.python.org/pypi/longling)
-[![test](https://github.com/tswsxk/longling/actions/workflows/python-test.yml/badge.svg?branch=master)](https://github.com/tswsxk/longling/actions/workflows/python-test.yml)
+[![test](https://github.com/tswsxk/longling/actions/workflows/python-test.yml/badge.svg)](https://github.com/tswsxk/longling/actions/workflows/python-test.yml)
 [![codecov](https://codecov.io/gh/tswsxk/longling/branch/main/graph/badge.svg?token=MQ11mcq0p6)](https://codecov.io/gh/tswsxk/longling)
 [![Documentation Status](https://readthedocs.org/projects/longling/badge/?version=latest)](https://longling.readthedocs.io/zh/latest/index.html)
 [![Download](https://img.shields.io/pypi/dm/longling.svg?style=flat)](https://pypi.python.org/pypi/longling)
