@@ -90,7 +90,7 @@ setup(
     author='Sherlock, Shiwei Tong',
     author_email='tongsw@mail.ustc.edu.cn',
     include_package_data=True,
-    python_requires='>=3.6',
+    python_requires='>=3.8',
     packages=find_packages(
         include=[
             "longling",
