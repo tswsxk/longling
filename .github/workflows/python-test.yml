@@ -7,6 +7,10 @@ on:
   pull_request:
     branches-ignore:
       - 'dev_*'  # 忽略所有以 'dev' 开头的分支
+  schedule:
+    # Cron 格式: 分 时 日 月 星期
+    # “0 0 1 * *” 表示在每个月的第一天的 UTC 时间 00:00 执行
+    - cron: '0 0 1 * *'
 
 jobs:
   build:
