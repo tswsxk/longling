@@ -3,10 +3,10 @@ name: test
 on:
   push:
     branches-ignore:
-      - 'dev*'  # 忽略所有以 'dev' 开头的分支
+      - 'dev_*'  # 忽略所有以 'dev' 开头的分支
   pull_request:
     branches-ignore:
-      - 'dev*'  # 忽略所有以 'dev' 开头的分支
+      - 'dev_*'  # 忽略所有以 'dev' 开头的分支
 
 jobs:
   build:
