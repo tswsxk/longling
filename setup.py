@@ -1,6 +1,5 @@
 # coding: utf-8
 # created by tongshiwei on 17-12-17
-import logging
 import io
 import os
 import re
@@ -107,7 +106,6 @@ setup(
     ),
     entry_points={
         "console_scripts": [
-            "glue = longling.ML.MxnetHelper.glue.glue:cli",
             "longling = longling.main:cli"
         ],
     },
