@@ -200,6 +200,10 @@ def pysetup(tar_dir="./", **variables):
     tar = path_append(tar_dir, "setup.py")
     logger.info("pysetup: template %s -> %s" % (src, tar))
     template_copy(src, tar, **variables)
+    src = path_append(META, "pyproject.toml")
+    tar = path_append(tar_dir, "pyproject.toml")
+    logger.info("pysetup: pyproject %s -> %s" % (src, tar))
+    copyfile(src, tar)
 
 
 def sphinx_conf(tar_dir="./", **variables):
