@@ -3,9 +3,8 @@
 import io
 import os
 import re
-from distutils.core import setup
 
-from setuptools import find_packages
+from setuptools import find_packages, setup
 
 test_deps = [
     'pytest>=4',
@@ -93,15 +92,8 @@ setup(
     packages=find_packages(
         include=[
             "longling",
-            "*.toolbox", "*.toolbox.*",
-            "*.lib", "*.lib.*",
-            "*.spider", "*.spider.*",
-            "*.Architecture", "*.Architecture.*",
-            "*.ML*",
         ],
         exclude=[
-            "*.mx_example", "*.gluon_example*", "*.gluon_exp*",
-            "*.mxnet_old*",
         ]
     ),
     entry_points={
@@ -135,11 +127,11 @@ setup(
         "full": full_deps
     },
     classifiers=[
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
         "Environment :: Other Environment",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
