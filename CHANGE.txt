@@ -1,3 +1,8 @@
+1.4.1:
+    1. [feat] remove helper for dl, mxnet and torch
+    2. [refactor] lib is renamed to utils
+    3. [refactor] arch is renamed to infrastructure
+
 1.3.37:
     1. [feat] add workspace
 
