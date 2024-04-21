@@ -108,6 +108,7 @@ def cli():  # pragma: no cover
             "train_test": train_test_cli,
             "kfold": kfold_cli,
             "toc": toc,
+            "infra": arch,
             "arch": arch,
             "tarch": tarch,
             "arch-cli": ArchCli,
