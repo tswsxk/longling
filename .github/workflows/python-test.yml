@@ -1,6 +1,12 @@
 name: test
 
-on: [push, pull_request]
+on:
+  push:
+    branches-ignore:
+      - 'dev*'  # 忽略所有以 'dev' 开头的分支
+  pull_request:
+    branches-ignore:
+      - 'dev*'  # 忽略所有以 'dev' 开头的分支
 
 jobs:
   build:
@@ -8,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.8, 3.9, '3.10', '3.11', '3.12']
+        python-version: ["3.8", "3.9", '3.10', '3.11', '3.12']
 
     steps:
       - uses: actions/checkout@v2
@@ -24,3 +30,9 @@ jobs:
         run: |
           make test
           codecov
+      - uses: codecov/codecov-action@v4
+        with:
+          fail_ci_if_error: true # optional (default = false)
+          verbose: true # optional (default = false)
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
