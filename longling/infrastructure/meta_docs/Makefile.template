@@ -43,7 +43,7 @@ build: test, clean
 	$(PYTHON) setup.py bdist_wheel sdist
 
 .test:
-	$(PYTEST) > /dev/null
+	flake* && $(PYTEST)
 
 .build: clean
 	$(PYTHON) setup.py bdist_wheel sdist > /dev/null
