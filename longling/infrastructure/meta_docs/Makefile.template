@@ -33,7 +33,7 @@ help:
 
 install:
 	@echo "install $PROJECT"
-	$(PIP) install -e . --user
+	$(PIP) install -e . --user --config-settings editable_mode=compat
 
 test:
 	@echo "run test"
