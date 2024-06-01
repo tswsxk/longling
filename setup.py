@@ -112,7 +112,9 @@ setup(
         "PyYAML>=5.1",
         "toml",
         "multiprocess",
-        "joblib"
+        "joblib",
+        'psutil',
+        'loguru'
     ],
     extras_require={
         'test': test_deps + full_deps,
