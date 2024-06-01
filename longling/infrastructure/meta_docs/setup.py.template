@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 test_deps = [
     'pytest>=4',
@@ -9,6 +9,11 @@ test_deps = [
 setup(
     name=$PROJECT,
     version='0.0.1',
+    packages=find_packages(
+        include=[
+            "$PROJECT", "$PROJECT.*"
+        ]
+    ),
     extras_require={
         'test': test_deps,
     },
