@@ -48,7 +48,6 @@ viz_deps = [
     "tensorboard"
 ]
 
-
 spider_deps = [
     "requests",
     "rarfile",
@@ -57,6 +56,13 @@ spider_deps = [
     "urllib3"
 ]
 
+db_deps = [
+    "sqlalchemy",
+]
+
+ai_deps = [
+    "openai>=1.0.0"
+]
 
 ml_full_deps = ml_base_deps + viz_deps
 
@@ -126,6 +132,8 @@ setup(
         'viz': viz_deps,
         'ml-full': ml_full_deps,
         "spider": spider_deps,
+        "db": db_deps,
+        "ai": ai_deps,
         "full": full_deps
     },
     classifiers=[
