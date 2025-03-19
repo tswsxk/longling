@@ -32,8 +32,13 @@ help:
 .PHONY: install, test, build, release, release_test, version, .test, .build, clean
 
 install:
-	@echo "install $PROJECT"
-	$(PIP) install -e . --user --config-settings editable_mode=compat
+ifdef DEPS
+	@echo "install $PROJECT with extra deps";
+	$(PIP) install -e .[$(DEPS)] --user --config-settings editable_mode=compat;
+else
+	@echo "install $PROJECT";
+	$(PIP) install -e . --user --config-settings editable_mode=compat;
+endif
 
 test:
 	@echo "run test"
